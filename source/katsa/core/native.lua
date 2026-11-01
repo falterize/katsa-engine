@@ -33,6 +33,12 @@ local candidates = {
         OSX = { 'libkatsa_box2d.dylib' },
         Android = { 'libkatsa_box2d.so' },
     },
+    Net = {
+        Windows = { 'katsa_net.dll' },
+        Linux = { 'libkatsa_net.so' },
+        OSX = { 'libkatsa_net.dylib' },
+        Android = { 'libkatsa_net.so' },
+    },
     Katsa = {
         Windows = { 'katsa_native.dll' },
         Linux = { 'libkatsa_native.so' },

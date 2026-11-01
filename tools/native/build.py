@@ -39,6 +39,11 @@ BOX2D_DIR = VENDOR / 'box2d' / 'Box2D'
 BOX2D_SOURCES = sorted(BOX2D_DIR.rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
 BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(VENDOR / 'box2d'), '-std=c++11']
 
+NET_DIR = VENDOR / 'enet'
+NET_SOURCES = [NET_DIR / name for name in ('callbacks.c', 'compress.c', 'host.c', 'list.c', 'packet.c', 'peer.c', 'protocol.c')]
+NET_SOURCES.append(SRC / 'katsa_net.c')
+NET_FLAGS = ['-O2', '-fvisibility=hidden', '-DHAS_SOCKLEN_T', '-I' + str(NET_DIR / 'include')]
+
 LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 
 
@@ -72,10 +77,15 @@ def build_box2d_macos(out):
     run([cxx, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'libkatsa_box2d.dylib'])
 
 
+def build_net(out, cc, extra, library, platform_source):
+    run([cc, *extra, *NET_FLAGS, *NET_SOURCES, NET_DIR / platform_source, *library, '-o', out])
+
+
 def build_linux(out):
     cc = compiler('clang', 'gcc', 'cc')
     run([cc, '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.so'])
     build_box2d_linux(out)
+    build_net(out / 'libkatsa_net.so', cc, ['-shared', '-fPIC'], [], 'unix.c')
     if os.environ.get('LUAJIT_PREFIX'):
         build_host_linux(out)
 
@@ -84,6 +94,7 @@ def build_windows(out):
     cc = compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc')
     run([cc, '-shared', *FLAGS, *SOURCES, '-o', out / 'katsa_native.dll', '-static'])
     build_box2d_windows(out)
+    build_net(out / 'katsa_net.dll', cc, ['-shared'], ['-static', '-lws2_32', '-lwinmm'], 'win32.c')
     if os.environ.get('LUAJIT_WIN_LIB'):
         build_host_windows(out)
 
@@ -92,6 +103,7 @@ def build_macos(out):
     cc = compiler('clang')
     run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.dylib'])
     build_box2d_macos(out)
+    build_net(out / 'libkatsa_net.dylib', cc, ['-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64'], [], 'unix.c')
 
 
 def build_android(out):
@@ -109,6 +121,7 @@ def build_android(out):
         target = out / abi
         target.mkdir(parents=True, exist_ok=True)
         run([toolchain / (triple + '-clang' + suffix), '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', target / 'libkatsa_native.so'])
+        build_net(target / 'libkatsa_net.so', toolchain / (triple + '-clang' + suffix), ['-shared', '-fPIC'], [], 'unix.c')
         run([toolchain / (triple + '-clang++' + suffix), '-shared', '-fPIC', *BOX2D_FLAGS, *BOX2D_SOURCES, '-static-libstdc++', '-o', target / 'libkatsa_box2d.so'])
 
 

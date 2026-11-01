@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | `json/` | JSON library and license | Data/import tools |
 | `box2d/` | Box2D 2.3.1 source and zlib license (one local patch: squared weld threshold in `b2PolygonShape.cpp`) | Built into `katsa_box2d` by `tools/native/build.py`; used by `source/katsa/physics` |
+| `enet/` | ENet 1.3.18 sources (reliable UDP) and MIT license | Built into `katsa_net` by `tools/native/build.py`; used by `source/katsa/net` |
 | `stb/` | `stb_image`, `stb_image_write`, `stb_truetype`, `stb_vorbis` and the stb license | Compiled into `katsa_native` by `tools/native/build.py` |
 | `oimoPhysics/` | Generated Lua runtime, Haxe source, licenses and upstream/local-patch notes | `source/engine/physics/3d/backends/oimo/` |
 | `joltPhysics/` | Pinned joltc header, generated FFI declarations, platform libraries, licenses and provenance | `source/engine/physics/3d/backends/jolt/` |
@@ -20,6 +21,8 @@ vendor/
   box2d/
     Box2D/                    upstream sources
     LICENSE.txt
+  enet/
+    include/enet/, *.c, LICENSE.txt
   stb/
     stb_*.h, stb_vorbis.c, LICENSE
   oimoPhysics/
