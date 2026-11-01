@@ -46,7 +46,8 @@ vec4 effect(vec4 color, Image tex, vec2 texCoord, vec2 screenCoord) {
             target .. ' pixel keeps the guarded source untouched'
         )
         T.check(
-            result.pixel:find('void main()', 1, true) and result.vertex:find('void main()', 1, true),
+            result.pixel:find('void main()', 1,
+                true) and result.vertex:find('void main()', 1, true),
             target .. ' both stages get a main'
         )
     end

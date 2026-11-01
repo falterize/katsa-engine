@@ -8,7 +8,8 @@ local char, byte, format, rep = string.char, string.byte, string.format, string.
 local Data = {}
 
 local function bigEndian32(value)
-    return char(band(rshift(value, 24), 255), band(rshift(value, 16), 255), band(rshift(value, 8), 255), band(value, 255))
+    return char(band(rshift(value, 24), 255), band(rshift(value, 16), 255),
+        band(rshift(value, 8), 255), band(value, 255))
 end
 
 local function padMessage(message, blockSize, lengthBytes, littleEndian)
@@ -52,7 +53,8 @@ local function sha256(message, initial, outputWords)
     for chunk = 1, #message, 64 do
         for i = 0, 15 do
             local p = chunk + i * 4
-            w[i] = bor(lshift(byte(message, p), 24), lshift(byte(message, p + 1), 16), lshift(byte(message, p + 2), 8), byte(message, p + 3))
+            w[i] = bor(lshift(byte(message, p), 24), lshift(byte(message, p + 1), 16),
+                lshift(byte(message, p + 2), 8), byte(message, p + 3))
         end
         for i = 16, 63 do
             local s0 = bxor(ror(w[i - 15], 7), ror(w[i - 15], 18), rshift(w[i - 15], 3))
@@ -86,7 +88,8 @@ local function sha1(message)
     for chunk = 1, #message, 64 do
         for i = 0, 15 do
             local p = chunk + i * 4
-            w[i] = bor(lshift(byte(message, p), 24), lshift(byte(message, p + 1), 16), lshift(byte(message, p + 2), 8), byte(message, p + 3))
+            w[i] = bor(lshift(byte(message, p), 24), lshift(byte(message, p + 1), 16),
+                lshift(byte(message, p + 2), 8), byte(message, p + 3))
         end
         for i = 16, 79 do
             w[i] = rol(bxor(w[i - 3], w[i - 8], w[i - 14], w[i - 16]), 1)
@@ -123,7 +126,8 @@ for i = 0, 63 do
 end
 
 local function littleEndian32(value)
-    return char(band(value, 255), band(rshift(value, 8), 255), band(rshift(value, 16), 255), band(rshift(value, 24), 255))
+    return char(band(value, 255), band(rshift(value, 8), 255), band(rshift(value, 16), 255),
+        band(rshift(value, 24), 255))
 end
 
 local function md5(message)
@@ -133,7 +137,8 @@ local function md5(message)
     for chunk = 1, #message, 64 do
         for i = 0, 15 do
             local p = chunk + i * 4
-            m[i] = bor(byte(message, p), lshift(byte(message, p + 1), 8), lshift(byte(message, p + 2), 16), lshift(byte(message, p + 3), 24))
+            m[i] = bor(byte(message, p), lshift(byte(message, p + 1), 8),
+                lshift(byte(message, p + 2), 16), lshift(byte(message, p + 3), 24))
         end
         local a, b, c, d = a0, b0, c0, d0
         for i = 0, 63 do
@@ -195,7 +200,8 @@ local function base64encode(data)
         local n = a * 65536 + (b or 0) * 256 + (c or 0)
         local c1, c2, c3, c4 = math.floor(n / 262144) % 64, math.floor(n / 4096) % 64, math.floor(n / 64) % 64, n % 64
         out[#out + 1] = alphabet:sub(c1 + 1, c1 + 1) .. alphabet:sub(c2 + 1, c2 + 1)
-            .. (b and alphabet:sub(c3 + 1, c3 + 1) or '=') .. (c and alphabet:sub(c4 + 1, c4 + 1) or '=')
+            .. (b and alphabet:sub(c3 + 1,
+                c3 + 1) or '=') .. (c and alphabet:sub(c4 + 1, c4 + 1) or '=')
     end
     return table.concat(out)
 end

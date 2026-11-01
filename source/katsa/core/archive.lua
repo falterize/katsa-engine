@@ -137,7 +137,8 @@ function Archive:read(path)
     local header = self.reader(self.base + file.offset, 30)
     assert(header and sub(header, 1, 4) == 'PK\3\4', 'Corrupt ZIP local header')
     local nameLength, extraLength = u16(header, 27), u16(header, 29)
-    local raw = self.reader(self.base + file.offset + 30 + nameLength + extraLength, file.compressed)
+    local raw = self.reader(self.base + file.offset + 30 + nameLength + extraLength,
+        file.compressed)
     assert(raw and #raw == file.compressed, 'Truncated ZIP entry')
     if file.method == 0 then
         return raw

@@ -159,7 +159,8 @@ function Inflate.raw(data, start)
             bitBuffer, bitCount = 0, 0
             local len = byte(data, position) + byte(data, position + 1) * 256
             local nlen = byte(data, position + 2) + byte(data, position + 3) * 256
-            assert(band(len, 0xFFFF) == band(bit.bnot(nlen), 0xFFFF), 'Stored block length mismatch')
+            assert(band(len, 0xFFFF) == band(bit.bnot(nlen), 0xFFFF),
+                'Stored block length mismatch')
             position = position + 4
             for i = 0, len - 1 do
                 put(byte(data, position + i))

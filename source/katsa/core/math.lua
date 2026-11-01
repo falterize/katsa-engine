@@ -90,8 +90,10 @@ end
 function Generator:setState(text)
     local a, b = text:match('^(%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x)(%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x)$')
     assert(a, 'Invalid random generator state')
-    self.s0 = ffi.cast('uint64_t', tonumber('0x' .. a:sub(1, 8))) * 4294967296ULL + tonumber('0x' .. a:sub(9))
-    self.s1 = ffi.cast('uint64_t', tonumber('0x' .. b:sub(1, 8))) * 4294967296ULL + tonumber('0x' .. b:sub(9))
+    self.s0 = ffi.cast('uint64_t',
+        tonumber('0x' .. a:sub(1, 8))) * 4294967296ULL + tonumber('0x' .. a:sub(9))
+    self.s1 = ffi.cast('uint64_t',
+        tonumber('0x' .. b:sub(1, 8))) * 4294967296ULL + tonumber('0x' .. b:sub(9))
 end
 
 function KMath.newRandomGenerator(low, high)
@@ -126,8 +128,12 @@ function KMath.triangulate(...)
     end
     assert(#points >= 6 and #points % 2 == 0, 'triangulate needs at least three vertices')
     local n = #points / 2
-    local function x(i) return points[i * 2 - 1] end
-    local function y(i) return points[i * 2] end
+    local function x(i)
+        return points[i * 2 - 1]
+    end
+    local function y(i)
+        return points[i * 2]
+    end
     local area = 0
     for i = 1, n do
         local j = i % n + 1

@@ -74,7 +74,8 @@ function Mesh.new(...)
     gl.glGenBuffers(1, id)
     local self = setmetatable({
         _format = format, _layout = layout, _stride = stride, _count = count, _mode = mode,
-        _usage = usage, _data = ffi.new('uint8_t[?]', count * stride), _buffer = id[0], _attached = {}, _disabled = {},
+        _usage = usage, _data = ffi.new('uint8_t[?]',
+            count * stride), _buffer = id[0], _attached = {}, _disabled = {},
     }, Methods)
     self._res = { buffers = { id[0] } }
     self._floats = ffi.cast('float*', self._data)
@@ -94,7 +95,8 @@ end
 function Methods:_upload(first, count)
     local gl, E = Core.gl, Core.enum
     gl.glBindBuffer(E.ARRAY_BUFFER, self._buffer)
-    gl.glBufferSubData(E.ARRAY_BUFFER, first * self._stride, count * self._stride, self._data + first * self._stride)
+    gl.glBufferSubData(E.ARRAY_BUFFER, first * self._stride, count * self._stride,
+        self._data + first * self._stride)
 end
 
 local function writeComponent(self, attribute, vertexBase, c, value)
@@ -142,7 +144,8 @@ function Methods:setVertices(vertices, startvertex, count)
         return
     end
     count = count or #vertices
-    assert(startvertex >= 1 and startvertex - 1 + count <= self._count, 'Too many vertices for the mesh')
+    assert(startvertex >= 1 and startvertex - 1 + count <= self._count,
+        'Too many vertices for the mesh')
     local layout, stride = self._layout, self._stride
     local floats, data = self._floats, self._data
     for i = 1, count do
@@ -180,22 +183,43 @@ function Methods:getVertex(index)
             elseif attribute.kind == 'byte' then
                 out[#out + 1] = self._data[base + attribute.offset + c - 1] / 255
             else
-                out[#out + 1] = ffi.cast('uint16_t*', self._data + base + attribute.offset)[c - 1] / 65535
+                out[#out + 1] = ffi.cast('uint16_t*',
+                    self._data + base + attribute.offset)[c - 1] / 65535
             end
         end
     end
     return unpack(out)
 end
 
-function Methods:getVertexCount() return self._count end
-function Methods:getVertexFormat() return self._format end
-function Methods:getDrawMode() return self._mode end
+function Methods:getVertexCount()
+    return
+    self._count
+end
+
+function Methods:getVertexFormat()
+    return
+    self._format
+end
+
+function Methods:getDrawMode()
+    return
+    self._mode
+end
+
 function Methods:setDrawMode(mode)
     assert(drawModes[mode], 'Invalid mesh draw mode: ' .. tostring(mode))
     self._mode = mode
 end
-function Methods:setTexture(texture) self._texture = texture end
-function Methods:getTexture() return self._texture end
+
+function Methods:setTexture(texture)
+    self._texture = texture
+end
+
+function Methods:getTexture()
+    return
+    self._texture
+end
+
 function Methods:flush() end
 
 function Methods:setDrawRange(start, count)
@@ -206,6 +230,7 @@ function Methods:setDrawRange(start, count)
     assert(start >= 1 and count and count >= 1, 'Invalid draw range')
     self._rangeStart, self._rangeCount = start, count
 end
+
 function Methods:getDrawRange()
     if self._rangeStart then
         return self._rangeStart, self._rangeCount
@@ -247,7 +272,8 @@ function Methods:setVertexMap(...)
     end
     self._indexCount, self._indexType = count, typeEnum
     Core.bindElementBuffer(self._indexBuffer)
-    gl.glBufferData(E.ELEMENT_ARRAY_BUFFER, count * (typeEnum == E.UNSIGNED_INT and 4 or 2), buffer, E.DYNAMIC_DRAW)
+    gl.glBufferData(E.ELEMENT_ARRAY_BUFFER, count * (typeEnum == E.UNSIGNED_INT and 4 or 2), buffer,
+        E.DYNAMIC_DRAW)
 end
 
 function Methods:getVertexMap()
@@ -255,23 +281,29 @@ function Methods:getVertexMap()
 end
 
 function Methods:setAttributeEnabled(name, enabled)
-    assert(self._layout[name] or self._attached[name], 'Mesh does not have an attribute named ' .. tostring(name))
+    assert(self._layout[name] or self._attached[name],
+        'Mesh does not have an attribute named ' .. tostring(name))
     self._disabled[name] = not enabled or nil
 end
+
 function Methods:isAttributeEnabled(name)
-    assert(self._layout[name] or self._attached[name], 'Mesh does not have an attribute named ' .. tostring(name))
+    assert(self._layout[name] or self._attached[name],
+        'Mesh does not have an attribute named ' .. tostring(name))
     return not self._disabled[name]
 end
 
 function Methods:attachAttribute(name, other, step, attachName)
     step = step or 'pervertex'
     attachName = attachName or name
-    assert(step == 'pervertex' or step == 'perinstance', 'Invalid vertex attribute step: ' .. tostring(step))
+    assert(step == 'pervertex' or step == 'perinstance',
+        'Invalid vertex attribute step: ' .. tostring(step))
     assert(other ~= self, 'Cannot attach an attribute of a mesh to itself')
     local attribute = other._layout[attachName]
-    assert(attribute, 'The specified mesh does not have a vertex attribute named ' .. tostring(attachName))
+    assert(attribute,
+        'The specified mesh does not have a vertex attribute named ' .. tostring(attachName))
     self._attached[name] = { mesh = other, attribute = attribute, step = step }
 end
+
 function Methods:detachAttribute(name)
     local had = self._attached[name] ~= nil
     self._attached[name] = nil
@@ -360,8 +392,17 @@ function Methods:_draw(instances)
     return count
 end
 
-function Methods:release() return Core.release(self) end
-function Methods:type() return 'Mesh' end
-function Methods:typeOf(name) return name == 'Mesh' or name == 'Drawable' or name == 'Object' end
+function Methods:release()
+    return
+    Core.release(self)
+end
+
+function Methods:type()
+    return 'Mesh'
+end
+
+function Methods:typeOf(name)
+    return name == 'Mesh' or name == 'Drawable' or name == 'Object'
+end
 
 return Mesh

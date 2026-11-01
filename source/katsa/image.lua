@@ -106,17 +106,58 @@ function Image.newImageData(a, b, c, d)
     return make(width, height, 'rgba8', pixels)
 end
 
-function ImageData:getWidth() return self._w end
-function ImageData:getHeight() return self._h end
-function ImageData:getDimensions() return self._w, self._h end
-function ImageData:getFormat() return self._format end
-function ImageData:getSize() return self._bytes end
-function ImageData:getPointer() return self._buffer end
-function ImageData:getFFIPointer() return self._buffer end
-function ImageData:getString() return ffi.string(self._buffer, self._bytes) end
-function ImageData:release() self._released = true return true end
-function ImageData:type() return 'ImageData' end
-function ImageData:typeOf(name) return name == 'ImageData' or name == 'Data' or name == 'Object' end
+function ImageData:getWidth()
+    return
+    self._w
+end
+
+function ImageData:getHeight()
+    return
+    self._h
+end
+
+function ImageData:getDimensions()
+    return
+    self._w, self._h
+end
+
+function ImageData:getFormat()
+    return
+    self._format
+end
+
+function ImageData:getSize()
+    return
+    self._bytes
+end
+
+function ImageData:getPointer()
+    return
+    self._buffer
+end
+
+function ImageData:getFFIPointer()
+    return
+    self._buffer
+end
+
+function ImageData:getString()
+    return
+    ffi.string(self._buffer, self._bytes)
+end
+
+function ImageData:release()
+    self._released = true
+    return true
+end
+
+function ImageData:type()
+    return 'ImageData'
+end
+
+function ImageData:typeOf(name)
+    return name == 'ImageData' or name == 'Data' or name == 'Object'
+end
 
 local function check(self, x, y)
     if x < 0 or y < 0 or x >= self._w or y >= self._h then

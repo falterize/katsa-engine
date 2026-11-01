@@ -66,7 +66,8 @@ function Native.load(name)
     if Native.cache[name] ~= nil then
         return Native.cache[name] or nil
     end
-    local names = assert(candidates[name], 'Unknown native library: ' .. tostring(name))[Native.os()]
+    local names = assert(candidates[name],
+        'Unknown native library: ' .. tostring(name))[Native.os()]
         or {}
     local tried = {}
     local directories = {}

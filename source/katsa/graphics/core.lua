@@ -52,12 +52,14 @@ function Core.bindFramebuffer(id)
         Core.boundFramebuffer = id
     end
 end
+
 function Core.framebufferChanged()
     Core.boundFramebuffer = nil
     if Core.restoreFramebuffer then
         Core.restoreFramebuffer()
     end
 end
+
 function Core.forgetFramebuffer(id)
     if Core.boundFramebuffer == id then
         Core.boundFramebuffer = nil

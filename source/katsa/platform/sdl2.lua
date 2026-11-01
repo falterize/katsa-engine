@@ -217,7 +217,8 @@ function Platform:setMode(width, height, flags)
     end
     local x = flags.x or CENTERED
     local y = flags.y or CENTERED
-    self.window = sdl.SDL_CreateWindow(flags.title or self.config.title or 'Katsa', x, y, width, height, windowFlags)
+    self.window = sdl.SDL_CreateWindow(flags.title or self.config.title or 'Katsa', x, y, width,
+        height, windowFlags)
     if self.window == nil then
         self.window = nil
         return nil, 'Could not create window: ' .. sdlError(sdl)
