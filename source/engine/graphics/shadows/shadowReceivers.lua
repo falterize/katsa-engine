@@ -28,8 +28,10 @@ function Receivers.prepare(camera, distance, out, normalBias)
                 local corner = out[index] or {}
                 out[index] = corner
                 -- Perspective extents grow with depth; orthographic extents stay constant.
-                local spreadX = orthographic and hx + normalBias or (z + normalBias) * hx + normalBias
-                local spreadY = orthographic and hy + normalBias or (z + normalBias) * hy + normalBias
+                local spreadX = orthographic and hx + normalBias
+                    or (z + normalBias) * hx + normalBias
+                local spreadY = orthographic and hy + normalBias
+                    or (z + normalBias) * hy + normalBias
                 for i = 1, 3 do
                     local value = p[i]
                         + camera.forward[i] * z
