@@ -21,6 +21,10 @@ function Camera3D.new(settings)
         drawDistance = settings.drawDistance or math.sqrt(60000),
         focalLength = settings.focalLength or 400,
         referenceHeight = settings.referenceHeight or 720,
+        -- Perspective uses fov (vertical degrees); Orthographic uses orthoSize (half the
+        -- visible height in world units). focalLength remains the legacy perspective input.
+        projectionMode = settings.projectionMode or 'Perspective',
+        orthoSize = settings.orthoSize or 10,
         pitchLimit = settings.pitchLimit,
         layers = settings.layers or -1,
         followMode = settings.followMode or 'Free',
@@ -43,11 +47,50 @@ function Camera3D.new(settings)
             values[key] = value
         end
     end
+    if settings.fov == nil then
+        values.fov = Camera3D.fovFromFocal(values.focalLength, values.referenceHeight)
+    else
+        values.focalLength = Camera3D.focalFromFov(settings.fov, values.referenceHeight)
+    end
+    values._syncedFov, values._syncedFocal = values.fov, values.focalLength
     return Node.adopt(setmetatable(values, Camera3D), settings.className or 'Camera3D')
+end
+
+function Camera3D.focalFromFov(fov, referenceHeight)
+    assert(
+        type(fov) == 'number' and fov > 0 and fov < 180,
+        'Camera3D fov must be between 0 and 180 degrees'
+    )
+    return referenceHeight / (2 * math.tan(math.rad(fov) / 2))
+end
+
+function Camera3D.fovFromFocal(focalLength, referenceHeight)
+    assert(focalLength > 0, 'Camera3D focalLength must be positive')
+    return math.deg(2 * math.atan(referenceHeight / (2 * focalLength)))
+end
+
+-- fov and focalLength describe the same lens. The most recently edited one wins, so legacy
+-- scenes that assign focalLength and new scenes that assign fov both keep working.
+function Camera3D:syncLens()
+    if self.fov ~= self._syncedFov then
+        self.focalLength = Camera3D.focalFromFov(self.fov, self.referenceHeight)
+    elseif self.focalLength ~= self._syncedFocal then
+        self.fov = Camera3D.fovFromFocal(self.focalLength, self.referenceHeight)
+    end
+    self._syncedFov, self._syncedFocal = self.fov, self.focalLength
+end
+
+function Camera3D:isOrthographic()
+    return self.projectionMode == 'Orthographic'
 end
 
 function Camera3D:update(width, height)
     local matrix = self:getRenderWorldMatrix()
+    self:syncLens()
+    assert(
+        self.projectionMode == 'Perspective' or self.projectionMode == 'Orthographic',
+        'Camera3D projectionMode must be Perspective or Orthographic'
+    )
     local state = self._cameraProjectionState
     if
         state
@@ -58,11 +101,18 @@ function Camera3D:update(width, height)
         and state[5] == self.referenceHeight
         and state[6] == self.near
         and state[7] == self.far
+        and state[8] == self.projectionMode
+        and state[9] == self.orthoSize
     then
         return
     end
     self.width, self.height = width, height
+    self.orthographic = self.projectionMode == 'Orthographic'
+    assert(self.orthoSize > 0, 'Camera3D orthoSize must be positive')
+    -- Pixels per world unit at depth z is focal / z for perspective, and constant for
+    -- orthographic cameras. focal stays defined for both so legacy readers keep working.
     self.focal = self.focalLength * height / self.referenceHeight
+    self.pixelsPerUnit = height / (2 * self.orthoSize)
     -- Camera3D projection uses a rigid frame; scale affects inherited offsets,
     -- never focal length. Reject a sheared basis rather than skew the view.
     self._cameraFrame = self._cameraFrame or M.identity()
@@ -91,17 +141,26 @@ function Camera3D:update(width, height)
     for j = 1, 16 do
         q[j] = 0
     end
-    q[1] = 2 * self.focal / width
-    q[6] = -2 * self.focal / height
-    q[11] = (far + n) / (far - n)
-    q[12] = -2 * far * n / (far - n)
-    q[15] = 1
+    if self.orthographic then
+        q[1] = 2 * self.pixelsPerUnit / width
+        q[6] = -2 * self.pixelsPerUnit / height
+        q[11] = 2 / (far - n)
+        q[12] = -(far + n) / (far - n)
+        q[16] = 1
+    else
+        q[1] = 2 * self.focal / width
+        q[6] = -2 * self.focal / height
+        q[11] = (far + n) / (far - n)
+        q[12] = -2 * far * n / (far - n)
+        q[15] = 1
+    end
     M.multiply(q, v, self.viewProjection)
     state = state or {}
     self._cameraProjectionState = state
     state[1], state[2], state[3] = self._renderRevision, width, height
     state[4], state[5], state[6], state[7] =
         self.focalLength, self.referenceHeight, self.near, self.far
+    state[8], state[9] = self.projectionMode, self.orthoSize
 end
 
 function Camera3D:project(p)
@@ -109,7 +168,53 @@ function Camera3D:project(p)
     if z < self.near or z > self.far then
         return
     end
+    if self.orthographic then
+        local scale = self.pixelsPerUnit
+        return self.width / 2 + x * scale, self.height / 2 - y * scale, z
+    end
     return self.width / 2 + x * self.focal / z, self.height / 2 - y * self.focal / z, z
+end
+
+-- Screen position of a view-space point; the caller handles near-plane clipping.
+function Camera3D:viewToScreen(x, y, z)
+    if self.orthographic then
+        local scale = self.pixelsPerUnit
+        return self.width / 2 + x * scale, self.height / 2 - y * scale
+    end
+    return self.width / 2 + x * self.focal / z, self.height / 2 - y * self.focal / z
+end
+
+-- Screen pixels covered by one world unit at view depth z.
+function Camera3D:pixelsPerUnitAt(depth)
+    if self.orthographic then
+        return self.pixelsPerUnit
+    end
+    return self.focal / depth
+end
+
+-- World-space ray through a screen pixel. Perspective rays start at the eye; orthographic
+-- rays start on the near-parallel plane through the eye and share the forward direction.
+-- Fills and returns the optional out tables to keep picking allocation-free.
+function Camera3D:screenRay(x, y, origin, direction)
+    origin, direction = origin or {}, direction or {}
+    local r, u, f = self.right, self.up, self.forward
+    local p = self.worldPosition or self.position
+    if self.orthographic then
+        local dx = (x - self.width * 0.5) / self.pixelsPerUnit
+        local dy = -(y - self.height * 0.5) / self.pixelsPerUnit
+        for i = 1, 3 do
+            origin[i] = p[i] + r[i] * dx + u[i] * dy
+            direction[i] = f[i]
+        end
+        return origin, direction
+    end
+    local dx = (x - self.width * 0.5) / self.focal
+    local dy = -(y - self.height * 0.5) / self.focal
+    for i = 1, 3 do
+        origin[i] = p[i]
+        direction[i] = r[i] * dx + u[i] * dy + f[i]
+    end
+    return origin, direction
 end
 
 function Camera3D:visible(position, radius)

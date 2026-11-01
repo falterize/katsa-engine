@@ -9,12 +9,7 @@ function Picking.raycast(world, camera, x, y)
     if not world or not camera or camera.destroyed then
         return
     end
-    local dx, dy =
-        (x - camera.width * 0.5) / camera.focal, -(y - camera.height * 0.5) / camera.focal
-    local r, u, f = camera.right, camera.up, camera.forward
-    local d =
-        { r[1] * dx + u[1] * dy + f[1], r[2] * dx + u[2] * dy + f[2], r[3] * dx + u[3] * dy + f[3] }
-    local p = camera.worldPosition or camera.position
+    local p, d = camera:screenRay(x, y)
     local nearest, depth
     local a, b, c = {}, {}, {}
     for _, o in ipairs(world.objects) do

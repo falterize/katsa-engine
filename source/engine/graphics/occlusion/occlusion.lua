@@ -108,7 +108,8 @@ function Occlusion.apply(renderer, camera)
     if renderer.occlusionState then
         Triangles.prune(renderer.occlusionState)
     end
-    if not renderer.occlusionCulling or renderer.worldDebugWire then
+    -- Software occlusion projects with a perspective divide; orthographic views skip it.
+    if not renderer.occlusionCulling or renderer.worldDebugWire or camera.orthographic then
         return
     end
     Validate.number(renderer.occlusionMaxOccluders, 'Render.occlusionMaxOccluders', 1, 1024)

@@ -86,7 +86,16 @@ local lightKeys = {
     'forceUpdate',
 }
 local lightVectors = { 'color', 'direction' }
-local cameraKeys = { 'near', 'far', 'drawDistance', 'focalLength', 'referenceHeight' }
+local cameraKeys = {
+    'near',
+    'far',
+    'drawDistance',
+    'focalLength',
+    'referenceHeight',
+    'fov',
+    'projectionMode',
+    'orthoSize',
+}
 return {
     nodeKeys = nodeKeys,
     nodeVectors = nodeVectors,

@@ -114,10 +114,17 @@ function Faces.update(node, camera)
     node._surfaceInverse = inv
     local cp = camera.worldPosition or camera.position
     local _, _, z = Math.transform(inv, unpack(cp))
+    local frontFacing = z < 0
+    if camera.orthographic then
+        -- Parallel projection has no eye point; the surface faces the camera when the shared
+        -- view direction enters its front side.
+        local f = camera.forward
+        frontFacing = inv[9] * f[1] + inv[10] * f[2] + inv[11] * f[3] > 0
+    end
     node.drawable = node:isVisible()
         and node.transparency < 1
         and depth ~= nil
-        and (node.doubleSided or z < 0)
+        and (node.doubleSided or frontFacing)
         and (
             node.maxDistance <= 0
             or Math.distanceSquared(cp, node.worldPosition) <= node.maxDistance ^ 2
@@ -125,21 +132,18 @@ function Faces.update(node, camera)
     node.worldWidth = math.sqrt(m[1] ^ 2 + m[5] ^ 2 + m[9] ^ 2)
     node.worldHeight = math.sqrt(m[2] ^ 2 + m[6] ^ 2 + m[10] ^ 2)
     node.radius = math.sqrt(node.worldWidth ^ 2 + node.worldHeight ^ 2) * 0.5
-    node.screenWidth, node.screenHeight =
-        node.worldWidth * camera.focal / math.max(0.001, node.depth),
-        node.worldHeight * camera.focal / math.max(0.001, node.depth)
+    local pixels = camera:pixelsPerUnitAt(math.max(0.001, node.depth))
+    node.screenWidth, node.screenHeight = node.worldWidth * pixels, node.worldHeight * pixels
 end
 
 function Faces.point(node, camera, x, y)
     if not node._surfaceInverse then
         return
     end
-    local dx, dy = (x - camera.width / 2) / camera.focal, -(y - camera.height / 2) / camera.focal
-    local r, u, f = camera.right, camera.up, camera.forward
-    local wx, wy, wz =
-        r[1] * dx + u[1] * dy + f[1], r[2] * dx + u[2] * dy + f[2], r[3] * dx + u[3] * dy + f[3]
+    local origin, ray = camera:screenRay(x, y)
+    local wx, wy, wz = ray[1], ray[2], ray[3]
     local inv = node._surfaceInverse
-    local ox, oy, oz = Math.transform(inv, unpack(camera.worldPosition or camera.position))
+    local ox, oy, oz = Math.transform(inv, origin[1], origin[2], origin[3])
     local vx, vy, vz =
         inv[1] * wx + inv[2] * wy + inv[3] * wz,
         inv[5] * wx + inv[6] * wy + inv[7] * wz,

@@ -20,8 +20,11 @@ local groups = {
         'shadowBoundsPadding',
     },
     Camera3D = {
+        'projectionMode',
         'fov',
+        'orthoSize',
         'near',
+        'far',
         'drawDistance',
         'followMode',
         'followTarget',
