@@ -29,6 +29,7 @@ local suites = {
     'imageData',
     'graphics',
     'physics',
+    'data',
 }
 for _, name in ipairs(suites) do
     local ok, err = pcall(require('source.tests.katsa.' .. name), T)

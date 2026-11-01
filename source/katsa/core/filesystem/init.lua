@@ -5,6 +5,12 @@
 local Archive = require('source.katsa.core.archive')
 local Native = require('source.katsa.core.native')
 local Lib = require('source.katsa.core.nativeLib')
+local Paths = require('source.katsa.core.filesystem.paths')
+local Sources = require('source.katsa.core.filesystem.sources')
+local FileData = require('source.katsa.core.filesystem.fileData')
+
+local normalize = Paths.normalize
+local DirectorySource, ArchiveSource = Sources.Directory, Sources.Archive
 
 local FS = {}
 
@@ -16,67 +22,6 @@ local state = {
     mounts = {},
     fused = false,
 }
-
-local function normalize(path)
-    assert(type(path) == 'string', 'Path must be a string')
-    path = path:gsub('\\', '/'):gsub('/+', '/')
-    local parts = {}
-    for part in path:gmatch('[^/]+') do
-        if part == '..' then
-            error('Invalid path (parent directory references are not allowed): ' .. path)
-        elseif part ~= '.' then
-            parts[#parts + 1] = part
-        end
-    end
-    return table.concat(parts, '/')
-end
-
--- A directory on disk, optionally rooted at a sub path. Read-only through this interface.
-local DirectorySource = {}
-DirectorySource.__index = DirectorySource
-
-function DirectorySource.new(root)
-    return setmetatable({ root = (root:gsub('\\', '/'):gsub('/+$', '')) }, DirectorySource)
-end
-
-function DirectorySource:real(path)
-    return path == '' and self.root or (self.root .. '/' .. path)
-end
-
-function DirectorySource:info(path)
-    local kind, size, modified = Lib.stat(self:real(path))
-    if not kind then
-        return nil
-    end
-    return { type = kind, size = kind == 'file' and size or 0, modtime = modified }
-end
-
-function DirectorySource:read(path)
-    return Lib.read(self:real(path))
-end
-
-function DirectorySource:list(path)
-    return Lib.list(self:real(path))
-end
-
-local ArchiveSource = {}
-ArchiveSource.__index = ArchiveSource
-
-function ArchiveSource.new(archive)
-    return setmetatable({ archive = archive }, ArchiveSource)
-end
-
-function ArchiveSource:info(path)
-    return self.archive:info(path)
-end
-
-function ArchiveSource:read(path)
-    return self.archive:read(path)
-end
-
-function ArchiveSource:list(path)
-    return self.archive:list(path)
-end
 
 -- Mounts `source` at `point` ('' is the root). Paths below the mount point resolve into it.
 local function resolve(mount, path)
@@ -387,46 +332,6 @@ function FS.load(path)
     return loadstring(data, '@' .. normalize(path))
 end
 
--- FileData: an immutable named byte string.
-local FileData = {}
-FileData.__index = FileData
-
-function FileData:getString()
-    return self._data
-end
-
-function FileData:getSize()
-    return #self._data
-end
-
-function FileData:getFilename()
-    return self._name
-end
-
-function FileData:getExtension()
-    return self._name:match('%.([^%.]+)$')
-end
-
-function FileData:getPointer()
-    return require('ffi').cast('const void*', self._data)
-end
-
-function FileData:clone()
-    return setmetatable({ _data = self._data, _name = self._name }, FileData)
-end
-
-function FileData:release()
-    return true
-end
-
-function FileData:type()
-    return 'FileData'
-end
-
-function FileData:typeOf(name)
-    return name == 'FileData' or name == 'Data' or name == 'Object'
-end
-
 -- newFileData(contents, name) or newFileData(path)
 function FS.newFileData(contents, name)
     if name == nil then
@@ -438,12 +343,12 @@ function FS.newFileData(contents, name)
         if not data then
             return nil, message or ('Could not read ' .. tostring(contents))
         end
-        return setmetatable({ _data = data, _name = (contents:match('[^/\\]+$')) }, FileData)
+        return FileData.new(data, contents:match('[^/\\]+$'))
     end
     if type(contents) == 'table' and contents.getString then
         contents = contents:getString()
     end
-    return setmetatable({ _data = contents, _name = name }, FileData)
+    return FileData.new(contents, name)
 end
 
 -- Mounts an archive: a virtual path, a FileData, or a real file path.
