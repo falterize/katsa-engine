@@ -143,6 +143,27 @@ function Schema.keys(target, fallback)
     return keys
 end
 
+-- Strict component check: a class-based node only accepts the properties its own class chain
+-- declares. Special inspector targets (settings, bodies, inputs, modifiers) list their own keys.
+function Schema.hasProperty(target, key)
+    if
+        not target._class
+        or target._settingsKind
+        or target._body
+        or target._inputKind
+        or target.emitters
+        or target.modifier
+    then
+        return true
+    end
+    for _, name in ipairs(Schema.keys(target, {})) do
+        if name == key then
+            return true
+        end
+    end
+    return false
+end
+
 function Schema.options(target, key)
     if key == 'shaderLayer' then
         local world = target._world or target._sceneWorld

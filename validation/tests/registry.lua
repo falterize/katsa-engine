@@ -2,6 +2,7 @@
 local Registry = {}
 local entries = {
     ['--test-v108.1'] = { module = 'validation.tests.versions.v108_1.focused', mode = 'default' },
+    ['--test-v108.3'] = { module = 'validation.tests.versions.v108_3.focused', mode = 'default' },
     ['--test-v108'] = { module = 'validation.tests.versions.v108.focused', mode = 'default' },
     ['--test-v107.2-authoring'] = {
         module = 'validation.tests.versions.v107_2.focused',
