@@ -20,10 +20,13 @@ return function(T)
     package:release()
 
     local Version = require('source.engine.core.version')
-    T.check(Version.compatible('v108.3', 'v108.4') == 'older', 'version: earlier minor is older')
-    T.check(Version.compatible('v109', 'v108.4') == 'newer', 'version: later major is newer')
-    T.check(Version.compatible('v108.4', 'v108.4') == 'same', 'version: equal versions match')
-    T.check(Version.compatible(nil) == 'unknown' and Version.compatible('abc') == 'unknown',
+    T.check(Version.compatible('0.9.0', '1.0.0a') == 'older', 'version: earlier number is older')
+    T.check(Version.compatible('1.0.0', '1.0.0a') == 'newer', 'version: stable is newer than alpha')
+    T.check(Version.compatible('1.0.0a', '1.0.0b') == 'older', 'version: alpha is older than beta')
+    T.check(Version.compatible('1.0.0a', '1.0.0a') == 'same', 'version: equal versions match')
+    T.check(Version.compatible('2', '1.9.9') == 'newer', 'version: short forms parse')
+    T.check(Version.compatible(nil) == 'unknown' and Version.compatible('abc') == 'unknown'
+        and Version.compatible('1.0.0x') == 'unknown',
         'version: missing or invalid declarations are unknown')
-    T.check(Version.compare('v9.10', 'v9.9') == 1, 'version: minor compares numerically')
+    T.check(Version.compare('1.10.0', '1.9.0') == 1, 'version: numbers compare numerically')
 end
