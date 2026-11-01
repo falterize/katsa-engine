@@ -23,10 +23,7 @@ function Module.run(self)
     local image = fieldSet(scene, 'ImageLabel')
     local text = fieldSet(scene, 'TextLabel')
     local button = fieldSet(scene, 'Button')
-    self:check(
-        image.image and image.imageMode and image.pixelate,
-        'ImageLabel lists image fields'
-    )
+    self:check(image.image and image.imageMode and image.pixelate, 'ImageLabel lists image fields')
     self:check(
         not (image.text or image.fontSize or image.textColor),
         'ImageLabel lists no text fields'

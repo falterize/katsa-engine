@@ -171,8 +171,11 @@ KNET_API void knet_disconnect(KNetHost* h, int peer, unsigned int data, int now)
     if (peer < 0 || (size_t)peer >= h->host->peerCount) {
         return;
     }
-    if (now) {
+    /* mode 1: immediately, 2: after queued packets are sent, 0: normal handshake */
+    if (now == 1) {
         enet_peer_disconnect_now(&h->host->peers[peer], data);
+    } else if (now == 2) {
+        enet_peer_disconnect_later(&h->host->peers[peer], data);
     } else {
         enet_peer_disconnect(&h->host->peers[peer], data);
     }

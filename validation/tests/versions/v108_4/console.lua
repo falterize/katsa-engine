@@ -75,7 +75,10 @@ function Module.run(self)
     local scene = require('source.game.runtime.application').new(self.manager, 'starterGame')
     scene:load()
     local console = scene.host and scene.host.console or scene.console
-    self:check(console ~= nil and not console.root.visible, 'Standalone scenes own a hidden console')
+    self:check(
+        console ~= nil and not console.root.visible,
+        'Standalone scenes own a hidden console'
+    )
     scene:keypressed('f1')
     log.warn('visible warning', 'test', true)
     log.error('visible error', 'test', true)

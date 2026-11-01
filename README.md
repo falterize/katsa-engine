@@ -46,6 +46,7 @@ Collider3D GeometrySource accepts live model nodes or OBJ/GLB/glTF paths. Points
 - [2D physics, spatial groups, visual hierarchy, gravity and Camera2D](docs/guides/physics/physics2D.md), [editable colliders](docs/guides/physics/pointColliders.md)
 - [Physics backends](docs/guides/physics/backends.md) and [parallel execution](docs/guides/physics/parallel.md), [particles](docs/guides/particles/api.md), [audio](docs/guides/audio/audioNodes.md)
 - [Dependencies](vendor/README.md), [testing](docs/guides/development/testing.md) and [limitations](docs/guides/development/limitations.md)
+- [Multiplayer](docs/guides/development/multiplayer.md)
 - [Plugins and pathfinding](docs/guides/development/plugins.md) and [networking](docs/guides/katsa/net.md)
 - [Console, logs and crash reports](docs/guides/development/console.md)
 - [Stats and metric history](docs/guides/development/statistics.md), including clickable plots and recent averages

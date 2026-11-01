@@ -32,8 +32,11 @@ function Peer:send(data, channel)
     return lib.knet_send(self.host.handle, self.id, channel - 1, data, #data, flags) == 0
 end
 
-function Peer:disconnect(reason, immediately)
-    Binding.lib().knet_disconnect(self.host.handle, self.id, reason or 0, immediately and 1 or 0)
+-- mode: nil (normal handshake; unsent packets are dropped), 'now' (no handshake) or
+-- 'later' (waits until queued packets are delivered).
+function Peer:disconnect(reason, mode)
+    local code = (mode == 'now' or mode == true) and 1 or mode == 'later' and 2 or 0
+    Binding.lib().knet_disconnect(self.host.handle, self.id, reason or 0, code)
 end
 
 function Peer:getState()
