@@ -10,7 +10,7 @@ function Files.new(namespace, options)
     return setmetatable({
         root = 'saves/' .. namespace,
         legacyRoot = 'files/' .. namespace,
-        fs = options.filesystem or love.filesystem,
+        fs = options.filesystem or katsa.filesystem,
         maxBytes = options.maxFileBytes or 64 * 1024 * 1024,
     }, Files)
 end

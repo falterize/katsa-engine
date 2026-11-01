@@ -16,7 +16,7 @@ function Tests:draw()
     require('source.tests.versions.v108_1.audioModules').run(self)
     require('source.tests.versions.v108_1.shaderScopes').run(self)
     print('PASSED ' .. self.count .. ' v108.1 focused checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

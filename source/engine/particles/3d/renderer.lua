@@ -39,8 +39,8 @@ function R.draw(system, camera, emitter)
     then
         return
     end
-    local g = love.graphics
-    local start = love.timer.getTime()
+    local g = katsa.graphics
+    local start = katsa.timer.getTime()
     local stats = system.stats
     if #system.emitters == 0 then
         return
@@ -173,7 +173,7 @@ function R.draw(system, camera, emitter)
         end
     end
     g.pop()
-    stats.drawMilliseconds = (stats.drawMilliseconds or 0) + (love.timer.getTime() - start) * 1000
+    stats.drawMilliseconds = (stats.drawMilliseconds or 0) + (katsa.timer.getTime() - start) * 1000
 end
 
 return R

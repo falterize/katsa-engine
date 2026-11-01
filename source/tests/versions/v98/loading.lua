@@ -6,19 +6,19 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED loading ' .. tostring(message))
         os.exit(1)
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     local self = setmetatable({ manager = manager }, T)
 
     local function wrap(module, key, label)
         local old = module[key]
         module[key] = function(...)
-            local started = love.timer.getTime()
+            local started = katsa.timer.getTime()
             local a, b, c = old(...)
-            print('LOAD', label, (love.timer.getTime() - started) * 1000)
+            print('LOAD', label, (katsa.timer.getTime() - started) * 1000)
             return a, b, c
         end
     end
@@ -35,11 +35,11 @@ function T.new(manager)
     }) do
         wrap(require(entry[1]), entry[2], entry[1] .. '.' .. entry[2])
     end
-    local newShader = love.graphics.newShader
-    love.graphics.newShader = function(source, ...)
-        local t = love.timer.getTime()
+    local newShader = katsa.graphics.newShader
+    katsa.graphics.newShader = function(source, ...)
+        local t = katsa.timer.getTime()
         local value = newShader(source, ...)
-        print('SHADER', #source, (love.timer.getTime() - t) * 1000)
+        print('SHADER', #source, (katsa.timer.getTime() - t) * 1000)
         return value
     end
     return self
@@ -53,34 +53,34 @@ function T:draw()
     end
     self.done = true
     for _, zone in ipairs({ 'combined', 'animationPhysicsLab', 'combined' }) do
-        love.math.setRandomSeed(384)
+        katsa.math.setRandomSeed(384)
         math.randomseed(384)
-        local started = love.timer.getTime()
+        local started = katsa.timer.getTime()
         local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
-        local loaded = love.timer.getTime()
+        local loaded = katsa.timer.getTime()
         self.manager:update(1 / 60)
         self.manager:draw()
         local data = scene.renderer.canvas:newImageData()
         data:release()
-        love.graphics.present()
+        katsa.graphics.present()
         print(
             'ENTRY',
             zone,
             'load',
             (loaded - started) * 1000,
             'first frame',
-            (love.timer.getTime() - loaded) * 1000
+            (katsa.timer.getTime() - loaded) * 1000
         )
         for frame = 1, 12 do
             scene.camera.rotation[2] = scene.camera.rotation[2] + 10
             self.manager:update(1 / 60)
             self.manager:draw()
-            love.graphics.present()
+            katsa.graphics.present()
         end
     end
     assert(#self.manager.journal.entries == 0, 'Runtime errors')
     print('LOADING COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

@@ -51,11 +51,11 @@ return function(test)
         Label.base.drawSelf(self, owner)
     end
     local node = ui:create('TestStatusLabel', { width = 100, height = 60, text = 'OK' }, ui.content)
-    local canvas = love.graphics.newCanvas(100, 100)
-    love.graphics.push('all')
-    love.graphics.setCanvas(canvas)
+    local canvas = katsa.graphics.newCanvas(100, 100)
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(canvas)
     ui:draw()
-    love.graphics.pop()
+    katsa.graphics.pop()
     test:check(
         node:isA('UINode') and node.drawCount == 1,
         'Custom UI class uses polymorphic drawing without kind aliases'

@@ -62,7 +62,7 @@ function ShadowUpdate.install(Shadows)
             settings.resolution,
             'Shadows.resolution',
             32,
-            love.graphics.getSystemLimits().texturesize
+            katsa.graphics.getSystemLimits().texturesize
         )
         assert(
             settings.resolution == math.floor(settings.resolution),
@@ -81,7 +81,7 @@ function ShadowUpdate.install(Shadows)
             'Shadows.filterSamples must be 1, 4 or 9'
         )
         Residency.prepare(self, world, lights, time, settings)
-        local clock = love.timer.getTime()
+        local clock = katsa.timer.getTime()
         if clock < (self.lastTime or 0) then
             self.nextUpdate = 0
         end
@@ -144,14 +144,14 @@ function ShadowUpdate.install(Shadows)
                 tracked[#tracked + 1] = record
             end
             if force or casterChanged then
-                local scanStart = love.timer.getTime()
+                local scanStart = katsa.timer.getTime()
                 self.cache:scan(
                     world._shadowObjects or world.objects,
                     tracked,
                     settings.layers,
                     self.dependencies
                 )
-                self.scanMilliseconds = (love.timer.getTime() - scanStart) * 1000
+                self.scanMilliseconds = (katsa.timer.getTime() - scanStart) * 1000
                 self.scannedOwner, self.scannedRevision =
                     world._renderDependencyOwner,
                     (world._shadowDependencyRevision or world._renderDependencyRevision)
@@ -185,7 +185,7 @@ function ShadowUpdate.install(Shadows)
         if due or force then
             self.nextUpdate = Schedule.advance(self.nextUpdate, clock, tolerance, settings.updateHz)
         end
-        local buildStart = love.timer.getTime()
+        local buildStart = katsa.timer.getTime()
         self.depthPassStarted = false
         local tasks = self.tasks
         for i = #tasks, 1, -1 do
@@ -249,14 +249,14 @@ function ShadowUpdate.install(Shadows)
             self.generation = self.generation + 1
         end
         if self.depthPassStarted then
-            love.graphics.pop()
+            katsa.graphics.pop()
         end
         self.sourceCasters = nil
         for i = #self.casters, 1, -1 do
             self.casters[i] = nil
         end
         self.atlasInvalid = false
-        self.buildMilliseconds = (love.timer.getTime() - buildStart) * 1000
+        self.buildMilliseconds = (katsa.timer.getTime() - buildStart) * 1000
     end
 end
 

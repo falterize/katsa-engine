@@ -125,14 +125,14 @@ end
 
 local function queryFixture(self, shape, x, y)
     if not self.queryWorld then
-        self.queryWorld = love.physics.newWorld(0, 0, true)
-        self.queryBody = love.physics.newBody(self.queryWorld, 0, 0, 'static')
+        self.queryWorld = katsa.physics.newWorld(0, 0, true)
+        self.queryBody = katsa.physics.newBody(self.queryWorld, 0, 0, 'static')
     end
     self.queryBody:setPosition(x * self.factor, y * self.factor)
     if self.queryFixture then
         self.queryFixture:destroy()
     end
-    self.queryFixture = love.physics.newFixture(self.queryBody, shape)
+    self.queryFixture = katsa.physics.newFixture(self.queryBody, shape)
     shape:release()
     return self.queryFixture
 end
@@ -140,25 +140,25 @@ end
 local function touches(self, fixture, query)
     local shape = fixture:getShape()
     if shape:getType() ~= 'chain' then
-        return love.physics.getDistance(fixture, query) <= 0
+        return katsa.physics.getDistance(fixture, query) <= 0
     end
     -- LÖVE 11.x getDistance checks child zero only. Test every chain segment in
     -- a separate scratch world, leaving the queried solver tree untouched.
     self.chainQueryBody = self.chainQueryBody
-        or love.physics.newBody(self.queryWorld, 0, 0, 'static')
+        or katsa.physics.newBody(self.queryWorld, 0, 0, 'static')
     self.chainQueryBody:setPosition(fixture:getBody():getPosition())
     self.chainQueryBody:setAngle(fixture:getBody():getAngle())
     local vertices = { shape:getPoints() }
     for i = 1, #vertices - 2, 2 do
-        local edge = love.physics.newEdgeShape(
+        local edge = katsa.physics.newEdgeShape(
             vertices[i],
             vertices[i + 1],
             vertices[i + 2],
             vertices[i + 3]
         )
-        local test = love.physics.newFixture(self.chainQueryBody, edge)
+        local test = katsa.physics.newFixture(self.chainQueryBody, edge)
         edge:release()
-        local distance = love.physics.getDistance(test, query)
+        local distance = katsa.physics.getDistance(test, query)
         test:destroy()
         if distance <= 0 then
             return true
@@ -172,7 +172,7 @@ function Queries.overlapBox(self, center, size, filter, out)
     local x, y, w, h = center[1], center[2], size[1] / 2, size[2] / 2
     local query = queryFixture(
         self,
-        love.physics.newRectangleShape(size[1] * self.factor, size[2] * self.factor),
+        katsa.physics.newRectangleShape(size[1] * self.factor, size[2] * self.factor),
         x,
         y
     )
@@ -184,7 +184,7 @@ end
 function Queries.overlapCircle(self, center, radius, filter, out)
     assert(not self.released and not self._querying, 'Invalid or reentrant Physics2D query')
     local x, y = center[1], center[2]
-    local query = queryFixture(self, love.physics.newCircleShape(radius * self.factor), x, y)
+    local query = queryFixture(self, katsa.physics.newCircleShape(radius * self.factor), x, y)
     return overlap(self, x - radius, y - radius, x + radius, y + radius, filter, function(fixture)
         return touches(self, fixture, query)
     end, out)

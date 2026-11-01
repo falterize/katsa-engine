@@ -72,7 +72,7 @@ function Runtime:draw()
     if self.capture then
         local name = self.capture
         self.capture = nil
-        love.graphics.captureScreenshot(function(img)
+        katsa.graphics.captureScreenshot(function(img)
             img:encode('png', name .. '.png')
             img:release()
         end)

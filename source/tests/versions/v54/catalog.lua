@@ -30,7 +30,7 @@ function Test:update()
         scene.ui:layout()
     end
     print('PASSED ' .. count .. ' live node catalog samples')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 function Test:draw() end

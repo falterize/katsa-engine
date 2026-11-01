@@ -7,8 +7,8 @@ Package.__index = Package
 local mounts = {}
 
 local function rootAt(path)
-    return love.filesystem.getInfo(path .. '/settings.lua', 'file')
-        and love.filesystem.getInfo(path .. '/main.lua', 'file')
+    return katsa.filesystem.getInfo(path .. '/settings.lua', 'file')
+        and katsa.filesystem.getInfo(path .. '/main.lua', 'file')
 end
 
 local function sceneRoot(mount)
@@ -16,9 +16,9 @@ local function sceneRoot(mount)
         return mount
     end
     local found
-    for _, name in ipairs(love.filesystem.getDirectoryItems(mount)) do
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems(mount)) do
         local path = mount .. '/' .. name
-        if love.filesystem.getInfo(path, 'directory') and rootAt(path) then
+        if katsa.filesystem.getInfo(path, 'directory') and rootAt(path) then
             assert(not found, 'Archive contains multiple scene roots; choose one package per scene')
             found = path
         end
@@ -35,7 +35,7 @@ local function mountArchive(source)
         data and data.typeOf and data:typeOf('FileData'),
         'Scene source must be a directory, archive path or FileData'
     )
-    local hash = love.data.encode('string', 'hex', love.data.hash('sha256', data))
+    local hash = katsa.data.encode('string', 'hex', katsa.data.hash('sha256', data))
     local entry = mounts[hash]
     if not entry then
         local mount = '_scenePackages/' .. hash
@@ -43,7 +43,7 @@ local function mountArchive(source)
         -- external files named scene.zip must remain independent during a switch.
         local extension = data:getFilename():match('%.([%w]+)$') or 'zip'
         local archiveName = 'katsa-scene-' .. hash .. '.' .. extension
-        local ok, message = love.filesystem.mount(data, archiveName, mount, true)
+        local ok, message = katsa.filesystem.mount(data, archiveName, mount, true)
         assert(
             ok,
             'Cannot mount scene archive; use ZIP/.love or a format supported by this LÖVE build: '
@@ -51,7 +51,7 @@ local function mountArchive(source)
         )
         local valid, root = pcall(sceneRoot, mount)
         if not valid then
-            love.filesystem.unmount(data)
+            katsa.filesystem.unmount(data)
             error(root, 0)
         end
         entry = { data = data, root = root, references = 0, hash = hash }
@@ -62,7 +62,7 @@ local function mountArchive(source)
 end
 
 function Package.open(source)
-    local directory = type(source) == 'string' and love.filesystem.getInfo(source, 'directory')
+    local directory = type(source) == 'string' and katsa.filesystem.getInfo(source, 'directory')
     local archive = not directory and mountArchive(source)
     local root = directory and Paths.normalize(source) or archive.root
     local self =
@@ -98,7 +98,7 @@ function Package:require(name)
         return cached
     end
     local path = self.root .. '/' .. name:gsub('%.', '/') .. '.lua'
-    local chunk, message = love.filesystem.load(path)
+    local chunk, message = katsa.filesystem.load(path)
     assert(chunk, message)
     self.modules[name] = false
     if not self.environment then
@@ -149,7 +149,7 @@ function Package:release()
         if archive then
             archive.references = archive.references - 1
             if archive.references == 0 then
-                assert(love.filesystem.unmount(archive.data), 'Could not unmount scene archive')
+                assert(katsa.filesystem.unmount(archive.data), 'Could not unmount scene archive')
                 mounts[archive.hash] = nil
             end
         end

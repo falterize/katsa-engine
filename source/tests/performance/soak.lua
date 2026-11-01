@@ -102,12 +102,12 @@ function Soak:update(dt)
             cycles = self.cycles,
             snapshots = self.snapshots,
         }
-        love.filesystem.createDirectory('validation-logs')
+        katsa.filesystem.createDirectory('validation-logs')
         local path = 'validation-logs/soak-' .. os.date('!%Y%m%dT%H%M%SZ') .. '.json'
-        assert(love.filesystem.write(path, Json.encode(report)))
-        print('PASSED SOAK ' .. love.filesystem.getSaveDirectory() .. '/' .. path)
+        assert(katsa.filesystem.write(path, Json.encode(report)))
+        print('PASSED SOAK ' .. katsa.filesystem.getSaveDirectory() .. '/' .. path)
         self.done = true
-        love.event.quit()
+        katsa.event.quit()
         return
     end
     if self.phase % 2 == 1 then

@@ -156,7 +156,7 @@ return function(test, scene)
         'Shader button assigns object and UI materials'
     )
     test:check(
-        love.graphics.validateShader(true, scene.objectEffect.code),
+        katsa.graphics.validateShader(true, scene.objectEffect.code),
         'Custom vertex and fragment material compiles as GLES'
     )
     press('effects')
@@ -166,10 +166,10 @@ return function(test, scene)
     )
     local clock = engine.time.new()
     clock:setScale(0.5)
-    local physics = love.physics.newWorld(0, 0, true)
-    local body = love.physics.newBody(physics, 0, 0, 'dynamic')
-    local shape = love.physics.newCircleShape(1)
-    local fixture = love.physics.newFixture(body, shape)
+    local physics = katsa.physics.newWorld(0, 0, true)
+    local body = katsa.physics.newBody(physics, 0, 0, 'dynamic')
+    local shape = katsa.physics.newCircleShape(1)
+    local fixture = katsa.physics.newFixture(body, shape)
     body:setLinearVelocity(10, 0)
     clock:physicsStep(physics, 0.2)
     test:check(close(body:getX(), 1), 'time helper advances an actual physics body by scaled delta')

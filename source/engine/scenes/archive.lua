@@ -99,7 +99,7 @@ local function tarToZip(data)
         .. integer(#directory, 4)
         .. integer(offset, 4)
         .. '\0\0'
-    return love.filesystem.newFileData(table.concat(files), 'scene.zip')
+    return katsa.filesystem.newFileData(table.concat(files), 'scene.zip')
 end
 
 function Archive.read(source)
@@ -111,9 +111,9 @@ function Archive.read(source)
         assert(file, message)
         local bytes = file:read('*a')
         file:close()
-        data = love.filesystem.newFileData(bytes, source:match('[^/\\]+$'))
+        data = katsa.filesystem.newFileData(bytes, source:match('[^/\\]+$'))
     else
-        data = love.filesystem.newFileData(source)
+        data = katsa.filesystem.newFileData(source)
     end
     assert(
         data and data.typeOf and data:typeOf('FileData'),
@@ -121,7 +121,7 @@ function Archive.read(source)
     )
     local name = data:getFilename():lower()
     if name:match('%.tar%.gz$') or name:match('%.tgz$') then
-        return tarToZip(love.data.decompress('string', 'gzip', data))
+        return tarToZip(katsa.data.decompress('string', 'gzip', data))
     elseif name:match('%.tar$') then
         return tarToZip(data:getString())
     end

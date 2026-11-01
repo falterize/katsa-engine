@@ -4,7 +4,7 @@ function Game:draw()
     self.statsLayer.visible = self.showStats
     if not self.world.activeCamera then
         self.ui.backgroundCanvas = nil
-        love.graphics.clear(0.03, 0.04, 0.06, 1)
+        katsa.graphics.clear(0.03, 0.04, 0.06, 1)
         self.statistics:sample()
         self.ui:draw()
         require('source.engine.graphics.debug.orientation').draw(self)
@@ -24,11 +24,11 @@ function Game:draw()
     end
     self.statistics:sample()
     self.input:draw()
-    local uiStamp = self.manager.profiler:begin() or (self.showStats and love.timer.getTime())
+    local uiStamp = self.manager.profiler:begin() or (self.showStats and katsa.timer.getTime())
     self.ui:draw()
     require('source.engine.graphics.debug.orientation').draw(self)
     if uiStamp then
-        self.uiMilliseconds = (love.timer.getTime() - uiStamp) * 1000
+        self.uiMilliseconds = (katsa.timer.getTime() - uiStamp) * 1000
     end
     self.manager.profiler:finish('Screen UI', uiStamp)
     local p = self.manager.profiler

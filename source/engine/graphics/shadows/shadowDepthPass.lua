@@ -44,18 +44,18 @@ function ShadowDepthPass.install(Shadows)
             object._world and object._world._activeRenderer
         )
         if opaque and not self.opaqueShader then
-            local source = love.filesystem.read('assets/shaders/engine/shadow.glsl')
+            local source = katsa.filesystem.read('assets/shaders/engine/shadow.glsl')
             source = source:gsub(
                 '#ifdef PIXEL.-#endif',
                 '#ifdef PIXEL\nvec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) { return vec4(1.0); }\n#endif'
             )
-            self.opaqueShader = self.resources:own(love.graphics.newShader(source))
+            self.opaqueShader = self.resources:own(katsa.graphics.newShader(source))
         end
         local shader = object._resolvedMaterial and object._resolvedMaterial.shadowShader
             or opaque and self.opaqueShader
             or self.shader
         assert(shader, 'A world material must provide a shadow vertex shader')
-        love.graphics.setShader(shader)
+        katsa.graphics.setShader(shader)
         require('source.engine.animation.skeleton.skinning').bind(shader, object)
         shader:send('viewProjection', 'row', self.currentMatrix)
         shader:send('atlasTile', self.tile)
@@ -82,12 +82,12 @@ function ShadowDepthPass.install(Shadows)
         if object._resolvedMaterial then
             object._resolvedMaterial:bindShadow(self.currentTime)
         end
-        love.graphics.setMeshCullMode(object.doubleSided and 'none' or 'back')
+        katsa.graphics.setMeshCullMode(object.doubleSided and 'none' or 'back')
         return shader
     end
 
     function Shadows:drawBatch(group, count)
-        local object, g = group.example, love.graphics
+        local object, g = group.example, katsa.graphics
         local shader = self:bind(object)
         local mesh
         if object.geometry.eightWeights then
@@ -113,7 +113,7 @@ function ShadowDepthPass.install(Shadows)
     end
 
     function Shadows:drawFace(world, matrix, tileIndex, time)
-        local g = love.graphics
+        local g = katsa.graphics
         if not self.depthPassStarted then
             g.push('all')
             g.origin()

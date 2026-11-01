@@ -1,7 +1,7 @@
 local Screen = {}
 
 function Screen.create(traceback, api)
-    api = api or love
+    api = api or katsa
     if api.filesystem then
         pcall(require('source.engine.debug.crashHistory').write, api.filesystem, traceback)
     end

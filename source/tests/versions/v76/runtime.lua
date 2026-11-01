@@ -18,7 +18,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local scene = self.manager:switch(require('source.game.runtime.game').new, 'combined')
     local r, w, c = scene.renderer, scene.world, scene.camera
     local settings = w.environment.shadows
@@ -130,12 +130,12 @@ function T:draw()
         local oldSampling = f:read('*a')
         f:close()
         local currentSampling =
-            assert(love.filesystem.read('assets/shaders/engine/shadowSampling.glsl'))
+            assert(katsa.filesystem.read('assets/shaders/engine/shadowSampling.glsl'))
         local source =
             require('source.engine.graphics.shaderSource').read('assets/shaders/engine/world.glsl')
         local first, last = assert(source:find(currentSampling, 1, true))
         local oldShader =
-            love.graphics.newShader(source:sub(1, first - 1) .. oldSampling .. source:sub(last + 1))
+            katsa.graphics.newShader(source:sub(1, first - 1) .. oldSampling .. source:sub(last + 1))
         local currentShader = r.shader
         for _, mode in ipairs({ 'Standard', 'Realistic' }) do
             settings.mode = mode
@@ -172,7 +172,7 @@ function T:draw()
     end
     self:check(#self.manager.journal.entries == 0, 'No runtime errors in dynamic shadow paths')
     print('PASSED ' .. self.count .. ' focused v76 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

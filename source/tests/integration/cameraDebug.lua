@@ -3,7 +3,7 @@ return function(test, scene)
     local enabled = physics.debugEnabled
     physics.debugEnabled = true
     for _, camera in ipairs({ demo.first, demo.third, demo.first, demo.third }) do
-        camera:update(love.graphics.getDimensions())
+        camera:update(katsa.graphics.getDimensions())
         local calls, project = 0, camera.project
         camera.project = function(self, point)
             calls = calls + 1

@@ -113,7 +113,7 @@ function Wireframe.mesh(renderer, geometry)
             edge(c, a)
         end
     end
-    local mesh = love.graphics.newMesh(
+    local mesh = katsa.graphics.newMesh(
         extraJointOffset and skinEightFormat
             or (jointOffset and weightOffset and skinFormat or format),
         #vertices > 0 and vertices or 1,
@@ -139,7 +139,7 @@ function Wireframe.draw(renderer, object)
     if object:isA('ParticleEmitter3D') then
         return
     end
-    local g, shader = love.graphics, renderer.wireShader
+    local g, shader = katsa.graphics, renderer.wireShader
     g.setShader(shader)
     if renderer.shaderFrames[shader] ~= renderer.frame then
         shader:send('viewProjection', 'row', renderer.camera.viewProjection)

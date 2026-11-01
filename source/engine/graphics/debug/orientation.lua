@@ -3,7 +3,7 @@ local labels = { 'X', 'Y', 'Z' }
 local colors = { { 1, 0.3, 0.3 }, { 0.3, 1, 0.45 }, { 0.35, 0.65, 1 } }
 
 local function axis(x, y, dx, dy, index, depth, length)
-    local g, color = love.graphics, colors[index]
+    local g, color = katsa.graphics, colors[index]
     g.setColor(color)
     local tx, ty = x + dx * length, y + dy * length
     g.setColor(color[1], color[2], color[3], 0.3)
@@ -25,7 +25,7 @@ function Orientation.draw(scene)
     if not orientation2D and not settings.orientation3D then
         return
     end
-    local g = love.graphics
+    local g = katsa.graphics
     local w, h = g.getDimensions()
     local scale = require('source.engine.core.displayDpi').uiScale()
     local length, gap = 42 * scale, 74 * scale

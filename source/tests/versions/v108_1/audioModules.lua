@@ -3,7 +3,7 @@
 local Module = {}
 
 local function installFakeAudio()
-    local saved = { audio = love.audio, sound = love.sound, getInfo = love.filesystem.getInfo }
+    local saved = { audio = katsa.audio, sound = katsa.sound, getInfo = katsa.filesystem.getInfo }
     local state = { created = {}, listener = { position = {}, orientation = {} } }
     local Source = {}
     Source.__index = Source
@@ -58,7 +58,7 @@ local function installFakeAudio()
     function Source:tell()
         return self.time
     end
-    love.sound = {
+    katsa.sound = {
         newSoundData = function()
             return {
                 getChannelCount = function()
@@ -81,7 +81,7 @@ local function installFakeAudio()
             }
         end,
     }
-    love.audio = {
+    katsa.audio = {
         newSource = newSource,
         isEffectsSupported = function()
             return true
@@ -99,12 +99,12 @@ local function installFakeAudio()
             state.listener.orientation = { fx, fy, fz, ux, uy, uz }
         end,
     }
-    love.filesystem.getInfo = function()
+    katsa.filesystem.getInfo = function()
         return true
     end
     return state,
         function()
-            love.audio, love.sound, love.filesystem.getInfo =
+            katsa.audio, katsa.sound, katsa.filesystem.getInfo =
                 saved.audio, saved.sound, saved.getInfo
         end
 end

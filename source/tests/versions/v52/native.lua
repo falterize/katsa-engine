@@ -311,8 +311,8 @@ return function(test)
         ui.content
     )
     ui:create('UIStroke', { target = 'Text', thickness = { 0, 3 }, color = { 1, 0, 0 } }, label)
-    local target = love.graphics.newCanvas(160, 100, { dpiscale = 1 })
-    local g = love.graphics
+    local target = katsa.graphics.newCanvas(160, 100, { dpiscale = 1 })
+    local g = katsa.graphics
 
     local function draw()
         g.push('all')

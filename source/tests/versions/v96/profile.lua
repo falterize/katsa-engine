@@ -16,13 +16,13 @@ local cases = {
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v96 profile ' .. tostring(message))
         os.exit(1)
     end
     jit.off()
     jit.flush()
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -48,8 +48,8 @@ function T:draw()
         return
     end
     self.done = true
-    print('LOVE', love.getVersion())
-    print('GPU', love.graphics.getRendererInfo())
+    print('LOVE', katsa.getVersion())
+    print('GPU', katsa.graphics.getRendererInfo())
     print('JIT', jit.version, jit.status(), jit.arch)
     print(
         'case,update mean/p50/p95/p99,draw CPU,wait+present,total,checks,prepare,solver,updated,batch comparisons,main submit,shadow build,occlusion,UI,KB growth/retained'
@@ -57,7 +57,7 @@ function T:draw()
     for _, case in ipairs(cases) do
         local selected = os.getenv('KATSA_PROFILE_CASE')
         if not selected or selected == case[1] then
-            love.math.setRandomSeed(384)
+            katsa.math.setRandomSeed(384)
             math.randomseed(384)
             local scene, err = self.manager:switch(require('source.game.runtime.game').new, case[2])
             assert(scene, err)
@@ -98,18 +98,18 @@ function T:draw()
                     cube.position[2] = math.sin(frame / 30) * 18
                     cube.rotation[2] = frame
                 end
-                love.event.pump()
-                local start = love.timer.getTime()
+                katsa.event.pump()
+                local start = katsa.timer.getTime()
                 self.manager:update(1 / 60)
-                local updated = love.timer.getTime()
+                local updated = katsa.timer.getTime()
                 self.manager:draw()
-                love.graphics.flushBatch()
-                local drawn = love.timer.getTime()
+                katsa.graphics.flushBatch()
+                local drawn = katsa.timer.getTime()
                 -- Readback fences submitted work; this is not a pure GPU timer.
                 local data = scene.renderer.canvas:newImageData()
                 data:release()
-                love.graphics.present()
-                local finished = love.timer.getTime()
+                katsa.graphics.present()
+                local finished = katsa.timer.getTime()
                 if frame == 30 then
                     collectgarbage('collect')
                     memory = collectgarbage('count')
@@ -150,7 +150,7 @@ function T:draw()
     end
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('FULL LOOP PROFILE COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

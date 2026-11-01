@@ -3,7 +3,7 @@
 local Timer = {}
 
 function Timer.new()
-    if love.system.getOS() ~= 'Linux' or love.graphics.getRendererInfo() ~= 'OpenGL' then
+    if katsa.system.getOS() ~= 'Linux' or katsa.graphics.getRendererInfo() ~= 'OpenGL' then
         return
     end
     local ok, result = pcall(function()

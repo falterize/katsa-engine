@@ -302,7 +302,7 @@ function Debug.new(scene)
         end)
         local selected
         local inspector = row('Pick body at screen center', function(n)
-            scene.camera:update(love.graphics.getDimensions())
+            scene.camera:update(katsa.graphics.getDimensions())
             local p, f = (scene.camera.worldPosition or scene.camera.position), scene.camera.forward
             local hit =
                 physics:raycast(p, { p[1] + f[1] * 1000, p[2] + f[2] * 1000, p[3] + f[3] * 1000 })

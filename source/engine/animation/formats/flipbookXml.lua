@@ -108,7 +108,7 @@ end
 
 function FlipbookXml.read(resources, path)
     local canonical = resources:canonical(path)
-    local text = assert(love.filesystem.read(canonical), 'Missing flipbook XML: ' .. tostring(path))
+    local text = assert(katsa.filesystem.read(canonical), 'Missing flipbook XML: ' .. tostring(path))
     local ok, definition = pcall(FlipbookXml.parse, text)
     assert(ok, 'Invalid flipbook XML ' .. tostring(path) .. ': ' .. tostring(definition))
     return definition

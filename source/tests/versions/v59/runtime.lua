@@ -14,7 +14,7 @@ end
 function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+        katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
         local scene, err = self.manager:switch(require('source.game.runtime.game').new, 'viewports')
         assert(scene, err)
         self.scene = scene
@@ -175,7 +175,7 @@ function R:update()
             'Viewport rendering, UI input and scene cleanup leave an empty error journal'
         )
         print('PASSED ' .. self.count .. ' targeted v59 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -185,7 +185,7 @@ function R:draw()
     end
     local name = self.capture
     self.capture = nil
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         if name == 'viewports' then
             local r, g, b = image:getPixel(30, 430)
             self:check(
@@ -195,7 +195,7 @@ function R:draw()
         end
         local data = image:encode('png')
         local f =
-            io.open(love.filesystem.getSource() .. '/docs/previews/v59/' .. name .. '.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v59/' .. name .. '.png', 'wb')
         if f then
             f:write(data:getString())
             f:close()

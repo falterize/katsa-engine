@@ -109,7 +109,7 @@ function BillboardUI.new(world, settings)
     settings.normal = { 1, 0, 0, 0, 1, 0, 0, 0, 1 }
     settings.ui =
         UI.new(settings.resolvedCanvasSize[1], settings.resolvedCanvasSize[2], world.resources)
-    settings.textureLimit = love.graphics.getSystemLimits().texturesize
+    settings.textureLimit = katsa.graphics.getSystemLimits().texturesize
     local initialLimit = math.min(settings.maxTextureSize or 2048, settings.textureLimit)
     local initialRatio = math.min(
         1,
@@ -131,7 +131,7 @@ function BillboardUI.new(world, settings)
     settings.canvasAllocationWidth, settings.canvasAllocationHeight =
         settings.resolvedCanvasSize[1], settings.resolvedCanvasSize[2]
     settings.canvas = world.resources:own(
-        love.graphics.newCanvas(
+        katsa.graphics.newCanvas(
             settings.resolvedCanvasSize[1],
             settings.resolvedCanvasSize[2],
             { dpiscale = settings.canvasDensity }

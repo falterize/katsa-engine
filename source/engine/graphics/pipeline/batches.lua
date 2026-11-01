@@ -242,7 +242,7 @@ function Batches:upload(group)
             capacity = capacity * 2
         end
         group.capacity = capacity
-        group.mesh = love.graphics.newMesh(self.format, capacity, 'points', 'dynamic')
+        group.mesh = katsa.graphics.newMesh(self.format, capacity, 'points', 'dynamic')
         group.mesh:setVertices(group.data, 1, #group.data)
         group.uploadedRows = #group.data
         self.meshAllocations = (self.meshAllocations or 0) + 1

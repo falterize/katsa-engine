@@ -13,7 +13,7 @@ end
 
 function Class:drawSelf(ui)
     Class.base.drawSelf(self, ui)
-    local g, x, y = love.graphics, self._x, self._y
+    local g, x, y = katsa.graphics, self._x, self._y
     local t = (self.value - self.min) / (self.max - self.min)
     local length = math.max(0, self._width - 24)
     g.setColor(self.trackColor or trackColor)

@@ -21,7 +21,7 @@ Renderer.__index = function(self, key)
         end
         local source = key == 'shader' and require('source.engine.graphics.shaderSource').read(path)
             or path
-        local shader = self.resources:own(love.graphics.newShader(source))
+        local shader = self.resources:own(katsa.graphics.newShader(source))
         rawset(self, key, shader)
         return shader
     end
@@ -29,7 +29,7 @@ Renderer.__index = function(self, key)
 end
 
 function Renderer.new(resources)
-    local sky = resources:own(love.graphics.newShader('assets/shaders/engine/sky.glsl'))
+    local sky = resources:own(katsa.graphics.newShader('assets/shaders/engine/sky.glsl'))
     local quad = Geometry.quad()
     resources:own(quad.mesh)
     return setmetatable({
@@ -63,7 +63,7 @@ function Renderer.new(resources)
         occlusionMaxOccluders = 24,
         occlusionTriangleBudget = 192,
         occlusionMinArea = 256,
-        renderDensity = math.max(1, math.min(3, love.graphics.getDPIScale())),
+        renderDensity = math.max(1, math.min(3, katsa.graphics.getDPIScale())),
         msaa = require('source.engine.graphics.quality.renderQuality').defaultSamples(),
         maxMeshDistance = 0, -- 0 keeps camera-frustum-only mesh culling.
         maxRenderPixels = require('source.engine.graphics.quality.renderQuality').defaultPixels(),

@@ -24,7 +24,7 @@ function R:update(dt)
         local name = scenes[self.index]
         if not name then
             print('PASSED five scene smoke transitions')
-            love.event.quit()
+            katsa.event.quit()
             return
         end
         self.scene = self.manager:switch(require('source.game.runtime.game').new, name)
@@ -62,7 +62,7 @@ function R:draw()
     if self.capture then
         self.capture = nil
         local name = self.scene.zone
-        love.graphics.captureScreenshot(function(image)
+        katsa.graphics.captureScreenshot(function(image)
             image:encode('png', 'v54-' .. name .. '.png')
             image:release()
         end)

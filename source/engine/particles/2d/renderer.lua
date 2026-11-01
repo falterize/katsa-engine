@@ -7,8 +7,8 @@ local function sample(e, key, t, out)
     return Sequence.evaluate(e.lifetimeRamp.bindings[key], t, e.lifetimeRamp.interpolation, out)
 end
 function Renderer.draw(system)
-    local g, ui = love.graphics, system.world
-    local started = love.timer.getTime()
+    local g, ui = katsa.graphics, system.world
+    local started = katsa.timer.getTime()
     system.stats.rendered, system.stats.drawCalls = 0, 0
     system.shader = system.shader
         or ui.resources:cached('shader', 'particles2D', function(owner)
@@ -124,6 +124,6 @@ function Renderer.draw(system)
             end
         end
     end
-    system.stats.drawMilliseconds = (love.timer.getTime() - started) * 1000
+    system.stats.drawMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 return Renderer

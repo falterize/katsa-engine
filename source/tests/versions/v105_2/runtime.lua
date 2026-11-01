@@ -32,16 +32,16 @@ function Tests:display()
         ui.content
     )
     local safeArea, uiScale, graphicsDpi =
-        love.window.getSafeArea, Display.uiScale, love.graphics.getDPIScale
+        katsa.window.getSafeArea, Display.uiScale, katsa.graphics.getDPIScale
     local ok, message = pcall(function()
         for _, scale in ipairs({ 1, 1.25, 1.5, 2 }) do
-            love.window.getSafeArea = function()
+            katsa.window.getSafeArea = function()
                 return 0, 0, 1280 * scale, 720 * scale
             end
             Display.uiScale = function()
                 return scale
             end
-            love.graphics.getDPIScale = function()
+            katsa.graphics.getDPIScale = function()
                 return 1
             end
             ui:fit(1280 * scale, 720 * scale)
@@ -59,13 +59,13 @@ function Tests:display()
                 'Button size and hit testing use the same scale ' .. scale
             )
         end
-        love.window.getSafeArea = function()
+        katsa.window.getSafeArea = function()
             return 0, 0, 1280, 720
         end
         Display.uiScale = function()
             return 1
         end
-        love.graphics.getDPIScale = function()
+        katsa.graphics.getDPIScale = function()
             return 2
         end
         ui:fit(1280, 720)
@@ -80,7 +80,7 @@ function Tests:display()
         ui:fit(1280, 720)
         self:check(ui.scale == 1, 'Reference Fit mode retains proportional viewport fitting')
     end)
-    love.window.getSafeArea, Display.uiScale, love.graphics.getDPIScale =
+    katsa.window.getSafeArea, Display.uiScale, katsa.graphics.getDPIScale =
         safeArea, uiScale, graphicsDpi
     assert(ok, message)
     ui:release()
@@ -175,7 +175,7 @@ function Tests:draw()
     self:display()
     self:physics()
     print('PASSED ' .. self.count .. ' v105.2 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

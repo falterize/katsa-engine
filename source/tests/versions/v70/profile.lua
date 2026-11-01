@@ -2,7 +2,7 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     local scene = assert(manager:switch(require('source.game.runtime.game').new, 'combined'))
     scene.world.environment.render.lightLoop = 'Masked'
     scene.world.environment.render.frameCache = false
@@ -27,7 +27,7 @@ function T:draw()
                 local p = s.renderer.canvas:newImageData()
                 p:release()
             end
-            local t = love.timer.getTime()
+            local t = katsa.timer.getTime()
             for i = 1, 10 do
                 s.renderer:draw(s.world, s.camera, s.time)
                 local p = s.renderer.canvas:newImageData()
@@ -36,7 +36,7 @@ function T:draw()
             print(
                 'PROFILE '
                     .. (all and 'Full' or 'Filtered')
-                    .. string.format(' %.3f ms synchronized draw', (love.timer.getTime() - t) * 100)
+                    .. string.format(' %.3f ms synchronized draw', (katsa.timer.getTime() - t) * 100)
             )
             local image = s.renderer.canvas:newImageData()
             if all then
@@ -61,7 +61,7 @@ function T:draw()
                 print(k, v)
             end
         end
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

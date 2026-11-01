@@ -23,12 +23,12 @@ function Preview:draw()
         return
     end
     self.captured = true
-    love.graphics.captureScreenshot(function(data)
+    katsa.graphics.captureScreenshot(function(data)
         local path = 'validation-v107/' .. self.name .. '.png'
-        assert(love.filesystem.createDirectory('validation-v107'))
+        assert(katsa.filesystem.createDirectory('validation-v107'))
         data:encode('png', path)
-        print('PASSED PREVIEW', love.filesystem.getSaveDirectory() .. '/' .. path)
-        love.event.quit()
+        print('PASSED PREVIEW', katsa.filesystem.getSaveDirectory() .. '/' .. path)
+        katsa.event.quit()
     end)
 end
 

@@ -29,7 +29,7 @@ function G.mesh(vertices, skinned)
         radius = math.max(radius, math.sqrt(v[1] ^ 2 + v[2] ^ 2 + v[3] ^ 2))
     end
     return {
-        mesh = love.graphics.newMesh(
+        mesh = katsa.graphics.newMesh(
             eightWeights and G.skinEightFormat or (skinned and G.skinFormat or G.format),
             vertices,
             'triangles',

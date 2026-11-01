@@ -51,7 +51,7 @@ function Class.initialize(self)
 end
 
 local function drawPart(ui, imagePath, x, y, width, height, horizontal)
-    local g = love.graphics
+    local g = katsa.graphics
     if imagePath == '' then
         g.rectangle('fill', x, y, width, height, math.min(width, height) * 0.5)
     else
@@ -66,7 +66,7 @@ local function drawPart(ui, imagePath, x, y, width, height, horizontal)
 end
 
 local function drawBar(node, ui, horizontal)
-    local g = love.graphics
+    local g = katsa.graphics
     local bar = ScrollBar.geometry(node, horizontal)
     local x, y, thumb = bar.x, bar.y, bar.length
     local thickness = node.scrollBarThickness
@@ -90,7 +90,7 @@ function Class:drawScrollBar(ui)
     then
         return
     end
-    local g, color = love.graphics, self.scrollBarImageColor3
+    local g, color = katsa.graphics, self.scrollBarImageColor3
     g.push('all')
     g.setShader()
     g.setColor(color[1], color[2], color[3], 1 - self.scrollBarImageTransparency)

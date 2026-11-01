@@ -44,7 +44,7 @@ local function endpoint(attachment, physics)
 end
 
 local function create(self, a, b, x0, y0, x1, y1, angle)
-    local f, p, collide = self.physics.factor, love.physics, self.allowCollision == true
+    local f, p, collide = self.physics.factor, katsa.physics, self.allowCollision == true
     local r0, r1 = a.raw, b.raw
     local joint, kind = nil, self.kind
     x0, y0, x1, y1 = x0 * f, y0 * f, x1 * f, y1 * f

@@ -12,8 +12,8 @@ function Physics2D.new(options)
     local units = options.unitsPerMeter or options.units or 64
     assert(type(units) == 'number' and units > 0 and units < math.huge, 'Invalid 2D units')
     local gravity = require('source.engine.world.gravity').options(options, 2, { 0, -9.81 * units })
-    -- Do not change love.physics.setMeter: that global also affects other worlds.
-    local factor = love.physics.getMeter() / units
+    -- Do not change katsa.physics.setMeter: that global also affects other worlds.
+    local factor = katsa.physics.getMeter() / units
     local self = setmetatable({
         backendName = 'Box2D',
         units = units,
@@ -34,7 +34,7 @@ function Physics2D.new(options)
         debug = options.debugSettings
             or require('source.engine.physics.2d.debugSettings').create(options.debug),
         stats = { steps = 0, droppedTime = 0, updateMilliseconds = 0, solverMilliseconds = 0 },
-        world = love.physics.newWorld(gravity[1] * factor, gravity[2] * factor, true),
+        world = katsa.physics.newWorld(gravity[1] * factor, gravity[2] * factor, true),
     }, Physics2D)
     assert(self.fixedDelta > 0 and self.fixedDelta < math.huge, 'Invalid 2D fixedDelta')
     assert(self.maxSteps >= 1 and self.maxSteps % 1 == 0, 'Invalid 2D maxSteps')

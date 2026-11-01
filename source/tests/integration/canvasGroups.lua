@@ -14,23 +14,23 @@ return function(test, scene)
     end), 'UI reparenting rejects raw ScreenUI roots')
     ui.content.enabled = false
     test:check(ui:hit(8, 8) == nil, 'Disabled CanvasGroup blocks descendant interaction')
-    local disabledCanvas = love.graphics.newCanvas(32, 32)
-    love.graphics.push('all')
-    love.graphics.setCanvas(disabledCanvas)
-    love.graphics.clear(0, 0, 0, 1)
+    local disabledCanvas = katsa.graphics.newCanvas(32, 32)
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(disabledCanvas)
+    katsa.graphics.clear(0, 0, 0, 1)
     ui:draw()
-    love.graphics.pop()
+    katsa.graphics.pop()
     local disabledPixels = disabledCanvas:newImageData()
     test:check(
         select(2, disabledPixels:getPixel(8, 8)) > 0.9,
         'Disabled CanvasGroup stays visible while blocking input'
     )
     ui.content.visible = false
-    love.graphics.push('all')
-    love.graphics.setCanvas(disabledCanvas)
-    love.graphics.clear(0, 0, 0, 1)
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(disabledCanvas)
+    katsa.graphics.clear(0, 0, 0, 1)
     ui:draw()
-    love.graphics.pop()
+    katsa.graphics.pop()
     local hiddenPixels = disabledCanvas:newImageData()
     test:check(
         select(2, hiddenPixels:getPixel(8, 8)) == 0,
@@ -51,12 +51,12 @@ return function(test, scene)
     test:check(ui:hit(8, 8) == nil, 'Fully transparent CanvasGroup blocks picking')
     ui.content.transparency = 0.5
     a.backgroundColor, b.backgroundColor = { 1, 1, 1 }, { 1, 1, 1 }
-    local canvas = love.graphics.newCanvas(32, 32)
-    love.graphics.push('all')
-    love.graphics.setCanvas(canvas)
-    love.graphics.clear(0, 0, 0, 1)
+    local canvas = katsa.graphics.newCanvas(32, 32)
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(canvas)
+    katsa.graphics.clear(0, 0, 0, 1)
     ui:draw()
-    love.graphics.pop()
+    katsa.graphics.pop()
     local pixels = canvas:newImageData()
     local red = pixels:getPixel(8, 8)
     test:check(

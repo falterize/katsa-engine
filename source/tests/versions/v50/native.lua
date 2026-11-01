@@ -21,7 +21,7 @@ return function(test)
     }, group)
     ui:create('UICorner', { cornerRadius = 8 }, group)
     ui:create('UICorner', { cornerRadius = 8 }, scroll)
-    local g = love.graphics
+    local g = katsa.graphics
     local target = g.newCanvas(200, 200, { dpiscale = 2 })
     for _, alpha in ipairs({ 0, 0.001, 0.1, 0.5, 0.999, 1 }) do
         group.transparency = alpha

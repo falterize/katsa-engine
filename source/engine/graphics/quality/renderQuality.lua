@@ -2,11 +2,11 @@
 local Quality = {}
 
 function Quality.defaultSamples()
-    local os = love.system.getOS()
+    local os = katsa.system.getOS()
     if os ~= 'Windows' and os ~= 'Linux' and os ~= 'OS X' then
         return 0
     end
-    local _, _, vendor, renderer = love.graphics.getRendererInfo()
+    local _, _, vendor, renderer = katsa.graphics.getRendererInfo()
     -- UHD shares memory bandwidth with the CPU; retain native resolution first.
     if vendor:find('Intel', 1, true) and renderer:find('UHD', 1, true) then
         return 0
@@ -15,7 +15,7 @@ function Quality.defaultSamples()
 end
 
 function Quality.defaultPixels()
-    local os = love.system.getOS()
+    local os = katsa.system.getOS()
     return (os == 'Windows' or os == 'Linux' or os == 'OS X') and 8294400 or 4194304
 end
 

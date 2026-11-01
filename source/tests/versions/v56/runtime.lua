@@ -20,7 +20,7 @@ end
 function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+        katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
         local scene, err =
             self.manager:switch(require('source.game.runtime.game').new, 'nightPlayer')
         assert(scene, err)
@@ -136,7 +136,7 @@ function R:update()
             'Night Player leaves the error journal empty'
         )
         print('PASSED ' .. self.count .. ' Night Player camera checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -146,10 +146,10 @@ function R:draw()
     end
     local name = self.capture
     self.capture = nil
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local data = image:encode('png')
         local file =
-            io.open(love.filesystem.getSource() .. '/docs/previews/v56/' .. name .. '.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v56/' .. name .. '.png', 'wb')
         if file then
             file:write(data:getString())
             file:close()

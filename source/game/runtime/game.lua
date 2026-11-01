@@ -129,7 +129,7 @@ function Game:load()
     if self.settings.presentation and self.settings.presentation.navigation == false then
         self.workspace.tab.visible = false
     end
-    self:resize(love.graphics.getDimensions())
+    self:resize(katsa.graphics.getDimensions())
     if self.sampleType then
         require('source.game.scenes.nodeCatalog.scripts.catalog.samples').prepare(
             self,
@@ -148,7 +148,7 @@ function Game:preparePresentation()
 end
 
 function Game:enter()
-    self.camera:update(love.graphics.getDimensions())
+    self.camera:update(katsa.graphics.getDimensions())
 end
 
 function Game:resize(w, h)
@@ -268,7 +268,7 @@ function Game:wheelmoved(x, y)
     if self.input.wheelmoved and self.input:wheelmoved(x, y) then
         return
     end
-    if self.ui:wheel(love.mouse.getX(), love.mouse.getY(), y, x) then
+    if self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x) then
         return
     end
     -- Orthographic free cameras have no dolly zoom (moving does not change scale), so the

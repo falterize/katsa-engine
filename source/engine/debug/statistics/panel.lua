@@ -158,9 +158,9 @@ function Panel:buildExport(parent)
         text = 'Open log folder',
         fontSize = 13,
         onPress = function()
-            love.filesystem.createDirectory('stats-logs')
-            local path = (love.filesystem.getSaveDirectory() .. '/stats-logs'):gsub('\\', '/')
-            love.system.openURL(
+            katsa.filesystem.createDirectory('stats-logs')
+            local path = (katsa.filesystem.getSaveDirectory() .. '/stats-logs'):gsub('\\', '/')
+            katsa.system.openURL(
                 ('file://' .. (path:sub(1, 1) == '/' and '' or '/') .. path):gsub(' ', '%%20')
             )
         end,

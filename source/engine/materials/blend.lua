@@ -136,7 +136,7 @@ function B.resolve(world, object, nodes)
         return cache.result
     end
     local Surface = require('source.engine.materials.surface')
-    local g = love.graphics
+    local g = katsa.graphics
     cache.shader = cache.shader
         or world.resources:cached('shader', 'surfaceBlend', function(owner)
             return owner:own(g.newShader('assets/shaders/engine/surfaceBlend.glsl'))

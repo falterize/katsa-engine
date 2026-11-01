@@ -109,7 +109,7 @@ function Variants.get(renderer, object)
                 )
             end
         end
-        shader = renderer.resources:own(love.graphics.newShader(source))
+        shader = renderer.resources:own(katsa.graphics.newShader(source))
         renderer.shaderVariants[key] = shader
         renderer.shaderVariantCount=(renderer.shaderVariantCount or 0)+1
         if renderer.shaderVariantCount>64 then

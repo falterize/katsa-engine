@@ -5,14 +5,14 @@ local FrameLoop = require('source.engine.core.frameLoop')
 local Tests = {}
 
 local function loop(tester)
-    local original = love
+    local original = katsa
     local frameDelta = Runtime.frameDelta
     local previousPolicy, previousDirty, previousTimings =
         Runtime.canReuseWindowFrame, Runtime.windowFrameDirty, Runtime.timings
     local draws, presents, clears, elapsed, slept = 0, 0, 0, 0, 0
     local reused = false
     local ok, message = pcall(function()
-        love = {
+        katsa = {
             timer = {
                 getTime = function()
                     return elapsed
@@ -94,7 +94,7 @@ local function loop(tester)
             'Leaving an idle interface restores uncapped scene rendering immediately'
         )
     end)
-    love = original
+    katsa = original
     Runtime.frameDelta = frameDelta
     Runtime.canReuseWindowFrame, Runtime.windowFrameDirty, Runtime.timings =
         previousPolicy, previousDirty, previousTimings
@@ -145,7 +145,7 @@ function Tests.run(tester)
     menu.state._paintRevision = menu.ui.revision
     tester:check(not menu:canReuseWindowFrame(), 'Animated menu shaders never reuse a frozen frame')
     effect:destroy()
-    menu:resize(love.graphics.getDimensions())
+    menu:resize(katsa.graphics.getDimensions())
     tester:check(
         not menu:canReuseWindowFrame(),
         'Resizing invalidates the previous Menu presentation'
@@ -160,7 +160,7 @@ function Tests.run(tester)
 end
 
 function Tests.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED menu idle ' .. tostring(message))
         os.exit(1)
     end
@@ -183,7 +183,7 @@ function Tests:draw()
     Tests.run(self)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' menu idle checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

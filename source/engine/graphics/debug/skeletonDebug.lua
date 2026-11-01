@@ -15,7 +15,7 @@ function D.draw(world, camera)
     if not active then
         return
     end
-    local g = love.graphics
+    local g = katsa.graphics
     g.push('all')
     g.setShader()
     g.setDepthMode()

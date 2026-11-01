@@ -119,7 +119,7 @@ function Display.uiScale()
     end
     -- SDL on Windows may expose native pixels with graphics DPI 1. Compensate
     -- exactly once; platforms already exposing logical coordinates need no extra scale.
-    return Display.systemScale() / love.graphics.getDPIScale()
+    return Display.systemScale() / katsa.graphics.getDPIScale()
 end
 
 function Display.update(dt)

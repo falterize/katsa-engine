@@ -1,10 +1,10 @@
--- Whole-scene/native regression checks; run with love . --test-v47.
+-- Whole-scene/native regression checks; run with katsa . --test-v47.
 local Runtime = {}
 Runtime.__index = Runtime
 local Math = require('source.engine.math.math3d')
 
 function Runtime.new(manager)
-    print('NATIVE RENDERER', love.graphics.getRendererInfo())
+    print('NATIVE RENDERER', katsa.graphics.getRendererInfo())
     return setmetatable({ manager = manager, frame = 0, count = 0 }, Runtime)
 end
 
@@ -15,7 +15,7 @@ function Runtime:check(ok, message)
 end
 
 function Runtime:capture(name)
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         image:encode('png', 'v47-' .. name .. '.png')
         image:release()
     end)
@@ -169,23 +169,23 @@ function Runtime:update()
         self:check(demo.button._width > 100, 'UDim2 gallery resolves scale dimensions')
         demo.button.onPress()
         self:check(demo.presses == 1, 'Gallery button remains interactive')
-        love.window.setMode(
+        katsa.window.setMode(
             1600,
             900,
             { resizable = true, depth = 24, stencil = 8, highdpi = true, vsync = 0 }
         )
-        scene:resize(love.graphics.getDimensions())
+        scene:resize(katsa.graphics.getDimensions())
         scene.ui:layout()
         self:check(
             scene.ui.width == 1600 and scene.ui.height == 900 and scene.ui.scale == 1,
             'Viewport UI follows full logical screen dimensions'
         )
-        love.window.setMode(
+        katsa.window.setMode(
             1280,
             720,
             { resizable = true, depth = 24, stencil = 8, highdpi = true, vsync = 0 }
         )
-        scene:resize(love.graphics.getDimensions())
+        scene:resize(katsa.graphics.getDimensions())
         scene.ui:layout()
         self:capture('ui')
     elseif self.frame == 18 then
@@ -224,12 +224,12 @@ function Runtime:update()
             'Static stress scene reuses completed maps after a full generation'
         )
         require('source.tests.integration.audioUIRuntime')(self)
-        love.filesystem.write(
+        katsa.filesystem.write(
             'v47-report.txt',
             'PASSED ' .. self.count .. ' native v47 assertions\n'
         )
         print('PASSED ' .. self.count .. ' native v47 assertions')
-        love.event.quit(0)
+        katsa.event.quit(0)
     end
 end
 

@@ -3,7 +3,7 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -14,7 +14,7 @@ function T:draw()
         return
     end
     self.done = true
-    print('DEVICE', love.getVersion(), love.graphics.getRendererInfo())
+    print('DEVICE', katsa.getVersion(), katsa.graphics.getRendererInfo())
     local modes = { 'Idle', 'Camera', 'Cube', 'Lights', 'All' }
     local output = os.getenv('KATSA_PROFILE_OUTPUT')
     for _, zone in ipairs({ 'combined', 'shadows' }) do
@@ -110,23 +110,23 @@ function T:draw()
                     totals[k] = (totals[k] or 0) + (v or 0)
                 end
                 for i = 1, 36 do
-                    local start = love.timer.getTime()
+                    local start = katsa.timer.getTime()
                     s:update(1 / 60)
                     pose(mode, i)
                     if cube.body then
                         cube.body:teleport(cube.position, cube.rotation)
                     end
-                    local updated = love.timer.getTime()
+                    local updated = katsa.timer.getTime()
                     shadowComparisons, shadowRows = 0, 0
-                    local before = love.graphics.getStats()
+                    local before = katsa.graphics.getStats()
                     r:draw(w, c, i / 60, true)
-                    local after = love.graphics.getStats()
+                    local after = katsa.graphics.getStats()
                     if timer and not r.stats.frameReused then
                         timer:finish()
                     end
-                    local submitted = love.timer.getTime()
+                    local submitted = katsa.timer.getTime()
                     local image = r.canvas:newImageData()
-                    local finished = love.timer.getTime()
+                    local finished = katsa.timer.getTime()
                     if i > 24 then
                         add('update', (updated - start) * 1000)
                         add('renderCPU', (submitted - updated) * 1000)
@@ -194,13 +194,13 @@ function T:draw()
             local key = state .. ':' .. profile.dumpstack(thread, 'pl;', 3)
             samples[key] = (samples[key] or 0) + count
         end)
-        local start = love.timer.getTime()
+        local start = katsa.timer.getTime()
         for i = 1, 120 do
             s:update(1 / 60)
             s.ui:draw()
         end
         profile.stop()
-        print('UPDATE_UI', zone, (love.timer.getTime() - start) * 1000 / 120)
+        print('UPDATE_UI', zone, (katsa.timer.getTime() - start) * 1000 / 120)
         local rows = {}
         for key, n in pairs(samples) do
             rows[#rows + 1] = { key, n }
@@ -212,7 +212,7 @@ function T:draw()
             print('SAMPLE', rows[i][2], rows[i][1])
         end
     end
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

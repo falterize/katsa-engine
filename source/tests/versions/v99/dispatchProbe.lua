@@ -6,11 +6,11 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(m)
+    katsa.errorhandler = function(m)
         print('FAILED dispatch probe ' .. tostring(m))
         os.exit(1)
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -40,15 +40,15 @@ function T:draw()
                 Renderer.__index = mode == 1 and Renderer or rIndex
                 Shadows.__index = mode == 1 and Shadows or sIndex
                 renderer:invalidate()
-                local t = love.timer.getTime()
+                local t = katsa.timer.getTime()
                 self.manager:draw()
-                love.graphics.flushBatch()
-                local drawn = love.timer.getTime()
+                katsa.graphics.flushBatch()
+                local drawn = katsa.timer.getTime()
                 local image = renderer.canvas:newImageData()
                 image:release()
-                love.graphics.present()
+                katsa.graphics.present()
                 if frame > 10 then
-                    totals[mode] = totals[mode] + (love.timer.getTime() - t) * 1000
+                    totals[mode] = totals[mode] + (katsa.timer.getTime() - t) * 1000
                     draws[mode] = draws[mode] + (drawn - t) * 1000
                     checks[mode] = checks[mode] + renderer.stats.cacheCheckMilliseconds
                 end
@@ -70,7 +70,7 @@ function T:draw()
         )
     end
     print('PAIRED DISPATCH COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

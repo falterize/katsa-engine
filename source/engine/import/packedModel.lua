@@ -15,9 +15,9 @@ function Packed.write(model, source, destination)
         skins = model.skins,
         animations = {},
         parts = {},
-        sourceHash = love.data.hash('sha256', assert(love.filesystem.read(source))),
+        sourceHash = katsa.data.hash('sha256', assert(katsa.filesystem.read(source))),
     }
-    header.sourceHash = love.data.encode('string', 'hex', header.sourceHash)
+    header.sourceHash = katsa.data.encode('string', 'hex', header.sourceHash)
     for i, n in ipairs(model.nodes) do
         header.nodes[i] = {
             name = n.name,
@@ -56,7 +56,7 @@ function Packed.write(model, source, destination)
         local format = '< ' .. string.rep('f', vertexFloats)
         local rows, envelopes = {}, {}
         for j, v in ipairs(vertices) do
-            rows[j] = love.data.pack('string', format, unpack(v))
+            rows[j] = katsa.data.pack('string', format, unpack(v))
             if part.palette then
                 for k = 1, part.geometry.eightWeights and 8 or 4 do
                     local influenceOffset = k > 4 and 4 or 0
@@ -91,23 +91,23 @@ function Packed.write(model, source, destination)
     end
     local data = JSON.encode(header)
     local file = assert(io.open(destination, 'wb'))
-    file:write('KMC1', love.data.pack('string', '<I4', #data), data, table.concat(payload))
+    file:write('KMC1', katsa.data.pack('string', '<I4', #data), data, table.concat(payload))
     file:close()
 end
 
 function Packed.try(path, resources)
     local cachePath = path .. '.kmesh'
-    if not love.filesystem.getInfo(cachePath) then
+    if not katsa.filesystem.getInfo(cachePath) then
         return
     end
-    local raw = assert(love.filesystem.read(cachePath))
+    local raw = assert(katsa.filesystem.read(cachePath))
     assert(raw:sub(1, 4) == 'KMC1', 'Invalid model sidecar magic')
-    local length = love.data.unpack('<I4', raw, 5)
+    local length = katsa.data.unpack('<I4', raw, 5)
     local header = JSON.decode(raw:sub(9, 8 + length))
-    local hash = love.data.encode(
+    local hash = katsa.data.encode(
         'string',
         'hex',
-        love.data.hash('sha256', assert(love.filesystem.read(path)))
+        katsa.data.hash('sha256', assert(katsa.filesystem.read(path)))
     )
     if hash ~= header.sourceHash then
         return
@@ -153,7 +153,7 @@ function Packed.try(path, resources)
             'Truncated packed mesh data'
         )
         local mesh = resources:own(
-            love.graphics.newMesh(
+            katsa.graphics.newMesh(
                 vertexFloats == 24 and Geometry.skinEightFormat
                     or (part.palette and Geometry.skinFormat or Geometry.format),
                 part.count,
@@ -161,7 +161,7 @@ function Packed.try(path, resources)
                 'static'
             )
         )
-        local data = love.data.newByteData(bytes)
+        local data = katsa.data.newByteData(bytes)
         mesh:setVertices(data)
         data:release()
         local envelopes = {}
@@ -185,7 +185,7 @@ function Packed.try(path, resources)
                 local count = vertexFloats
                 for j = 1, part.count do
                     local v = {
-                        love.data.unpack(
+                        katsa.data.unpack(
                             '<' .. string.rep('f', count),
                             bytes,
                             (j - 1) * count * 4 + 1

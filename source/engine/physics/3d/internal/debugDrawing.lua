@@ -17,8 +17,8 @@ function DebugDrawing.install(Physics, Body3D)
                 local ax, ay = camera:project({ a.x * u, a.y * u, a.z * u })
                 local bx, by = camera:project({ b.x * u, b.y * u, b.z * u })
                 if ax and bx then
-                    love.graphics.setColor(color.x, color.y, color.z, 0.9)
-                    love.graphics.line(ax, ay, bx, by)
+                    katsa.graphics.setColor(color.x, color.y, color.z, 0.9)
+                    katsa.graphics.line(ax, ay, bx, by)
                 end
             end
             draw.triangle = function(_, a, b, c, _, _, _, color)
@@ -33,10 +33,10 @@ function DebugDrawing.install(Physics, Body3D)
                 self.debugDraw[key] = value
             end
         end
-        love.graphics.push('all')
-        love.graphics.setShader()
+        katsa.graphics.push('all')
+        katsa.graphics.setShader()
         self.world:debugDraw()
-        love.graphics.pop()
+        katsa.graphics.pop()
     end
 end
 

@@ -18,7 +18,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local s = self.manager:switch(require('source.game.runtime.game').new, 'combined')
     local r, w, c = s.renderer, s.world, s.camera
     w.environment.gizmos.enabled = false
@@ -176,7 +176,7 @@ function T:draw()
         image:release()
     end
     local wire = require('source.engine.graphics.debug.wireframe')
-    local target = love.graphics.newCanvas(640, 360)
+    local target = katsa.graphics.newCanvas(640, 360)
     local fake = {
         geometry = r.quad,
         matrix = require('source.engine.math.math3d').compose(
@@ -193,12 +193,12 @@ function T:draw()
     c.position, c.rotation = { 0, 0, 0 }, { 0, 0, 0 }
     c:update(640, 360)
     r.camera, r.frame = c, r.frame + 1
-    love.graphics.push('all')
-    love.graphics.setCanvas(target)
-    love.graphics.clear(0, 0, 0, 1)
-    love.graphics.setDepthMode()
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(target)
+    katsa.graphics.clear(0, 0, 0, 1)
+    katsa.graphics.setDepthMode()
     wire.draw(r, fake)
-    love.graphics.pop()
+    katsa.graphics.pop()
     local pixels = target:newImageData()
     local red, green, blue = pixels:getPixel(280, 195)
     self:check(red + green + blue < 0.05, 'Wire quad triangle interiors remain empty')
@@ -220,7 +220,7 @@ function T:draw()
     self:check(wire.mesh(r, geom) ~= oldMesh, 'Wire mesh refreshes when geometry revisions change')
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' focused v78 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

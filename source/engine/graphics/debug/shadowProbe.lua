@@ -24,14 +24,14 @@ function Probe.measure(renderer, world, camera, time, repeats)
                 data:release()
             end
             render() -- Shader compilation/initial allocation outside samples.
-            local start = love.timer.getTime()
+            local start = katsa.timer.getTime()
             for i = 1, repeats do
                 render()
                 if mode == 3 then
                     buildCPU = buildCPU + renderer.stats.shadowBuildMilliseconds
                 end
             end
-            samples[mode] = (love.timer.getTime() - start) * 1000 / repeats
+            samples[mode] = (katsa.timer.getTime() - start) * 1000 / repeats
         end
     end)
     renderer.freezeShadowUpdates, renderer.shadows.samplingDisabled = freeze, disabled

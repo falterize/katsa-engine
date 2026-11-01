@@ -16,7 +16,7 @@ Shadows.__index = function(self, key)
             return nil
         end
         local shader =
-            self.resources:own(love.graphics.newShader('assets/shaders/engine/shadow.glsl'))
+            self.resources:own(katsa.graphics.newShader('assets/shaders/engine/shadow.glsl'))
         rawset(self, key, shader)
         return shader
     end
@@ -65,8 +65,8 @@ function Shadows.new(resources)
         self.lightProjectionPosition[i] = { 0, 0, 0, 1 }
         self.lightProjectionDirection[i] = { 0, 0, 1, 0.5 }
     end
-    self.matrixPixels = love.image.newImageData(4, Cascades.matrixRows, 'rgba32f')
-    self.matrixTexture = love.graphics.newImage(self.matrixPixels)
+    self.matrixPixels = katsa.image.newImageData(4, Cascades.matrixRows, 'rgba32f')
+    self.matrixTexture = katsa.graphics.newImage(self.matrixPixels)
     self.matrixTexture:setFilter('nearest', 'nearest')
     return self
 end

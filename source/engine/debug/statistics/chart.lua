@@ -15,9 +15,9 @@ function Class:drawSelf(ui)
     local span = math.max(0.001, math.max(0, summary.high) - low)
     local x, y, width, height = self._x + 8, self._y + 8, self._width - 16, self._height - 16
     local cutoff = (self._time or history.lastTime) - seconds
-    local g = love.graphics
+    local g = katsa.graphics
     g.push('all')
-    g.setLineWidth(1 / (ui.scale * love.graphics.getDPIScale()))
+    g.setLineWidth(1 / (ui.scale * katsa.graphics.getDPIScale()))
     g.setColor(0.15, 0.22, 0.3, 1)
     for index = 0, 4 do
         local py = y + height * index / 4

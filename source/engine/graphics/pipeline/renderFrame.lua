@@ -9,12 +9,12 @@ function RenderFrame.install(Renderer)
         end
         require('source.engine.animation.skeleton.skinLimits').prepare(world)
         local cacheModule = require('source.engine.graphics.pipeline.frameCache')
-        local start = love.timer.getTime()
+        local start = katsa.timer.getTime()
         local dependencies = cacheModule.inspect(self, world, camera, time, offscreen)
         self.stats.cacheCheckPhases = dependencies.timings
         self.stats.scalarGroupsSkipped = dependencies.scalarNodesSkipped or 0
         self.stats.scalarGroupsChecked = dependencies.scalarNodesChecked or 0
-        local finished = love.timer.getTime()
+        local finished = katsa.timer.getTime()
         local elapsed = (finished - start) * 1000
         self.stats.cacheCheckMilliseconds = elapsed
         local window = self._checkTimingWindow
@@ -47,7 +47,7 @@ function RenderFrame.install(Renderer)
             if offscreen then
                 return self.canvas
             end
-            local g = love.graphics
+            local g = katsa.graphics
             g.push('all')
             g.origin()
             g.setCanvas()
@@ -67,8 +67,8 @@ function RenderFrame.install(Renderer)
         self.stats.renderedFrames = (self.stats.renderedFrames or 0) + 1
         self.stats.cacheReason = dependencies.reason
         self:prepare(world, camera, time, dependencies)
-        local mainStart = love.timer.getTime()
-        local g = love.graphics
+        local mainStart = katsa.timer.getTime()
+        local g = katsa.graphics
         local s = world.debug and world.debug.wireframe and self.wireShader or nil
         g.push('all')
         g.origin()
@@ -136,7 +136,7 @@ function RenderFrame.install(Renderer)
             end
             g.pop()
             dependencies.valid = not dependencies.volatile
-            self.stats.mainSubmissionMilliseconds = (love.timer.getTime() - mainStart) * 1000
+            self.stats.mainSubmissionMilliseconds = (katsa.timer.getTime() - mainStart) * 1000
             return self.canvas
         end
         g.setCanvas()
@@ -145,7 +145,7 @@ function RenderFrame.install(Renderer)
         g.draw(self.canvas)
         g.pop()
         dependencies.valid = not dependencies.volatile
-        self.stats.mainSubmissionMilliseconds = (love.timer.getTime() - mainStart) * 1000
+        self.stats.mainSubmissionMilliseconds = (katsa.timer.getTime() - mainStart) * 1000
     end
 end
 

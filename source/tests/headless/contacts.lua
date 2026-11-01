@@ -1,5 +1,5 @@
 require('source.tests.integration.luaCompatibility')
-love = { timer = { getTime = os.clock } }
+katsa = { timer = { getTime = os.clock } }
 -- Only the backend clock is supplied; Oimo itself runs without mocks.
 local count = 0
 require('source.tests.integration.contactLifecycle')({

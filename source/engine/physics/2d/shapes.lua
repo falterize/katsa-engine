@@ -31,11 +31,11 @@ function Shapes.create(descriptor, factor)
     local matrix = descriptor._transform
     if kind == 'Box' and matrix then
         local w, h = size[1] / 2, size[2] / 2
-        return love.physics.newPolygonShape(
+        return katsa.physics.newPolygonShape(
             unpack(points({ -w, -h, w, -h, w, h, -w, h }, factor, x, y, angle, matrix))
         )
     elseif kind == 'Box' then
-        return love.physics.newRectangleShape(
+        return katsa.physics.newRectangleShape(
             x * factor,
             y * factor,
             size[1] * factor,
@@ -44,7 +44,7 @@ function Shapes.create(descriptor, factor)
         )
     elseif kind == 'Circle' then
         if matrix then
-            return love.physics.newCircleShape(
+            return katsa.physics.newCircleShape(
                 matrix[5] * factor,
                 matrix[6] * factor,
                 (descriptor.radius or size[1] / 2)
@@ -52,7 +52,7 @@ function Shapes.create(descriptor, factor)
                     * factor
             )
         end
-        return love.physics.newCircleShape(
+        return katsa.physics.newCircleShape(
             x * factor,
             y * factor,
             (descriptor.radius or size[1] / 2) * factor
@@ -60,11 +60,11 @@ function Shapes.create(descriptor, factor)
     elseif kind == 'Polygon' then
         local vertices = points(descriptor.vertices, factor, x, y, angle, matrix)
         assert(#vertices >= 6 and #vertices <= 16, 'Box2D polygons require 3 to 8 convex vertices')
-        local shape = love.physics.newPolygonShape(unpack(vertices))
+        local shape = katsa.physics.newPolygonShape(unpack(vertices))
         assert(shape:validate(), 'Polygon2D must be convex and nondegenerate')
         return shape
     elseif kind == 'Edge' then
-        return love.physics.newEdgeShape(
+        return katsa.physics.newEdgeShape(
             unpack(
                 points(
                     descriptor.vertices or { -size[1] / 2, 0, size[1] / 2, 0 },
@@ -77,7 +77,7 @@ function Shapes.create(descriptor, factor)
             )
         )
     elseif kind == 'Chain' then
-        return love.physics.newChainShape(
+        return katsa.physics.newChainShape(
             descriptor.loop == true,
             points(descriptor.vertices, factor, x, y, angle, matrix)
         )

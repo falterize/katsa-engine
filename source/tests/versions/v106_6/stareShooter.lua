@@ -11,7 +11,7 @@ local function frames(manager, count)
 end
 
 local function capture(scene, name)
-    local g = love.graphics
+    local g = katsa.graphics
     scene.camera:update(g.getDimensions())
     local canvas = g.newCanvas(g.getWidth(), g.getHeight(), { dpiscale = 1 })
     g.push('all')
@@ -57,7 +57,7 @@ local function extendedDepth(tester, scene)
     scene.demo.orbit.distance = 4
     scene.demo.orbit:update()
     frames(scene.manager, 15)
-    scene.camera:update(love.graphics.getDimensions())
+    scene.camera:update(katsa.graphics.getDimensions())
     scene.world:invalidateRender()
     scene:draw()
     tester:check(
@@ -92,7 +92,7 @@ function Tests.run(tester)
         local state = scene.demo
         local player, input = state.player, scene.input
         input.captureMouse = false
-        love.mouse.setRelativeMode(false)
+        katsa.mouse.setRelativeMode(false)
         frames(manager, 6)
         tester:check(
             player.fsm.name == 'idle' and player.grounded,
@@ -299,14 +299,14 @@ function Tests.run(tester)
         local package = scene.package
         assert(manager:switch(Application.new, 'menu'))
         tester:check(
-            package.references == 0 and not love.mouse.getRelativeMode(),
+            package.references == 0 and not katsa.mouse.getRelativeMode(),
             'Leaving the scene releases assets and captured mouse'
         )
     end
 end
 
 function Tests.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED Stare Shooter ' .. tostring(message))
         os.exit(1)
     end
@@ -329,7 +329,7 @@ function Tests:draw()
     Tests.run(self)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' Stare Shooter checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

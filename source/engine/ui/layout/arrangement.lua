@@ -142,7 +142,7 @@ function Arrangement.install(UI)
             if node.scrollable and node.scrollingEnabled then
                 local horizontal, vertical = Canvas.axes(node)
                 local dx = deltaX or 0
-                if horizontal and (not vertical or love.keyboard.isDown('lshift', 'rshift')) then
+                if horizontal and (not vertical or katsa.keyboard.isDown('lshift', 'rshift')) then
                     dx, deltaY = dx + deltaY, 0
                 end
                 self:scrollBy(node, -deltaY * 48, -dx * 48)
@@ -163,7 +163,7 @@ function Arrangement.install(UI)
     end
 
     function UI:fit(width, height)
-        local x, y, w, h = love.window.getSafeArea()
+        local x, y, w, h = katsa.window.getSafeArea()
         if not w or w <= 0 or h <= 0 then
             x, y, w, h = 0, 0, width, height
         end
@@ -174,13 +174,13 @@ function Arrangement.install(UI)
                 self.content.size = { 1, 0, 1, 0 }
             end
             self.scale, self.offsetX, self.offsetY = scale, x, y
-            self:setDensity(scale * love.graphics.getDPIScale())
+            self:setDensity(scale * katsa.graphics.getDPIScale())
             return
         end
         self.scale = math.min(w / self.width, h / self.height)
         self.offsetX = math.floor(x + (w - self.width * self.scale) / 2 + 0.5)
         self.offsetY = math.floor(y + (h - self.height * self.scale) / 2 + 0.5)
-        self:setDensity(self.scale * love.graphics.getDPIScale())
+        self:setDensity(self.scale * katsa.graphics.getDPIScale())
     end
     -- Convert an authored reference layout once; offsets retain their pixel meaning thereafter.
     -- Scrolled rows keep their vertical pixel positions, while columns follow their parent.

@@ -3,11 +3,11 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED profile ' .. tostring(message))
         os.exit(1)
     end
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -18,7 +18,7 @@ function T:draw()
         return
     end
     self.done = true
-    print('DEVICE', love.graphics.getRendererInfo())
+    print('DEVICE', katsa.graphics.getRendererInfo())
     print(
         'case,update,inspect,prepare,lights,shadows,main,render,complete,draws,faces,updated,heapKB'
     )
@@ -59,7 +59,7 @@ function T:draw()
         local n = 0
         for frame = 1, 52 do
             local t = frame / 60
-            local start = love.timer.getTime()
+            local start = katsa.timer.getTime()
             scene:update(1 / 60, 1 / 60)
             if not e.shadows.enabled then
                 c.position[1] = base + math.sin(t) * 30
@@ -74,13 +74,13 @@ function T:draw()
             if e.shadows.enabled then
                 r.shadows.nextUpdate = -1
             end
-            local updated = love.timer.getTime()
-            local before = love.graphics.getStats().drawcalls
+            local updated = katsa.timer.getTime()
+            local before = katsa.graphics.getStats().drawcalls
             r:draw(w, c, t, true)
-            local drawn = love.timer.getTime()
+            local drawn = katsa.timer.getTime()
             local data = r.canvas:newImageData()
             data:release()
-            local finish = love.timer.getTime()
+            local finish = katsa.timer.getTime()
             if frame > 28 then
                 n = n + 1
                 local values = {
@@ -92,7 +92,7 @@ function T:draw()
                     main = r.stats.mainSubmissionMilliseconds,
                     render = (drawn - updated) * 1000,
                     complete = (finish - start) * 1000,
-                    draws = love.graphics.getStats().drawcalls - before,
+                    draws = katsa.graphics.getStats().drawcalls - before,
                     faces = r.stats.shadowFaces,
                     updated = r.stats.updatedMeshes,
                     heapKB = collectgarbage('count'),
@@ -122,7 +122,7 @@ function T:draw()
         print(table.concat(fields, ','))
     end
     print('PROFILE COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

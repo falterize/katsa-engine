@@ -40,6 +40,11 @@ setmetatable(katsa, {
     end,
 })
 
+-- Runtime version: major, minor, revision, codename (what love.getVersion reported for LÖVE).
+function katsa.getVersion()
+    return 1, 0, 0, 'Katsa'
+end
+
 katsa.arg = {}
 
 -- Arguments after `--` (or all non-option arguments) are game arguments.

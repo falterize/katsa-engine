@@ -68,7 +68,7 @@ function BillboardCanvas.install(BillboardUI)
         end
         self.ui:layout()
         local revision = self.ui:changed()
-        local physicalScale = love.graphics.getDPIScale()
+        local physicalScale = katsa.graphics.getDPIScale()
         local target = math.max(
             (self.screenWidth or self.size[1]) / self.resolvedCanvasSize[1],
             (self.screenHeight or self.size[2]) / self.resolvedCanvasSize[2]
@@ -116,13 +116,13 @@ function BillboardCanvas.install(BillboardUI)
         then
             self.resources:releaseOwned(self.canvas)
             self.canvas =
-                self.resources:own(love.graphics.newCanvas(width, height, { dpiscale = density }))
+                self.resources:own(katsa.graphics.newCanvas(width, height, { dpiscale = density }))
         end
         self.canvasDensity = density
         self.canvasAllocationWidth, self.canvasAllocationHeight = width, height
         self.ui:setDensity(density)
         self.canvas:setFilter('linear', 'linear')
-        local g = love.graphics
+        local g = katsa.graphics
         g.push('all')
         g.setCanvas({ self.canvas, stencil = self.ui.hasCorners or false })
         g.clear(0, 0, 0, 0)

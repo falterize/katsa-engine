@@ -34,9 +34,9 @@ local keys = {
 
 local function supported(audio)
     if audio.effectsSupported == nil then
-        local ok, value = pcall(love.audio.isEffectsSupported)
+        local ok, value = pcall(katsa.audio.isEffectsSupported)
         audio.effectsSupported = ok and value or false
-        local success, limit = pcall(love.audio.getMaxSourceEffects)
+        local success, limit = pcall(katsa.audio.getMaxSourceEffects)
         audio.maxSourceEffects = success and limit or 0
     end
     return audio.effectsSupported
@@ -82,7 +82,7 @@ function Routing.define(audio, node)
         settings[key] = value
     end
     if changed then
-        local ok, result = pcall(love.audio.setEffect, node._effectName, settings)
+        local ok, result = pcall(katsa.audio.setEffect, node._effectName, settings)
         node._attempted = true
         node._defined = ok and result == true
         node.status = node._defined and 'Ready' or ('Unavailable: ' .. tostring(result))
@@ -185,7 +185,7 @@ function Routing.remove(audio, node)
         end
     end
     if node._defined then
-        pcall(love.audio.setEffect, node._effectName, false)
+        pcall(katsa.audio.setEffect, node._effectName, false)
         node._defined = false
     end
     node._attempted = false

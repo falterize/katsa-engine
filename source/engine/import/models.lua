@@ -57,7 +57,7 @@ end
 function Models.load(path, resources)
     path = resources:canonical(path and path ~= '' and path or 'assets/internal/missing-model')
     local asset = resources:cached('model', path, function(owner)
-        if not love.filesystem.getInfo(path, 'file') then
+        if not katsa.filesystem.getInfo(path, 'file') then
             -- Keep missing model instances visible and independently editable;
             -- share only the immutable placeholder geometry and texture.
             local geometry = require('source.engine.graphics.geometry.primitives').cube()
@@ -84,9 +84,9 @@ function Models.load(path, resources)
         end
         return Models.decode(path, owner)
     end)
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     local instance = copy(asset)
-    instance.cloneSeconds = love.timer.getTime() - started
+    instance.cloneSeconds = katsa.timer.getTime() - started
     return instance
 end
 

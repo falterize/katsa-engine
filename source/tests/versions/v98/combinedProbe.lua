@@ -6,11 +6,11 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(m)
+    katsa.errorhandler = function(m)
         print('FAILED Combined probe ' .. tostring(m))
         os.exit(1)
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -40,17 +40,17 @@ function T:draw()
             env.render.lightLoop = mode[1]
             env.render.depthPrepass = mode[2]
             scene.renderer:invalidate()
-            local started = love.timer.getTime()
+            local started = katsa.timer.getTime()
             self.manager:draw()
-            love.graphics.flushBatch()
+            katsa.graphics.flushBatch()
             local image = scene.renderer.canvas:newImageData()
-            love.graphics.present()
-            local elapsed = (love.timer.getTime() - started) * 1000
+            katsa.graphics.present()
+            local elapsed = (katsa.timer.getTime() - started) * 1000
             if frame > 20 then
                 samples[index][#samples[index] + 1] = elapsed
             end
             if frame % 15 == 0 then
-                local hash = love.data.hash('sha256', image:getString())
+                local hash = katsa.data.hash('sha256', image:getString())
                 reference = reference or hash
                 assert(
                     hash == reference,
@@ -77,7 +77,7 @@ function T:draw()
         )
     end
     print('PAIRED COMBINED COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

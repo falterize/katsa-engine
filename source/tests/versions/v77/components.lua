@@ -22,7 +22,7 @@ function T:draw()
     local oldCache = assert(loadfile(base .. '/source/engine/graphics/pipeline/frameCache.lua'))()
     state.fields = current.fields
     local newCache = assert(
-        loadfile(love.filesystem.getSource() .. '/source/engine/graphics/pipeline/frameCache.lua')
+        loadfile(katsa.filesystem.getSource() .. '/source/engine/graphics/pipeline/frameCache.lua')
     )()
     state.fields = oldFields
     local renderers = { { shadows = {}, lights = {} }, { shadows = {}, lights = {} } }
@@ -42,11 +42,11 @@ function T:draw()
     for round = 1, 5 do
         for i, cb in ipairs(callbacks) do
             collectgarbage('collect')
-            local start = love.timer.getTime()
+            local start = katsa.timer.getTime()
             for j = 1, 500 do
                 cb()
             end
-            print('DEPENDENCIES', round, i, (love.timer.getTime() - start) * 1000 / 500)
+            print('DEPENDENCIES', round, i, (katsa.timer.getTime() - start) * 1000 / 500)
         end
     end
     s.renderer:draw(s.world, s.camera, 1, true)
@@ -68,18 +68,18 @@ function T:draw()
     end
     for round = 1, 5 do
         for i, cb in ipairs(callbacks) do
-            local start = love.timer.getTime()
+            local start = katsa.timer.getTime()
             for j = 1, 2000 do
                 cb()
             end
-            print('ATTRIBUTES', round, i, (love.timer.getTime() - start) * 1000 / 2000)
+            print('ATTRIBUTES', round, i, (katsa.timer.getTime() - start) * 1000 / 2000)
         end
     end
     print('ATTRIBUTE_CALLS', batches[2].attributeAttachments, batches[2].attributeDetachments)
     for _, batch in ipairs(batches) do
         batch:release()
     end
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

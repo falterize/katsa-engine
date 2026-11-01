@@ -14,7 +14,7 @@ function T:draw()
     self.done = true
     local lib = require('source.engine.physics.3d.backends.jolt.library')
     print('JOLT FFI LOADED', lib.platform, lib.hash, lib.ffi.sizeof('JPH_PhysicsSystemSettings'))
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

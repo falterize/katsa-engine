@@ -7,7 +7,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED Physics2D ' .. tostring(message))
         os.exit(1)
     end
@@ -47,7 +47,7 @@ function Tests:environment(options)
 end
 
 function Tests:motion()
-    local meter = love.physics.getMeter()
+    local meter = katsa.physics.getMeter()
     local world, ui, physics, body, release = self:environment({ gravity = { 0, 640 }, units = 64 })
     local floor = body(200, 300, 'Static', { shape = 'Box', size = { 500, 20 } })
     local ball = body(200, 0, 'Dynamic', { shape = 'Circle', radius = 10 })
@@ -66,7 +66,7 @@ function Tests:motion()
         'Contact enter and persistent contact list agree'
     )
     self:check(
-        love.physics.getMeter() == meter,
+        katsa.physics.getMeter() == meter,
         'Creating a world does not change the global Box2D meter'
     )
     self:check(
@@ -462,7 +462,7 @@ function Tests:draw()
     require('source.tests.versions.v107.colliderAuthoring').run(self)
     require('source.tests.versions.v107.worldClocks').run(self)
     print('PASSED ' .. self.count .. ' Physics2D checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

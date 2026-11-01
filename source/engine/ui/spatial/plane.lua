@@ -81,7 +81,7 @@ local function surface(ui, node)
     if not hasVisual or node.size[1] <= 0 or node.size[2] <= 0 then
         return
     end
-    local g = love.graphics
+    local g = katsa.graphics
     local projection = ui.currentCamera and ui.currentCamera:projectionScale(ui.height) or 1
     local limit = g.getSystemLimits().texturesize
     local a, b, c, d = Plane.transform(node)
@@ -142,7 +142,7 @@ local function surface(ui, node)
 end
 
 function Plane.draw(ui, list)
-    local g = love.graphics
+    local g = katsa.graphics
     for _, node in ipairs(list) do
         if node:isA('Node2D') then
             local alpha = opacity(node)

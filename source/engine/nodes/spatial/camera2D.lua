@@ -74,7 +74,7 @@ end
 
 function Camera2D:apply(width, height)
     local x, y, angle = self:getWorldPose()
-    local g = love.graphics
+    local g = katsa.graphics
     g.translate(width / 2, height / 2)
     local scale = self:projectionScale(height)
     g.scale(scale, -scale)

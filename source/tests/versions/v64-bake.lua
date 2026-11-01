@@ -10,11 +10,11 @@ function Test.new()
             require('source.engine.import.packedModel').write(
                 model,
                 source,
-                love.filesystem.getSource() .. '/' .. source .. '.kmesh'
+                katsa.filesystem.getSource() .. '/' .. source .. '.kmesh'
             )
             resources:release()
             print('BAKED XBOT SIDECAR')
-            love.event.quit()
+            katsa.event.quit()
         end,
         draw = function() end,
     }

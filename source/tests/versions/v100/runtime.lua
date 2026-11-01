@@ -3,8 +3,8 @@ local T = {}
 local function extra(test)
     local Coverage = require('source.engine.graphics.occlusion.coverage')
     local original =
-        assert(loadstring(love.filesystem.read('source/tests/fixtures/v99-coverage.lua')))()
-    local random = love.math.newRandomGenerator(6197)
+        assert(loadstring(katsa.filesystem.read('source/tests/fixtures/v99-coverage.lua')))()
+    local random = katsa.math.newRandomGenerator(6197)
     local state = {}
     for iteration = 1, 400 do
         local x, y = random:random(-25, 75), random:random(-25, 75)
@@ -48,7 +48,7 @@ local function extra(test)
     local scene = assert(test.manager:switch(require('source.game.runtime.game').new, 'occlusion'))
     local Projection = require('source.engine.graphics.occlusion.projection')
     local reference =
-        assert(loadstring(love.filesystem.read('source/tests/fixtures/v99-projection.lua')))()
+        assert(loadstring(katsa.filesystem.read('source/tests/fixtures/v99-projection.lua')))()
     local a, b = {}, {}
     for frame = 1, 80 do
         scene.camera.position.X = math.sin(frame / 11) * 90

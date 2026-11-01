@@ -19,7 +19,7 @@ function Tests.run(tester)
     tester:check(
         root.name == 'validation-folders-v1068'
             and extra:scopeDirectory()
-                == love.filesystem.getSaveDirectory() .. '/saves/validation-folders-v1068/shooter/extra',
+                == katsa.filesystem.getSaveDirectory() .. '/saves/validation-folders-v1068/shooter/extra',
         'The scene data root selects top-level scopes without an implicit shared prefix'
     )
     assert(extra:write('fun.txt', 'Hello!'))
@@ -29,13 +29,13 @@ function Tests.run(tester)
         'One read/write API stores original text in nested saves folders'
     )
     tester:check(
-        love.filesystem.read('saves/' .. shooter.name .. '/settings.txt') == 'volume=0.8\n',
+        katsa.filesystem.read('saves/' .. shooter.name .. '/settings.txt') == 'volume=0.8\n',
         'Raw and structured data use the same visible saves hierarchy'
     )
     assert(extra:write('progress.json', { score = 1 }))
     assert(extra:write('progress.json', { score = 2 }))
     local primary = 'saves/' .. extra.name .. '/progress.json'
-    local envelope = Json.decode(assert(love.filesystem.read(primary)))
+    local envelope = Json.decode(assert(katsa.filesystem.read(primary)))
     tester:check(
         Json.decode(envelope.payload).data.score == 2 and direct:read('progress.json').score == 2,
         'An explicit JSON filename always contains the latest verified table'
@@ -47,7 +47,7 @@ function Tests.run(tester)
         'Unified existence checks cover tables, text and missing files'
     )
     local binary = '\0\255\1bytes'
-    local bytes = love.data.newByteData(binary)
+    local bytes = katsa.data.newByteData(binary)
     assert(extra:write('payload.bin', bytes))
     bytes:release()
     tester:check(
@@ -86,7 +86,7 @@ function Tests.run(tester)
         'Invalid per-file options return errors through the same read/write contract'
     )
     local fs = {}
-    for key, value in pairs(love.filesystem) do
+    for key, value in pairs(katsa.filesystem) do
         fs[key] = value
     end
     local parent = Data.new(root.name, {
@@ -119,7 +119,7 @@ function Tests.run(tester)
             and not extra:write('versioned.json', { score = 9 }),
         'Named documents retain migration and future-schema overwrite protection'
     )
-    assert(love.filesystem.write(primary, 'damaged primary'))
+    assert(katsa.filesystem.write(primary, 'damaged primary'))
     local recovered, recovery = extra:read('progress.json')
     tester:check(
         recovered.score == 1 and recovery.status == 'recovered',
@@ -129,7 +129,7 @@ function Tests.run(tester)
         if source:match('%.tmp$') then
             return nil, 'Injected document commit failure'
         end
-        return FileIO.rename(love.filesystem, source, target)
+        return FileIO.rename(katsa.filesystem, source, target)
     end
     local failing = Data.new(extra.name, { filesystem = fs })
     tester:check(
@@ -138,8 +138,8 @@ function Tests.run(tester)
     )
     assert(extra:write('progress.json', { score = 3 }))
     tester:check(extra:read('progress.json').score == 3, 'A recovered document can be saved again')
-    assert(love.filesystem.write(primary, 'broken'))
-    assert(love.filesystem.write(primary .. '.bak', 'also broken'))
+    assert(katsa.filesystem.write(primary, 'broken'))
+    assert(katsa.filesystem.write(primary .. '.bak', 'also broken'))
     tester:check(
         not extra:read('progress.json'),
         'Damaged documents fail instead of returning defaults'
@@ -147,14 +147,14 @@ function Tests.run(tester)
     assert(extra:delete('progress.json'))
     tester:check(
         not extra:exists('progress.json')
-            and not love.filesystem.getInfo(primary .. '.bak')
-            and not love.filesystem.getInfo(primary .. '.tmp'),
+            and not katsa.filesystem.getInfo(primary .. '.bak')
+            and not katsa.filesystem.getInfo(primary .. '.tmp'),
         'Unified JSON deletion removes primary, backup and abandoned temporary files'
     )
 
     local legacyRoot = 'files/' .. extra.name
-    assert(love.filesystem.createDirectory(legacyRoot))
-    assert(love.filesystem.write(legacyRoot .. '/legacy.txt', 'old'))
+    assert(katsa.filesystem.createDirectory(legacyRoot))
+    assert(katsa.filesystem.write(legacyRoot .. '/legacy.txt', 'old'))
     tester:check(
         extra:read('legacy.txt') == 'old'
             and extra:filePath('legacy.txt') == legacyRoot .. '/legacy.txt',
@@ -163,22 +163,22 @@ function Tests.run(tester)
     assert(extra:write('legacy.txt', 'new'))
     tester:check(
         extra:read('legacy.txt') == 'new'
-            and love.filesystem.read(legacyRoot .. '/legacy.txt') == 'old',
+            and katsa.filesystem.read(legacyRoot .. '/legacy.txt') == 'old',
         'New writes use saves without deleting or shadowing the latest data with legacy bytes'
     )
     local large = string.rep('x', 70000)
-    assert(love.filesystem.write(legacyRoot .. '/append.txt', large))
+    assert(katsa.filesystem.write(legacyRoot .. '/append.txt', large))
     local stream = assert(extra:openFile('append.txt', 'a'))
     assert(stream:write('!'))
     assert(stream:close())
     tester:check(
         extra:read('append.txt') == large .. '!'
-            and love.filesystem.read(legacyRoot .. '/append.txt') == large,
+            and katsa.filesystem.read(legacyRoot .. '/append.txt') == large,
         'Appending imports a legacy file in bounded chunks and preserves its original'
     )
     assert(extra:delete('legacy.txt'))
     tester:check(
-        not extra:exists('legacy.txt') and not love.filesystem.getInfo(legacyRoot .. '/legacy.txt'),
+        not extra:exists('legacy.txt') and not katsa.filesystem.getInfo(legacyRoot .. '/legacy.txt'),
         'Deletion clears both locations so an old raw file cannot reappear'
     )
     assert(root:createDirectory('empty/category'))

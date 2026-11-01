@@ -53,7 +53,7 @@ end
 
 function Curve:drawSelf(ui)
     Curve.base.drawSelf(self, ui)
-    local g = love.graphics
+    local g = katsa.graphics
     g.push('all')
     g.setLineWidth(1)
     g.setColor(0.15, 0.24, 0.31, 1)

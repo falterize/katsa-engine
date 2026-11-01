@@ -51,7 +51,7 @@ function Class:drawSelf(ui)
         self._height
     )
     assert(w > 0 and h > 0, 'ViewportFrame.CanvasSize must resolve to positive dimensions')
-    local limits = love.graphics.getSystemLimits()
+    local limits = katsa.graphics.getSystemLimits()
     local budget = world.environment.render.maxRenderPixels
     local ratio = math.min(1, limits.texturesize / math.max(w, h), math.sqrt(budget / (w * h)))
     w, h = math.max(1, math.floor(w * ratio)), math.max(1, math.floor(h * ratio))
@@ -68,7 +68,7 @@ function Class:drawSelf(ui)
         world.renderer.targetWidth, world.renderer.targetHeight = w, h
         canvas = world.renderer:draw(world, world.activeCamera, world.viewportTime or 0, true)
     end
-    local g = love.graphics
+    local g = katsa.graphics
     -- UI density follows the displayed frame independently of the 3D render resolution.
     local density = math.max(
         0.25,

@@ -3,7 +3,7 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED checks ' .. tostring(message))
         os.exit(1)
     end
@@ -35,7 +35,7 @@ function T:draw()
             cache.inspect(r, w, c, i / 60, true)
         end
         collectgarbage('collect')
-        local start = love.timer.getTime()
+        local start = katsa.timer.getTime()
         for i = 1, count do
             cube.rotation[2] = i
             local deps = cache.inspect(r, w, c, i / 60, true)
@@ -44,7 +44,7 @@ function T:draw()
             end
         end
         print(
-            string.format('%s total %.4f ms', label, (love.timer.getTime() - start) * 1000 / count)
+            string.format('%s total %.4f ms', label, (katsa.timer.getTime() - start) * 1000 / count)
         )
         for _, key in ipairs({
             'guards',
@@ -63,7 +63,7 @@ function T:draw()
     measure('INTERPRETER')
     jit.on()
     print('CHECKS COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

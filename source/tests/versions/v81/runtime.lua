@@ -3,10 +3,10 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v81 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, count = 0 }, T)
@@ -25,7 +25,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Opacity = require('source.engine.materials.opacity')
     local scene = self.manager:switch(require('source.game.runtime.game').new, 'occlusion')
     local world, renderer, camera = scene.world, scene.renderer, scene.camera
@@ -36,7 +36,7 @@ function T:draw()
         Opacity.image(scene.resources:image('bricks')),
         'Inherited brick texture classified opaque at load'
     )
-    local pixels = love.image.newImageData(4, 4)
+    local pixels = katsa.image.newImageData(4, 4)
     pixels:mapPixel(function()
         return 1, 1, 1, 1
     end)
@@ -204,7 +204,7 @@ function T:draw()
             child:destroy()
         end
     end
-    local cutout = love.image.newImageData(4, 4)
+    local cutout = katsa.image.newImageData(4, 4)
     cutout:mapPixel(function()
         return 1, 1, 1, 1
     end)
@@ -224,7 +224,7 @@ function T:draw()
         not custom.shader:hasUniform('depthPrepassTexture'),
         'Custom materials retain their original sampler interface'
     )
-    local valid, errors = love.graphics.validateShader(
+    local valid, errors = katsa.graphics.validateShader(
         true,
         require('source.engine.graphics.shaderSource').read(
             'assets/shaders/engine/depthPrepass.glsl'
@@ -233,7 +233,7 @@ function T:draw()
     self:check(valid, 'Depth shader validates for ES: ' .. tostring(errors))
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' focused v81 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

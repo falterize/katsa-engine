@@ -6,7 +6,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.2 ' .. tostring(message))
         os.exit(1)
     end
@@ -129,18 +129,18 @@ function Tests:scrolling(scene, scale)
         { size = { 0, 500, 0, 400 }, backgroundColor = { 1, 0, 0 }, backgroundTransparency = 0 },
         frame
     )
-    local canvas = love.graphics.newCanvas(320 * scale, 220 * scale)
+    local canvas = katsa.graphics.newCanvas(320 * scale, 220 * scale)
     for _, direction in ipairs({ 'X', 'Y', 'XY' }) do
         for _, side in ipairs({ 'Left', 'Right' }) do
             for _, inset in ipairs({ 'None', 'Always', 'ScrollBar' }) do
                 frame.scrollingDirection = direction
                 frame.verticalScrollBarPosition = side
                 frame.verticalScrollBarInset, frame.horizontalScrollBarInset = inset, inset
-                love.graphics.push('all')
-                love.graphics.setCanvas({ canvas, stencil = true })
-                love.graphics.clear(0, 0, 0, 1, 0)
+                katsa.graphics.push('all')
+                katsa.graphics.setCanvas({ canvas, stencil = true })
+                katsa.graphics.clear(0, 0, 0, 1, 0)
                 ui:draw()
-                love.graphics.pop()
+                katsa.graphics.pop()
                 local image = canvas:newImageData()
                 if direction ~= 'X' then
                     local x = side == 'Left' and 33 or 193
@@ -169,11 +169,11 @@ function Tests:scrolling(scene, scale)
     end
     frame.position = { 0, 100, 0, 0 }
     ui:layout()
-    love.graphics.push('all')
-    love.graphics.setCanvas({ canvas, stencil = true })
-    love.graphics.clear(0, 0, 0, 1, 0)
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas({ canvas, stencil = true })
+    katsa.graphics.clear(0, 0, 0, 1, 0)
     ui:draw()
-    love.graphics.pop()
+    katsa.graphics.pop()
     local image = canvas:newImageData()
     local red, green = image:getPixel(math.floor(235 * scale), math.floor(80 * scale))
     self:check(red == 0 and green == 0, 'An overflowing scrollbar cannot escape its ancestor')
@@ -194,7 +194,7 @@ function Tests:draw()
         'The machine-code budget covers the extended rig workload'
     )
     self:check(
-        love.filesystem.getIdentity() == 'katsa-engine',
+        katsa.filesystem.getIdentity() == 'katsa-engine',
         'Application uses katsa-engine save identity'
     )
     local scene = assert(self.manager:switch(Game.new, 'platformer', { physicsBackend = 'jolt' }))
@@ -225,7 +225,7 @@ function Tests:draw()
     for _, scale in ipairs({ 1, 1.25, 2 }) do
         self:scrolling(scene, scale)
     end
-    self.manager.drawFinishedAt = love.timer.getTime() - 0.025
+    self.manager.drawFinishedAt = katsa.timer.getTime() - 0.025
     self.manager:update(0)
     self:check(
         self.manager.frameGapMilliseconds >= 25,
@@ -234,7 +234,7 @@ function Tests:draw()
     require('source.tests.versions.v106_2.text').run(self, scene)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v106.2 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

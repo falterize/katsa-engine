@@ -31,7 +31,7 @@ function Input:reset()
     self.axisX, self.axisY, self.up, self.down = 0, 0, 0, 0
     self.joystickId = nil
     self.cameraId = nil
-    love.mouse.setRelativeMode(false)
+    katsa.mouse.setRelativeMode(false)
 end
 require('source.engine.input.pointers').install(Input)
 require('source.engine.input.movement').install(Input)

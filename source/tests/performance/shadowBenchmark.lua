@@ -15,7 +15,7 @@ local cases = {
 }
 
 function Benchmark.new(manager)
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Resources = require('source.engine.core.resources')
     local resources = Resources.new(require('source.game.data.manifest'))
     local settings = require('source.game.data.settings').create()
@@ -70,7 +70,7 @@ function Benchmark.new(manager)
     local renderer = require('source.engine.graphics.pipeline.renderer').new(resources)
     renderer.renderDensity = 1
     renderer.msaa = 0
-    local name, version, vendor, device = love.graphics.getRendererInfo()
+    local name, version, vendor, device = katsa.graphics.getRendererInfo()
     print('BENCHMARK ' .. table.concat({ name, version, vendor, device }, ' / '))
     return setmetatable({
         resources = resources,
@@ -106,11 +106,11 @@ function Benchmark:draw()
         self.caster.position[1] = self.frame % 2 == 0 and 4 or -4
         r.shadows.nextUpdate = -1
     end
-    local start = love.timer.getTime()
+    local start = katsa.timer.getTime()
     r:draw(w, self.camera, self.frame / 60)
     local pixels = r.canvas:newImageData()
     pixels:release()
-    local elapsed = (love.timer.getTime() - start) * 1000
+    local elapsed = (katsa.timer.getTime() - start) * 1000
     if self.frame <= 30 then
         self.peak = math.max(self.peak, elapsed)
     else
@@ -153,12 +153,12 @@ function Benchmark:draw()
         self.tests = 0
         self.peak = 0
         if self.case > #cases then
-            love.filesystem.write('shadowBenchmark.txt', table.concat(self.results, '\n'))
+            katsa.filesystem.write('shadowBenchmark.txt', table.concat(self.results, '\n'))
             r:release()
             w:release()
             self.resources:release()
             print('BENCHMARK COMPLETE')
-            love.event.quit()
+            katsa.event.quit()
         end
     end
 end

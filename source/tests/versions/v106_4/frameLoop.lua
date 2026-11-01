@@ -17,21 +17,21 @@ function Probe.new(manager)
             self.samples[key] = (self.samples[key] or 0) + samples
         end)
     end
-    local timerSleep, present, pump = love.timer.sleep, love.graphics.present, love.event.pump
-    love.timer.sleep = function(duration)
-        local started = love.timer.getTime()
+    local timerSleep, present, pump = katsa.timer.sleep, katsa.graphics.present, katsa.event.pump
+    katsa.timer.sleep = function(duration)
+        local started = katsa.timer.getTime()
         timerSleep(duration)
-        self.sleep = (love.timer.getTime() - started) * 1000
+        self.sleep = (katsa.timer.getTime() - started) * 1000
     end
-    love.graphics.present = function(...)
-        local started = love.timer.getTime()
+    katsa.graphics.present = function(...)
+        local started = katsa.timer.getTime()
         present(...)
-        self.present = (love.timer.getTime() - started) * 1000
+        self.present = (katsa.timer.getTime() - started) * 1000
     end
-    love.event.pump = function(...)
-        local started = love.timer.getTime()
+    katsa.event.pump = function(...)
+        local started = katsa.timer.getTime()
         pump(...)
-        self.pump = (love.timer.getTime() - started) * 1000
+        self.pump = (katsa.timer.getTime() - started) * 1000
     end
     return self
 end
@@ -42,7 +42,7 @@ function Probe:update(dt)
         self.scene = assert(
             self.manager:switch(Game.new, 'animationPhysicsLab', { physicsBackend = 'jolt' })
         )
-        print('FRAME LOOP', love.graphics.getRendererInfo())
+        print('FRAME LOOP', katsa.graphics.getRendererInfo())
     elseif self.frame == 120 then
         self.scene.showStats = true
     elseif self.frame == 180 then
@@ -88,7 +88,7 @@ function Probe:update(dt)
                 print('SAMPLE', samples[i][2], samples[i][1])
             end
         end
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

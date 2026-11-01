@@ -3,7 +3,7 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     local scene = manager:switch(require('source.game.runtime.game').new, 'combined')
     scene.world.environment.shadows.enabled = false
     scene.world.environment.gizmos.enabled = false
@@ -44,7 +44,7 @@ function T:draw()
         end
         local fence = r.canvas:newImageData()
         fence:release()
-        local start, reused, checks, prepare = love.timer.getTime(), 0, 0, 0
+        local start, reused, checks, prepare = katsa.timer.getTime(), 0, 0, 0
         for i = 61, 180 do
             pose(mode, i)
             s:update(1 / 60)
@@ -57,7 +57,7 @@ function T:draw()
             string.format(
                 '%s CPU update+3D %.3f ms | checks %.3f | prepare %.3f | reused %d/120',
                 mode,
-                (love.timer.getTime() - start) * 1000 / 120,
+                (katsa.timer.getTime() - start) * 1000 / 120,
                 checks / 120,
                 prepare / 120,
                 reused
@@ -65,7 +65,7 @@ function T:draw()
         )
         fence = r.canvas:newImageData()
         fence:release()
-        start = love.timer.getTime()
+        start = katsa.timer.getTime()
         for i = 181, 204 do
             pose(mode, i)
             s:update(1 / 60)
@@ -73,7 +73,7 @@ function T:draw()
             local image = r.canvas:newImageData()
             image:release()
         end
-        local elapsed = love.timer.getTime() - start
+        local elapsed = katsa.timer.getTime() - start
         local output = os.getenv('KATSA_PROFILE_OUTPUT')
         if output then
             local image = r.canvas:newImageData()
@@ -104,7 +104,7 @@ function T:draw()
             r:prepare(w, c, i / 60, inspect(r, w, c, i / 60, true))
         end
         collectgarbage('collect')
-        local start = love.timer.getTime()
+        local start = katsa.timer.getTime()
         for i = 61, 360 do
             pose(mode, i)
             r:prepare(w, c, i / 60, inspect(r, w, c, i / 60, true))
@@ -113,7 +113,7 @@ function T:draw()
             string.format(
                 '%s preparation-only %.3f ms | comparisons %s matrixRows %s',
                 mode,
-                (love.timer.getTime() - start) * 1000 / 300,
+                (katsa.timer.getTime() - start) * 1000 / 300,
                 tostring(r.batches.comparisons),
                 tostring(r.batches.matrixRows)
             )
@@ -123,12 +123,12 @@ function T:draw()
     if output then
         pose('Idle', 240)
         s:update(1 / 60)
-        local capture = love.graphics.newCanvas(960, 540)
-        love.graphics.push('all')
-        love.graphics.setCanvas({ capture, stencil = true })
-        love.graphics.clear(0, 0, 0, 0)
+        local capture = katsa.graphics.newCanvas(960, 540)
+        katsa.graphics.push('all')
+        katsa.graphics.setCanvas({ capture, stencil = true })
+        katsa.graphics.clear(0, 0, 0, 0)
         s.ui:draw()
-        love.graphics.pop()
+        katsa.graphics.pop()
         local image = capture:newImageData()
         local encoded = image:encode('png')
         local file = assert(io.open(output .. '/UI.png', 'wb'))
@@ -153,7 +153,7 @@ function T:draw()
             samples[key] = (samples[key] or 0) + count
         end)
     end
-    local start = love.timer.getTime()
+    local start = katsa.timer.getTime()
     for i = 1, 300 do
         s:update(1 / 60)
         s:draw()
@@ -164,7 +164,7 @@ function T:draw()
     print(
         string.format(
             'Idle full scene CPU update+draw %.3f ms',
-            (love.timer.getTime() - start) * 1000 / 300
+            (katsa.timer.getTime() - start) * 1000 / 300
         )
     )
     local rows = {}
@@ -177,7 +177,7 @@ function T:draw()
     for i = 1, math.min(12, #rows) do
         print('SAMPLE', rows[i][2], rows[i][1])
     end
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

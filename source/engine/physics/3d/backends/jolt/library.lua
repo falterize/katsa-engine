@@ -1,8 +1,8 @@
 local ffi = require('ffi')
 -- Parenthesize the read result: LÖVE also returns the byte count, whereas cdef
 -- must receive only the header string.
-ffi.cdef((assert(love.filesystem.read('vendor/joltPhysics/include/joltc.ffi.h'))))
-local platformName, architectureName = love.system.getOS(), ffi.arch
+ffi.cdef((assert(katsa.filesystem.read('vendor/joltPhysics/include/joltc.ffi.h'))))
+local platformName, architectureName = katsa.system.getOS(), ffi.arch
 local platform = ({ Windows = 'win', Linux = 'linux', Android = 'android', ['OS X'] = 'osx' })[platformName]
 local architecture = ({ x64 = 'x64', arm64 = 'arm64', arm = 'arm' })[architectureName]
 assert(platform and architecture, 'No Jolt binary for ' .. platformName .. '/' .. architectureName)
@@ -10,16 +10,16 @@ local filename = platformName == 'Windows' and 'joltc.dll'
     or platformName == 'OS X' and 'libjoltc.dylib'
     or 'libjoltc.so'
 local relative = 'vendor/joltPhysics/native/' .. platform .. '-' .. architecture .. '/' .. filename
-local bytes = assert(love.filesystem.read(relative), 'Missing Jolt native library: ' .. relative)
-local hash = love.data.encode('string', 'hex', love.data.hash('sha256', bytes))
+local bytes = assert(katsa.filesystem.read(relative), 'Missing Jolt native library: ' .. relative)
+local hash = katsa.data.encode('string', 'hex', katsa.data.hash('sha256', bytes))
 local folder = 'native-cache/joltc-' .. hash
-assert(love.filesystem.createDirectory(folder))
+assert(katsa.filesystem.createDirectory(folder))
 local target = folder .. '/' .. filename
-local old = love.filesystem.read(target)
+local old = katsa.filesystem.read(target)
 -- A content-addressed path lets multiple project versions share the same
 -- verified binary without trying to replace a DLL already loaded by Windows.
 if old ~= bytes then
-    assert(love.filesystem.write(target, bytes))
+    assert(katsa.filesystem.write(target, bytes))
 end
 local lib
 if platformName == 'Android' then
@@ -30,7 +30,7 @@ if platformName == 'Android' then
         lib = packaged
     end
 end
-lib = lib or ffi.load(love.filesystem.getSaveDirectory() .. '/' .. target)
+lib = lib or ffi.load(katsa.filesystem.getSaveDirectory() .. '/' .. target)
 assert(lib.JPH_Init(), 'Jolt initialization failed')
 -- Keep the library alive for the entire Lua state; worlds own their native handles.
 return { ffi = ffi, C = lib, hash = hash, platform = platform .. '-' .. architecture }

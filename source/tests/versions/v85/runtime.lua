@@ -106,7 +106,7 @@ local function extra(test)
         colors[i] = { 1, 1, 1, 0.5 }
     end
     local stream =
-        love.graphics.newMesh({ { 'VertexColor', 'float', 4 } }, colors, 'points', 'static')
+        katsa.graphics.newMesh({ { 'VertexColor', 'float', 4 } }, colors, 'points', 'static')
     mesh:attachAttribute('VertexColor', stream, 'pervertex')
     geometry.revision = (geometry.revision or 0) + 1
     r:invalidate()

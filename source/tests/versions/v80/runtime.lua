@@ -3,10 +3,10 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v80 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, count = 0 }, T)
@@ -25,8 +25,8 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    print('RENDERER', love.graphics.getRendererInfo())
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    print('RENDERER', katsa.graphics.getRendererInfo())
     local scene = self.manager:switch(require('source.game.runtime.game').new, 'occlusion')
     local renderer, world, camera = scene.renderer, scene.world, scene.camera
     world.environment.render.frameCache = false
@@ -159,7 +159,7 @@ function T:draw()
     )
     local settings = world.environment.shadows
     local triangles = require('source.engine.graphics.debug.triangles')
-    local mesh = love.graphics.newMesh({ { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, 'triangles')
+    local mesh = katsa.graphics.newMesh({ { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }, 'triangles')
     mesh:setVertexMap(1, 2, 3, 1, 3, 4)
     triangles.begin()
     self:check(triangles.mesh(mesh) == 2, 'Indexed mesh triangle count')
@@ -310,7 +310,7 @@ function T:draw()
     geometry.mesh:setVertexMap()
     geometry.revision = 2
     local wire = require('source.engine.graphics.debug.wireframe')
-    local targetCanvas = love.graphics.newCanvas(640, 360)
+    local targetCanvas = katsa.graphics.newCanvas(640, 360)
     local fake = {
         geometry = renderer.quad,
         matrix = require('source.engine.math.math3d').compose(
@@ -330,12 +330,12 @@ function T:draw()
     for _, density in ipairs({ 1, 2 }) do
         renderer.frame = renderer.frame + 1
         renderer.density = density
-        love.graphics.push('all')
-        love.graphics.setCanvas(targetCanvas)
-        love.graphics.clear(0, 0, 0, 1)
-        love.graphics.setDepthMode()
+        katsa.graphics.push('all')
+        katsa.graphics.setCanvas(targetCanvas)
+        katsa.graphics.clear(0, 0, 0, 1)
+        katsa.graphics.setDepthMode()
         wire.draw(renderer, fake)
-        love.graphics.pop()
+        katsa.graphics.pop()
         local pixels = targetCanvas:newImageData()
         local r, g, b = pixels:getPixel(280, 195)
         self:check(
@@ -401,16 +401,16 @@ function T:draw()
         skinnedVertices[i] = row
     end
     local skinnedGeometry = geometryHelper.mesh(skinnedVertices, true)
-    local skinCanvas = love.graphics.newCanvas(640, 360)
+    local skinCanvas = katsa.graphics.newCanvas(640, 360)
     fake.geometry = skinnedGeometry
     fake.skin = { matrices = { require('source.engine.math.math3d').identity() } }
     renderer.frame = renderer.frame + 1
-    love.graphics.push('all')
-    love.graphics.setCanvas(skinCanvas)
-    love.graphics.clear(0, 0, 0, 1)
-    love.graphics.setDepthMode()
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(skinCanvas)
+    katsa.graphics.clear(0, 0, 0, 1)
+    katsa.graphics.setDepthMode()
     wire.draw(renderer, fake)
-    love.graphics.pop()
+    katsa.graphics.pop()
     local skinImage = skinCanvas:newImageData()
     rr, gg, bb = skinImage:getPixel(280, 195)
     self:check(rr + gg + bb < 0.05, 'Skinned wire triangle interior remains empty')
@@ -434,14 +434,14 @@ function T:draw()
     })
     fake.geometry, fake.skin, fake.matrix =
         crossingGeometry, nil, require('source.engine.math.math3d').identity()
-    local crossingCanvas = love.graphics.newCanvas(640, 360)
+    local crossingCanvas = katsa.graphics.newCanvas(640, 360)
     renderer.frame = renderer.frame + 1
-    love.graphics.push('all')
-    love.graphics.setCanvas(crossingCanvas)
-    love.graphics.clear(0, 0, 0, 1)
-    love.graphics.setDepthMode()
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(crossingCanvas)
+    katsa.graphics.clear(0, 0, 0, 1)
+    katsa.graphics.setDepthMode()
     wire.draw(renderer, fake)
-    love.graphics.pop()
+    katsa.graphics.pop()
     local crossingImage = crossingCanvas:newImageData()
     lit = 0
     for y = 0, 359 do
@@ -459,8 +459,8 @@ function T:draw()
     crossingImage:release()
     crossingCanvas:release()
     crossingGeometry.mesh:release()
-    local shaderText = love.filesystem.read('assets/shaders/engine/wireframe.glsl')
-    local valid, errors = love.graphics.validateShader(true, shaderText)
+    local shaderText = katsa.filesystem.read('assets/shaders/engine/wireframe.glsl')
+    local valid, errors = katsa.graphics.validateShader(true, shaderText)
     self:check(valid, 'Wire shader validates for OpenGL ES: ' .. tostring(errors))
     self:check(
         not shaderText:find('fwidth') and not shaderText:find('discard'),
@@ -499,7 +499,7 @@ function T:draw()
     )
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' focused v80 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

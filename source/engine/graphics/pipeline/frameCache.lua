@@ -78,7 +78,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
         }
         renderer._frameCache = c
     end
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     local timings = c.timings or {}
     c.timings = timings
     c.epoch = c.epoch + 1
@@ -131,7 +131,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
         or fastReason == 'Physics'
         or fastReason == 'Particles'
     if fastReason and not dynamic then
-        timings.guards = (love.timer.getTime() - started) * 1000
+        timings.guards = (katsa.timer.getTime() - started) * 1000
         timings.objects, timings.lights, timings.directionalLights, timings.shaderNodes, timings.other =
             0, 0, 0, 0, 0
         c.meshSnapshots = false
@@ -144,8 +144,8 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
         c.casterRevision = c.casterRevision + 1
         return c
     end
-    timings.guards = (love.timer.getTime() - started) * 1000
-    local phase = love.timer.getTime()
+    timings.guards = (katsa.timer.getTime() - started) * 1000
+    local phase = katsa.timer.getTime()
     Properties.begin(c)
     c.meshSnapshots = true
     c.meshesStable = spatial or dynamic
@@ -343,7 +343,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
         return changed
     end
     for _, name in ipairs(listNames) do
-        phase = love.timer.getTime()
+        phase = katsa.timer.getTime()
         local list = world[name] or empty
         local old = c.lists[name] or {}
         c.lists[name] = old
@@ -370,9 +370,9 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
                 sceneChanged = changed or sceneChanged
             end
         end
-        timings[name] = (love.timer.getTime() - phase) * 1000
+        timings[name] = (katsa.timer.getTime() - phase) * 1000
     end
-    phase = love.timer.getTime()
+    phase = katsa.timer.getTime()
     cameraChanged = chain(camera, 'camera') or cameraChanged
     for n, r in pairs(c.nodes) do
         if r.epoch ~= c.epoch then
@@ -419,11 +419,11 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
         'maskForceAll',
         require('source.engine.graphics.pipeline.lightMasks').forceAll
     ) or sceneChanged
-    cameraChanged = scalar(c.options, 'width', renderer.targetWidth or love.graphics.getWidth())
+    cameraChanged = scalar(c.options, 'width', renderer.targetWidth or katsa.graphics.getWidth())
         or cameraChanged
-    cameraChanged = scalar(c.options, 'height', renderer.targetHeight or love.graphics.getHeight())
+    cameraChanged = scalar(c.options, 'height', renderer.targetHeight or katsa.graphics.getHeight())
         or cameraChanged
-    cameraChanged = scalar(c.options, 'dpi', love.graphics.getDPIScale()) or cameraChanged
+    cameraChanged = scalar(c.options, 'dpi', katsa.graphics.getDPIScale()) or cameraChanged
     cameraChanged = scalar(c.options, 'overlay', offscreen and renderer.renderOverlay or false)
         or cameraChanged
     if world.environment.debug.physics.enabled then
@@ -458,7 +458,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
     if volatile then
         c.valid = false
     end
-    timings.other = (love.timer.getTime() - phase) * 1000
+    timings.other = (katsa.timer.getTime() - phase) * 1000
     return c
 end
 

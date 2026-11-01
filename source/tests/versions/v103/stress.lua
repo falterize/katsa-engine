@@ -7,7 +7,7 @@ function T.new(manager)
         jit.off()
         jit.flush()
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -29,7 +29,7 @@ function T:draw()
         'graphicsLab',
     }
     for _, zone in ipairs(zones) do
-        love.math.setRandomSeed(384)
+        katsa.math.setRandomSeed(384)
         math.randomseed(384)
         local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
         assert(
@@ -48,9 +48,9 @@ function T:draw()
                 end
             end
             if frame % 60 == 0 then
-                love.event.pump()
+                katsa.event.pump()
                 self.manager:draw()
-                love.graphics.present()
+                katsa.graphics.present()
                 local data = scene.renderer.canvas:newImageData()
                 data:release()
             end
@@ -58,7 +58,7 @@ function T:draw()
         if scene.physics then
             scene.physics.debugEnabled = true
             self.manager:draw()
-            love.graphics.present()
+            katsa.graphics.present()
             scene.physics.debugEnabled = false
         end
         print(
@@ -74,7 +74,7 @@ function T:draw()
     collectgarbage('collect')
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('JOLT STRESS COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

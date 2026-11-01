@@ -8,13 +8,13 @@ end
 
 function Profiler:begin()
     if self.enabled then
-        return love.timer.getTime()
+        return katsa.timer.getTime()
     end
 end
 
 function Profiler:finish(name, start)
     if start then
-        self:sample(name, (love.timer.getTime() - start) * 1000)
+        self:sample(name, (katsa.timer.getTime() - start) * 1000)
     end
 end
 
@@ -40,7 +40,7 @@ function Profiler:frame()
     self.frames = self.frames + 1
     if self.frames % 30 == 0 then
         self.luaKiB = collectgarbage('count')
-        self.textureBytes = love.graphics.getStats().texturememory
+        self.textureBytes = katsa.graphics.getStats().texturememory
     end
 end
 

@@ -188,7 +188,7 @@ function PropertyWrite.install(Properties)
         if target.body and (key == 'size' or key == 'scale') then
             return false, 'Collider3D size requires rebuilding the rigid body'
         end
-        if key == 'resolution' and value > love.graphics.getSystemLimits().texturesize then
+        if key == 'resolution' and value > katsa.graphics.getSystemLimits().texturesize then
             return false, 'Resolution exceeds GPU limits'
         end
         if key == 'direction' and component then

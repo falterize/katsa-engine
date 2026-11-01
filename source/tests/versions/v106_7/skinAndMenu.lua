@@ -11,7 +11,7 @@ local function capture(scene, name)
     if not directory then
         return
     end
-    local g = love.graphics
+    local g = katsa.graphics
     local canvas = g.newCanvas(g.getWidth(), g.getHeight(), { dpiscale = 1 })
     g.push('all')
     g.setCanvas(canvas)
@@ -150,7 +150,7 @@ function Tests.run(tester)
             'Restoring defaults restores the exact source geometry and removes generated draws'
         )
         local shadows = scene.renderer.shadows
-        shadows.nextUpdate = love.timer.getTime() + 10
+        shadows.nextUpdate = katsa.timer.getTime() + 10
         local generation = shadows.generation
         scene:keypressed('w')
         for _ = 1, 3 do
@@ -211,7 +211,7 @@ function Tests.run(tester)
                 and scene.navigation.visible
                 and scene.workspace.tab.visible
                 and scene.debugButton.visible
-                and not love.mouse.getRelativeMode(),
+                and not katsa.mouse.getRelativeMode(),
             'Menu key releases the cursor and reveals common engine menus'
         )
         scene:keypressed('w')
@@ -283,7 +283,7 @@ function Tests.run(tester)
 end
 
 function Tests.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED skin/menu ' .. tostring(message))
         os.exit(1)
     end
@@ -306,7 +306,7 @@ function Tests:draw()
     Tests.run(self)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' skin/menu checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

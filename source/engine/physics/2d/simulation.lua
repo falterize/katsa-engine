@@ -23,7 +23,7 @@ function Simulation.update(self, dt)
         return
     end
     self._updating = true
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     local ok, message = pcall(function()
         self:flush()
         Contacts.dispatch(self)
@@ -48,10 +48,10 @@ function Simulation.update(self, dt)
             for _, body in ipairs(self.bodies) do
                 capture(body, true)
             end
-            local solver = love.timer.getTime()
+            local solver = katsa.timer.getTime()
             self.world:update(self.fixedDelta, self.velocityIterations, self.positionIterations)
             self.stats.solverMilliseconds = self.stats.solverMilliseconds
-                + (love.timer.getTime() - solver) * 1000
+                + (katsa.timer.getTime() - solver) * 1000
             for _, body in ipairs(self.bodies) do
                 capture(body, false)
             end
@@ -91,7 +91,7 @@ function Simulation.update(self, dt)
         self.stats.sleeping, self.stats.fixtures = sleeping, fixtures
     end)
     self._updating = false
-    self.stats.updateMilliseconds = (love.timer.getTime() - started) * 1000
+    self.stats.updateMilliseconds = (katsa.timer.getTime() - started) * 1000
     if not ok then
         error(message, 0)
     end

@@ -15,7 +15,7 @@ function Comparison.new(manager)
     io.stdout:setvbuf('no')
     local width = number('KATSA_BENCH_WIDTH', 1920, 320, 7680)
     local height = number('KATSA_BENCH_HEIGHT', 1080, 240, 4320)
-    assert(love.window.setMode(width, height, { vsync = 0, depth = 24, stencil = 8 }))
+    assert(katsa.window.setMode(width, height, { vsync = 0, depth = 24, stencil = 8 }))
     local self = setmetatable({
         manager = manager,
         warmup = number('KATSA_BENCH_WARMUP', 5, 0, 300),
@@ -25,10 +25,10 @@ function Comparison.new(manager)
         index = 0,
         reports = {},
         folder = 'benchmark-logs/physics-' .. os.date('!%Y%m%dT%H%M%SZ') .. '-' .. tostring(
-            math.floor(love.timer.getTime() * 1000)
+            math.floor(katsa.timer.getTime() * 1000)
         ),
     }, Comparison)
-    assert(love.filesystem.createDirectory(self.folder))
+    assert(katsa.filesystem.createDirectory(self.folder))
     self:advance()
     return self
 end
@@ -37,9 +37,9 @@ function Comparison:advance()
     self.index = self.index + 1
     local backend = self.order[self.index]
     if not backend then
-        local vendor, device, version, gpu = love.graphics.getRendererInfo()
-        local width, height, flags = love.window.getMode()
-        assert(love.filesystem.write(
+        local vendor, device, version, gpu = katsa.graphics.getRendererInfo()
+        local width, height, flags = katsa.window.getMode()
+        assert(katsa.filesystem.write(
             self.folder .. '/summary.json',
             Json.encode({
                 schema = 1,
@@ -55,13 +55,13 @@ function Comparison:advance()
                 runs = self.reports,
             })
         ))
-        print('BENCHMARK REPORT ' .. love.filesystem.getSaveDirectory() .. '/' .. self.folder)
+        print('BENCHMARK REPORT ' .. katsa.filesystem.getSaveDirectory() .. '/' .. self.folder)
         self.done = true
-        love.event.quit()
+        katsa.event.quit()
         return
     end
     math.randomseed(self.seed)
-    love.math.setRandomSeed(self.seed)
+    katsa.math.setRandomSeed(self.seed)
     self.scene =
         assert(self.manager:switch(Game.new, 'animationPhysicsLab', { physicsBackend = backend }))
     self.scene.showStats = true
@@ -83,7 +83,7 @@ function Comparison:update(dt)
     local previous = self.elapsed
     self.elapsed = self.elapsed + dt
     if previous >= self.warmup then
-        if self.manager.focused and love.window.hasFocus() then
+        if self.manager.focused and katsa.window.hasFocus() then
             self.frameTimes:add(dt)
             self.physics = self.physics + (self.scene.physics.stats.updateMilliseconds or 0)
             self.solver = self.solver + (self.scene.physics.stats.solverMilliseconds or 0)
@@ -108,7 +108,7 @@ function Comparison:update(dt)
         rows[#rows + 1] = string.format('%d,%.9f', index, value)
     end
     assert(
-        love.filesystem.write(
+        katsa.filesystem.write(
             self.folder .. '/run-' .. self.index .. '.csv',
             table.concat(rows, '\n') .. '\n'
         )

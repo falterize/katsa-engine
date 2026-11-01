@@ -7,7 +7,7 @@ function Game:update(dt, realDt)
         self.debugOverlay._syncDebug()
     end
     local profiler = self.manager.profiler
-    local updateStamp = profiler:begin() or (self.showStats and love.timer.getTime())
+    local updateStamp = profiler:begin() or (self.showStats and katsa.timer.getTime())
     if self.world.activeCamera then
         self.camera = self.world.activeCamera
     end
@@ -58,14 +58,14 @@ function Game:update(dt, realDt)
         self.character.camera = self.camera
     end
     if self.world.activeCamera then
-        self.camera:update(love.graphics.getDimensions())
+        self.camera:update(katsa.graphics.getDimensions())
     end
     local audioStamp = profiler:begin()
     self.audio:update(self.camera)
     profiler:finish('Audio', audioStamp)
     self:syncButtons()
     if updateStamp then
-        self.updateMilliseconds = (love.timer.getTime() - updateStamp) * 1000
+        self.updateMilliseconds = (katsa.timer.getTime() - updateStamp) * 1000
     end
     profiler:finish('Scene update', updateStamp)
 end

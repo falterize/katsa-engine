@@ -2,8 +2,8 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    love.errorhandler = function(err)
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.errorhandler = function(err)
         print('FAILED v71 ' .. tostring(err))
         return function()
             return 1
@@ -146,7 +146,7 @@ function T:update()
         )
         self.manager:switch(require('source.game.runtime.menu').new)
         print('PASSED ' .. self.count .. ' focused v71 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

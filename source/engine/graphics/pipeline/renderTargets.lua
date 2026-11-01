@@ -3,7 +3,7 @@ local RenderTargets = {}
 
 function RenderTargets.install(Renderer)
     function Renderer:resize(w, h)
-        local g = love.graphics
+        local g = katsa.graphics
         if
             self._requestedWidth == w
             and self._requestedHeight == h

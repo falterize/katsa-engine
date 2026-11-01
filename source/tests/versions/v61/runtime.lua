@@ -2,10 +2,10 @@ local Test = {}
 Test.__index = Test
 
 function Test.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v61 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, Test)
@@ -46,7 +46,7 @@ end
 function Test:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
+        katsa.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
         local scene = self:load('animationLab')
         local ramp =
             scene.world:create('Ramp', { mode = 'Animated', playbackTime = 0.2 }, scene.demo.body)
@@ -188,7 +188,7 @@ function Test:update()
         )
         self.capture = 'particles'
     elseif self.frame == 7 then
-        love.window.setMode(400, 760, { vsync = 0, stencil = 8, depth = 24 })
+        katsa.window.setMode(400, 760, { vsync = 0, stencil = 8, depth = 24 })
         local scene = self:load('shaderLab')
         scene.demo.preset = 'CRT'
         scene.demo:sync()
@@ -204,7 +204,7 @@ function Test:update()
             'Focused scene transitions leave an empty error journal'
         )
         print('PASSED ' .. self.count .. ' focused v61 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -214,10 +214,10 @@ function Test:draw()
     end
     local name = self.capture
     self.capture = nil
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local data = image:encode('png')
         local file = assert(
-            io.open(love.filesystem.getSource() .. '/docs/previews/v61/' .. name .. '.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v61/' .. name .. '.png', 'wb')
         )
         file:write(data:getString())
         file:close()

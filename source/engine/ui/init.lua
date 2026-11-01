@@ -28,7 +28,7 @@ function UI.new(width, height, resources)
     }, UI)
     self._stencilRectangle = function()
         local n = self._stencilNode
-        love.graphics.rectangle('fill', n._x, n._y, n._width, n._height, n._radius)
+        katsa.graphics.rectangle('fill', n._x, n._y, n._width, n._height, n._radius)
     end
     self._clearStencil = function() end
     Node.adopt(self, 'World2D')
@@ -292,7 +292,7 @@ function UI:font(size)
     local density = self.density
     local key = size .. ':' .. density
     if not self.fonts[key] then
-        local font = self.resources:own(love.graphics.newFont(size, 'normal', density))
+        local font = self.resources:own(katsa.graphics.newFont(size, 'normal', density))
         font:setFilter('linear', 'linear')
         self.fonts[key] = font
     end
@@ -307,7 +307,7 @@ function UI:rasterFont(size)
     if not font then
         -- Keep glyph advances and atlas quads in physical pixels. LÃƒâ€“VE 11.x
         -- rounds fractional-DPI metrics in logical units before drawing them.
-        font = self.resources:own(love.graphics.newFont(pixels, 'normal', 1))
+        font = self.resources:own(katsa.graphics.newFont(pixels, 'normal', 1))
         font:setFilter('linear', 'linear')
         self.fonts[key] = font
     end

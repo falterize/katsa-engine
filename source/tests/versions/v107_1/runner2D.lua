@@ -65,13 +65,13 @@ function Tests.layers(tester)
     local _, center = camera:worldToScreen(0, 0, ui.width, ui.height)
     local _, above = camera:worldToScreen(0, 10, ui.width, ui.height)
     tester:check(above < center, 'Positive spatial Y projects upward in Camera2D')
-    local image = love.image.newImageData(8, 8)
+    local image = katsa.image.newImageData(8, 8)
     for iy = 0, 3 do
         for ix = 0, 7 do
             image:setPixel(ix, iy, 1, 1, 1, 1)
         end
     end
-    assert(love.filesystem.createDirectory('validation-v1071'))
+    assert(katsa.filesystem.createDirectory('validation-v1071'))
     local imagePath = 'validation-v1071/topOnly.png'
     image:encode('png', imagePath)
     local mask = body(300, 0, 'Static')
@@ -83,7 +83,7 @@ function Tests.layers(tester)
     )
     image:release()
     release()
-    love.filesystem.remove(imagePath)
+    katsa.filesystem.remove(imagePath)
 end
 
 local function advance(scene, count)
@@ -176,7 +176,7 @@ function Tests.scenes(tester)
         scene:draw()
     end
     local variantPath = 'validation-v1071/player-variant.png'
-    local pixels = love.image.newImageData(64, 8)
+    local pixels = katsa.image.newImageData(64, 8)
     pixels:mapPixel(function()
         return 1, 0.2, 0.4, 1
     end)
@@ -216,8 +216,8 @@ function Tests.scenes(tester)
         'Clearing the override fills the image field from XML again'
     )
     local manifestPath = 'validation-v1071/player-variant.xml'
-    local manifest = assert(love.filesystem.read(scene.resources:canonical(state.sprite.xml)))
-    love.filesystem.write(manifestPath, (manifest:gsub('scene://textures/player.png', variantPath)))
+    local manifest = assert(katsa.filesystem.read(scene.resources:canonical(state.sprite.xml)))
+    katsa.filesystem.write(manifestPath, (manifest:gsub('scene://textures/player.png', variantPath)))
     local originalXml = state.sprite.xml
     state.sprite.xml = manifestPath
     Image.resolve(scene.resources, state.sprite)
@@ -271,15 +271,15 @@ function Tests.scenes(tester)
         bad ~= nil and scene.resources:isMissingImage('README.md'),
         'Undecodable image files retain the existing diagnostic fallback'
     )
-    local canvas = love.graphics.newCanvas(missing:getDimensions())
-    love.graphics.push('all')
-    love.graphics.setCanvas(canvas)
-    love.graphics.setShader()
-    love.graphics.origin()
-    love.graphics.clear(0, 0, 0, 0)
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(missing)
-    love.graphics.pop()
+    local canvas = katsa.graphics.newCanvas(missing:getDimensions())
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas(canvas)
+    katsa.graphics.setShader()
+    katsa.graphics.origin()
+    katsa.graphics.clear(0, 0, 0, 0)
+    katsa.graphics.setColor(1, 1, 1, 1)
+    katsa.graphics.draw(missing)
+    katsa.graphics.pop()
     local data = canvas:newImageData()
     local black, purple = false, false
     for iy = 0, data:getHeight() - 1 do

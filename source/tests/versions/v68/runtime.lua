@@ -2,10 +2,10 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v68 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
@@ -20,7 +20,7 @@ end
 function T:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+        katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
         local scene, err =
             self.manager:switch(require('source.game.runtime.game').new, 'platformer')
         assert(scene, err)
@@ -131,7 +131,7 @@ function T:update()
                 and b._y < a._y + a._height
         end
         for _, size in ipairs({ { 960, 540 }, { 640, 360 }, { 390, 844 } }) do
-            love.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
+            katsa.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
             scene:resize(size[1], size[2])
             scene.ui:layout()
             local toggle = scene.ui:find('Runner / systemsToggle', true)
@@ -144,7 +144,7 @@ function T:update()
             true,
             'Runner HUD has no status/toggle/debug intersections at three viewport sizes'
         )
-        love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+        katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
         scene:resize(960, 540)
         demo.body.body:setVelocity({ 0, 0, 0 })
         demo.controlsPanel.visible = true
@@ -170,10 +170,10 @@ function T:update()
             end
         end
         self:check(skinned, 'Portable wireframe covers static and skinned geometry')
-        self:check(not love.graphics.isWireframe(), 'Wireframe works without native polygon mode')
+        self:check(not katsa.graphics.isWireframe(), 'Wireframe works without native polygon mode')
         self.scene.world.environment.shadows.mode = 'Standard'
         self.scene.world.debug.wireframe = false
-        self:check(not love.graphics.isWireframe(), 'Wireframe state does not leak into UI')
+        self:check(not katsa.graphics.isWireframe(), 'Wireframe state does not leak into UI')
         print('TRANSITION runner -> menu')
         local nextScene, err = self.manager:switch(require('source.game.runtime.menu').new)
         assert(nextScene, err)
@@ -184,7 +184,7 @@ function T:update()
         local scene, err = self.manager:switch(require('source.game.runtime.game').new, route)
         assert(scene, err)
         for _, size in ipairs({ { 640, 360 }, { 390, 844 } }) do
-            love.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
+            katsa.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
             scene:resize(size[1], size[2])
             scene:update(1 / 60, 1 / 60)
             scene.ui:layout()
@@ -216,7 +216,7 @@ function T:update()
             'Changed scenes render and release without journal errors'
         )
         print('PASSED ' .. self.count .. ' focused v68 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -226,10 +226,10 @@ function T:draw()
     end
     local name = self.capture
     self.capture = nil
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local b = image:encode('png')
         local f = assert(
-            io.open(love.filesystem.getSource() .. '/docs/previews/v68/' .. name .. '.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v68/' .. name .. '.png', 'wb')
         )
         f:write(b:getString())
         f:close()

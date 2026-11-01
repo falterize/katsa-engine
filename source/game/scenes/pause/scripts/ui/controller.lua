@@ -53,12 +53,12 @@ function Pause:load()
             self.manager:switch(require('source.game.runtime.menu').new)
         end,
     }, list)
-    self:resize(love.graphics.getDimensions())
+    self:resize(katsa.graphics.getDimensions())
 end
 
 function Pause:draw()
     self.ui:draw()
-    love.graphics.setColor(1, 1, 1, 1)
+    katsa.graphics.setColor(1, 1, 1, 1)
 end
 
 function Pause:resize(w, h)

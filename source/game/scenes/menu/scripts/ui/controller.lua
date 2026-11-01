@@ -159,11 +159,11 @@ function Menu:load()
         textColor = { 0.5, 0.65, 0.8 },
     }, panel)
     self.menuPanel = panel
-    self:resize(love.graphics.getDimensions())
+    self:resize(katsa.graphics.getDimensions())
 end
 
 function Menu:draw()
-    love.graphics.clear(0.025, 0.04, 0.065, 1)
+    katsa.graphics.clear(0.025, 0.04, 0.065, 1)
     self.ui:draw()
     self._paintRevision = self.ui.revision
 end
@@ -201,7 +201,7 @@ function Menu:pointerreleased(id)
 end
 
 function Menu:wheelmoved(x, y)
-    self.ui:wheel(love.mouse.getX(), love.mouse.getY(), y, x)
+    self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 function Menu:keypressed(key)

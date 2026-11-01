@@ -33,19 +33,19 @@ void KP_Destroy(KP_Context *);
 ]])
 
 local filenames = { Windows = 'katsa_jolt.dll', Linux = 'libkatsa_jolt.so' }
-local filename = filenames[love.system.getOS()]
+local filename = filenames[katsa.system.getOS()]
 local path = filename
     and 'source/engine/physics/backends/jolt/native/' .. Library.platform .. '/' .. filename
-if path and love.filesystem.getInfo(path) then
-    local bytes = assert(love.filesystem.read(path))
-    local hash = love.data.encode('string', 'hex', love.data.hash('sha256', bytes))
+if path and katsa.filesystem.getInfo(path) then
+    local bytes = assert(katsa.filesystem.read(path))
+    local hash = katsa.data.encode('string', 'hex', katsa.data.hash('sha256', bytes))
     local directory = 'native-cache/katsa-jolt-' .. hash
-    assert(love.filesystem.createDirectory(directory))
+    assert(katsa.filesystem.createDirectory(directory))
     local target = directory .. '/' .. filename
-    if love.filesystem.read(target) ~= bytes then
-        assert(love.filesystem.write(target, bytes))
+    if katsa.filesystem.read(target) ~= bytes then
+        assert(katsa.filesystem.write(target, bytes))
     end
-    Jobs.C = ffi.load(love.filesystem.getSaveDirectory() .. '/' .. target)
+    Jobs.C = ffi.load(katsa.filesystem.getSaveDirectory() .. '/' .. target)
     local names = {
         'JPH_Body_GetID',
         'JPH_ContactManifold_GetSubShapeID1',
@@ -88,7 +88,7 @@ function Jobs.create(world, settings, callbacks)
         world.nativeContacts = assert(Jobs.C.KP_Create(settings.maxBodies or 16384))
         world.parallelThreshold = settings.parallelThreshold or 64
         world.workerThreads = requested
-            or math.max(1, math.min(4, love.system.getProcessorCount() - 1))
+            or math.max(1, math.min(4, katsa.system.getProcessorCount() - 1))
         if world.workerThreads > 0 then
             world.serialJobs = synchronous(callbacks)
             return world.serialJobs

@@ -28,7 +28,7 @@ function Class:drawSelf(ui)
     Class.base.drawSelf(self, ui)
     local radius = math.min(self._width, self._height) * 0.5
     local x, y = self._x + self._width * 0.5, self._y + self._height * 0.5
-    local g = love.graphics
+    local g = katsa.graphics
     g.push('all')
     g.setColor(0.1, 0.16, 0.22, 0.5)
     g.circle('fill', x, y, radius)

@@ -43,10 +43,10 @@ function RenderPreparation.install(Renderer)
             self[key] = value
         end
         Triangles.begin()
-        local prepareStart = love.timer.getTime()
+        local prepareStart = katsa.timer.getTime()
         self:resize(
-            self.targetWidth or love.graphics.getWidth(),
-            self.targetHeight or love.graphics.getHeight()
+            self.targetWidth or katsa.graphics.getWidth(),
+            self.targetHeight or katsa.graphics.getHeight()
         )
         world:resolveLayerGroup(camera)
         world._materialCamera = camera
@@ -207,7 +207,7 @@ function RenderPreparation.install(Renderer)
         end
         table.sort(self.transparent, farFirst)
         table.sort(self.top, farFirst)
-        self.stats.cullingMilliseconds = (love.timer.getTime() - prepareStart) * 1000
+        self.stats.cullingMilliseconds = (katsa.timer.getTime() - prepareStart) * 1000
         if not wire and world.particles then
             self.shadowObjects = require('source.engine.particles.shadows').prepare(
                 world,
@@ -229,14 +229,14 @@ function RenderPreparation.install(Renderer)
                 end
             end
         end
-        local lightStart = love.timer.getTime()
+        local lightStart = katsa.timer.getTime()
         for _, light in ipairs(world.lights) do
             world:resolveLayerGroup(light)
         end
         if not wire then
             self.lights:update(world, camera, receivers, time, dependencies)
         end
-        self.stats.lightSelectionMilliseconds = (love.timer.getTime() - lightStart) * 1000
+        self.stats.lightSelectionMilliseconds = (katsa.timer.getTime() - lightStart) * 1000
         self.gizmos:update(world, self.lights, time)
 
         if wire then

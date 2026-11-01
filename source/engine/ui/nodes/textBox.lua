@@ -10,7 +10,7 @@ Class.propertySchema = {
     multiline = {},
     maxLength = { min = 0, integer = true },
 }
-local clipboard = { get = love.system.getClipboardText, set = love.system.setClipboardText }
+local clipboard = { get = katsa.system.getClipboardText, set = katsa.system.setClipboardText }
 
 function Class.initialize(self)
     self.text, self.placeholderText = self.text or '', self.placeholderText or ''
@@ -50,9 +50,9 @@ function Class:focus(selectAll)
         end
         Focus.current = self
         self:syncText()
-        self._repeatBefore = love.keyboard.hasKeyRepeat()
-        love.keyboard.setKeyRepeat(true)
-        love.mouse.setRelativeMode(false)
+        self._repeatBefore = katsa.keyboard.hasKeyRepeat()
+        katsa.keyboard.setKeyRepeat(true)
+        katsa.mouse.setRelativeMode(false)
         self:emit('focused', self)
     end
     if selectAll then
@@ -61,7 +61,7 @@ function Class:focus(selectAll)
     local ui = self.ui
     ui:layout()
     local x, y = ui:position(self)
-    love.keyboard.setTextInput(
+    katsa.keyboard.setTextInput(
         true,
         x * ui.scale + ui.offsetX,
         y * ui.scale + ui.offsetY,
@@ -77,8 +77,8 @@ function Class:blur()
     end
     Focus.current = nil
     self._dragging = nil
-    love.keyboard.setTextInput(false)
-    love.keyboard.setKeyRepeat(self._repeatBefore == true)
+    katsa.keyboard.setTextInput(false)
+    katsa.keyboard.setKeyRepeat(self._repeatBefore == true)
     self:emit('focusLost', self)
     if self.onFocusLost then
         self.onFocusLost(self)
@@ -96,8 +96,8 @@ end
 function Class:editKey(key)
     self:syncText()
     local mods = {
-        ctrl = love.keyboard.isDown('lctrl', 'rctrl', 'lgui', 'rgui'),
-        shift = love.keyboard.isDown('lshift', 'rshift'),
+        ctrl = katsa.keyboard.isDown('lctrl', 'rctrl', 'lgui', 'rgui'),
+        shift = katsa.keyboard.isDown('lshift', 'rshift'),
     }
     if key == 'escape' then
         self:blur()
@@ -164,9 +164,9 @@ function Class:pointer(ui, phase, x, y, id)
         end
         at = finish
     end
-    self._editor:move(line.start + at, phase == 'move' or love.keyboard.isDown('lshift', 'rshift'))
+    self._editor:move(line.start + at, phase == 'move' or katsa.keyboard.isDown('lshift', 'rshift'))
     if phase == 'press' then
-        local now = love.timer.getTime()
+        local now = katsa.timer.getTime()
         if self._clickTime and now - self._clickTime < 0.35 and math.abs(lx - self._clickX) < 4 then
             local right = self._editor:word(1)
             self._editor:move(self._editor:word(-1), false)
@@ -181,7 +181,7 @@ end
 
 function Class:drawSelf(ui)
     Node.getClass('Frame').drawSelf(self, ui)
-    local lines, editor, g = self:lines(), self._editor, love.graphics
+    local lines, editor, g = self:lines(), self._editor, katsa.graphics
     local font, scale = ui:rasterFont(self.fontSize)
     local padding, height = self.padding or 6, font:getHeight() * scale
     local width = math.max(1, self._width - padding * 2)

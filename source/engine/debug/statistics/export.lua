@@ -109,7 +109,7 @@ end
 function Export.save(definitions, histories, options)
     local data, rows = Export.build(definitions, histories, options)
     local folder = 'stats-logs'
-    assert(love.filesystem.createDirectory(folder), 'Could not create the Stats log directory')
+    assert(katsa.filesystem.createDirectory(folder), 'Could not create the Stats log directory')
     local metric = options.scope == 'all' and 'all' or options.metricId
     local stem = folder
         .. '/stats-'
@@ -120,11 +120,11 @@ function Export.save(definitions, histories, options)
         .. options.seconds
         .. 's'
     local path, index = stem .. '.csv', 1
-    while love.filesystem.getInfo(path) do
+    while katsa.filesystem.getInfo(path) do
         path = stem .. '-' .. index .. '.csv'
         index = index + 1
     end
-    assert(love.filesystem.write(path, data), 'Could not write the Stats log')
+    assert(katsa.filesystem.write(path, data), 'Could not write the Stats log')
     return path, rows
 end
 

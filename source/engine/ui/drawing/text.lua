@@ -93,7 +93,7 @@ local function layout(ui, runs, size, width, measureOnly, heightLimit)
 end
 
 local function drawPlain(node, font, glyphs, y, width, exactOffsets, dx, dy)
-    local g = love.graphics
+    local g = katsa.graphics
     local rasterScale = node._rasterScale
     if exactOffsets then
         local textX, textY = pixelOrigin(g, node._x + (node.padding or 6), y)
@@ -180,7 +180,7 @@ function Text.prepare(ui, node)
                 end
                 drawable:set(run.text)
             else
-                drawable = love.graphics.newText(run.font, run.text)
+                drawable = katsa.graphics.newText(run.font, run.text)
                 glyphs[count] = drawable
             end
             run.drawable = drawable
@@ -201,7 +201,7 @@ function Text.prepare(ui, node)
 end
 
 function Text.draw(ui, node, dx, dy, outline, exactOffsets)
-    local g = love.graphics
+    local g = katsa.graphics
     local lines, height = Text.prepare(ui, node)
     local padding = node.padding or 6
     local width = node._width - 2 * padding
@@ -254,7 +254,7 @@ function Text.draw(ui, node, dx, dy, outline, exactOffsets)
 end
 
 function Text.drawLabel(ui, node)
-    local g = love.graphics
+    local g = katsa.graphics
     -- printf rounds fractional outline offsets differently from retained Text.
     -- Keep the original path for outlined labels to preserve their stencil edges.
     local exactOffsets = false

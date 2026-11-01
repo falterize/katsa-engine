@@ -20,7 +20,7 @@ function T:draw()
     self.done = true
     local menu = self.manager:switch(require('source.game.runtime.menu').new)
     for _, size in ipairs({ { 896, 414 }, { 414, 896 }, { 640, 360 } }) do
-        love.window.setMode(size[1], size[2], { vsync = 0, stencil = 8, depth = 24 })
+        katsa.window.setMode(size[1], size[2], { vsync = 0, stencil = 8, depth = 24 })
         menu:resize(unpack(size))
         local chooser = menu.categoryChooser
         chooser.visible = true
@@ -40,7 +40,7 @@ function T:draw()
         last.onPress()
         self:check(menu.category == 'Legacy', 'Last category selects the matching scene')
     end
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local s = self.manager:switch(require('source.game.runtime.game').new, 'combined')
     local r, w, c = s.renderer, s.world, s.camera
     w.environment.shadows.enabled = false
@@ -148,7 +148,7 @@ function T:draw()
     c:update(640, 360)
     self:check(c.projection[1] ~= old, 'Projection edits update immediately')
     print('PASSED ' .. self.count .. ' focused v74 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

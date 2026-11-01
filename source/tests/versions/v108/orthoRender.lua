@@ -3,7 +3,7 @@ local Application = require('source.game.runtime.application')
 local Tests = {}
 
 local function capture(scene, name)
-    local g = love.graphics
+    local g = katsa.graphics
     scene.camera:update(g.getDimensions())
     local canvas = g.newCanvas(g.getWidth(), g.getHeight(), { dpiscale = 1 })
     g.push('all')
@@ -73,12 +73,12 @@ function Tests.floorBehindCamera(tester)
     camera.orthoSize = 20
     camera.position[1], camera.position[2], camera.position[3] = 0, 4, 30
     camera.rotation[1], camera.rotation[2], camera.rotation[3] = 45, 0, 0
-    camera:update(love.graphics.getDimensions())
+    camera:update(katsa.graphics.getDimensions())
     if camera.forward[2] > 0 then
         camera.rotation[1] = -45
-        camera:update(love.graphics.getDimensions())
+        camera:update(katsa.graphics.getDimensions())
     end
-    local g = love.graphics
+    local g = katsa.graphics
     local canvas = g.newCanvas(g.getWidth(), g.getHeight(), { dpiscale = 1 })
     g.push('all')
     g.setCanvas(canvas)
