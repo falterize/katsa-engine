@@ -420,3 +420,9 @@ a spatial node retain their ordinary top-left, Y-down local layout; their surfac
 pointer inversion handle the coordinate conversion. Image collider alpha rows are
 converted consistently. Existing first-party 2D examples have been migrated; custom
 Y-down spatial data must negate Y and rotation, while ordinary HUD UDim2 stays unchanged.
+
+## Camera follow and interpolation
+
+Camera2D `followTarget` tracks the pose that is drawn. With Physics2D interpolation enabled this is the blend of the
+previous and current solver step, so the camera and interpolated spatial visuals move together at any frame rate or
+World2D timeScale. Disable `interpolate` to follow the raw solver pose.

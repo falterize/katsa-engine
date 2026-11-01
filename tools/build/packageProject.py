@@ -43,7 +43,7 @@ def main():
     parser.add_argument('--output', type=Path, default=Path('dist'))
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
-    package(root, args.output / 'Katsa-v107.2.love')
+    package(root, args.output / 'Katsa-v108.love')
 
 
 if __name__ == '__main__':

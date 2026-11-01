@@ -1,3 +1,3 @@
-local Version = { name = 'Katsa', value = 'v107.2' }
+local Version = { name = 'Katsa', value = 'v108' }
 
 return Version

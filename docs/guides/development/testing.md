@@ -148,3 +148,8 @@ a matched backend benchmark, see [repeatable validation](validation.md).
 Run `love . --test-v107.2-authoring` for focused editor/physics authoring coverage,
 including OBJ/GLB/glTF path loading on Oimo/Jolt, independent point extraction,
 invalid-source recovery and the Collision Models Workspace path picker.
+
+`--test-v108` covers per-tick state smoothing at TimeScale 0.1 in both 3D solvers, Camera2D following the
+interpolated pose at 144 Hz and in slow motion, Camera3D fov/focalLength linkage, perspective and
+orthographic projection against the GPU matrix, pointer rays, frustum culling, picking and a rendered
+orthographic frame. Set `KATSA_TEST_OUTPUT` to a directory to keep the rendered PNGs.

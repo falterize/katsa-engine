@@ -23,6 +23,8 @@ Select your game's first scene in `source/game/data/project.lua`. Each scene own
 
 Every World2D/World3D automatically owns an `Environment` with categorized Debug and particle settings. World3D also includes lighting, shadows, sky, fog and rendering categories. Both world dimensions select their view through `currentCamera`; cameras expose `fov`.
 
+Camera3D supports Perspective and Orthographic projection (`fov`, `orthoSize`); see the [Camera3D guide](docs/guides/rendering/camera3D.md). Per-tick gameplay state is smoothed with [StepValue](docs/guides/animation/stepValue.md).
+
 Collider3D GeometrySource accepts live model nodes or OBJ/GLB/glTF paths. Points remains available for editable collision geometry; getPointsFromModel/setPointsFromModel import independent coordinates and triangle topology. See the [collider guide](docs/guides/physics/collidersConstraints.md).
 
 ## Guides
