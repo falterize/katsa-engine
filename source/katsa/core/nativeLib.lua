@@ -167,20 +167,31 @@ end
 
 local ints = ffi.new('int[6]')
 
-function Lib.fontScale(font, em) return lib().katsa_font_scale(font, em) end
+function Lib.fontScale(font, em)
+    return
+    lib().katsa_font_scale(font, em)
+end
+
 function Lib.fontVMetrics(font)
     lib().katsa_font_vmetrics(font, ints, ints + 1, ints + 2)
     return ints[0], ints[1], ints[2]
 end
-function Lib.fontHasGlyph(font, codepoint) return lib().katsa_font_glyph_index(font, codepoint) ~= 0 end
+
+function Lib.fontHasGlyph(font,
+    codepoint) return lib().katsa_font_glyph_index(font, codepoint) ~= 0 end
 function Lib.fontHMetrics(font, codepoint)
     lib().katsa_font_hmetrics(font, codepoint, ints, ints + 1)
     return ints[0], ints[1]
 end
-function Lib.fontKern(font, a, b) return lib().katsa_font_kern(font, a, b) end
+
+function Lib.fontKern(font, a, b)
+    return
+    lib().katsa_font_kern(font, a, b)
+end
 -- Returns an 8-bit coverage buffer (copied, owned by Lua), width, height, xoffset, yoffset; or nil for blank glyphs.
 function Lib.fontBitmap(font, codepoint, scale)
-    local pointer = lib().katsa_font_bitmap(font, codepoint, scale, ints, ints + 1, ints + 2, ints + 3)
+    local pointer = lib().katsa_font_bitmap(font, codepoint, scale, ints, ints + 1, ints + 2,
+        ints + 3)
     if pointer == nil then
         return nil
     end

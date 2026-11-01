@@ -206,20 +206,52 @@ function Methods:getWidth(text)
     return widest / self._dpi
 end
 
-function Methods:getHeight() return self._height / self._dpi end
-function Methods:getAscent() return self._ascent / self._dpi end
-function Methods:getDescent() return self._descent / self._dpi end
-function Methods:getBaseline() return self._ascent / self._dpi end
-function Methods:getLineHeight() return self._lineHeight end
-function Methods:setLineHeight(value) self._lineHeight = value end
-function Methods:getDPIScale() return self._dpi end
-function Methods:getFilter() return self._filter[1], self._filter[2], self._filter[3] end
+function Methods:getHeight()
+    return
+    self._height / self._dpi
+end
+
+function Methods:getAscent()
+    return
+    self._ascent / self._dpi
+end
+
+function Methods:getDescent()
+    return
+    self._descent / self._dpi
+end
+
+function Methods:getBaseline()
+    return
+    self._ascent / self._dpi
+end
+
+function Methods:getLineHeight()
+    return
+    self._lineHeight
+end
+
+function Methods:setLineHeight(value)
+    self._lineHeight = value
+end
+
+function Methods:getDPIScale()
+    return
+    self._dpi
+end
+
+function Methods:getFilter()
+    return
+    self._filter[1], self._filter[2], self._filter[3]
+end
+
 function Methods:setFilter(min, mag, anisotropy)
     self._filter = { min, mag or min, anisotropy or 1 }
     for _, atlas in ipairs(self._atlases) do
         atlas.texture:setFilter(min, mag or min, anisotropy)
     end
 end
+
 function Methods:hasGlyphs(...)
     for _, item in ipairs({ ... }) do
         for _, cp in ipairs(type(item) == 'number' and { item } or decode(item)) do
@@ -230,11 +262,13 @@ function Methods:hasGlyphs(...)
     end
     return true
 end
+
 function Methods:getKerning(a, b)
     a = type(a) == 'string' and decode(a)[1] or a
     b = type(b) == 'string' and decode(b)[1] or b
     return kerning(self, a, b) / self._dpi
 end
+
 function Methods:setFallbacks() end
 
 -- Splits `text` into lines no wider than `limit` (logical units).
@@ -327,9 +361,17 @@ function Methods:_layout(cps, emit)
     return x
 end
 
-function Methods:release() return true end
-function Methods:type() return 'Font' end
-function Methods:typeOf(name) return name == 'Font' or name == 'Object' end
+function Methods:release()
+    return true
+end
+
+function Methods:type()
+    return 'Font'
+end
+
+function Methods:typeOf(name)
+    return name == 'Font' or name == 'Object'
+end
 
 -- Text objects ----------------------------------------------------------------------------------
 
@@ -401,15 +443,46 @@ function TextMethods:addf(text, limit, align, x, y, angle, sx, sy, ox, oy, kx, k
     return #self._entries
 end
 
-function TextMethods:clear() self._entries = {} recompute(self) end
-function TextMethods:setFont(font) self._font = font end
-function TextMethods:getFont() return self._font end
-function TextMethods:getWidth() return self._width end
-function TextMethods:getHeight() return self._height end
-function TextMethods:getDimensions() return self._width, self._height end
-function TextMethods:release() return true end
-function TextMethods:type() return 'Text' end
-function TextMethods:typeOf(name) return name == 'Text' or name == 'Drawable' or name == 'Object' end
+function TextMethods:clear()
+    self._entries = {}
+    recompute(self)
+end
+
+function TextMethods:setFont(font)
+    self._font = font
+end
+
+function TextMethods:getFont()
+    return
+    self._font
+end
+
+function TextMethods:getWidth()
+    return
+    self._width
+end
+
+function TextMethods:getHeight()
+    return
+    self._height
+end
+
+function TextMethods:getDimensions()
+    return
+    self._width, self._height
+end
+
+function TextMethods:release()
+    return true
+end
+
+function TextMethods:type()
+    return 'Text'
+end
+
+function TextMethods:typeOf(name)
+    return name == 'Text' or name == 'Drawable' or name == 'Object'
+end
 
 function TextMethods:_draw2D(graphics, matrix)
     local state = graphics._state
@@ -422,7 +495,8 @@ function TextMethods:_draw2D(graphics, matrix)
     for _, e in ipairs(self._entries) do
         local a = e.args
         if e.limit then
-            graphics.printf(e.text, a[1], a[2], e.limit, e.align, a[3], a[4], a[5], a[6], a[7], a[8], a[9])
+            graphics.printf(e.text, a[1], a[2], e.limit, e.align, a[3], a[4], a[5], a[6], a[7],
+                a[8], a[9])
         else
             graphics.print(e.text, a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9])
         end

@@ -243,7 +243,8 @@ local function packComponents(entry, values, componentCount, buffer, transposeRo
             buffer[out] = toNumber(v, name)
             out = out + 1
         else
-            error(('Invalid value for uniform %s: expected a table with %d components'):format(name, componentCount), 3)
+            error(('Invalid value for uniform %s: expected a table with %d components'):format(name,
+                componentCount), 3)
         end
     end
     return #values > limit and limit or #values
@@ -289,7 +290,8 @@ function Methods:send(name, ...)
         end
     end
     if entry.count == 1 and #values > 1 and info[2] == 1 and info[1] ~= 'matrix' then
-        error(('Invalid number of arguments for uniform %s: expected 1, got %d'):format(name, #values), 2)
+        error(('Invalid number of arguments for uniform %s: expected 1, got %d'):format(name,
+            #values), 2)
     end
     if #values > entry.count then
         values = { unpack(values, 1, entry.count) }
@@ -335,7 +337,8 @@ function Methods:_bindSamplers()
     for _, entry in ipairs(self._samplers) do
         for i = 0, entry.count - 1 do
             local texture = entry.textures[i + 1]
-            Core.bindTexture(entry.unit + i, texture and texture:_sampleId() or Core.defaultTextureId)
+            Core.bindTexture(entry.unit + i,
+                texture and texture:_sampleId() or Core.defaultTextureId)
         end
     end
 end
@@ -343,7 +346,13 @@ end
 function Methods:release()
     return Core.release(self)
 end
-function Methods:type() return 'Shader' end
-function Methods:typeOf(name) return name == 'Shader' or name == 'Object' end
+
+function Methods:type()
+    return 'Shader'
+end
+
+function Methods:typeOf(name)
+    return name == 'Shader' or name == 'Object'
+end
 
 return Shader

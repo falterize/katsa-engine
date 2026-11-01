@@ -1,6 +1,9 @@
 return function(T)
     local P = require('source.katsa.physics')
-    local function near(a, b, eps) return math.abs(a - b) <= (eps or 1e-3) end
+    local function near(a, b, eps)
+        return
+        math.abs(a - b) <= (eps or 1e-3)
+    end
     P.setMeter(30)
     T.check(P.getMeter() == 30, 'meter default')
 
@@ -20,16 +23,20 @@ return function(T)
     T.check(near(b:getAngularVelocity(), 0.707355, 1e-3), 'angular impulse scaled')
 
     local a1 = P.newBody(w, 0, 100, 'static'); local f1 = P.newFixture(a1, P.newCircleShape(10), 1)
-    local a2 = P.newBody(w, 100, 100, 'static'); local f2 = P.newFixture(a2, P.newCircleShape(10), 1)
+    local a2 = P.newBody(w, 100, 100,
+        'static'); local f2 = P.newFixture(a2, P.newCircleShape(10), 1)
     T.check(near(select(1, P.getDistance(f1, f2)), 80, 0.05), 'getDistance in pixels')
 
     -- gravity, falling, callbacks
     local g = P.newWorld(0, 300, true)
-    local ground = P.newBody(g, 0, 200, 'static'); P.newFixture(ground, P.newRectangleShape(400, 20), 1)
-    local ball = P.newBody(g, 0, 0, 'dynamic'); local bf = P.newFixture(ball, P.newCircleShape(10), 1)
+    local ground = P.newBody(g, 0, 200,
+        'static'); P.newFixture(ground, P.newRectangleShape(400, 20), 1)
+    local ball = P.newBody(g, 0, 0,
+        'dynamic'); local bf = P.newFixture(ball, P.newCircleShape(10), 1)
     bf:setRestitution(0.2); ball:setUserData('ball')
     local began, ended, post = 0, 0, 0
-    g:setCallbacks(function(a, c, contact) began = began + 1 end, function() ended = ended + 1 end, nil,
+    g:setCallbacks(function(a, c,
+        contact) began = began + 1 end, function() ended = ended + 1 end, nil,
         function(a, c, contact, n) post = post + 1 end)
     for _ = 1, 120 do g:update(1 / 60) end
     T.check(began >= 1 and post >= 1, 'begin/post-solve callbacks fire')
@@ -61,7 +68,8 @@ return function(T)
     T.check(rj:getType() == 'revolute' and near(rj:getUpperLimit(), 0.5), 'revolute limits')
     local pj = P.newPrismaticJoint(j1, j2, 0, 0, 1, 0)
     pj:setLimits(-30, 60)
-    T.check(near(pj:getLowerLimit(), -30, 1e-2) and near(pj:getUpperLimit(), 60, 1e-2), 'prismatic limits in pixels')
+    T.check(near(pj:getLowerLimit(), -30, 1e-2) and near(pj:getUpperLimit(), 60, 1e-2),
+        'prismatic limits in pixels')
     T.check(#j2:getJoints() == 2 and jw:getJointCount() == 2, 'joint bookkeeping')
     rj:destroy()
     T.check(#j2:getJoints() == 1, 'joint destroy updates bodies')

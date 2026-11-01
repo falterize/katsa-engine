@@ -63,16 +63,20 @@ function Methods:_applySampler()
     Core.bindForEdit(self._res.texture)
     local filter = self._filter
     if self._depth then
-        gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MIN_FILTER, filter.min == 'linear' and E.LINEAR or E.NEAREST)
-        gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MAG_FILTER, filter.mag == 'linear' and E.LINEAR or E.NEAREST)
+        gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MIN_FILTER,
+            filter.min == 'linear' and E.LINEAR or E.NEAREST)
+        gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MAG_FILTER,
+            filter.mag == 'linear' and E.LINEAR or E.NEAREST)
     else
         gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MIN_FILTER, glMin(filter))
-        gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MAG_FILTER, filter.mag == 'linear' and E.LINEAR or E.NEAREST)
+        gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_MAG_FILTER,
+            filter.mag == 'linear' and E.LINEAR or E.NEAREST)
     end
     gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_WRAP_S, glWrap(self._wrap[1]))
     gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_WRAP_T, glWrap(self._wrap[2]))
     if Core.limits.textureanisotropy > 1 and not self._depth then
-        gl.glTexParameterf(E.TEXTURE_2D, E.TEXTURE_MAX_ANISOTROPY, math.min(filter.anisotropy or 1, Core.limits.textureanisotropy))
+        gl.glTexParameterf(E.TEXTURE_2D, E.TEXTURE_MAX_ANISOTROPY,
+            math.min(filter.anisotropy or 1, Core.limits.textureanisotropy))
     end
 end
 
@@ -123,7 +127,8 @@ function Texture.newImage(source, settings)
     local data = dataFrom(source)
     local formatName = data:getFormat()
     assert(lookup(formatName), 'Unsupported image format: ' .. formatName)
-    local self = newTextureObject('image', data:getWidth(), data:getHeight(), settings.dpiscale or 1, formatName, 0)
+    local self = newTextureObject('image', data:getWidth(), data:getHeight(),
+        settings.dpiscale or 1, formatName, 0)
     createStorage(self, data:getPointer())
     self._mipmapsEnabled = settings.mipmaps and true or false
     if settings.mipmaps then
@@ -144,7 +149,8 @@ function Methods:replacePixels(data, slice, mip, x, y)
     assert(x >= 0 and y >= 0 and x + data:getWidth() <= self._pw and y + data:getHeight() <= self._ph, 'Region is outside the Image')
     Core.bindForEdit(self._res.texture)
     gl.glPixelStorei(E.UNPACK_ALIGNMENT, 1)
-    gl.glTexSubImage2D(E.TEXTURE_2D, 0, x, y, data:getWidth(), data:getHeight(), self._info[2], self._info[3], data:getPointer())
+    gl.glTexSubImage2D(E.TEXTURE_2D, 0, x, y, data:getWidth(), data:getHeight(), self._info[2],
+        self._info[3], data:getPointer())
     if self._mipmapsEnabled then
         gl.glGenerateMipmap(E.TEXTURE_2D)
     end
@@ -161,7 +167,8 @@ function Texture.newCanvas(width, height, settings)
     end
     local limit = Core.limits.texturesize
     assert(pw >= 1 and ph >= 1, 'Canvas size must be positive')
-    assert(pw <= limit and ph <= limit, ('Cannot create canvas: size exceeds the maximum texture size (%d)'):format(limit))
+    assert(pw <= limit and ph <= limit,
+        ('Cannot create canvas: size exceeds the maximum texture size (%d)'):format(limit))
     local formatName = settings.format or 'normal'
     local msaa = math.min(settings.msaa or 0, Core.limits.canvasmsaa)
     if msaa < 2 then
@@ -173,7 +180,8 @@ function Texture.newCanvas(width, height, settings)
     if self._readable == nil then
         self._readable = not self._info.depth
     end
-    assert(not (self._info.depth and self._info.renderbufferOnly and self._readable), 'stencil8 canvases cannot be readable')
+    assert(not (self._info.depth and self._info.renderbufferOnly and self._readable),
+        'stencil8 canvases cannot be readable')
     local gl, E = Core.gl, Core.enum
     local res = { renderbuffers = {}, fbos = {} }
     self._res = res
@@ -183,7 +191,8 @@ function Texture.newCanvas(width, height, settings)
         gl.glGenTextures(1, id)
         res.texture = id[0]
         Core.bindForEdit(res.texture)
-        gl.glTexImage2D(E.TEXTURE_2D, 0, self._info[1], pw, ph, 0, self._info[2], self._info[3], nil)
+        gl.glTexImage2D(E.TEXTURE_2D, 0, self._info[1], pw, ph, 0, self._info[2], self._info[3],
+            nil)
         if self._depth then
             gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_COMPARE_MODE, 0)
         end
@@ -259,7 +268,8 @@ function Methods:_resolve()
     end
     gl.glBindFramebuffer(E.READ_FRAMEBUFFER, res.msaaFbo)
     gl.glBindFramebuffer(E.DRAW_FRAMEBUFFER, res.resolveFbo)
-    local mask = depth and (self._info.stencil and bit.bor(E.DEPTH_BUFFER_BIT, E.STENCIL_BUFFER_BIT) or E.DEPTH_BUFFER_BIT) or E.COLOR_BUFFER_BIT
+    local mask = depth and (self._info.stencil and bit.bor(E.DEPTH_BUFFER_BIT,
+        E.STENCIL_BUFFER_BIT) or E.DEPTH_BUFFER_BIT) or E.COLOR_BUFFER_BIT
     gl.glBlitFramebuffer(0, 0, self._pw, self._ph, 0, 0, self._pw, self._ph, mask, E.NEAREST)
     self._dirty = false
     Core.framebufferChanged()
@@ -286,7 +296,8 @@ function Methods:newImageData(slice, mip, x, y, w, h)
     local res = self._res
     if not res.readFbo then
         res.readFbo = makeFbo(self, function()
-            gl.glFramebufferTexture2D(E.FRAMEBUFFER, E.COLOR_ATTACHMENT0, E.TEXTURE_2D, res.texture, 0)
+            gl.glFramebufferTexture2D(E.FRAMEBUFFER, E.COLOR_ATTACHMENT0, E.TEXTURE_2D, res.texture,
+                0)
         end)
         res.fbos[#res.fbos + 1] = res.readFbo
     end
@@ -308,20 +319,75 @@ end
 
 -- Shared methods -----------------------------------------------------------------------------
 
-function Methods:getWidth() return self._pw / self._dpi end
-function Methods:getHeight() return self._ph / self._dpi end
-function Methods:getDimensions() return self._pw / self._dpi, self._ph / self._dpi end
-function Methods:getPixelWidth() return self._pw end
-function Methods:getPixelHeight() return self._ph end
-function Methods:getPixelDimensions() return self._pw, self._ph end
-function Methods:getDPIScale() return self._dpi end
-function Methods:getFormat() return self._formatName end
-function Methods:getMSAA() return self._msaa end
-function Methods:getMipmapCount() return self._mipmaps end
-function Methods:getTextureType() return '2d' end
-function Methods:isReadable() return self._readable ~= false end
-function Methods:isCanvasType() return self._kind == 'canvas' end
-function Methods:getDepthSampleMode() return self._depthSample end
+function Methods:getWidth()
+    return
+    self._pw / self._dpi
+end
+
+function Methods:getHeight()
+    return
+    self._ph / self._dpi
+end
+
+function Methods:getDimensions()
+    return
+    self._pw / self._dpi, self._ph / self._dpi
+end
+
+function Methods:getPixelWidth()
+    return
+    self._pw
+end
+
+function Methods:getPixelHeight()
+    return
+    self._ph
+end
+
+function Methods:getPixelDimensions()
+    return
+    self._pw, self._ph
+end
+
+function Methods:getDPIScale()
+    return
+    self._dpi
+end
+
+function Methods:getFormat()
+    return
+    self._formatName
+end
+
+function Methods:getMSAA()
+    return
+    self._msaa
+end
+
+function Methods:getMipmapCount()
+    return
+    self._mipmaps
+end
+
+function Methods:getTextureType()
+    return '2d'
+end
+
+function Methods:isReadable()
+    return
+    self._readable ~= false
+end
+
+function Methods:isCanvasType()
+    return
+    self._kind == 'canvas'
+end
+
+function Methods:getDepthSampleMode()
+    return
+    self._depthSample
+end
+
 function Methods:setDepthSampleMode(mode)
     self._depthSample = mode
     if self._res.texture and self._depth then
@@ -335,14 +401,24 @@ function Methods:setDepthSampleMode(mode)
         end
     end
 end
-function Methods:getFilter() return self._filter.min, self._filter.mag, self._filter.anisotropy end
+
+function Methods:getFilter()
+    return
+    self._filter.min, self._filter.mag, self._filter.anisotropy
+end
+
 function Methods:setFilter(min, mag, anisotropy)
     assert(min == 'linear' or min == 'nearest', 'Invalid filter mode: ' .. tostring(min))
     self._filter.min, self._filter.mag = min, mag or min
     self._filter.anisotropy = anisotropy or 1
     self:_applySampler()
 end
-function Methods:getMipmapFilter() return self._filter.mipmap, 0 end
+
+function Methods:getMipmapFilter()
+    return
+    self._filter.mipmap, 0
+end
+
 function Methods:setMipmapFilter(mode)
     if mode ~= nil and mode ~= 'nearest' and mode ~= 'linear' then
         error('Invalid filter mode: ' .. tostring(mode))
@@ -353,11 +429,17 @@ function Methods:setMipmapFilter(mode)
     self._filter.mipmap = mode
     self:_applySampler()
 end
-function Methods:getWrap() return self._wrap[1], self._wrap[2] end
+
+function Methods:getWrap()
+    return
+    self._wrap[1], self._wrap[2]
+end
+
 function Methods:setWrap(s, t)
     self._wrap[1], self._wrap[2] = s, t or s
     self:_applySampler()
 end
+
 function Methods:generateMipmaps()
     assert(self._res.texture and not self._depth, 'Cannot generate mipmaps for this texture')
     local gl = Core.gl
@@ -365,10 +447,16 @@ function Methods:generateMipmaps()
     Core.bindForEdit(self._res.texture)
     gl.glGenerateMipmap(Core.enum.TEXTURE_2D)
 end
+
 function Methods:release()
     return Core.release(self)
 end
-function Methods:type() return self._kind == 'canvas' and 'Canvas' or 'Image' end
+
+function Methods:type()
+    return
+    self._kind == 'canvas' and 'Canvas' or 'Image'
+end
+
 function Methods:typeOf(name)
     return name == self:type() or name == 'Texture' or name == 'Drawable' or name == 'Object'
 end

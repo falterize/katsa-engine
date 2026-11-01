@@ -13,7 +13,10 @@ return function(T)
         return T.skip('graphics: no window (' .. tostring(reason) .. ')')
     end
     local g = katsa.graphics
-    local function near(a, b) return math.abs(a - b) < 0.02 end
+    local function near(a, b)
+        return
+        math.abs(a - b) < 0.02
+    end
     local function rgb(data, x, y, r, gr, b)
         local pr, pg, pb = data:getPixel(x, y)
         return near(pr, r) and near(pg, gr) and near(pb, b)
@@ -35,8 +38,10 @@ return function(T)
     g.flushBatch()
     g.setCanvas()
     local data = canvas:newImageData()
-    T.check(rgb(data, 4, 4, 0, 1, 0) and rgb(data, 24, 24, 0, 0, 1), 'canvas keeps top-left at row 0')
-    T.check(rgb(data, 24, 4, 0, 0, 1) and rgb(data, 4, 24, 0, 0, 1), 'canvas rectangle covers only its area')
+    T.check(rgb(data, 4, 4, 0, 1, 0) and rgb(data, 24, 24, 0, 0, 1),
+        'canvas keeps top-left at row 0')
+    T.check(rgb(data, 24, 4, 0, 0, 1) and rgb(data, 4, 24, 0, 0, 1),
+        'canvas rectangle covers only its area')
 
     -- drawing the canvas to the backbuffer keeps the orientation
     g.clear(0, 0, 0, 1)
@@ -61,7 +66,8 @@ return function(T)
     g.setShader()
     g.setCanvas()
     local raw = target:newImageData()
-    T.check(rgb(raw, 32, 61, 1, 0, 0) and rgb(raw, 32, 2, 0, 0, 0), 'raw NDC output is not flipped for canvases')
+    T.check(rgb(raw, 32, 61, 1, 0, 0) and rgb(raw, 32, 2, 0, 0, 0),
+        'raw NDC output is not flipped for canvases')
 
     -- culling: canvas rendering flips front faces
     local ccw = g.newMesh({ { -1, -1 }, { 1, -1 }, { 0, 1 } }, 'triangles')
@@ -76,7 +82,8 @@ return function(T)
         g.setCanvas()
         return target:newImageData():getPixel(32, 32) > 0.5
     end
-    T.check(drawn('back') == false and drawn('front') == true, 'canvas cull mode follows the flipped winding')
+    T.check(drawn('back') == false and drawn('front') == true,
+        'canvas cull mode follows the flipped winding')
 
     -- stencil
     g.setCanvas({ target, stencil = true })
@@ -120,7 +127,8 @@ return function(T)
     g.flushBatch()
     g.setCanvas()
     local tr = target:newImageData()
-    T.check(rgb(tr, 40, 8, 0, 1, 1) and rgb(tr, 60, 20, 0, 0, 0) and rgb(tr, 8, 8, 0, 0, 0), 'translate and scale')
+    T.check(rgb(tr, 40, 8, 0, 1, 1) and rgb(tr, 60, 20, 0, 0, 0) and rgb(tr, 8, 8, 0, 0, 0),
+        'translate and scale')
 
     -- images
     local img = g.newImage(require('source.katsa.image').newImageData(2, 2, 'rgba8',
@@ -133,16 +141,20 @@ return function(T)
     g.flushBatch()
     g.setCanvas()
     local im = target:newImageData()
-    T.check(rgb(im, 4, 4, 1, 0, 0) and rgb(im, 12, 4, 0, 1, 0) and rgb(im, 4, 12, 0, 0, 1) and rgb(im, 12, 12, 1, 1, 1),
+    T.check(rgb(im, 4, 4, 1, 0,
+        0) and rgb(im, 12, 4, 0, 1, 0) and rgb(im, 4, 12, 0, 0, 1) and rgb(im, 12, 12, 1, 1, 1),
         'image draws with nearest filtering')
 
     -- text
     local font = g.newFont(16, 'normal', 1)
     local w = font:getWidth('Hello')
-    T.check(w > 30 and w < 60 and font:getHeight() >= 16 and font:getHeight() <= 22, 'font metrics are plausible')
-    T.check(font:getWidth('HH') > font:getWidth('H') and font:getWidth('') == 0, 'font width grows with text')
+    T.check(w > 30 and w < 60 and font:getHeight() >= 16 and font:getHeight() <= 22,
+        'font metrics are plausible')
+    T.check(font:getWidth('HH') > font:getWidth('H') and font:getWidth('') == 0,
+        'font width grows with text')
     local _, lines = font:getWrap('one two three four', font:getWidth('three four') + 1)
-    T.check(#lines == 2 and lines[1] == 'one two' and lines[2] == 'three four', 'getWrap breaks at spaces')
+    T.check(#lines == 2 and lines[1] == 'one two' and lines[2] == 'three four',
+        'getWrap breaks at spaces')
     local _, long = font:getWrap('abcdefghijklmnop', font:getWidth('abcd') + 1)
     T.check(#long >= 3, 'getWrap splits words that are too long')
     g.setCanvas(target)

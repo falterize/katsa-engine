@@ -3,7 +3,8 @@ return function(T)
     local d = Image.newImageData(4, 3)
     d:setPixel(1, 2, 1, 0.5, 0.25, 1)
     local r, g, b, a = d:getPixel(1, 2)
-    T.check(r == 1 and math.abs(g - 0.5) < 0.005 and math.abs(b - 0.25) < 0.005 and a == 1, 'rgba8 pixel roundtrip')
+    T.check(r == 1 and math.abs(g - 0.5) < 0.005 and math.abs(b - 0.25) < 0.005 and a == 1,
+        'rgba8 pixel roundtrip')
     d:mapPixel(function(x, y) return x / 3, y / 2, 0, 1 end)
     local _, g2 = d:getPixel(2, 2)
     T.check(math.abs(g2 - 1) < 0.005, 'mapPixel')
@@ -24,5 +25,6 @@ return function(T)
     T.check(not pcall(d.getPixel, d, 9, 9), 'out-of-range pixel errors')
     local png = d:encode('png')
     local back = Image.newImageData(png)
-    T.check(back:getWidth() == 4 and back:getString() == d:getString(), 'png encode/decode roundtrip')
+    T.check(back:getWidth() == 4 and back:getString() == d:getString(),
+        'png encode/decode roundtrip')
 end

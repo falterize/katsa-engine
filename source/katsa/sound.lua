@@ -14,8 +14,13 @@ local function make(samples, rate, bits, channels, frames)
     return self
 end
 
-local function le16(s, i) local a, b = s:byte(i, i + 1) return a + b * 256 end
-local function le32(s, i) local a, b, c, d = s:byte(i, i + 3) return a + b * 256 + c * 65536 + d * 16777216 end
+local function le16(s, i)
+    local a, b = s:byte(i, i + 1)
+    return a + b * 256
+end
+
+local function le32(s,
+    i) local a, b, c, d = s:byte(i, i + 3) return a + b * 256 + c * 65536 + d * 16777216 end
 
 local function decodeWav(data)
     if data:sub(1, 4) ~= 'RIFF' or data:sub(9, 12) ~= 'WAVE' then
@@ -27,7 +32,8 @@ local function decodeWav(data)
         local body = position + 8
         if id == 'fmt ' then
             format = {
-                tag = le16(data, body), channels = le16(data, body + 2), rate = le32(data, body + 4),
+                tag = le16(data,
+                    body), channels = le16(data, body + 2), rate = le32(data, body + 4),
                 bits = le16(data, body + 14),
             }
             if format.tag == 0xFFFE and size >= 26 then
@@ -117,15 +123,50 @@ function Sound.newSoundData(a, b, c, d)
     return decoded
 end
 
-function SoundData:getSampleCount() return self._frames * self._channels end
-function SoundData:getSampleRate() return self._rate end
-function SoundData:getBitDepth() return self._bits end
-function SoundData:getChannelCount() return self._channels end
-function SoundData:getDuration() return self._frames / self._rate end
-function SoundData:getSize() return self._size end
-function SoundData:getPointer() return self._buffer end
-function SoundData:getFFIPointer() return self._buffer end
-function SoundData:getString() return ffi.string(self._buffer, self._size) end
+function SoundData:getSampleCount()
+    return
+    self._frames * self._channels
+end
+
+function SoundData:getSampleRate()
+    return
+    self._rate
+end
+
+function SoundData:getBitDepth()
+    return
+    self._bits
+end
+
+function SoundData:getChannelCount()
+    return
+    self._channels
+end
+
+function SoundData:getDuration()
+    return
+    self._frames / self._rate
+end
+
+function SoundData:getSize()
+    return
+    self._size
+end
+
+function SoundData:getPointer()
+    return
+    self._buffer
+end
+
+function SoundData:getFFIPointer()
+    return
+    self._buffer
+end
+
+function SoundData:getString()
+    return
+    ffi.string(self._buffer, self._size)
+end
 
 local function indexOf(self, i, channel)
     if channel then
@@ -136,7 +177,8 @@ end
 
 function SoundData:getSample(i, channel)
     local index = indexOf(self, i, channel)
-    assert(index >= 0 and index < self._frames * self._channels, 'Attempt to get out-of-range sample!')
+    assert(index >= 0 and index < self._frames * self._channels,
+        'Attempt to get out-of-range sample!')
     return self._buffer[index] / 32768
 end
 
@@ -146,7 +188,8 @@ function SoundData:setSample(i, a, b)
         channel, value = a, b
     end
     local index = indexOf(self, i, channel)
-    assert(index >= 0 and index < self._frames * self._channels, 'Attempt to set out-of-range sample!')
+    assert(index >= 0 and index < self._frames * self._channels,
+        'Attempt to set out-of-range sample!')
     self._buffer[index] = math.floor(math.max(-1, math.min(1, value)) * 32767 + 0.5)
 end
 
@@ -156,8 +199,16 @@ function SoundData:clone()
     return make(copy, self._rate, self._bits, self._channels, self._frames)
 end
 
-function SoundData:release() return true end
-function SoundData:type() return 'SoundData' end
-function SoundData:typeOf(name) return name == 'SoundData' or name == 'Data' or name == 'Object' end
+function SoundData:release()
+    return true
+end
+
+function SoundData:type()
+    return 'SoundData'
+end
+
+function SoundData:typeOf(name)
+    return name == 'SoundData' or name == 'Data' or name == 'Object'
+end
 
 return Sound
