@@ -31,3 +31,9 @@ JSON exports contain `schema`, `app_version` and `entries` (`id`, `utc`, `time`,
 
 The runtime journal (`manager.journal`) mirrors every recorded error into `katsa.log` as
 level `error`. A native process fault cannot be logged by Lua.
+
+## On-screen console
+
+Standalone scenes (`Host`) own a console panel (`source/engine/debug/consolePanel.lua`).
+F1 toggles it. Buttons: All / Warn+ / Errors filter, JSON and CSV export of the filtered
+view, Clear. The panel redraws only while visible and only after new entries arrive.

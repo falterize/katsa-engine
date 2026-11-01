@@ -47,6 +47,7 @@ function Host:load()
     self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
     local layer = self.ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self.ui.content)
     self.statistics = Statistics.new(self, layer)
+    self.console = require('source.engine.debug.consolePanel').new(self.ui, layer)
     self:resize(katsa.graphics.getDimensions())
 end
 
@@ -81,6 +82,7 @@ function Host:update(dt, realDt)
     self.camera = self.world.activeCamera or self.camera
     self.camera:update(katsa.graphics.getDimensions())
     self.audio:update(self.camera)
+    self.console:update()
     self.updateMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 
@@ -129,6 +131,8 @@ function Host:keypressed(key)
     end
     if key == 'f3' then
         self.showStats = not self.showStats
+    elseif key == 'f1' then
+        self.console:toggle()
     end
 end
 
@@ -149,6 +153,9 @@ function Host:release()
         return
     end
     self.released = true
+    if self.console then
+        self.console:release()
+    end
     Cleanup.run({
         function()
             if self.input then

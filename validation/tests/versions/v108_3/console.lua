@@ -71,6 +71,30 @@ function Module.run(self)
         'Crash report is a .log with recent console lines'
     )
     log.clear()
+
+    local scene = require('source.game.runtime.application').new(self.manager, 'starterGame')
+    scene:load()
+    local console = scene.host and scene.host.console or scene.console
+    self:check(console ~= nil and not console.root.visible, 'Standalone scenes own a hidden console')
+    scene:keypressed('f1')
+    log.warn('visible warning', 'test', true)
+    log.error('visible error', 'test', true)
+    scene:update(1 / 60, 1 / 60)
+    self:check(
+        console.root.visible and console.body.text:find('visible warning', 1, true),
+        'F1 shows the console with new entries'
+    )
+    console:setFilter('error')
+    scene:update(1 / 60, 1 / 60)
+    self:check(
+        console.body.text:find('visible error', 1, true)
+            and not console.body.text:find('visible warning', 1, true),
+        'Console error filter hides warnings'
+    )
+    scene:draw()
+    self:check(true, 'Console draws without errors')
+    scene:release()
+    log.clear()
 end
 
 return Module
