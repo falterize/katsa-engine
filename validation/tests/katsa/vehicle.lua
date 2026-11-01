@@ -1,18 +1,8 @@
 -- Scene node folder nodes/vehicle: driving, suspension, nitro, seats, collisions and body dents.
 -- The parts are pure Lua, so they load here the way a scene package resolves `scene.` requires.
-local ROOT = 'source/game/scenes/multiplayerCars/'
-local cache = {}
+local load = require('validation.tests.katsa.sceneRequire')
 local function sceneRequire(name)
-    if name:sub(1, 6) ~= 'scene.' then
-        return require(name)
-    end
-    local relative = name:sub(7):gsub('%.', '/')
-    if cache[relative] == nil then
-        local chunk = assert(loadfile(ROOT .. relative .. '.lua'))
-        setfenv(chunk, setmetatable({ require = sceneRequire }, { __index = _G }))
-        cache[relative] = chunk()
-    end
-    return cache[relative]
+    return load('multiplayerCars', name)
 end
 local Vehicle = {
     Collision = sceneRequire('scene.nodes.vehicle.collision'),
