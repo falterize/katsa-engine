@@ -89,9 +89,9 @@ Low-pass and Group reverb presets. Click a preset to start; playback is not
 automatic. Its three-second mono probe includes silence so tails are audible.
 The probe was generated for this release; no third-party library/audio was added.
 
-Primary API references: https://love2d.org/wiki/love.audio.setEffect,
-https://love2d.org/wiki/love.audio.isEffectsSupported,
-https://love2d.org/wiki/love.audio.getMaxSourceEffects,
+Primary API references: https://love2d.org/wiki/katsa.audio.setEffect,
+https://love2d.org/wiki/katsa.audio.isEffectsSupported,
+https://love2d.org/wiki/katsa.audio.getMaxSourceEffects,
 https://love2d.org/wiki/Source:setEffect,
 https://love2d.org/wiki/Source:setFilter,
 https://love2d.org/wiki/Source:setPitch.

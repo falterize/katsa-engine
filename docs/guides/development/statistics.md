@@ -86,7 +86,7 @@ options require a selected metric; all-Stats export also works from the list.
 The export dialog captures pointer input until closed. Stats keeps recording
 while the dialog is open.
 
-CSV files are saved in `stats-logs/` inside `love.filesystem.getSaveDirectory()`.
+CSV files are saved in `stats-logs/` inside `katsa.filesystem.getSaveDirectory()`.
 Use **Open log folder** to locate them. No network request or automatic disk
 logging occurs. Filenames include UTC time, scope/metric and window length;
 numeric suffixes prevent overwriting existing files. The save identity is

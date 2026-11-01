@@ -3,26 +3,26 @@
 From the source root:
 
 ```text
-love . --test
-love . --test-v106.7
-love . --test-skin-menu
-love . --test-menu-idle
-love . --test-v106.6
-love . --test-v106.5
-love . --test-v106.4
-love . --test-v105
-love . --test-v106
-love . --test-v106.1
-love . --test-v106.2
-love . --test-v106.3
-love . --test-v105.2
-love . --test-v105-parallel
-love . --test-v104
-love . --test-structure
-love . --physics-oimo --test-v104-selection
-love . --physics-oimo --test-v102
-love . --physics-oimo --test-v75
-love . --physics-jolt --stress-v103
+katsa . --test
+katsa . --test-v106.7
+katsa . --test-skin-menu
+katsa . --test-menu-idle
+katsa . --test-v106.6
+katsa . --test-v106.5
+katsa . --test-v106.4
+katsa . --test-v105
+katsa . --test-v106
+katsa . --test-v106.1
+katsa . --test-v106.2
+katsa . --test-v106.3
+katsa . --test-v105.2
+katsa . --test-v105-parallel
+katsa . --test-v104
+katsa . --test-structure
+katsa . --physics-oimo --test-v104-selection
+katsa . --physics-oimo --test-v102
+katsa . --physics-oimo --test-v75
+katsa . --physics-jolt --stress-v103
 python tools/build/jolt/prepareNative.py
 python tools/build/jolt/generateBindings.py --check
 python tools/build/packageProject.py --output dist
@@ -32,7 +32,7 @@ Historical command names identify stable suites, not the current application ver
 
 Format first-party Lua using `stylua --syntax LuaJIT --verify source/engine source/game source/tests main.lua conf.lua`, followed by the same paths with `--check`. Preserve vendor files and historical comparison fixtures. Python tools use the checked-in Black configuration.
 
-Release-wide runners, frame-hash comparisons, structural audits and completed results live in the external `validation/` directory beside the release archive. Re-test the packaged `.love` after changes to dependency paths. A Haxe/C++ rebuild requires the corresponding external compiler; library hash verification does not claim a source rebuild or device testing.
+Release-wide runners, frame-hash comparisons, structural audits and completed results live in the external `validation/` directory beside the release archive. Re-test the packaged `.katsa` after changes to dependency paths. A Haxe/C++ rebuild requires the corresponding external compiler; library hash verification does not claim a source rebuild or device testing.
 
 The v105 suite covers both scroll axes, automatic bounds, direction changes, inspector properties, invalid inputs, native worker execution and body-ID reuse. The forced-parallel suite runs the 174 existing adapter checks with the worker threshold set to zero, including contact mutation and scene teardown. `--benchmark-v105` measures CPU physics on a fixed scene; see [parallel physics](../physics/parallel.md).
 
@@ -86,7 +86,7 @@ prefix to capture real menu and Workspace screenshots.
 
 
 `--test` now selects the current `--test-v106.4` suite. It covers scene folders,
-ZIP/.love/TAR/TAR.GZ/TGZ/7z packages, archive ownership, resource URI aliases,
+ZIP/.katsa/TAR/TAR.GZ/TGZ/7z packages, archive ownership, resource URI aliases,
 GLTF/OBJ sidecars, audio, custom nodes, explicit systems and all gameplay scenes
 on both backends. `KATSA_TEST_INTERPRETER=1` checks its interpreter path.
 The original integration runner predates current shader includes and menu order;
@@ -96,7 +96,7 @@ Use `--test-v102` for the retained 196 rendering/UI/Oimo checks and
 
 `--test-v106.5` runs the retained package/backends coverage plus all
 29 scene folder contracts, lifecycle-only exports, menu/catalog/pause startup,
-private node ownership and folder/ZIP/.love/TAR/TAR.GZ/TGZ/7z lifecycle fixtures.
+private node ownership and folder/ZIP/.katsa/TAR/TAR.GZ/TGZ/7z lifecycle fixtures.
 It checks discovery, deterministic order, initially disabled startup, runtime
 enabling, all three update phases, exactly one simulation/UI update, private
 module caches and cleanup. The frame-loop probe also has the alias
@@ -145,7 +145,7 @@ a matched backend benchmark, see [repeatable validation](validation.md).
 
 ## Collider model sources
 
-Run `love . --test-v107.2-authoring` for focused editor/physics authoring coverage,
+Run `katsa . --test-v107.2-authoring` for focused editor/physics authoring coverage,
 including OBJ/GLB/glTF path loading on Oimo/Jolt, independent point extraction,
 invalid-source recovery and the Collision Models Workspace path picker.
 

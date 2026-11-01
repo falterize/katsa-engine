@@ -20,7 +20,7 @@ logical UI pixels, and its existing adaptive canvas density remains bounded.
 Screen UI fonts use exact target density, including fractional DPI; text origins
 are snapped to physical target pixels without changing layout/hit rectangles.
 
-See LÖVE [newCanvas](https://love2d.org/wiki/love.graphics.newCanvas),
+See LÖVE [newCanvas](https://love2d.org/wiki/katsa.graphics.newCanvas),
 [getMSAA](https://love2d.org/wiki/Canvas:getMSAA) and
 [getDPIScale](https://love2d.org/wiki/Texture:getDPIScale). Actual accepted MSAA
 can differ from the requested count. No phone frame-rate gain is claimed.

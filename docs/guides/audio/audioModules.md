@@ -51,5 +51,5 @@ local engine = world:create('AudioSource', {
 engine:play()
 ```
 
-Verification: `love . --test-v108.1` runs 30 audio checks against instrumented LÖVE audio (routing, attenuation, listener
+Verification: `katsa . --test-v108.1` runs 30 audio checks against instrumented katsa audio (routing, attenuation, listener
 selection, lifetime). It does not test audible output.

@@ -4,7 +4,7 @@ A Lua 2D and 3D framework and interactive example collection built on LÖVE: sce
 
 ## Run
 
-Install LÖVE 11.5 and run `love .` from this directory, or open the release `.love` archive. Optional flags: `--physics-jolt` or `--physics-oimo`. Auto mode prefers Jolt when its native library loads. Desktop VSync is disabled by default. Try `--scene abilityRunner2D` for the 2D runner with checkpoints, abilities and 8x8 pixel animation. Windows startup enables native DPI awareness with logical UI sizing; desktop geometry uses hardware-aware MSAA defaults. See the [quality guide](docs/guides/rendering/renderQuality.md) for resolution and sampling settings.
+Build the katsa runtime (see [building](docs/guides/katsa/building.md)) and run `katsa .` from this directory, or run a release `.katsa` archive. Optional flags: `--physics-jolt` or `--physics-oimo`. Auto mode prefers Jolt when its native library loads. Desktop VSync is disabled by default. Try `--scene abilityRunner2D` for the 2D runner with checkpoints, abilities and 8x8 pixel animation. Windows startup enables native DPI awareness with logical UI sizing; desktop geometry uses hardware-aware MSAA defaults. See the [quality guide](docs/guides/rendering/renderQuality.md) for resolution and sampling settings.
 
 ## Project layout
 
@@ -53,7 +53,7 @@ Build an archive with `python tools/build/packageProject.py --output dist`. Proj
 Generated scenes expose `scene.data` for shared progress, preferences and arbitrary
 text/binary files in persistent device storage. Keep the save identity stable
 across updates. Starter Game is part of `source/game/scenes/starterGame`; run
-`love . --scene starterGame` or select it in the menu. Its optional
+`katsa . --scene starterGame` or select it in the menu. Its optional
 `settings.lua.frameRateLimit` accepts `0` (uncapped) or a positive ceiling.
 
 Use `scene.data:scope('shooter'):scope('extra')` or `scope('shooter/extra')` for

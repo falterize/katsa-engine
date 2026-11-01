@@ -1,6 +1,6 @@
 # Katsa v83 — Shared directional lights and physics debug
 
-Run `Katsa-v83-Multiple-Directional-Lights-and-Unified-Debug.love` with LÖVE 11.5.
+Run the project with `katsa .` or a packaged `.katsa` archive.
 Code, examples, assets and documentation are included.
 
 ## Unified Debug hierarchy
@@ -106,7 +106,7 @@ In **Shadows**, expand `World3D > Lights` for `DirectionalSun` and
 to be enabled simultaneously. Other former-Sun examples now create real nodes;
 the day/night example changes its DaySun Rotation, Enabled and Brightness.
 
-`love path/to/project --test-v83` performs focused native checks. Validation
+`katsa path/to/project --test-v83` performs focused native checks. Validation
 covers real pixel contributions and independent shadows, Rotation and parent
 rotation, shared slots/priority, static reuse, mixed local/directional shadows,
 Direct/Masked agreement, particles, physical lines in the world canvas, and the

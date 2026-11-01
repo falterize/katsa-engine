@@ -1,4 +1,4 @@
-"""Run a game folder or ZIP/.love/TAR/TAR.GZ/TGZ/7z project archive."""
+"""Run a game folder or ZIP/.katsa/TAR/TAR.GZ/TGZ/7z project archive with the katsa runtime."""
 
 from pathlib import Path, PurePosixPath
 import argparse
@@ -15,13 +15,13 @@ def game_root(paths):
     roots = [
         name[: -len('main.lua')]
         for name in names
-        if name.endswith('main.lua') and name[: -len('main.lua')] + 'conf.lua' in names
+        if name.endswith('main.lua')
     ]
     if '' in roots:
         return ''
     shallow = [root for root in roots if root.count('/') == 1]
     if len(shallow) != 1:
-        raise ValueError('Archive must contain one game root with main.lua and conf.lua')
+        raise ValueError('Archive must contain one game root with main.lua')
     return shallow[0]
 
 
@@ -34,21 +34,13 @@ def normalize(name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        '--love',
-        default=shutil.which('love')
-        or (
-            'C:/Program Files/LOVE/love.exe'
-            if Path('C:/Program Files/LOVE/love.exe').exists()
-            else 'love'
-        ),
-    )
+    parser.add_argument('--katsa', default=shutil.which('katsa') or 'katsa')
     parser.add_argument('project', type=Path)
     parser.add_argument('game_arguments', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     source = args.project.resolve()
     if source.is_dir():
-        return subprocess.call([args.love, str(source), *args.game_arguments])
+        return subprocess.call([args.katsa, str(source), *args.game_arguments])
     with tempfile.TemporaryDirectory(prefix='katsa-project-') as temporary:
         files = {}
         if zipfile.is_zipfile(source):
@@ -78,14 +70,14 @@ def main():
                     elif not info.isdir():
                         raise ValueError('Project 7z must contain regular files and directories')
         else:
-            raise ValueError('Use a directory, ZIP/.love, TAR, TAR.GZ/TGZ or 7z archive')
+            raise ValueError('Use a directory, ZIP/.katsa, TAR, TAR.GZ/TGZ or 7z archive')
         root = game_root(files)
-        target = Path(temporary) / 'project.love'
+        target = Path(temporary) / 'project.katsa'
         with zipfile.ZipFile(target, 'w', zipfile.ZIP_STORED) as archive:
             for name, data in files.items():
                 if name.startswith(root):
                     archive.writestr(name[len(root) :], data)
-        return subprocess.call([args.love, str(target), *args.game_arguments])
+        return subprocess.call([args.katsa, str(target), *args.game_arguments])
 
 
 if __name__ == '__main__':

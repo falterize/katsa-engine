@@ -3,7 +3,7 @@
 - Physics is categorized by dimension: `source/engine/physics/2d` contains Box2D integration and `source/engine/physics/3d` contains the 3D facade and sibling Oimo/Jolt backends. `physics/init.lua` is a compatibility entry point for 3D only; add new implementation code inside the appropriate dimension.
 - Physics nodes are grouped under `source/engine/nodes/physics/2d` and `3d`. New dimension-specific spatial, collider, body, camera and constraint classes end with `2D` or `3D`. Preserve existing public compatibility aliases.
 - World2D owns its optional Physics2D and Camera2D. Screen widgets remain camera-independent. Spatial Node2D transforms use logical world units with Y up and counterclockwise degrees; do not reuse UI layout arrays for physics positions.
-- Never change the global `love.physics` meter per world. Convert units through each Physics2D instance. Dispatch user contact events after the native solver unlocks, and preserve transactional collider replacement, constraint ownership and teardown order.
+- Never change the global `katsa.physics` meter per world. Convert units through each Physics2D instance. Dispatch user contact events after the native solver unlocks, and preserve transactional collider replacement, constraint ownership and teardown order.
 - Advance each simulation exactly once. World2D updates its physics from UI:update(realDelta, simulationDelta) by default; pass the scaled simulation delta separately from UI wall time; set `autoUpdatePhysics = false` before stepping it explicitly from a scene system. Camera tracking and UI input must use the documented world/screen conversions.
 - Changes to shared physics or spatial infrastructure require native regression tests for both dimensions, scene smoke tests, mixed-world lifecycle checks and current documentation. Keep 2D test commands available through the shared test registry.
 
@@ -17,7 +17,7 @@
 - Runtime modules export named tables: imports, local bindings, module table, helpers, functions, final export. Use explicit create/new/build/install/register entry points; assemble backend methods at load time.
 - Keep one project README in the source root. Current guides belong in docs; update notes and historical release documents belong outside source.
 - Update the external release notes and dependency documentation when changing structure. Follow the user's requested version name and keep prior release folders intact.
-- Verify changes with the relevant LOVE tests, formatting checks and native integrity checks before packaging a release.
+- Verify changes with the relevant katsa tests, formatting checks and native integrity checks before packaging a release.
 
 - Scene composition belongs in scripts/content.lua. Keep other scene scripts in responsibility-based categories such as builders, behaviors, lighting, animation, data and catalog. Create internal categories only when used.
 - Keep UI entry modules at scripts/ui/interface.lua or scripts/ui/controller.lua; place supporting UI modules in appropriate scripts/ui subcategories. Executable systems remain directly under systems for the scene-owned startup loop.

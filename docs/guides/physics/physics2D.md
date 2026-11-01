@@ -69,7 +69,7 @@ dimension; new class names end in `2D` or `3D`.
 
 ## Runner example and pixel animation
 
-Select **Ability Runner 2D** (`abilityRunner2D`), or run `love . --scene abilityRunner2D`.
+Select **Ability Runner 2D** (`abilityRunner2D`), or run `katsa . --scene abilityRunner2D`.
 The complete scene lives in `source/game/scenes/abilityRunner2D`, including its level,
 controller, atlas, UI and systems. A/D or touch buttons move; Space double-jumps, Shift
 dashes, C slides and R respawns. Gold trigger volumes save checkpoints, red lava is a
@@ -191,7 +191,7 @@ Color and UI depth belong to their visual widgets.
 `unitsPerMeter` defaults to 64 (`units` remains accepted). Gravity, velocity and
 lengths use world units; forces use kg*world-unit/s^2, impulses kg*world-unit/s,
 torques kg*world-unit^2/s^2. Density is kg/m^2 and explicit mass is kg. Conversion
-is per world; do not call `love.physics.setMeter` while worlds exist.
+is per world; do not call `katsa.physics.setMeter` while worlds exist.
 
 Body2D supports `Static`, `Dynamic` and `Kinematic`, density/mass, friction,
 restitution, gravityScale, linear/angular damping, sleeping, fixedRotation,

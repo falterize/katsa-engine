@@ -212,6 +212,8 @@ function World:typeOf(name)
     return name == 'World' or name == 'Object'
 end
 
+Object.interpreted(World.update, World.queryBoundingBox, World.rayCast, World.destroy)
+
 M.class = World
 
 return M

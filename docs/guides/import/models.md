@@ -72,7 +72,7 @@ normalized vertex/palette layout and conservative skin envelopes. GPU assets are
 shared, while instance poses/tracks are independent. CPU vertex arrays are decoded
 lazily only for CPU geometry consumers such as convex-collider creation.
 The loader checks SHA-256 of the source and ignores a stale sidecar. GLB/glTF and
-OBJ still load directly without it. `love . --bake-xbot` rebuilds this specific
+OBJ still load directly without it. `katsa . --bake-xbot` rebuilds this specific
 neutral-material demo cache. The current builder does not serialize embedded
 texture handles; this is an optional optimization, not a general model converter.
 

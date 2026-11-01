@@ -1,64 +1,62 @@
-"""Package source, assets, dependencies and empty categories into a .love ZIP."""
+"""Package the project (source, assets, dependencies, empty scene categories) into a .katsa archive.
+
+    python tools/build/packageProject.py --output dist
+    python tools/build/packageProject.py --output dist --host build/host/linux/katsa   (fused exe)
+
+The archive is named after source/engine/core/version.lua. Run it with `katsa Katsa-<version>.katsa`.
+See docs/guides/katsa/building.md for every target platform.
+"""
 
 from pathlib import Path
 import argparse
-import sys
 import hashlib
-import zipfile
+import re
+import stat
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import packageKatsa  # noqa: E402
+import restoreEmptyDirs  # noqa: E402
 
 
-# Repository bookkeeping that lives beside the project in Git but is not part of the game.
-REPOSITORY_ONLY = {'.git', '.gitignore', 'releases'}
+def project_version(root: Path) -> str:
+    text = (root / 'source' / 'engine' / 'core' / 'version.lua').read_text(encoding='utf-8')
+    match = re.search(r"value\s*=\s*'([^']+)'", text)
+    if not match:
+        raise ValueError('Cannot read the version from source/engine/core/version.lua')
+    return match.group(1)
 
 
-def is_repository_file(relative: Path) -> bool:
-    return relative.parts[0] in REPOSITORY_ONLY
-
-
-def package(source: Path, target: Path):
-    source = source.resolve()
-    target = target.resolve()
-    if not (source / 'main.lua').is_file():
-        raise ValueError(f'Project is missing main.lua: {source}')
+def package(root: Path, target: Path, host: Path | None = None) -> Path:
+    if not (root / 'main.lua').is_file():
+        raise ValueError(f'Project is missing main.lua: {root}')
     target.parent.mkdir(parents=True, exist_ok=True)
-    temporary = target.with_suffix('.tmp')
-    output_root = target.parent
-    # Exclude a nested output directory, but allow building into the source root.
-    output_is_child = output_root != source and output_root.is_relative_to(source)
-    entries = sorted(
-        path
-        for path in source.rglob('*')
-        if (path.is_file() or path.is_dir())
-        and '__pycache__' not in path.relative_to(source).parts
-        and not is_repository_file(path.relative_to(source))
-        and path not in {target, temporary}
-        and not (output_is_child and path.is_relative_to(output_root))
-    )
-    try:
-        with zipfile.ZipFile(temporary, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-            for path in entries:
-                # Directory entries retain empty scene categories without marker files.
-                archive.write(path, path.relative_to(source).as_posix())
-        with zipfile.ZipFile(temporary) as archive:
-            assert archive.testzip() is None
-            assert 'main.lua' in archive.namelist()
-        temporary.replace(target)
-    finally:
-        temporary.unlink(missing_ok=True)
-    print(target, hashlib.sha256(target.read_bytes()).hexdigest())
+    if host is None:
+        files, directories = packageKatsa.write_zip(str(target), str(root))
+    else:
+        temporary = target.with_suffix('.zip.tmp')
+        try:
+            files, directories = packageKatsa.write_zip(str(temporary), str(root), runtime=True)
+            target.write_bytes(host.read_bytes() + temporary.read_bytes())
+        finally:
+            temporary.unlink(missing_ok=True)
+        target.chmod(target.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    print(f'packed {files} files, {directories} empty folders -> {target}')
+    return target
 
 
 def main():
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=Path('dist'))
+    parser.add_argument('--host', type=Path, help='katsa host executable to fuse with')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     # A fresh Git checkout has no empty scene categories; the archive must keep them.
-    import restoreEmptyDirs
-
     restoreEmptyDirs.restore(root)
-    package(root, args.output / 'Katsa-v108.2.love')
+    name = f'Katsa-{project_version(root)}'
+    target = args.output / (name if args.host else name + '.katsa')
+    result = package(root, target, args.host)
+    print(hashlib.sha256(result.read_bytes()).hexdigest())
 
 
 if __name__ == '__main__':

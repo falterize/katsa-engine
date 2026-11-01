@@ -25,6 +25,14 @@ function Object.alive(self, name)
     end
 end
 
+-- LuaJIT cannot run an FFI callback from a compiled trace ("bad callback"). Methods that enter
+-- native code which may call Lua back (stepping, destruction, queries) are kept out of the JIT.
+function Object.interpreted(...)
+    for i = 1, select('#', ...) do
+        jit.off((select(i, ...)))
+    end
+end
+
 -- Objects in a set, ordered by creation (registry id).
 function Object.sortedKeys(set)
     local list = {}

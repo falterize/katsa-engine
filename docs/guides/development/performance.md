@@ -13,7 +13,7 @@ portable fallback blocks for at least 1 ms and rechecks the deadline. Neither
 path busy-spins. Oversleep can reduce FPS but an early wake cannot bypass the
 remaining wait. A frame already over budget receives no extra delay.
 
-The previous one-shot fractional `love.timer.sleep` could return immediately for
+The previous one-shot fractional `katsa.timer.sleep` could return immediately for
 waits below 1 ms. Measured requests of 0.25 and 0.75 ms took less than 0.001 ms;
 this produced uneven pacing and FPS above the configured limit. That bug is
 separate from the reported desktop stutter with Stats hidden. High FPS alone
@@ -57,7 +57,7 @@ mode change and node destruction.
 
 ## Reproducing stutter
 
-Run `love . --profile-v106.1-stutter`. The runner loads Animation + Physics at
+Run `katsa . --profile-v106.1-stutter`. The runner loads Animation + Physics at
 1920x1080, performs 120 frames with Stats closed, 60 with the list open and the
 remaining frames with the FPS chart open. Default total: 900 frames. Updates are
 fixed 1/60 for comparison; this is not an interactive gameplay FPS measurement.
@@ -94,7 +94,7 @@ sampling independently. ScrollFrame drawing separates the outer frame clip from
 the inset child window: children remain clipped, while bars use the frame's full
 rectangle within ancestor clips and rounded stencil masks.
 
-`love . --profile-v106.2-stutter` accepts the same profiler controls plus
+`katsa . --profile-v106.2-stutter` accepts the same profiler controls plus
 `KATSA_STUTTER_SCENE=platformer` or `animationPhysicsLab`. The v106.2 runner
 uses the current startup policy; `KATSA_STUTTER_MCODE_KIB=8192` explicitly
 reproduces the old machine-code ceiling for diagnosis. Run at least 6,000
@@ -114,7 +114,7 @@ present execution. It does not busy-wait on a target deadline or change simulati
 steps. Material uniform buffers and shader feature lists are reused; resource
 normalization and image lookups avoid repeated hot-path temporary tables.
 
-`love . --profile-v106.4-loop` runs the actual frame loop rather than manually
+`katsa . --profile-v106.4-loop` runs the actual frame loop rather than manually
 calling a fixed-delta benchmark. Set `KATSA_LOOP_LOG` to an absolute CSV path and
 optionally `KATSA_LOOP_FRAMES` (default 2400). Stats opens automatically and the
 first 240 frames are excluded. The log separates event pumping, present, sleep,

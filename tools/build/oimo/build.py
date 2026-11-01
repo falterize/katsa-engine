@@ -35,12 +35,12 @@ def build(haxe):
         generated = output.read_text(encoding='utf-8')
         clock = '__lua_lib_luv_Misc = _G.require("luv")'
         assert clock in generated, 'Unexpected Haxe clock binding; review the generated module'
-        # The generated runtime only needs a clock. Route it through LÖVE so the
+        # The generated runtime only needs a clock. Route it through katsa.timer so the
         # game does not acquire an otherwise unused native luv dependency.
         generated = generated.replace(
             clock,
             '__lua_lib_luv_Misc = { gettimeofday = function() '
-            'local t = love.timer.getTime(); '
+            'local t = katsa.timer.getTime(); '
             'return math.floor(t), (t % 1) * 1000000 end }',
         )
         # Isolate Haxe globals while retaining the historical zero-based array
@@ -56,7 +56,7 @@ def build(haxe):
             'return environment.OimoExports\n'
         )
         (root / 'vendor/oimoPhysics/init.lua').write_text(module, encoding='utf-8')
-        print('Built vendor/oimoPhysics/init.lua; run love . --test-v104')
+        print('Built vendor/oimoPhysics/init.lua; run katsa . --test-v104')
 
 
 def main():

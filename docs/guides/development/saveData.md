@@ -1,7 +1,7 @@
 # Save data
 
-The LÖVE save identity is `katsa-engine`. On Windows the default folder is
-`%APPDATA%/LOVE/katsa-engine`. Use `love.filesystem.getSaveDirectory()` for the
+The save identity is `katsa-engine`. On Windows the default folder is
+`%APPDATA%/Katsa/katsa-engine`. Use `katsa.filesystem.getSaveDirectory()` for the
 actual location on other platforms. Stats CSV files live in `stats-logs/`;
 verified native libraries live in content-addressed `native-cache/` directories.
 Project source, assets and vendor files stay inside the project or archive.
