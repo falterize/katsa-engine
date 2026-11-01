@@ -47,15 +47,20 @@ end
 
 katsa.arg = {}
 
--- Arguments after `--` (or all non-option arguments) are game arguments.
+-- Game arguments follow the game path (LÖVE convention): `katsa <game> --flag` passes `--flag`.
+-- Options before the game path belong to the runtime. Arguments after a lone `--` are always
+-- game arguments.
 function katsa.arg.parseGameArguments(argv)
-    local result, seenSeparator = {}, false
-    for i = 1, #(argv or {}) do
+    argv = argv or {}
+    local result, seenGame = {}, false
+    for i = 1, #argv do
         local value = argv[i]
-        if seenSeparator then
+        if seenGame then
             result[#result + 1] = value
         elseif value == '--' then
-            seenSeparator = true
+            seenGame = true
+        elseif value:sub(1, 2) ~= '--' then
+            seenGame = true
         end
     end
     return result

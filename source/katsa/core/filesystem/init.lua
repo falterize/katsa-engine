@@ -8,6 +8,7 @@ local Lib = require('source.katsa.core.nativeLib')
 local Paths = require('source.katsa.core.filesystem.paths')
 local Sources = require('source.katsa.core.filesystem.sources')
 local FileData = require('source.katsa.core.filesystem.fileData')
+local File = require('source.katsa.core.filesystem.file')
 
 local normalize = Paths.normalize
 local DirectorySource, ArchiveSource = Sources.Directory, Sources.Archive
@@ -330,6 +331,63 @@ function FS.load(path)
         return nil, message
     end
     return loadstring(data, '@' .. normalize(path))
+end
+
+-- Hooks File objects use to reach the save directory and the mounted sources.
+local fileResolver = {
+    realPath = function(path, forWriting)
+        if forWriting then
+            FS.getSaveDirectory()
+            return saveReal(path)
+        end
+        if state.saveRoot and Lib.stat(saveReal(path)) == 'file' then
+            return saveReal(path)
+        end
+        return nil
+    end,
+    readVirtual = function(path)
+        return FS.read(path)
+    end,
+    size = function(path)
+        local info = FS.getInfo(path, 'file')
+        return info and info.size
+    end,
+}
+
+function FS.newFile(path, mode)
+    local file = File.new(normalize(path), fileResolver)
+    if mode then
+        local ok, message = file:open(mode)
+        if not ok then
+            return nil, message
+        end
+    end
+    return file
+end
+
+-- Renames a file inside the save directory.
+function FS.rename(source, target)
+    source, target = normalize(source), normalize(target)
+    if not state.saveRoot then
+        return false, 'No save directory'
+    end
+    local ok, message = os.rename(saveReal(source), saveReal(target))
+    return ok and true or false, message
+end
+
+-- Directory or archive that provides `path`: the save directory first, then the mounts.
+function FS.getRealDirectory(path)
+    path = normalize(path)
+    if state.saveRoot and Lib.stat(saveReal(path)) then
+        return saveReal('')
+    end
+    for _, mount in ipairs(searchPlan(path)) do
+        local inner = resolve(mount, path)
+        if inner and mount.backend:info(inner) then
+            return mount.backend.root or mount.key or state.source
+        end
+    end
+    return nil
 end
 
 -- newFileData(contents, name) or newFileData(path)
