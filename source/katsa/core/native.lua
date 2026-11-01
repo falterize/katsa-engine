@@ -27,6 +27,12 @@ local candidates = {
         OSX = { 'libfreetype.6.dylib', 'libfreetype.dylib' },
         Android = { 'libfreetype.so' },
     },
+    Box2D = {
+        Windows = { 'katsa_box2d.dll' },
+        Linux = { 'libkatsa_box2d.so' },
+        OSX = { 'libkatsa_box2d.dylib' },
+        Android = { 'libkatsa_box2d.so' },
+    },
     Katsa = {
         Windows = { 'katsa_native.dll' },
         Linux = { 'libkatsa_native.so' },
