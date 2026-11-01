@@ -370,12 +370,13 @@ function Body:destroy()
         self._world._joints[joint] = nil
     end
     self._joints = {}
+    -- Native destruction fires end-contact callbacks, so fixtures stay registered until it is done.
+    B().kb2_body_destroy(self._world._h, self._h)
     for fixture in pairs(self._fixtures) do
         fixture._destroyed = true
         Registry.unregister(fixture._id)
     end
     self._fixtures = {}
-    B().kb2_body_destroy(self._world._h, self._h)
     self._destroyed = true
     self._world._bodies[self] = nil
     Registry.unregister(self._id)

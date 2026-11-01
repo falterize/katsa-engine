@@ -52,11 +52,16 @@ function G.inverseTransformPoint(x, y)
     return (t[4] * px - t[3] * py) / det, (-t[2] * px + t[1] * py) / det
 end
 
+local function isPlainTable(value)
+    return type(value) == 'table' and getmetatable(value) == nil
+end
+
+-- Plain tables (color, scissor...) are copied; objects such as fonts and shaders are shared.
 local function snapshot()
     local copy = {}
     for key, value in pairs(S) do
         if key ~= 'stack' then
-            if type(value) == 'table' and key ~= 'canvases' and key ~= 'canvasOptions' then
+            if isPlainTable(value) and key ~= 'canvases' and key ~= 'canvasOptions' then
                 local c = {}
                 for k, v in pairs(value) do
                     c[k] = v

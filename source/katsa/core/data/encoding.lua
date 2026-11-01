@@ -3,6 +3,8 @@
 local Inflate = require('source.katsa.core.inflate')
 local char, byte, format = string.char, string.byte, string.format
 
+local Input = require('source.katsa.core.data.input')
+
 local M = {}
 
 local alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -45,6 +47,7 @@ end
 
 -- container is accepted for love.data compatibility; only 'string' is produced.
 function M.encode(container, format_, data)
+    data = Input.toString(data)
     assert(container == 'string' or container == 'data', 'Unknown container')
     if format_ == 'hex' then
         return (data:gsub('.', function(c)
@@ -57,6 +60,7 @@ function M.encode(container, format_, data)
 end
 
 function M.decode(container, format_, text)
+    text = Input.toString(text)
     assert(container == 'string' or container == 'data', 'Unknown container')
     if format_ == 'hex' then
         return (text:gsub('%x%x', function(pair)
@@ -69,6 +73,7 @@ function M.decode(container, format_, text)
 end
 
 function M.decompress(container, format_, data)
+    data = Input.toString(data)
     if format_ == 'zlib' then
         return Inflate.zlib(data)
     elseif format_ == 'gzip' then

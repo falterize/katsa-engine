@@ -207,7 +207,7 @@ __haxe_macro_Error = _hx_e()
 __lua_Boot = _hx_e()
 __lua_UserData = _hx_e()
 __lua_Thread = _hx_e()
-__lua_lib_luv_Misc = { gettimeofday = function() local t = love.timer.getTime(); return math.floor(t), (t % 1) * 1000000 end }
+__lua_lib_luv_Misc = { gettimeofday = function() local t = katsa.timer.getTime(); return math.floor(t), (t % 1) * 1000000 end }
 __oimo_collision_broadphase_BroadPhase = _hx_e()
 __oimo_collision_geometry_Geometry = _hx_e()
 __oimo_collision_geometry_ConvexGeometry = _hx_e()

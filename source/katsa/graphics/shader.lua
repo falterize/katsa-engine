@@ -263,6 +263,18 @@ local function packComponents(entry, values, componentCount, buffer, transposeRo
     return #values > limit and limit or #values
 end
 
+-- Vector and matrix uniforms also accept their components as plain numbers; group them per element.
+local function groupFlatNumbers(values, size)
+    if size == 1 or type(values[1]) ~= 'number' then
+        return values
+    end
+    local grouped = {}
+    for first = 1, #values, size do
+        grouped[#grouped + 1] = { unpack(values, first, first + size - 1) }
+    end
+    return grouped
+end
+
 function Methods:send(name, ...)
     local entry = self._uniforms[name]
     if not entry then
@@ -296,8 +308,6 @@ function Methods:send(name, ...)
     end
     local values = args
     if #args == 1 and type(args[1]) == 'table' then
-        local first = args[1][1]
-        local isList = entry.count > 1
         if entry.count > 1 then
             values = args[1]
         elseif info[2] == 1 and info[1] ~= 'matrix' then
@@ -306,14 +316,12 @@ function Methods:send(name, ...)
             values = { args[1] }
         end
     end
-    if entry.count == 1 and #values > 1 and info[2] == 1 and info[1] ~= 'matrix' then
-        error(('Invalid number of arguments for uniform %s: expected 1, got %d'):format(name,
-            #values), 2)
-    end
+    -- Extra values are dropped: drivers report only the used part of an array as its size.
+    local kind, comps = info[1], info[2]
+    values = groupFlatNumbers(values, comps)
     if #values > entry.count then
         values = { unpack(values, 1, entry.count) }
     end
-    local kind, comps = info[1], info[2]
     if kind == 'float' then
         local n = packComponents(entry, values, comps, scratch)
         local fn = ({ gl.glUniform1fv, gl.glUniform2fv, gl.glUniform3fv, gl.glUniform4fv })[comps]

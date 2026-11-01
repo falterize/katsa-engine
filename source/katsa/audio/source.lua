@@ -116,7 +116,7 @@ end
 
 function Methods:getDuration(unit)
     if unit == 'samples' then
-        return self._data:getSampleCount() / self._data:getChannelCount()
+        return self._data:getSampleCount()
     end
     return self._data:getDuration()
 end

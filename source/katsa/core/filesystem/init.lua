@@ -410,8 +410,12 @@ function FS.newFileData(contents, name)
 end
 
 -- Mounts an archive: a virtual path, a FileData, or a real file path.
-function FS.mount(archive, mountpoint, appendToPath)
-    local key = archive
+-- mount(path, mountpoint, append) or mount(data, archiveName, mountpoint, append) for Data objects.
+function FS.mount(archive, mountpoint, appendToPath, extra)
+    local key, name = archive, nil
+    if type(archive) == 'table' then
+        name, mountpoint, appendToPath = mountpoint, appendToPath, extra
+    end
     local data
     if type(archive) == 'table' and archive.getString then
         data = archive:getString()
@@ -438,7 +442,7 @@ function FS.mount(archive, mountpoint, appendToPath)
     else
         backend = DirectorySource.new(archive)
     end
-    local mount = { point = normalize(mountpoint or ''), backend = backend, key = key }
+    local mount = { point = normalize(mountpoint or ''), backend = backend, key = key, name = name }
     if appendToPath then
         state.mounts[#state.mounts + 1] = mount
     else
@@ -449,7 +453,9 @@ end
 
 function FS.unmount(archive)
     for i = #state.mounts, 1, -1 do
-        if state.mounts[i].key == archive and not state.mounts[i].isSource then
+        local mount = state.mounts[i]
+        local matches = mount.key == archive or (mount.name and mount.name == archive)
+        if matches and not mount.isSource then
             table.remove(state.mounts, i)
             return true
         end

@@ -130,7 +130,7 @@ function Sound.newSoundData(a, b, c, d)
 end
 
 function SoundData:getSampleCount()
-    return self._frames * self._channels
+    return self._frames
 end
 
 function SoundData:getSampleRate()
