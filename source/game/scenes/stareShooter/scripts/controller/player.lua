@@ -1,5 +1,6 @@
 local Machine = require('scene.scripts.fsm.machine')
 local Math = require('scene.scripts.controller.math')
+local StepValue = require('source.engine.animation.stepValue')
 
 local Player = {}
 Player.__index = Player
@@ -25,6 +26,12 @@ function Player.new(body, collider, camera, settings)
         crouchBlend = 0,
         walkScale = 0,
         jumpSequence = 0,
+        -- Gameplay state is authored per fixed tick; rendering samples it between ticks.
+        smooth = {
+            yaw = StepValue.new(math.pi, true),
+            walk = StepValue.new(0),
+            crouch = StepValue.new(0),
+        },
         rayFilter = function(other)
             return other ~= body and other.canCollide
         end,
@@ -102,6 +109,10 @@ function Player:step(dt)
         self.collider.position[2] = (height - self.settings.standingHeight) / 2
         self.body.object:update(0)
     end
+    local smooth = self.smooth
+    smooth.yaw:capture(self.visualYaw)
+    smooth.walk:capture(self.walkBlend)
+    smooth.crouch:capture(self.crouchBlend)
     self.body:setVelocity(self.velocity)
 end
 

@@ -28,13 +28,15 @@ function Animation:update(dt)
     local jumpWeight =
         math.min(1, math.max(0, self.jumpTime / 0.1), math.max(0, (duration - self.jumpTime) / 0.1))
     local ground = 1 - self.airBlend
-    tracks.Idle.weight = ground * (1 - player.crouchBlend) * (1 - player.walkBlend)
-    tracks.Walk.weight = ground * (1 - player.crouchBlend) * player.walkBlend
-    tracks.Crouch.weight = ground * player.crouchBlend
+    local physics, smooth = player.body.physics, player.smooth
+    local walkBlend, crouchBlend = smooth.walk:sampleFor(physics), smooth.crouch:sampleFor(physics)
+    tracks.Idle.weight = ground * (1 - crouchBlend) * (1 - walkBlend)
+    tracks.Walk.weight = ground * (1 - crouchBlend) * walkBlend
+    tracks.Crouch.weight = ground * crouchBlend
     tracks.Fall.weight = self.airBlend * (1 - jumpWeight)
     tracks.Jump.weight = self.airBlend * jumpWeight
     tracks.Walk.speed, tracks.Crouch.speed = player.walkScale, player.walkScale
-    player.model.root.rotation[2] = math.deg(player.visualYaw)
+    player.model.root.rotation[2] = math.deg(smooth.yaw:sampleFor(physics))
 end
 
 return Animation
