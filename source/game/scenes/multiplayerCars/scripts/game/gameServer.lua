@@ -1,0 +1,298 @@
+-- Game rules on top of Net.Server: one car per player, seats for up to four riders, a bot,
+-- collisions with replicated dents, and nitro refills granted for rewarded ads.
+--
+-- Clients only ask (sit / nitroAd); the server decides. A reward is never granted from a client
+-- claim alone: options.verifyReward(player, token) can check it against the ad network's
+-- server-side verification, and refills are rate limited either way.
+local Net = require('source.engine.net')
+local Plugins = require('source.engine.plugins')
+local CarEntity = require('scene.scripts.game.carEntity')
+local Arena = require('scene.scripts.game.arena')
+local Bot = require('scene.scripts.game.bot')
+local Collision = require('scene.nodes.vehicle.collision')
+
+local GameServer = {}
+GameServer.__index = GameServer
+
+local SIT_RANGE = 10
+local ABANDONED_SECONDS = 20
+local DENT_COOLDOWN = 0.25
+local SEATS = 4
+
+-- options: port, maxPlayers, name, simulate (link simulation), bot (default true),
+-- adCooldown (seconds between refills per player, default 20), verifyReward(player, token),
+-- sightRadius.
+function GameServer.new(context, options)
+    options = options or {}
+    local server = Net.Server.new(context, {
+        port = options.port,
+        maxPlayers = options.maxPlayers or 8,
+        simulate = options.simulate,
+        discoveryPort = options.discoveryPort,
+    })
+    local self = setmetatable({
+        server = server,
+        options = options,
+        cars = {}, -- netId -> car model
+        order = {}, -- netIds in spawn order (stable iteration)
+        playerCars = {}, -- player id -> netId
+        refills = {}, -- player id -> server time of the last refill
+        nextSpawn = 1,
+        bot = nil,
+    }, GameServer)
+    CarEntity.define(server)
+    self:bindRemotes()
+    server.playerAdded:connect(function(player)
+        self:onPlayerAdded(player)
+    end)
+    server.playerRemoved:connect(function(player)
+        self:leaveCar(player)
+        self.refills[player.id] = nil
+    end)
+    server.ticked:connect(function(dt)
+        self:onTick(dt)
+    end)
+    self.options.name = options.name or 'Katsa cars'
+    return self
+end
+
+function GameServer:start()
+    self.server:start()
+    self.server:advertise({ name = self.options.name, game = 'cars' })
+    if self.options.bot ~= false then
+        self:spawnBot()
+    end
+    return self
+end
+
+function GameServer:stop()
+    self.server:stop()
+end
+
+function GameServer:update(dt)
+    self.server:update(dt)
+end
+
+local function seatList(car)
+    local list = {}
+    for index = 1, SEATS do
+        list[index] = car.seats[index] or 0
+    end
+    return list
+end
+
+function GameServer:register(model, netId)
+    self.cars[netId] = model
+    self.order[#self.order + 1] = netId
+end
+
+function GameServer:spawnCar(args, authority)
+    local model, netId = self.server:spawn('Car', args, authority)
+    self:register(model, netId)
+    return model, netId
+end
+
+function GameServer:nextSpawnPoint()
+    local point = Arena.spawns[(self.nextSpawn - 1) % #Arena.spawns + 1]
+    self.nextSpawn = self.nextSpawn + 1
+    return point
+end
+
+function GameServer:spawnBot()
+    local point = Arena.spawns[#Arena.spawns]
+    local model, netId = self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
+    local Pathfinding = Plugins.require('pathfinding')
+    self.bot = Bot.new(model, {
+        grid = Arena.buildGrid(Pathfinding.Grid),
+        sightRadius = self.options.sightRadius,
+    })
+    self.botId = netId
+    return model
+end
+
+function GameServer:onPlayerAdded(player)
+    local point = self:nextSpawnPoint()
+    local model, netId = self:spawnCar({
+        x = point[1],
+        z = point[2],
+        heading = point[3],
+        seats = { player.id, 0, 0, 0 },
+    }, player)
+    model.seats[1] = player.id
+    self.playerCars[player.id] = netId
+end
+
+function GameServer:publishSeats(netId)
+    local car = self.cars[netId]
+    local entity = self.server:findEntity(netId)
+    if not (car and entity) then
+        return
+    end
+    entity.args.seats = seatList(car)
+    self.server:remote('seats'):fireAll(netId, entity.args.seats)
+end
+
+function GameServer:findPlayer(id)
+    for _, player in ipairs(self.server:getPlayers()) do
+        if player.id == id then
+            return player
+        end
+    end
+end
+
+-- Removes a player from whichever car they sit in. The next rider takes the wheel.
+function GameServer:leaveCar(player)
+    local netId = self.playerCars[player.id]
+    self.playerCars[player.id] = nil
+    local car = netId and self.cars[netId]
+    if not car then
+        return
+    end
+    local seat = car:leave(player.id)
+    if seat == 1 then
+        for index = 2, SEATS do
+            if car.seats[index] then
+                car.seats[1], car.seats[index] = car.seats[index], nil
+                break
+            end
+        end
+        self.server:setAuthority(netId, car.seats[1] and self:findPlayer(car.seats[1]) or nil)
+    end
+    if car:getOccupants() == 0 then
+        car.emptySince = self.server.time
+    end
+    self:publishSeats(netId)
+end
+
+-- Moves a player into another car. Returns the seat or nil, reason.
+function GameServer:seat(player, netId)
+    local target = self.cars[netId]
+    local mine = self.cars[self.playerCars[player.id]]
+    if not target or target.isBot then
+        return nil, 'no such car'
+    end
+    if mine == target then
+        return nil, 'already there'
+    end
+    if mine and (mine.x - target.x) ^ 2 + (mine.z - target.z) ^ 2 > SIT_RANGE ^ 2 then
+        return nil, 'too far'
+    end
+    if target:getOccupants() >= SEATS then
+        return nil, 'full'
+    end
+    self:leaveCar(player)
+    local seat = target:sit(player.id)
+    self.playerCars[player.id] = netId
+    target.emptySince = nil
+    if seat == 1 then
+        self.server:setAuthority(netId, player)
+    end
+    self:publishSeats(netId)
+    return seat
+end
+
+function GameServer:bindRemotes()
+    local server = self.server
+    server:remote('sit'):onRequest(function(player, netId)
+        return self:seat(player, netId)
+    end)
+    server:remote('nitroAd'):onRequest(function(player, token)
+        return self:grantNitro(player, token)
+    end)
+end
+
+-- A rewarded ad finished on a client; refill that player's car. Returns ok, reason.
+function GameServer:grantNitro(player, token)
+    local netId = self.playerCars[player.id]
+    local car = netId and self.cars[netId]
+    if not car then
+        return false, 'no car'
+    end
+    local now = self.server.time
+    local cooldown = self.options.adCooldown or 20
+    local last = self.refills[player.id]
+    if last and now - last < cooldown then
+        return false, 'cooldown'
+    end
+    local verify = self.options.verifyReward
+    if verify and not verify(player, token) then
+        return false, 'unverified'
+    end
+    self.refills[player.id] = now
+    car.nitro = 1
+    return true
+end
+
+function GameServer:addDent(netId, car, impact, now)
+    if car.lastDent and now - car.lastDent < DENT_COOLDOWN then
+        return
+    end
+    if car.dents:addImpact(impact) then
+        car.lastDent = now
+        local list = car.dents:serialize()
+        local entity = self.server:findEntity(netId)
+        if entity then
+            entity.args.dents = list
+        end
+        self.server:remote('dents'):fireAll(netId, list)
+    end
+end
+
+function GameServer:onTick(dt)
+    local now = self.server.time
+    local models = {}
+    for _, netId in ipairs(self.order) do
+        models[#models + 1] = self.cars[netId]
+    end
+    for _, netId in ipairs(self.order) do
+        local car = self.cars[netId]
+        if car then
+            if netId == self.botId and self.bot then
+                CarEntity.simulate(car, self.bot:think(models, dt), dt)
+            elseif not car:getDriver() then
+                CarEntity.simulate(car, {}, dt) -- coast to a stop
+            end
+        end
+    end
+    -- Car versus car, then dents from every impact this tick.
+    for i = 1, #self.order do
+        for j = i + 1, #self.order do
+            local a, b = self.cars[self.order[i]], self.cars[self.order[j]]
+            local ai, bi = Collision.resolvePair(a, b)
+            for _, impact in ipairs(ai) do
+                a.impacts[#a.impacts + 1] = impact
+            end
+            for _, impact in ipairs(bi) do
+                b.impacts[#b.impacts + 1] = impact
+            end
+        end
+    end
+    local removed
+    for _, netId in ipairs(self.order) do
+        local car = self.cars[netId]
+        for _, impact in ipairs(car.impacts) do
+            self:addDent(netId, car, impact, now)
+        end
+        car.impacts = {}
+        if car.emptySince and not car.isBot and now - car.emptySince > ABANDONED_SECONDS then
+            removed = removed or {}
+            removed[#removed + 1] = netId
+        end
+    end
+    for _, netId in ipairs(removed or {}) do
+        self:removeCar(netId)
+    end
+end
+
+function GameServer:removeCar(netId)
+    self.cars[netId] = nil
+    for index, id in ipairs(self.order) do
+        if id == netId then
+            table.remove(self.order, index)
+            break
+        end
+    end
+    self.server:despawn(netId)
+end
+
+return GameServer
