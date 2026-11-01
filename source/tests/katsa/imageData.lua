@@ -5,7 +5,9 @@ return function(T)
     local r, g, b, a = d:getPixel(1, 2)
     T.check(r == 1 and math.abs(g - 0.5) < 0.005 and math.abs(b - 0.25) < 0.005 and a == 1,
         'rgba8 pixel roundtrip')
-    d:mapPixel(function(x, y) return x / 3, y / 2, 0, 1 end)
+    d:mapPixel(function(x, y)
+        return x / 3, y / 2, 0, 1
+    end)
     local _, g2 = d:getPixel(2, 2)
     T.check(math.abs(g2 - 1) < 0.005, 'mapPixel')
     local f = Image.newImageData(2, 2, 'rgba32f')

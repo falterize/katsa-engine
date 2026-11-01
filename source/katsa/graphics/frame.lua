@@ -93,8 +93,7 @@ function G.getHeight()
 end
 
 function G.getDimensions()
-    return
-    window().getDimensions()
+    return window().getDimensions()
 end
 
 function G.getPixelWidth()
@@ -110,8 +109,7 @@ function G.getPixelDimensions()
 end
 
 function G.getDPIScale()
-    return
-    windowDPI()
+    return windowDPI()
 end
 
 function G.isActive()

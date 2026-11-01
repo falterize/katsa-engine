@@ -332,53 +332,43 @@ end
 -- Shared methods -----------------------------------------------------------------------------
 
 function Methods:getWidth()
-    return
-    self._pw / self._dpi
+    return self._pw / self._dpi
 end
 
 function Methods:getHeight()
-    return
-    self._ph / self._dpi
+    return self._ph / self._dpi
 end
 
 function Methods:getDimensions()
-    return
-    self._pw / self._dpi, self._ph / self._dpi
+    return self._pw / self._dpi, self._ph / self._dpi
 end
 
 function Methods:getPixelWidth()
-    return
-    self._pw
+    return self._pw
 end
 
 function Methods:getPixelHeight()
-    return
-    self._ph
+    return self._ph
 end
 
 function Methods:getPixelDimensions()
-    return
-    self._pw, self._ph
+    return self._pw, self._ph
 end
 
 function Methods:getDPIScale()
-    return
-    self._dpi
+    return self._dpi
 end
 
 function Methods:getFormat()
-    return
-    self._formatName
+    return self._formatName
 end
 
 function Methods:getMSAA()
-    return
-    self._msaa
+    return self._msaa
 end
 
 function Methods:getMipmapCount()
-    return
-    self._mipmaps
+    return self._mipmaps
 end
 
 function Methods:getTextureType()
@@ -386,18 +376,15 @@ function Methods:getTextureType()
 end
 
 function Methods:isReadable()
-    return
-    self._readable ~= false
+    return self._readable ~= false
 end
 
 function Methods:isCanvasType()
-    return
-    self._kind == 'canvas'
+    return self._kind == 'canvas'
 end
 
 function Methods:getDepthSampleMode()
-    return
-    self._depthSample
+    return self._depthSample
 end
 
 function Methods:setDepthSampleMode(mode)
@@ -417,8 +404,7 @@ function Methods:setDepthSampleMode(mode)
 end
 
 function Methods:getFilter()
-    return
-    self._filter.min, self._filter.mag, self._filter.anisotropy
+    return self._filter.min, self._filter.mag, self._filter.anisotropy
 end
 
 function Methods:setFilter(min, mag, anisotropy)
@@ -429,8 +415,7 @@ function Methods:setFilter(min, mag, anisotropy)
 end
 
 function Methods:getMipmapFilter()
-    return
-    self._filter.mipmap, 0
+    return self._filter.mipmap, 0
 end
 
 function Methods:setMipmapFilter(mode)
@@ -445,8 +430,7 @@ function Methods:setMipmapFilter(mode)
 end
 
 function Methods:getWrap()
-    return
-    self._wrap[1], self._wrap[2]
+    return self._wrap[1], self._wrap[2]
 end
 
 function Methods:setWrap(s, t)
@@ -467,8 +451,7 @@ function Methods:release()
 end
 
 function Methods:type()
-    return
-    self._kind == 'canvas' and 'Canvas' or 'Image'
+    return self._kind == 'canvas' and 'Canvas' or 'Image'
 end
 
 function Methods:typeOf(name)

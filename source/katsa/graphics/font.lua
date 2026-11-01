@@ -224,28 +224,23 @@ function Methods:getWidth(text)
 end
 
 function Methods:getHeight()
-    return
-    self._height / self._dpi
+    return self._height / self._dpi
 end
 
 function Methods:getAscent()
-    return
-    self._ascent / self._dpi
+    return self._ascent / self._dpi
 end
 
 function Methods:getDescent()
-    return
-    self._descent / self._dpi
+    return self._descent / self._dpi
 end
 
 function Methods:getBaseline()
-    return
-    self._ascent / self._dpi
+    return self._ascent / self._dpi
 end
 
 function Methods:getLineHeight()
-    return
-    self._lineHeight
+    return self._lineHeight
 end
 
 function Methods:setLineHeight(value)
@@ -253,13 +248,11 @@ function Methods:setLineHeight(value)
 end
 
 function Methods:getDPIScale()
-    return
-    self._dpi
+    return self._dpi
 end
 
 function Methods:getFilter()
-    return
-    self._filter[1], self._filter[2], self._filter[3]
+    return self._filter[1], self._filter[2], self._filter[3]
 end
 
 function Methods:setFilter(min, mag, anisotropy)
@@ -317,9 +310,15 @@ function Methods:getWrap(text, limit)
                 i = i + 1
             end
             local candidate = {}
-            for _, cp in ipairs(current) do candidate[#candidate + 1] = cp end
-            for _, cp in ipairs(spaces) do candidate[#candidate + 1] = cp end
-            for _, cp in ipairs(word) do candidate[#candidate + 1] = cp end
+            for _, cp in ipairs(current) do
+                candidate[#candidate + 1] = cp
+            end
+            for _, cp in ipairs(spaces) do
+                candidate[#candidate + 1] = cp
+            end
+            for _, cp in ipairs(word) do
+                candidate[#candidate + 1] = cp
+            end
             if lineWidth(self, candidate) <= pixelLimit or (#current == 0 and #word == 0) then
                 current = candidate
             elseif #current > 0 then
@@ -471,23 +470,19 @@ function TextMethods:setFont(font)
 end
 
 function TextMethods:getFont()
-    return
-    self._font
+    return self._font
 end
 
 function TextMethods:getWidth()
-    return
-    self._width
+    return self._width
 end
 
 function TextMethods:getHeight()
-    return
-    self._height
+    return self._height
 end
 
 function TextMethods:getDimensions()
-    return
-    self._width, self._height
+    return self._width, self._height
 end
 
 function TextMethods:release()

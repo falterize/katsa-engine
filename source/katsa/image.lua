@@ -109,43 +109,35 @@ function Image.newImageData(a, b, c, d)
 end
 
 function ImageData:getWidth()
-    return
-    self._w
+    return self._w
 end
 
 function ImageData:getHeight()
-    return
-    self._h
+    return self._h
 end
 
 function ImageData:getDimensions()
-    return
-    self._w, self._h
+    return self._w, self._h
 end
 
 function ImageData:getFormat()
-    return
-    self._format
+    return self._format
 end
 
 function ImageData:getSize()
-    return
-    self._bytes
+    return self._bytes
 end
 
 function ImageData:getPointer()
-    return
-    self._buffer
+    return self._buffer
 end
 
 function ImageData:getFFIPointer()
-    return
-    self._buffer
+    return self._buffer
 end
 
 function ImageData:getString()
-    return
-    ffi.string(self._buffer, self._bytes)
+    return ffi.string(self._buffer, self._bytes)
 end
 
 function ImageData:release()

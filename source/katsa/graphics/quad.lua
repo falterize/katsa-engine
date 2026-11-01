@@ -14,8 +14,7 @@ function G.newQuad(x, y, w, h, sw, sh)
 end
 
 function QuadMethods:getViewport()
-    return
-    self.x, self.y, self.w, self.h
+    return self.x, self.y, self.w, self.h
 end
 
 function QuadMethods:setViewport(x, y, w, h, sw, sh)
@@ -26,8 +25,7 @@ function QuadMethods:setViewport(x, y, w, h, sw, sh)
 end
 
 function QuadMethods:getTextureDimensions()
-    return
-    self.sw, self.sh
+    return self.sw, self.sh
 end
 
 function QuadMethods:type()

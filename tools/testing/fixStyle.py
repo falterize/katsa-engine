@@ -89,6 +89,29 @@ def expandInlineIf(lines):
     return out
 
 
+INLINE_FUNCTION = re.compile(r'^(\s*)(.*\bfunction\s*\([^)]*\))\s+(\S.*?)\s+end(\)*,?)\s*$')
+INLINE_LOOP = re.compile(r'^(\s*)((?:for|while)\b.*?\bdo)\s+(\S.*?)\s+end\s*$')
+
+
+def expandInlineBlocks(lines):
+    # `f(function(x) a b end)` and `for ... do a end` -> block form.
+    out = []
+    for line in lines:
+        match = INLINE_FUNCTION.match(line) or INLINE_LOOP.match(line)
+        if match:
+            indent, head, body = match.group(1), match.group(2), match.group(3)
+            tail = match.group(4) if match.re is INLINE_FUNCTION else ''
+            if not re.search(r'\b(end|then|function|do|if)\b', body):
+                out.append(indent + head)
+                for chunk in body.split(';'):
+                    for statement in splitStatements(chunk.strip()):
+                        out.append(indent + '    ' + statement)
+                out.append(indent + 'end' + tail)
+                continue
+        out.append(line)
+    return out
+
+
 def separateFunctions(lines):
     out = []
     for line in lines:
@@ -306,7 +329,7 @@ def fixFile(path):
             out.append(line)
             continue
         out.extend(wrapLine(line))
-    lines = separateFunctions(expandInlineIf(expandOneLiners(out)))
+    lines = separateFunctions(expandInlineBlocks(expandInlineIf(expandOneLiners(out))))
     text = re.sub(r'\n{3,}', '\n\n', '\n'.join(lines)).rstrip('\n') + '\n'
     if text != original:
         path.write_text(text, encoding='utf-8')

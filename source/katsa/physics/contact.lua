@@ -46,13 +46,11 @@ function Contact:getChildren()
 end
 
 function Contact:isTouching()
-    return
-    B().kb2_contact_is_touching(self._h) ~= 0
+    return B().kb2_contact_is_touching(self._h) ~= 0
 end
 
 function Contact:isEnabled()
-    return
-    B().kb2_contact_is_enabled(self._h) ~= 0
+    return B().kb2_contact_is_enabled(self._h) ~= 0
 end
 
 function Contact:setEnabled(v)
@@ -60,8 +58,7 @@ function Contact:setEnabled(v)
 end
 
 function Contact:getFriction()
-    return
-    B().kb2_contact_get(self._h, 0)
+    return B().kb2_contact_get(self._h, 0)
 end
 
 function Contact:setFriction(v)
@@ -69,8 +66,7 @@ function Contact:setFriction(v)
 end
 
 function Contact:getRestitution()
-    return
-    B().kb2_contact_get(self._h, 1)
+    return B().kb2_contact_get(self._h, 1)
 end
 
 function Contact:setRestitution(v)

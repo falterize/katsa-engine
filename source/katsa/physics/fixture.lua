@@ -41,8 +41,7 @@ function Fixture:getType()
 end
 
 function Fixture:getFriction()
-    return
-    B().kb2_fixture_get(self._h, 0)
+    return B().kb2_fixture_get(self._h, 0)
 end
 
 function Fixture:setFriction(v)
@@ -51,8 +50,7 @@ function Fixture:setFriction(v)
 end
 
 function Fixture:getRestitution()
-    return
-    B().kb2_fixture_get(self._h, 1)
+    return B().kb2_fixture_get(self._h, 1)
 end
 
 function Fixture:setRestitution(v)
@@ -60,8 +58,7 @@ function Fixture:setRestitution(v)
 end
 
 function Fixture:getDensity()
-    return
-    B().kb2_fixture_get(self._h, 2)
+    return B().kb2_fixture_get(self._h, 2)
 end
 
 function Fixture:setDensity(v)
@@ -70,8 +67,7 @@ end
 
 function Fixture:isSensor()
     alive(self, 'Fixture')
-    return
-    B().kb2_fixture_get(self._h, 3) ~= 0
+    return B().kb2_fixture_get(self._h, 3) ~= 0
 end
 
 function Fixture:setSensor(v)
@@ -118,8 +114,7 @@ function Fixture:getUserData()
 end
 
 function Fixture:testPoint(x, y)
-    return
-    B().kb2_fixture_test_point(self._h, down(x), down(y)) ~= 0
+    return B().kb2_fixture_test_point(self._h, down(x), down(y)) ~= 0
 end
 
 function Fixture:rayCast(x1, y1, x2, y2, maxFraction, child)

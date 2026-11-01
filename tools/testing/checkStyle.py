@@ -15,6 +15,7 @@ MAX_COLUMNS = 100
 MAX_LINES = 700
 ONE_LINE_FUNCTION = re.compile(r'^\s*(local\s+)?function\s+[\w.:]+\([^)]*\)\s+\S.*\bend\s*$')
 DOUBLE_QUOTED = re.compile(r'"(?:[^"\\\']|\\.)*"')
+INLINE_BLOCK = re.compile(r'\b(then|do)\s+\S.*\bend\b\)?,?\s*$|\bfunction\s*\([^)]*\)\s+\S.*\bend\b\)?,?\s*$')
 FUNCTION_START = re.compile(r'^(local\s+)?function\s')
 
 
@@ -41,6 +42,8 @@ def checkFile(path, maxLines):
             problems.append((number, f'line is {len(line)} columns'))
         if ONE_LINE_FUNCTION.match(line):
             problems.append((number, 'one-line function body'))
+        if INLINE_BLOCK.search(stripStrings(line.split('--', 1)[0])):
+            problems.append((number, 'inline block body'))
         probe = stripStrings(line.split('--', 1)[0])
         if DOUBLE_QUOTED.search(probe) and "'" not in line:
             problems.append((number, 'double-quoted string'))
