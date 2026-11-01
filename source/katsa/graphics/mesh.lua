@@ -198,18 +198,15 @@ function Methods:getVertex(index)
 end
 
 function Methods:getVertexCount()
-    return
-    self._count
+    return self._count
 end
 
 function Methods:getVertexFormat()
-    return
-    self._format
+    return self._format
 end
 
 function Methods:getDrawMode()
-    return
-    self._mode
+    return self._mode
 end
 
 function Methods:setDrawMode(mode)
@@ -222,8 +219,7 @@ function Methods:setTexture(texture)
 end
 
 function Methods:getTexture()
-    return
-    self._texture
+    return self._texture
 end
 
 function Methods:flush() end
@@ -400,8 +396,7 @@ function Methods:_draw(instances)
 end
 
 function Methods:release()
-    return
-    Core.release(self)
+    return Core.release(self)
 end
 
 function Methods:type()

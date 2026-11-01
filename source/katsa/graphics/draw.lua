@@ -68,8 +68,7 @@ function G._currentTransform()
 end
 
 function G._composed(...)
-    return
-    Batch.composed(...)
+    return Batch.composed(...)
 end
 
 M.drawTexture = drawTexture

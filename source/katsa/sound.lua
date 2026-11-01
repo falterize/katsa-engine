@@ -19,8 +19,10 @@ local function le16(s, i)
     return a + b * 256
 end
 
-local function le32(s,
-    i) local a, b, c, d = s:byte(i, i + 3) return a + b * 256 + c * 65536 + d * 16777216 end
+local function le32(s, i)
+    local a, b, c, d = s:byte(i, i + 3)
+    return a + b * 256 + c * 65536 + d * 16777216
+end
 
 local function decodeWav(data)
     if data:sub(1, 4) ~= 'RIFF' or data:sub(9, 12) ~= 'WAVE' then
@@ -128,48 +130,39 @@ function Sound.newSoundData(a, b, c, d)
 end
 
 function SoundData:getSampleCount()
-    return
-    self._frames * self._channels
+    return self._frames * self._channels
 end
 
 function SoundData:getSampleRate()
-    return
-    self._rate
+    return self._rate
 end
 
 function SoundData:getBitDepth()
-    return
-    self._bits
+    return self._bits
 end
 
 function SoundData:getChannelCount()
-    return
-    self._channels
+    return self._channels
 end
 
 function SoundData:getDuration()
-    return
-    self._frames / self._rate
+    return self._frames / self._rate
 end
 
 function SoundData:getSize()
-    return
-    self._size
+    return self._size
 end
 
 function SoundData:getPointer()
-    return
-    self._buffer
+    return self._buffer
 end
 
 function SoundData:getFFIPointer()
-    return
-    self._buffer
+    return self._buffer
 end
 
 function SoundData:getString()
-    return
-    ffi.string(self._buffer, self._size)
+    return ffi.string(self._buffer, self._size)
 end
 
 local function indexOf(self, i, channel)

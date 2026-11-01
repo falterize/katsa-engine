@@ -1,8 +1,7 @@
 return function(T)
     local P = require('source.katsa.physics')
     local function near(a, b, eps)
-        return
-        math.abs(a - b) <= (eps or 1e-3)
+        return math.abs(a - b) <= (eps or 1e-3)
     end
     P.setMeter(30)
     T.check(P.getMeter() == 30, 'meter default')
@@ -35,10 +34,16 @@ return function(T)
         'dynamic'); local bf = P.newFixture(ball, P.newCircleShape(10), 1)
     bf:setRestitution(0.2); ball:setUserData('ball')
     local began, ended, post = 0, 0, 0
-    g:setCallbacks(function(a, c,
-        contact) began = began + 1 end, function() ended = ended + 1 end, nil,
-        function(a, c, contact, n) post = post + 1 end)
-    for _ = 1, 120 do g:update(1 / 60) end
+    g:setCallbacks(function()
+        began = began + 1
+    end, function()
+        ended = ended + 1
+    end, nil, function()
+        post = post + 1
+    end)
+    for _ = 1, 120 do
+        g:update(1 / 60)
+    end
     T.check(began >= 1 and post >= 1, 'begin/post-solve callbacks fire')
     T.check(ball:getY() < 200 and ball:getY() > 150, 'ball rests on ground')
     T.check(#ball:getContacts() >= 1, 'body contacts listed')
@@ -49,8 +54,14 @@ return function(T)
     local e = P.newWorld(0, 300, true)
     local eg = P.newBody(e, 0, 50, 'static'); P.newFixture(eg, P.newRectangleShape(400, 20), 1)
     local eb = P.newBody(e, 0, 0, 'dynamic'); P.newFixture(eb, P.newCircleShape(10), 1)
-    e:setCallbacks(function() error('boom') end)
-    local ok, err = pcall(function() for _ = 1, 120 do e:update(1 / 60) end end)
+    e:setCallbacks(function()
+        error('boom')
+    end)
+    local ok, err = pcall(function()
+        for _ = 1, 120 do
+            e:update(1 / 60)
+        end
+    end)
     T.check(not ok and tostring(err):find('boom'), 'callback error is rethrown')
 
     -- destroyed objects and locked world
@@ -78,10 +89,16 @@ return function(T)
     local qw = P.newWorld(0, 0, true)
     local qb = P.newBody(qw, 100, 0, 'static'); P.newFixture(qb, P.newRectangleShape(20, 20), 1)
     local hit
-    qw:rayCast(0, 0, 200, 0, function(f, x, y, nx, ny, frac) hit = x; return 0 end)
+    qw:rayCast(0, 0, 200, 0, function(f, x, y, nx, ny, frac)
+        hit = x
+        return 0
+    end)
     T.check(hit and near(hit, 90, 0.1), 'ray cast hit point in pixels')
     local found = 0
-    qw:queryBoundingBox(80, -20, 120, 20, function() found = found + 1 return true end)
+    qw:queryBoundingBox(80, -20, 120, 20, function()
+        found = found + 1
+        return true
+    end)
     T.check(found == 1, 'bounding box query')
 
     -- polygon validation

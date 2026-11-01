@@ -50,8 +50,7 @@ end
 
 function Body:getAngle()
     alive(self, 'Body')
-    return
-    B().kb2_body_get_angle(self._h)
+    return B().kb2_body_get_angle(self._h)
 end
 
 function Body:getTransform()
@@ -96,8 +95,7 @@ end
 
 function Body:getAngularVelocity()
     alive(self, 'Body')
-    return
-    B().kb2_body_get_angular_velocity(self._h)
+    return B().kb2_body_get_angular_velocity(self._h)
 end
 
 function Body:setAngularVelocity(v)
@@ -131,8 +129,7 @@ end
 
 function Body:getMass()
     alive(self, 'Body')
-    return
-    B().kb2_body_get_mass(self._h)
+    return B().kb2_body_get_mass(self._h)
 end
 
 function Body:getInertia()
@@ -231,8 +228,7 @@ function Body:getLinearVelocityFromLocalPoint(x, y)
 end
 
 function Body:getLinearDamping()
-    return
-    B().kb2_body_get_linear_damping(self._h)
+    return B().kb2_body_get_linear_damping(self._h)
 end
 
 function Body:setLinearDamping(v)
@@ -240,8 +236,7 @@ function Body:setLinearDamping(v)
 end
 
 function Body:getAngularDamping()
-    return
-    B().kb2_body_get_angular_damping(self._h)
+    return B().kb2_body_get_angular_damping(self._h)
 end
 
 function Body:setAngularDamping(v)
@@ -249,8 +244,7 @@ function Body:setAngularDamping(v)
 end
 
 function Body:getGravityScale()
-    return
-    B().kb2_body_get_gravity_scale(self._h)
+    return B().kb2_body_get_gravity_scale(self._h)
 end
 
 function Body:setGravityScale(v)
@@ -268,8 +262,7 @@ function Body:setType(kind)
 end
 local flags = { bullet = 0, fixedRotation = 1, active = 2, awake = 3, sleepingAllowed = 4 }
 function Body:isBullet()
-    return
-    B().kb2_body_get_flag(self._h, 0) ~= 0
+    return B().kb2_body_get_flag(self._h, 0) ~= 0
 end
 
 function Body:setBullet(v)
@@ -277,8 +270,7 @@ function Body:setBullet(v)
 end
 
 function Body:isFixedRotation()
-    return
-    B().kb2_body_get_flag(self._h, 1) ~= 0
+    return B().kb2_body_get_flag(self._h, 1) ~= 0
 end
 
 function Body:setFixedRotation(v)
@@ -287,8 +279,7 @@ end
 
 function Body:isActive()
     alive(self, 'Body')
-    return
-    B().kb2_body_get_flag(self._h, 2) ~= 0
+    return B().kb2_body_get_flag(self._h, 2) ~= 0
 end
 
 function Body:setActive(v)
@@ -298,8 +289,7 @@ end
 
 function Body:isAwake()
     alive(self, 'Body')
-    return
-    B().kb2_body_get_flag(self._h, 3) ~= 0
+    return B().kb2_body_get_flag(self._h, 3) ~= 0
 end
 
 function Body:setAwake(v)
@@ -308,8 +298,7 @@ function Body:setAwake(v)
 end
 
 function Body:isSleepingAllowed()
-    return
-    B().kb2_body_get_flag(self._h, 4) ~= 0
+    return B().kb2_body_get_flag(self._h, 4) ~= 0
 end
 
 function Body:setSleepingAllowed(v)
@@ -355,7 +344,9 @@ function Body:getContacts()
     local handles = ffi.new('void*[64]')
     local n = B().kb2_body_contacts(self._h, handles, 64)
     local out = {}
-    for i = 0, n - 1 do out[#out + 1] = Contact.wrap(handles[i]) end
+    for i = 0, n - 1 do
+        out[#out + 1] = Contact.wrap(handles[i])
+    end
     return out
 end
 

@@ -14,8 +14,7 @@ return function(T)
     end
     local g = katsa.graphics
     local function near(a, b)
-        return
-        math.abs(a - b) < 0.02
+        return math.abs(a - b) < 0.02
     end
     local function rgb(data, x, y, r, gr, b)
         local pr, pg, pb = data:getPixel(x, y)
@@ -25,7 +24,9 @@ return function(T)
     -- backbuffer clear + screenshot
     g.clear(1, 0, 0, 1)
     local shot
-    g.captureScreenshot(function(image) shot = image end)
+    g.captureScreenshot(function(image)
+        shot = image
+    end)
     g.present()
     T.check(shot and rgb(shot, 10, 10, 1, 0, 0), 'backbuffer clear and screenshot')
 
@@ -47,7 +48,9 @@ return function(T)
     g.clear(0, 0, 0, 1)
     g.setColor(1, 1, 1, 1)
     g.draw(canvas, 0, 0)
-    g.captureScreenshot(function(image) shot = image end)
+    g.captureScreenshot(function(image)
+        shot = image
+    end)
     g.present()
     T.check(rgb(shot, 4, 4, 0, 1, 0) and rgb(shot, 24, 24, 0, 0, 1) and rgb(shot, 50, 50, 0, 0, 0),
         'canvas draw to backbuffer is upright')
@@ -184,7 +187,11 @@ return function(T)
     for y = 0, 24 do
         for x = 0, 63 do
             if right:getPixel(x, y) > 0.5 then
-                if x < 32 then leftHalf = leftHalf + 1 else rightHalf = rightHalf + 1 end
+                if x < 32 then
+                    leftHalf = leftHalf + 1
+                else
+                    rightHalf = rightHalf + 1
+                end
             end
         end
     end

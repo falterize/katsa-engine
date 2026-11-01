@@ -78,8 +78,7 @@ function Shape:setRadius(r)
 end
 
 function Shape:getChildCount()
-    return
-    B().kb2_shape_child_count(self._h)
+    return B().kb2_shape_child_count(self._h)
 end
 
 function Shape:getPoints()

@@ -107,13 +107,11 @@ function World:getContactFilter()
 end
 
 function World:isLocked()
-    return
-    B().kb2_world_is_locked(self._h) ~= 0
+    return B().kb2_world_is_locked(self._h) ~= 0
 end
 
 function World:isSleepingAllowed()
-    return
-    B().kb2_world_get_sleeping_allowed(self._h) ~= 0
+    return B().kb2_world_get_sleeping_allowed(self._h) ~= 0
 end
 
 function World:setSleepingAllowed(v)
@@ -137,15 +135,16 @@ function World:getJointCount()
 end
 
 function World:getContactCount()
-    return
-    B().kb2_world_contact_count(self._h)
+    return B().kb2_world_contact_count(self._h)
 end
 
 function World:getContacts()
     local handles = ffi.new('void*[?]', math.max(self:getContactCount(), 1))
     local n = B().kb2_world_contacts(self._h, handles, self:getContactCount())
     local out = {}
-    for i = 0, n - 1 do out[#out + 1] = Contact.wrap(handles[i]) end
+    for i = 0, n - 1 do
+        out[#out + 1] = Contact.wrap(handles[i])
+    end
     return out
 end
 

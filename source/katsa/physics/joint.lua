@@ -148,8 +148,7 @@ function Joint:getReactionTorque(dt)
 end
 
 function Joint:getCollideConnected()
-    return
-    B().kb2_joint_collide(self._h) ~= 0
+    return B().kb2_joint_collide(self._h) ~= 0
 end
 
 function Joint:setUserData(data)

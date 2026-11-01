@@ -27,12 +27,10 @@ local function install(Joint)
         end
     end
     local function square(v)
-        return
-        up(up(v))
+        return up(up(v))
     end
     local function squareDown(v)
-        return
-        down(down(v))
+        return down(down(v))
     end
     local function bool(v)
         return v and 1 or 0
@@ -54,8 +52,7 @@ local function install(Joint)
     prop('ReferenceAngle', 8, nil, nil, false)
 
     function Joint:getJointAngle()
-        return
-        B().kb2_joint_get(self._h, 0)
+        return B().kb2_joint_get(self._h, 0)
     end
 
     function Joint:getJointTranslation()
@@ -63,13 +60,11 @@ local function install(Joint)
     end
 
     function Joint:isLimitsEnabled()
-        return
-        B().kb2_joint_get(self._h, 2) ~= 0
+        return B().kb2_joint_get(self._h, 2) ~= 0
     end
 
     function Joint:areLimitsEnabled()
-        return
-        B().kb2_joint_get(self._h, 2) ~= 0
+        return B().kb2_joint_get(self._h, 2) ~= 0
     end
 
     function Joint:setLimitsEnabled(v)
@@ -106,8 +101,7 @@ local function install(Joint)
     end
 
     function Joint:isMotorEnabled()
-        return
-        B().kb2_joint_get(self._h, 5) ~= 0
+        return B().kb2_joint_get(self._h, 5) ~= 0
     end
 
     function Joint:setMotorEnabled(v)

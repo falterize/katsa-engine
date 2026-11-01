@@ -45,8 +45,7 @@ function SpriteBatch:setTexture(texture)
 end
 
 function SpriteBatch:getTexture()
-    return
-    self._texture
+    return self._texture
 end
 
 function SpriteBatch:setColor(r, g, b, a)
