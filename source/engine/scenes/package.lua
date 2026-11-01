@@ -97,7 +97,15 @@ function Package:require(name)
     if cached ~= nil then
         return cached
     end
+    -- `a.b` is a/b.lua, or the folder module a/b/init.lua when no such file exists. A folder
+    -- module can be split into sibling modules and load them with require('scene.a.b.part').
     local path = self.root .. '/' .. name:gsub('%.', '/') .. '.lua'
+    if not katsa.filesystem.getInfo(path, 'file') then
+        local folder = self.root .. '/' .. name:gsub('%.', '/') .. '/init.lua'
+        if katsa.filesystem.getInfo(folder, 'file') then
+            path = folder
+        end
+    end
     local chunk, message = katsa.filesystem.load(path)
     assert(chunk, message)
     self.modules[name] = false
