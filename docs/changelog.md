@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Plugin loader (`source/engine/plugins`) and the `pathfinding` plugin (`source/plugins/pathfinding`): A* on grids and waypoint graphs, smoothing, weights, path following. See [plugins](guides/development/plugins.md).
 - `katsa.net`: UDP networking over ENet (`katsa_net` library). `listen`/`connect`, three channels (reliable, sequenced, unreliable), peer ping/loss, LAN server discovery (`katsa.net.lan`). See [networking](guides/katsa/net.md).
 - `katsa.log` (levels log/warn/error, bounded history, listeners, `logs/latest.log`, print capture), JSON/CSV console export, crash reports as `crashes/crash-NN.log` with recent console lines. See [console and logs](guides/development/console.md).
 - Workspace inspector: `Image.describe` mutated the parent class schema, so every `Frame`/`TextLabel` listed image fields (and the reverse looked like ImageLabel showing the wrong parameters). Each class now owns its schema, and writing a property the class does not declare is rejected (`Schema.hasProperty`). Focused suite: `--test-v108.4`.

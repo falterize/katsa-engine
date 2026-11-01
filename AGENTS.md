@@ -17,6 +17,7 @@
 - Runtime modules export named tables: imports, local bindings, module table, helpers, functions, final export. Use explicit create/new/build/install/register entry points; assemble backend methods at load time.
 - Keep one project README in the repository root. Current guides belong in `docs`; per-version notes go in `docs/changelog.md` (there is no `releases` folder; results and logs live in Git history and tags). Screenshots belong in `docs/images`, never in the repository root.
 - All tests, fixtures and validation reports live under `validation/` (`validation/tests`, logs in `validation/logs`, which is not committed). Game archives omit `validation/` unless packaged with `--with-validation`.
+- Optional features that the core does not need (pathfinding, ad providers...) are plugins in `source/plugins/<name>/` with a `plugin.lua` manifest, loaded through `source/engine/plugins`. The core must not require a plugin.
 - Third-party code, including Box2D and the stb headers used by the native layer, lives in `vendor`; `native` holds only the project's own C/C++ sources.
 - Update `docs/changelog.md` and dependency documentation when changing structure. Follow the user's requested version name.
 - Verify changes with the relevant katsa tests, formatting checks and native integrity checks before packaging a release.
