@@ -69,13 +69,13 @@ function T:draw()
     local debugRow
     for _, row in ipairs(Tree.children(world.environment)) do
         self:check(row.name ~= 'sun', 'Environment settings omit sun row: ' .. row.name)
-        if row.name == 'debug' then
+        if row.name == 'Debug' then
             debugRow = row
         end
     end
     local rows = Tree.children(debugRow)
     self:check(
-        rows[1].name == 'gizmos' and rows[2].name == 'physics' and rows[1].parent == rows[2].parent,
+        rows[1].name == 'Physics3D' and rows[2].name == 'Gizmos' and rows[1].parent == rows[2].parent,
         'Physics and gizmos share the Debug parent'
     )
     world.physics = require('source.engine.physics').new()
