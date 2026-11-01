@@ -5,7 +5,7 @@ Camera3D supports two projection modes selected by `projectionMode`:
 | Mode | Lens property | Behavior |
 | --- | --- | --- |
 | `Perspective` (default) | `fov` | Distant objects shrink. `fov` is the vertical field of view in degrees (1..179). |
-| `Orthographic` | `orthoSize` | Constant scale at every depth. `orthoSize` is half of the visible height in world units; the width follows the aspect ratio. |
+| `Orthographic` | `orthoSize`, `zoom` | Constant scale at every depth. The visible half-height in world units is `orthoSize / zoom`; the width follows the aspect ratio. |
 
 `far` applies to both modes. Perspective requires `0 < near < far`. Workspace shows `fov` and `near`
 only for Perspective, and `orthoSize` and `orthoNear` only for Orthographic.
@@ -13,8 +13,15 @@ only for Perspective, and `orthoSize` and `orthoNear` only for Orthographic.
 ```lua
 local camera = world:create('Camera3D', { fov = 70, near = 0.5, far = 800 })
 camera.projectionMode = 'Orthographic'
-camera.orthoSize = 12 -- 24 world units visible from top to bottom
+camera.orthoSize = 12 -- 24 world units visible from top to bottom at zoom 1
+camera.zoom = 2 -- magnify: 12 world units visible from top to bottom
+camera:zoomBy(1) -- one wheel step in: zoom * 1.1, clamped to 0.01..1000
 ```
+
+`zoom` and `orthoSize` exist only for orthographic cameras: Workspace hides both (and `orthoNear`) in Perspective
+mode and shows `fov` and `near` instead. Use `orthoSize` for the framing a scene authors and `zoom` for runtime
+magnification. The mouse wheel zooms the free debug camera while it is orthographic, and the free camera
+inherits the scene camera's projection, `orthoSize`, `orthoNear` and `zoom`.
 
 ## fov and focalLength
 

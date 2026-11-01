@@ -146,7 +146,7 @@ function Arrangement.install(UI)
                     dx, deltaY = dx + deltaY, 0
                 end
                 self:scrollBy(node, -deltaY * 48, -dx * 48)
-                return
+                return true
             end
             node = node.parent
         end

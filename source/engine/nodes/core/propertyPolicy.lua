@@ -96,6 +96,7 @@ local cameraKeys = {
     'projectionMode',
     'orthoSize',
     'orthoNear',
+    'zoom',
 }
 return {
     nodeKeys = nodeKeys,

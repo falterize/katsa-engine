@@ -199,11 +199,67 @@ function Tests.picking(tester)
     release()
 end
 
+function Tests.zoom(tester)
+    local Schema = require('source.engine.editor.inspectors.schema')
+    local _, camera, release = newCamera(tester, {
+        projectionMode = 'Orthographic',
+        orthoSize = 5,
+        position = { 0, 0, 0 },
+    })
+    local base = camera.pixelsPerUnit
+    camera.zoom = 2
+    camera:update(1280, 720)
+    tester:check(
+        near(camera.pixelsPerUnit, base * 2) and near(camera:project({ 1, 0, 10 }) - 640, base * 2),
+        'Orthographic zoom 2 doubles the pixels per world unit'
+    )
+    tester:check(
+        camera:visible({ 4, 0, 10 }, 0.1) and not camera:visible({ 5, 0, 10 }, 0.1),
+        'Orthographic zoom narrows the visible extent to orthoSize / zoom'
+    )
+    local before = camera.zoom
+    camera:zoomBy(3)
+    tester:check(
+        near(camera.zoom, before * 1.1 ^ 3, 1e-9),
+        'zoomBy scales magnification by 1.1 per wheel step'
+    )
+    camera:zoomBy(-1000)
+    tester:check(camera.zoom == 0.01, 'zoomBy clamps to the supported range')
+    camera.zoom = 1
+    camera:update(1280, 720)
+    tester:check(
+        Schema.visible(camera, 'zoom')
+            and Schema.visible(camera, 'orthoSize')
+            and Schema.visible(camera, 'orthoNear')
+            and not Schema.visible(camera, 'fov')
+            and not Schema.visible(camera, 'near'),
+        'Workspace shows zoom and orthoSize only for Orthographic cameras'
+    )
+    camera.projectionMode = 'Perspective'
+    tester:check(
+        not Schema.visible(camera, 'zoom')
+            and not Schema.visible(camera, 'orthoSize')
+            and not Schema.visible(camera, 'orthoNear')
+            and Schema.visible(camera, 'fov')
+            and Schema.visible(camera, 'near'),
+        'Workspace hides zoom and orthoSize again for Perspective cameras'
+    )
+    release()
+    local _, bad, releaseBad = newCamera(tester, { projectionMode = 'Orthographic' })
+    bad.zoom = 0
+    tester:check(
+        not pcall(bad.update, bad, 1281, 720),
+        'Orthographic zoom must be finite and positive'
+    )
+    releaseBad()
+end
+
 function Tests.run(tester)
     Tests.lens(tester)
     Tests.projection(tester)
     Tests.rays(tester)
     Tests.culling(tester)
+    Tests.zoom(tester)
     Tests.picking(tester)
 end
 
