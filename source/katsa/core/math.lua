@@ -1,5 +1,5 @@
 -- katsa.math: seeded random generators and polygon triangulation.
--- The generator is xorshift128+ seeded through SplitMix64, as in LÖVE; exact sequences differ.
+-- The generator is xorshift128+ seeded through SplitMix64, as in katsa; exact sequences differ.
 local ffi = require('ffi')
 
 local KMath = {}

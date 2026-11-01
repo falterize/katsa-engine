@@ -52,7 +52,7 @@ function Tests.run(tester)
     bytes:release()
     tester:check(
         extra:read('payload.bin') == binary,
-        'Unified binary writes preserve LÖVE Data bytes'
+        'Unified binary writes preserve katsa Data bytes'
     )
     tester:check(
         not extra:write('table.txt', { score = 3 })

@@ -33,7 +33,7 @@ Do not set fonts to nearest filtering to compensate for a scale error: the stock
 path keeps linear filtering and normal font hinting. Rotated/sheared labels,
 explicit post effects, perspective world panels and deliberately low-resolution
 targets can still be filtered by their transforms. Font glyph coverage remains
-that of the bundled LÖVE default font.
+that of the bundled katsa default font.
 
 ## Shared widgets and routing
 

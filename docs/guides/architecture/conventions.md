@@ -2,7 +2,7 @@
 
 - Lua properties, modules and functions: lowerCamelCase; node classes and engine
   enum values: PascalCase. Image and shader file names: lowerCamelCase.
-- API constants owned by LÖVE/OpenGL preserve the external API's exact spelling,
+- API constants owned by katsa/OpenGL preserve the external API's exact spelling,
   including nearest/linear, static/stream audio types and triangles mesh mode.
 - Primitive geometry identifiers (cube, sphere), registered resource names and
   custom group names are identifiers, not enum modes; they are case-sensitive.

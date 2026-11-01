@@ -28,7 +28,7 @@ Use `katsa . --test-v107.1-authoring` for spatial scale/shear, stable hierarchy 
 visual hierarchy/picking/opacity and per-world gravity on all three solvers.
 Use `katsa . --test-physics2d` for 2D simulation, constraints, Camera2D and editable/image collider tests. `katsa . --test-foundation` retains the persistence/frame-pacing checks. Save tests create/remove
 only dedicated `validation-v1068` slots. Tests require write access to the
-application's LÖVE save directory for temporary data and exported test logs.
+application's save directory for temporary data and exported test logs.
 Do not run multiple test processes against the same identity concurrently.
 
 Static checks and dependency verification:
@@ -81,7 +81,7 @@ not reduced by the runner.
 python tools/testing/checkProject.py benchmark --warmup 5 --seconds 30 --width 1920 --height 1080
 ```
 
-Keep the LÖVE window focused and do not interact with the scene. Samples observed
+Keep the katsa window focused and do not interact with the scene. Samples observed
 without window focus are rejected and counted. A run with rejected samples,
 no frames, or an exhausted sample buffer has `valid = false`; do not use it for
 a backend comparison. The runner does not fake focus or disable the normal

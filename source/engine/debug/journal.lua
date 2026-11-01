@@ -16,6 +16,7 @@ function Journal:record(system, message, node, script)
         time = katsa.timer.getTime(),
     }
     self.entries[#self.entries + 1] = entry
+    katsa.log.error(entry.message, system, true)
     if #self.entries > self.limit then
         table.remove(self.entries, 1)
     end

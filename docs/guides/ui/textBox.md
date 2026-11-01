@@ -56,8 +56,8 @@ Do not forward consumed keys to gameplay shortcuts.
 Normal Lua errors stop scene execution and retain a dedicated error window.
 Escape does not close it; close the window explicitly to exit. Ctrl+C copies
 the traceback, and the mouse wheel scrolls long reports. A copy is saved as
-`crashes/crash-01.txt` inside the LÖVE save directory. Slots 01 through 10 retain
-the latest ten reports, newest first; `last-error.txt` remains a compatibility copy. The handler releases captured
+`crashes/crash-01.log` inside the save directory. Slots 01 through 10 retain
+the latest ten reports, newest first; `last-error.log` repeats the newest report. The handler releases captured
 mouse input and resets graphics state before displaying the report.
 Automated test/smoke commands still exit on failure so validation cannot hang.
 

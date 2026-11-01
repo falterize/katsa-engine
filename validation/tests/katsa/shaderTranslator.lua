@@ -57,7 +57,7 @@ vec4 effect(vec4 color, Image tex, vec2 texCoord, vec2 screenCoord) {
     local desktop = assert(Translator.translate(source))
     T.check(not desktop.pixel:find('precision highp float', 1, true), 'desktop has no precision')
 
-    -- Stage presence follows LÖVE: only the stage whose entry point exists receives the code.
+    -- Stage presence follows katsa: only the stage whose entry point exists receives the code.
     local pixelOnly =
         assert(Translator.translate('vec4 effect(vec4 c, Image t, vec2 uv, vec2 p) { discard; }'))
     T.check(

@@ -51,7 +51,7 @@ the effect fully; 1 bypasses it. Intermediate values mix original and processed
 premultiplied RGBA. Enabled=false bypasses the effect and retains Frame visibility
 semantics. ViewportFrame rendering is processed as image content, with its inner UI.
 
-shaderPath uses a normal LÖVE `vec4 effect(vec4, Image, vec2, vec2)` program. Uniforms
+shaderPath uses a normal katsa `vec4 effect(vec4, Image, vec2, vec2)` program. Uniforms
 in the node are forwarded when used. `time`/`materialTime` receive the UI/world clock.
 The input image UV addresses the full composition target; screen coordinates are
 physical target pixels. Supply explicit resolution uniforms for pixel-sized effects.

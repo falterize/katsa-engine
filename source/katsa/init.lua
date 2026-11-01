@@ -7,6 +7,7 @@ local katsa = {
 
 local lazy = {
     timer = 'source.katsa.core.timer',
+    log = 'source.katsa.core.log',
     math = 'source.katsa.core.math',
     data = 'source.katsa.core.data',
     filesystem = 'source.katsa.core.filesystem',
@@ -45,8 +46,7 @@ function katsa.getVersion()
 end
 
 katsa.arg = {}
-
--- Game arguments follow the game path (LÖVE convention): `katsa <game> --flag` passes `--flag`.
+-- Game arguments follow the game path: `katsa <game> --flag` passes `--flag`.
 -- Options before the game path belong to the runtime. Arguments after a lone `--` are always
 -- game arguments.
 function katsa.arg.parseGameArguments(argv)

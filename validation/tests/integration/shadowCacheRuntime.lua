@@ -1,4 +1,4 @@
--- Real-renderer integration; executed by the LÖVE shadow suite.
+-- Real-renderer integration; executed by the katsa shadow suite.
 return function(test)
     local Resources = require('source.engine.core.resources')
     local World3D = require('source.engine.world.world')

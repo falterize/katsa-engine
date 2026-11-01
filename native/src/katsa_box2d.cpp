@@ -1,5 +1,5 @@
 // C interface to Box2D 2.3.1 for katsa.physics (LuaJIT FFI). All units are Box2D meters; the Lua
-// side applies the LÖVE-style pixel scale. Handles are raw pointers owned by the Lua objects.
+// side applies the pixel scale. Handles are raw pointers owned by the Lua objects.
 #include <Box2D/Box2D.h>
 #include <stdint.h>
 #include <string.h>

@@ -1,10 +1,10 @@
--- Translates the LÖVE shader dialect used by the engine into stage-specific GLSL.
+-- Translates the katsa shader dialect used by the engine into stage-specific GLSL.
 --
 -- Targets:
 --   'desktop' -> #version 330 core
 --   'es'      -> #version 300 es
 --
--- One source holds both stages behind `#ifdef VERTEX` / `#ifdef PIXEL`, exactly like a LÖVE
+-- One source holds both stages behind `#ifdef VERTEX` / `#ifdef PIXEL`, exactly like a katsa
 -- shader. The translator adds the stage entry point, built-in uniforms and varyings, rewrites
 -- `varying` / `attribute` / `extern`, and assigns explicit attribute locations so the native
 -- vertex layout is known without querying the driver.
@@ -190,7 +190,7 @@ function Translator.translate(source, options)
     end
 
     local stripped = stripComments(bare)
-    -- Same rule as LÖVE: user code goes to the stage(s) whose entry point it defines.
+    -- Same rule for every stage: user code goes to the stage(s) whose entry point it defines.
     local userVertex = hasFunction(stripped, 'vec4', 'position')
     local userPixel = hasFunction(stripped, 'vec4', 'effect')
     if not userVertex and not userPixel then

@@ -59,7 +59,7 @@ This helper fan-triangulates polygon input (use Blender for concave polygons),
 retains nodes, weights, bind matrices and sampled motion but uses neutral
 base colors. It does not extract textures/PBR maps, morphs or constraints; Blender is
 the general conversion path. Its pinned native wheel needs proxy-lifetime protection,
-which is isolated to this offline script. No ufbx dependency runs inside LÖVE.
+which is isolated to this offline script. No ufbx dependency runs inside katsa.
 The supplied X Bot has two source meshes and skins with 65/64 joints. Its FBX takes
 contain no usable motion. The six Demo clips are procedural example code, not Mixamo
 animations. `skinRibbon.glb` and `.gltf` contain an actual imported two-bone Bend clip

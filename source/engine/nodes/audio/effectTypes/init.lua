@@ -1,5 +1,5 @@
 -- One module per SoundEffect class: { name, effectType, category, defaults }.
--- Only real LÖVE 11.x effect types are exposed. Pitch uses Source:setPitch.
+-- Only real katsa effect types are exposed. Pitch uses Source:setPitch.
 local Node = require('source.engine.nodes.core.baseNode')
 
 local modules = {

@@ -1,4 +1,4 @@
--- Standalone LuaJIT test runner for the katsa layer (no LÖVE required):
+-- Standalone LuaJIT test runner for the katsa layer (no katsa required):
 --   luajit validation/tests/katsa/run.lua            -- from the repository root
 -- GL checks are skipped with a notice when no EGL driver is available.
 package.path = './?.lua;' .. package.path

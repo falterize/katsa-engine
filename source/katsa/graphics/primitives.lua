@@ -21,7 +21,7 @@ local function triangle(x1, y1, x2, y2, x3, y3)
 end
 
 local function fillPolygon(points)
-    -- Triangle fan from the first vertex (convex shapes), like LÖVE's fill mode.
+    -- Triangle fan from the first vertex (convex shapes), like katsa's fill mode.
     for i = 3, #points / 2 do
         triangle(points[1], points[2], points[2 * i - 3], points[2 * i - 2], points[2 * i - 1],
             points[2 * i])

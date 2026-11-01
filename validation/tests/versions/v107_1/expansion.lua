@@ -17,9 +17,9 @@ function Tests.run(tester)
         require('source.engine.debug.crashHistory').write(fs, 'Crash ' .. index)
     end
     tester:check(
-        files['crashes/crash-01.txt']:match('Crash 12$')
-            and files['crashes/crash-10.txt']:match('Crash 3$')
-            and files['crashes/crash-11.txt'] == nil,
+        files['crashes/crash-01.log']:match('Crash 12$')
+            and files['crashes/crash-10.log']:match('Crash 3$')
+            and files['crashes/crash-11.log'] == nil,
         'Crash history retains exactly the latest ten reports in order'
     )
     local world, ui, physics, body, release = tester:environment()

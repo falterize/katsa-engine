@@ -23,7 +23,7 @@ function SaveData.migrate(fs)
     if fs.getIdentity() ~= SaveData.identity or fs.getInfo(marker) then
         return true, 0
     end
-    -- LÖVE restricts mounting arbitrary absolute folders. Switch identities only
+    -- katsa restricts mounting arbitrary absolute folders. Switch identities only
     -- during collection and restore the destination even if reading fails.
     local files = {}
     fs.setIdentity(SaveData.legacyIdentity)

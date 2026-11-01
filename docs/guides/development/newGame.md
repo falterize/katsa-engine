@@ -43,7 +43,7 @@ them as directory entries; no `.keep` files are needed. Every project starts wit
 a distinct save identity (`katsa-<name>`), or the explicit `--identity` value.
 Keep it stable across updates so saves survive folder/archive replacement.
 Changing the title does not move saves. Two projects with the same identity share
-the same LÖVE save directory.
+the same save directory.
 
 ## Change the scene
 

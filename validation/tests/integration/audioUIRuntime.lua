@@ -1,4 +1,4 @@
--- Native audio and GPU checks, only run under LÖVE.
+-- Native audio and GPU checks, only run under katsa.
 return function(test)
     local Node = require('source.engine.nodes')
     local Audio = require('source.engine.audio')

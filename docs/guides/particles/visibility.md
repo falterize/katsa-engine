@@ -32,7 +32,7 @@ emitter.offscreenBehavior = 'Simulate'
 
 ## SurfaceAppearance3D composition
 
-LÖVE's additive blend mode does not accumulate destination alpha. The previous
+katsa's additive blend mode does not accumulate destination alpha. The previous
 composition produced RGB colors with zero alpha, making intermediate appearances
 invisible. v69 adds full RGBA explicitly in alternating render targets with Replace
 blending. Texture alpha, material weights and opaque mode are preserved.

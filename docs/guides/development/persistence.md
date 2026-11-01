@@ -189,7 +189,7 @@ without deleting old slots or overwriting an existing named document.
 
 ## Persistent storage on the PC
 
-The main project uses the katsa save directory (`katsa.filesystem.getSaveDirectory()`). All its scene categories
+The main project uses the save directory (`katsa.filesystem.getSaveDirectory()`). All its scene categories
 are under `saves/`. Removing or replacing the source/archive does not delete this
 directory. Generated games use their own stable identity from
 `source/game/data/project.lua`; keep it unchanged across updates. A title or game

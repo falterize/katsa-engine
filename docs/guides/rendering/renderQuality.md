@@ -27,10 +27,10 @@ can differ from the requested count. No phone frame-rate gain is claimed.
 ## Windows display scaling
 
 Startup enables per-monitor-v2 DPI awareness before the first window is created.
-An unaware LÖVE host can otherwise be bitmap-scaled by Windows at 125% or 150%,
+An unaware katsa host can otherwise be bitmap-scaled by Windows at 125% or 150%,
 softening the whole image and every font. Older Windows uses system awareness as
 a fallback. This affects only the game process; it does not change desktop scaling
-or modify the LÖVE installation. A fused custom executable should also declare DPI
+or modify the katsa installation. A fused custom executable should also declare DPI
 awareness in its application manifest, as recommended by
 [Microsoft](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiawarenesscontext).
 

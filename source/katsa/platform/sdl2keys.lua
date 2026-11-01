@@ -1,4 +1,4 @@
--- Maps SDL keycodes and scancodes to LÖVE-style key and scancode names.
+-- Maps SDL keycodes and scancodes to key and scancode names.
 local Keys = {}
 
 local scancodeNames = {}

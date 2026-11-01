@@ -1,5 +1,5 @@
 -- Program start for every way of running katsa: the standalone `katsa` host, a game fused into an
--- executable, and the development launcher. It mirrors LÖVE's boot: choose the game source, read
+-- executable, and the development launcher. It mirrors katsa's boot: choose the game source, read
 -- conf.lua, create the window, run main.lua and drive the frame loop.
 --
 -- host: { exe = path to the executable, args = { ... }, archive = Archive | nil (appended to exe) }

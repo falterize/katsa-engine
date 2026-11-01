@@ -33,7 +33,7 @@ Diagnostics. The 2D physics tab controls the scene's primary World2D; use Worksp
 for another World2D. Each tab has its own compact list and visible active state.
 
 Lua errors keep their window open; close it explicitly to exit. Ctrl+C copies the
-traceback and the wheel scrolls it. Reports are saved in the LÖVE save directory,
-crashes/crash-01.txt through crash-10.txt, newest first. The previous last-error.txt
-is imported into history on the first write. Automated test/smoke modes still exit
+traceback and the wheel scrolls it. Reports are saved in the save directory,
+crashes/crash-01.log through crash-10.log, newest first, each with the last 50 console lines;
+`last-error.log` is a copy of the newest report. See the [console and logs guide](console.md). Automated test/smoke modes still exit
 on failure. A native driver/process fault cannot be kept alive by Lua's handler.
