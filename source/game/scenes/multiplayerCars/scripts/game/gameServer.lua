@@ -58,7 +58,14 @@ end
 
 function GameServer:start()
     self.server:start()
-    self.server:advertise({ name = self.options.name, game = 'cars' })
+    -- Another server on this machine may already own the discovery port; the game still runs.
+    local advertised, problem = pcall(self.server.advertise, self.server, {
+        name = self.options.name,
+        game = 'cars',
+    })
+    if not advertised then
+        katsa.log.write('warn', 'LAN advertisement unavailable: ' .. tostring(problem))
+    end
     if self.options.bot ~= false then
         self:spawnBot()
     end
@@ -100,7 +107,8 @@ end
 
 function GameServer:spawnBot()
     local point = Arena.spawns[#Arena.spawns]
-    local model, netId = self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
+    local model, netId =
+        self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
     local Pathfinding = Plugins.require('pathfinding')
     self.bot = Bot.new(model, {
         grid = Arena.buildGrid(Pathfinding.Grid),

@@ -52,3 +52,28 @@ enables it). `limit` caps expanded nodes. Failed searches return `nil, reason`
 (`'no path'`, `'search limit reached'`, `'start or goal is blocked'`). Heuristics are
 admissible, so routes are optimal; tests compare costs with Dijkstra on random maps.
 A NavMesh for arbitrary 3D geometry is not included; author or generate waypoint graphs.
+
+# Ads plugin
+
+Provider-neutral rewarded video ads (`source/plugins/ads`):
+
+```lua
+local Ads = Plugins.require('ads')
+Ads.configure({ provider = 'admob', rewardedUnit = 'ca-app-pub-xxxx/yyyy' })   -- your own ids
+Ads.load()
+if Ads.isRewardedReady() then
+    Ads.showRewarded(function(result) if result.rewarded then grantReward() end end)
+end
+-- call Ads.update(dt) every frame
+```
+
+Providers: `mock` (development; plays a fake ad for `mockDuration` seconds, `mockSkip = true`
+simulates closing early), `admob` (the most widely used network; reached through the host's
+`katsa.platform.ads` bridge on Android/iOS) and `unity` (`katsa.platform.unityAds`). Another SDK
+is added with `Ads.registerProvider(name, { load, isReady, show, update })`. Without a bridge a
+provider reports `unavailable` instead of failing, so the same game runs on desktop.
+
+A client claim is not proof that an ad was watched. The multiplayerCars server grants the reward
+through `options.verifyReward(player, token)` (plug in the network's server-side verification)
+and limits refills with a per-player cooldown. Keep your ids in
+`scenes/multiplayerCars/scripts/game/adsConfig.lua`; the file ships Google's public test unit.

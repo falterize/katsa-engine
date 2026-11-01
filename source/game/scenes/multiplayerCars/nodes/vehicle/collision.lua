@@ -79,7 +79,16 @@ function Collision.resolveStatic(vehicle, obstacles, restitution)
             for _, obstacle in ipairs(obstacles) do
                 local overlap, nx, nz = penetration(obstacle, cx, cz, vehicle.config.radius)
                 if overlap then
-                    respond(vehicle, nx, nz, overlap, restitution or 0.25, impacts, cx - nx, cz - nz)
+                    respond(
+                        vehicle,
+                        nx,
+                        nz,
+                        overlap,
+                        restitution or 0.25,
+                        impacts,
+                        cx - nx,
+                        cz - nz
+                    )
                     cx, cz = vehicle:toWorld(circle[1], circle[2])
                 end
             end
@@ -124,8 +133,10 @@ function Collision.resolvePair(a, b, restitution)
                     local blx, blz = b:toLocal(mx, mz)
                     local apx, apz = nx * arx + nz * arz, nx * afx + nz * afz
                     local bpx, bpz = -nx * brx - nz * brz, -nx * bfx - nz * bfz
-                    aImpacts[#aImpacts + 1] = { x = alx, z = alz, nx = -apx, nz = -apz, speed = closing }
-                    bImpacts[#bImpacts + 1] = { x = blx, z = blz, nx = -bpx, nz = -bpz, speed = closing }
+                    aImpacts[#aImpacts + 1] =
+                        { x = alx, z = alz, nx = -apx, nz = -apz, speed = closing }
+                    bImpacts[#bImpacts + 1] =
+                        { x = blx, z = blz, nx = -bpx, nz = -bpz, speed = closing }
                 end
             end
         end

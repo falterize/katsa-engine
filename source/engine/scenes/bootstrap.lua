@@ -47,6 +47,8 @@ function Bootstrap.install(project, options)
 
     function katsa.load(arguments)
         arguments = arguments or {}
+        -- Scenes read launch options (e.g. --host, --connect) from here.
+        katsa.launchArguments = arguments
         local source = project.startScene
         testing = options.registry and options.registry.contains(arguments) or false
         for index, argument in ipairs(arguments) do

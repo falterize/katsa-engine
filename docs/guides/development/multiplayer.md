@@ -85,3 +85,24 @@ each frame.
 `Client.new` delays and drops packets deterministically (virtual clock, seedable `random`).
 `validation/tests/katsa/netGame.lua` covers handshake, prediction, interpolation, remotes,
 relevance, client authority, capacity and leaving over real loopback UDP.
+
+## Changing the owner of an entity
+
+`server:setAuthority(object, player)` hands an entity to another player (or to nobody with `nil`);
+every client that knows it receives `AUTHORITY`, its `local_` flag flips and
+`client.authorityChanged` fires. `server:getAuthority(object)` reads it. A car uses this when the
+driver changes.
+
+## Reference game: multiplayerCars
+
+`source/game/scenes/multiplayerCars` combines the pieces: a server-authoritative arena with one car
+per player, up to four riders per car (the driver owns the entity; E moves a rider to a nearby car),
+a bot that patrols and chases a visible player along an A* route (`pathfinding` plugin), body dents
+that are replicated (`nodes/vehicle`), nitro refilled by a rewarded ad (`ads` plugin, validated and
+rate limited by the server) and a built-in LAN server list. Controls: WASD/arrows, Shift nitro, E
+change car, N watch an ad.
+
+Launch options: `--host [port]` starts a server and joins it, `--connect address[:port]` joins one,
+`--name Name` sets the player name (scenes read them from `katsa.launchArguments`).
+Tests: `validation/tests/katsa/carsGame.lua` (rules over loopback UDP) and `--test-v108.4.cars`
+(the scene on the real renderer; `KATSA_CARS_SHOT=<dir>` saves screenshots).
