@@ -57,7 +57,7 @@ actor:onDestroy(function()
     print('Actor cleanup')
 end)
 -- For an exclusive resource that actor alone owns:
--- actor:own(love.graphics.newCanvas(64, 64))
+-- actor:own(katsa.graphics.newCanvas(64, 64))
 ```
 
 Connections added during an emission wait until its next emission; disconnections take effect immediately. Nested emission has its own starting listener count. Dead records are compacted at safe boundaries. Destroying an emitter disconnects remaining callbacks. Listener errors allow other still-connected listeners to finish before propagating the first error.

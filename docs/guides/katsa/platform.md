@@ -57,4 +57,4 @@ raw `void position()` / `void effect()` style.
 
 `source/tests/katsa/run.lua` runs 109 checks: translator unit tests, plus every project shader compiled and
 linked on both targets (included libraries and material hooks are exempt). Fifty-one shader variants produced
-by the engine during `love . --test` were also compiled once on both targets without errors.
+by the engine during `katsa . --test` were also compiled once on both targets without errors.

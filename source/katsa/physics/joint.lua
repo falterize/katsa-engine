@@ -183,6 +183,8 @@ function Joint:destroy()
     return true
 end
 
+Object.interpreted(Joint.destroy)
+
 M.class = Joint
 
 return M

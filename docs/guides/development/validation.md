@@ -10,8 +10,8 @@ python tools/testing/checkProject.py soak --output ../validation/logs/soak
 python tools/testing/checkProject.py benchmark --output ../validation/logs/benchmark
 ```
 
-`--love` accepts a LÖVE executable path. The default launcher uses `lovec` on PATH
-or the standard Windows console executable. Use `--project path/to/release.love`
+`--katsa` accepts a katsa executable path. The default launcher uses `katsa` on PATH.
+Use `--project path/to/release.katsa`
 to validate a packaged release rather than the source directory. Each child has
 a timeout; errors, nonzero exits or missing completion markers fail the command.
 Logs stay in the chosen output directory. Scripts do not download dependencies.
@@ -23,9 +23,9 @@ backends and previous scene/UI/skin/shadow regressions, plus rate aggregation,
 bounded frame samples, save interruption/corruption/recovery, ordered migrations,
 newer-version protection, preferences and standalone scene lifetime/assets.
 
-Use `love . --test-v107.1-authoring` for spatial scale/shear, stable hierarchy order,
+Use `katsa . --test-v107.1-authoring` for spatial scale/shear, stable hierarchy order,
 visual hierarchy/picking/opacity and per-world gravity on all three solvers.
-Use `love . --test-physics2d` for 2D simulation, constraints, Camera2D and editable/image collider tests. `love . --test-foundation` retains the persistence/frame-pacing checks. Save tests create/remove
+Use `katsa . --test-physics2d` for 2D simulation, constraints, Camera2D and editable/image collider tests. `katsa . --test-foundation` retains the persistence/frame-pacing checks. Save tests create/remove
 only dedicated `validation-v1068` slots. Tests require write access to the
 application's LÖVE save directory for temporary data and exported test logs.
 Do not run multiple test processes against the same identity concurrently.

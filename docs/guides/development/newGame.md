@@ -4,7 +4,7 @@ From the engine source directory, run:
 
 ```text
 python tools/project/createProject.py ../MyGame --name my-game
-love ../MyGame
+katsa ../MyGame
 ```
 
 The destination must not exist and must be outside the engine source directory.
@@ -48,7 +48,7 @@ the same LÖVE save directory.
 ## Change the scene
 
 The example lives in the main project at `source/game/scenes/starterGame`.
-Run `love . --scene starterGame` from the engine source directory, or choose
+Run `katsa . --scene starterGame` from the engine source directory, or choose
 Starter Game in the scene menu. There is no separate ready-game folder to edit.
 The generator copies this canonical scene to `source/game/scenes/start` only
 when you explicitly create an independent game.
@@ -77,12 +77,12 @@ resource teardown. Scene state owns gameplay. It is selected by
 example collection:
 
 ```text
-love . --scene starterGame
+katsa . --scene starterGame
 ```
 
 The generated game's bootstrap loads its configured scene directly. Add another
 scene by copying its folder/categories and changing `source/game/data/project.lua.startScene`, or
-use `love . --scene source/game/scenes/another-scene`. Scene ZIP packages use the
+use `katsa . --scene source/game/scenes/another-scene`. Scene ZIP packages use the
 same layout. Set `physics.backend` to `jolt`, `oimo` or `auto`; call
 `scene:createPhysics()` in scene creation when physics is actually needed.
 The example cube does not create a physics world unnecessarily.
@@ -94,14 +94,14 @@ resolves from `source/game/data/project.lua.sharedAssets`. See [scene packages](
 ## Verify and package
 
 ```text
-love ../MyGame --smoke-test
+katsa ../MyGame --smoke-test
 cd ../MyGame
 python tools/build/packageProject.py --output dist
 ```
 
 The smoke test renders ten real frames, checks the runtime journal, releases
 resources and exits. It is a startup check, not a replacement for game-specific
-tests. `packageProject.py` produces a `.love` archive runnable with LÖVE 11.5;
+tests. `packageProject.py` produces a `.katsa` archive runnable with `katsa`;
 the filename identifies the engine version and can be renamed for your game.
 The generator does not create a Windows executable or change physics binaries.
 
@@ -120,7 +120,7 @@ its demo scene factory, manifest, legacy migration and test registry through
 
 `conf.lua` uses `source.engine.core.windowConfig` with `source/game/data/project.lua`.
 Generated games copy this same wrapper; window configuration has one implementation.
-Logical window dimensions and optional LOVE window overrides go in `Project.window`.
+Logical window dimensions and optional window overrides go in `Project.window`.
 
 Generator-only resources live in `tools/project/templates/game`, not a root
 `templates` folder. They contain only a tiny entry wrapper, initial project

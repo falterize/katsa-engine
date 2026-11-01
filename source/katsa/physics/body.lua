@@ -383,6 +383,8 @@ function Body:destroy()
     return true
 end
 
+Object.interpreted(Body.setType, Body.setActive, Body.destroy)
+
 M.class = Body
 
 return M

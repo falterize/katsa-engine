@@ -66,7 +66,7 @@ there too: `data:write('profiles/player-1/progress.json', progress)`.
 | Filename / override | Value written | Value returned by read |
 | --- | --- | --- |
 | `progress.json` | JSON-compatible Lua table | A new Lua table, plus metadata |
-| `settings.txt`, `log.csv`, `world.bin`, other extensions | String or LOVE Data object | Original bytes as a Lua string, plus metadata |
+| `settings.txt`, `log.csv`, `world.bin`, other extensions | String or Data object | Original bytes as a Lua string, plus metadata |
 | `{ format = 'json' }` | Lua table, regardless of extension | Verified Lua table; use the same override on read |
 | `{ format = 'text' }` or `{ format = 'binary' }` | Original bytes, regardless of extension | Original bytes |
 
@@ -132,10 +132,10 @@ or native objects. Defaults do not replace application-specific validation.
 | `createDirectory(path)` | Explicitly create an empty folder inside this scope; omit path for the scope itself |
 | `listDirectories(path)` | Sorted immediate folder names; default is this scope |
 | `listFiles(path, recursive)` | Sorted relative file paths, hiding temporary/redundant backups |
-| `openFile(filename, mode)` | Streaming LOVE File handle; `r`, `w` or `a`; caller closes it |
+| `openFile(filename, mode)` | Streaming File handle; `r`, `w` or `a`; caller closes it |
 | `scopeDirectory()` | Absolute device path of this scope under `saves` |
 | `directory()` | Absolute application save directory, retained for compatibility |
-| `filePath(filename)` | Virtual path for other LOVE APIs; resolves an existing legacy file if needed |
+| `filePath(filename)` | Virtual path for other katsa APIs; resolves an existing legacy file if needed |
 
 ```lua
 assert(shooter:createDirectory('profiles/empty'))
@@ -189,7 +189,7 @@ without deleting old slots or overwriting an existing named document.
 
 ## Persistent storage on the PC
 
-The main project uses `%APPDATA%\LOVE\katsa-engine\`. All its scene categories
+The main project uses the katsa save directory (`katsa.filesystem.getSaveDirectory()`). All its scene categories
 are under `saves/`. Removing or replacing the source/archive does not delete this
 directory. Generated games use their own stable identity from
 `source/game/data/project.lua`; keep it unchanged across updates. A title or game

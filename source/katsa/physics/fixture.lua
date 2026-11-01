@@ -152,6 +152,8 @@ function Fixture:destroy()
     return true
 end
 
+Object.interpreted(Fixture.destroy)
+
 M.class = Fixture
 
 return M

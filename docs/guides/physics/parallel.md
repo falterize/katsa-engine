@@ -62,7 +62,7 @@ Lua mirrors are compatibility geometry, not a second running solver. Mutating
 private native pointers directly bypasses adapter cache invalidation and is not
 part of the supported public API.
 
-Use `love . --benchmark-v105` for a CPU-only fixed-step comparison. Environment
+Use `katsa . --benchmark-v105` for a CPU-only fixed-step comparison. Environment
 variables `KATSA_BENCH_THREADS` and `KATSA_BENCH_BODIES` select the worker count and
 body count. It uses three independent runs, 60 warm-up steps and 120 measured steps
 per run, with sleeping explicitly disabled. Do not run concurrent benchmarks.

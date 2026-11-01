@@ -12,7 +12,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('mode', choices=('test', 'soak', 'benchmark'))
     parser.add_argument('--project', type=Path, default=Path(__file__).resolve().parents[2])
-    parser.add_argument('--love', default=shutil.which('lovec') or 'C:/Program Files/LOVE/lovec.exe')
+    parser.add_argument('--katsa', default=shutil.which('katsa') or 'katsa')
     parser.add_argument('--output', type=Path, default=Path('validation-logs'))
     parser.add_argument('--idle', type=float, default=60)
     parser.add_argument('--cycles', type=int, default=50)
@@ -39,7 +39,7 @@ def main():
         print(f'Running {name}; log: {path.resolve()}', flush=True)
         with path.open('w', encoding='utf-8') as output:
             result = subprocess.run(
-                [args.love, str(args.project.resolve()), argument], env=environment,
+                [args.katsa, str(args.project.resolve()), argument], env=environment,
                 stdout=output, stderr=subprocess.STDOUT,
                 timeout=300 + args.idle + args.cycles * args.hold * 2
                 + (args.warmup + args.seconds) * 4,

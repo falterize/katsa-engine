@@ -36,7 +36,7 @@ The assets, nodes, systems and scripts categories, scripts/ui, and the listed
 asset subdirectories are required,
 including unused ones. Other helper subcategories are created only when needed.
 Project and scene packers write directory entries explicitly, so empty categories
-survive ZIP/.love, TAR and supported 7z packaging without marker files. Category and module
+survive ZIP/.katsa, TAR and supported 7z packaging without marker files. Category and module
 names are case-sensitive and follow the existing lower camel case convention.
 `init.lua` is not a scene entry point.
 
@@ -74,9 +74,9 @@ Camera-free menu/pause/catalog scenes use `engine/scenes/interface.lua` instead;
 their implementation still lives inside their own scene folders.
 
 ```text
-love . --scene exampleScene
-love . --scene source/game/scenes/exampleScene
-love . --scene-package dist/exampleScene.zip
+katsa . --scene exampleScene
+katsa . --scene source/game/scenes/exampleScene
+katsa . --scene-package dist/exampleScene.zip
 ```
 
 ## Settings
@@ -250,9 +250,9 @@ python tools/build/packageScene.py source/game/scenes/exampleScene dist/exampleS
 python tools/build/packageProject.py --output dist
 ```
 
-Tested scene formats on Windows LÖVE 11.5: ZIP, `.love`, USTAR TAR, TAR.GZ, TGZ
-and 7z. Prefer ZIP for distribution. 7z depends on the LÖVE build; other native
-formats are not guaranteed. RAR is not portable supported input. TAR permits
+Supported scene formats: ZIP, `.katsa`, USTAR TAR, TAR.GZ, TGZ
+and 7z. Prefer ZIP for distribution. 7z supports stored, LZMA and LZMA2 data; other
+formats are not supported. RAR is not portable supported input. TAR permits
 regular USTAR files/directories, not links or PAX/GNU extensions.
 
 Keep one scene root at archive root or inside one enclosing folder. Preserve
@@ -262,14 +262,14 @@ absolute archive paths or FileData; folders are project/save-relative VFS paths.
 Dropping a scene archive onto the window loads it. Scene Lua is trusted game code.
 
 Complete game archives contain root `main.lua`, `conf.lua`, `source`, `assets`
-and `vendor`. LÖVE reads game ZIP/.love directly. For other supported formats or
+and `vendor`. The runtime reads game ZIP/.katsa directly. For other supported formats or
 a ZIP with an enclosing project folder, use the launcher:
 
 ```text
-python tools/run/runProject.py --love "C:/Program Files/LOVE/love.exe" Game.tar.gz
+python tools/run/runProject.py --katsa katsa Game.tar.gz
 ```
 
-It repacks into a temporary `.love` and removes it after exit. 7z packaging and
+It repacks into a temporary `.katsa` and removes it after exit. 7z packaging and
 launching use bsdtar, included with current Windows. Python is only required for
 these developer tools, not runtime scene loading.
 

@@ -1,7 +1,7 @@
 # Stare Shooter scene
 
 The supplied Godot project is available as `stareShooter` in the example selector.
-Run it directly with `love . --scene stareShooter`; add `--physics-jolt` or
+Run it directly with `katsa . --scene stareShooter`; add `--physics-jolt` or
 `--physics-oimo` to choose a backend. Change `startScene` in
 `source/game/data/project.lua` to make it your game's entry scene.
 
@@ -26,7 +26,7 @@ offset preserved. Scroll down to see the animated character from behind. The
 large character at the left is the source's static HUD image, not the player.
 The second image is a world-space billboard at the original location.
 
-Set `presentation.menuKey` in this scene's `settings.lua` to a LOVE key name
+Set `presentation.menuKey` in this scene's `settings.lua` to a key name
 (default `'tab'`). `presentation.menuButton = true` enables the bottom-right
 **Engine menu / Resume game** button for touch and pointer input. Both controls
 show Navigation, Workspace and Debug; Tools, Stats and the audio mixer remain
@@ -89,5 +89,5 @@ the supplied project; see [license notices](licenses.md).
 
 Package the scene with
 `python tools/build/packageScene.py source/game/scenes/stareShooter dist/Stare-Shooter.zip`.
-It can then run through `love . --scene-package dist/Stare-Shooter.zip` on this
+It can then run through `katsa . --scene-package dist/Stare-Shooter.zip` on this
 engine. Godot and its project files are not runtime dependencies.

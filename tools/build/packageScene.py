@@ -21,7 +21,7 @@ def package(source: Path, target: Path):
     name = target.name.lower()
     temporary = target.with_name(target.name + '.tmp')
     try:
-        if name.endswith(('.zip', '.love')):
+        if name.endswith(('.zip', '.katsa')):
             with zipfile.ZipFile(temporary, 'w', zipfile.ZIP_DEFLATED) as archive:
                 for path in directories + files:
                     archive.write(path, path.relative_to(source).as_posix())
@@ -45,7 +45,7 @@ def package(source: Path, target: Path):
                 check=True,
             )
         else:
-            raise ValueError('Supported formats: .zip, .love, .tar, .tar.gz, .tgz, .7z')
+            raise ValueError('Supported formats: .zip, .katsa, .tar, .tar.gz, .tgz, .7z')
         temporary.replace(target)
     finally:
         temporary.unlink(missing_ok=True)

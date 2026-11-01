@@ -2,7 +2,7 @@
 
 A standalone game project built with Katsa and LÖVE 11.5.
 
-Run `love .`. The start scene displays a rotating cube, saved score and a saved
+Run `katsa .`. The start scene displays a rotating cube, saved score and a saved
 rotation preference. Press F3 to inspect Stats and export recent metric history.
 
 - Configure title, unique save identity and first scene in `source/game/data/project.lua`.
@@ -15,8 +15,8 @@ rotation preference. Press F3 to inspect Stats and export recent metric history.
 - Use `local data = scene.data:scope('game')`, then
   `data:write('progress.json', progress)` and `data:read('progress.json')`.
   Preferences are ordinary tables too; text/binary files retain original bytes.
-- Run `love . --smoke-test` for ten startup/render frames.
-- Build a `.love` with `python tools/build/packageProject.py --output dist`.
+- Run `katsa . --smoke-test` for ten startup/render frames.
+- Build a `.katsa` with `python tools/build/packageProject.py --output dist`.
 
 Scene hooks are `create`, `update`, `update3D`, `update2D`, and `destroy`. Systems
 are discovered and ordered by the scene's own `main.lua`. A disabled system does

@@ -8,4 +8,4 @@ update(dt, realDt) separates scaled simulation time from real-time UI and camera
 
 Input checks screen UI, reserved joystick, world UI, then 3D click/camera areas. Each pointer retains its capture until release/cancel. UI drags scroll without activating buttons; taps activate on release. WASD and Q/E control the free camera; touch layout belongs to the scene.
 
-The .love file is a ZIP with main.lua at its root. All source modules, assets, dependencies and documentation ship inside. Source CCode containers are not required to run the game.
+The .katsa file is a ZIP with main.lua at its root. All source modules, assets, dependencies and documentation ship inside. Source CCode containers are not required to run the game.

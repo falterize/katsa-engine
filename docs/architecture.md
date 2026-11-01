@@ -38,7 +38,7 @@ See the [scene authoring guide](guides/development/scenes.md).
 
 Rendering prepares visibility, appearance, lights and shadows, then draws opaque/transparent/debug passes and screen UI. ViewportFrame has an independent world and renderer. Physics defers mutation during queries/contact traversal and releases bodies before native world handles. See [physics details](guides/physics/backends.md).
 
-Current guides are grouped by feature under `docs/guides`. The release README, validation reports and migration notes stay beside `source` in the version directory, so the `.love` contains current project documentation rather than historical release notes.
+Current guides are grouped by feature under `docs/guides`. The release README, validation reports and migration notes stay beside `source` in the version directory, so the `.katsa` archive contains current project documentation rather than historical release notes.
 
 ## Scene implementation layout
 
@@ -60,7 +60,7 @@ with scene lifecycle dispatch. Node lifecycle hooks are a separate instance API.
 
 ## Application startup and persistent data
 
-The root main file installs `engine/scenes/bootstrap.lua`, which owns the LOVE
+The root main file installs `engine/scenes/bootstrap.lua`, which owns the katsa
 callbacks once. Collection-specific startup is an adapter in `game/runtime/startup.lua`;
 standalone games use the default scene host. Both project types share
 `engine/core/windowConfig.lua` through a minimal conf wrapper. Project metadata

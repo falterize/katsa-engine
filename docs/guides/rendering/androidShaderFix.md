@@ -8,5 +8,5 @@ The runtime suite validates both shaders as GLSL ES before opening a 3D scene. D
 
 References:
 - https://love2d.org/wiki/Shader_Variables
-- https://love2d.org/wiki/love.graphics.validateShader
+- https://love2d.org/wiki/katsa.graphics.validateShader
 - https://love2d.org/wiki/GLES_Shader_Testing_in_Desktop
