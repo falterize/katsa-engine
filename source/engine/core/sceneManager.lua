@@ -151,7 +151,8 @@ end
 function Manager:preload(items)
     return self.resources:preload(items)
 end
--- Contact callbacks may request a transition, but never destroy a world while its solver is running.
+-- Contact callbacks may request a transition, but never destroy a world while its solver is
+-- running.
 function Manager:requestSwitch(factory, ...)
     self.pendingSwitch = { factory = factory, arguments = { ... } }
 end

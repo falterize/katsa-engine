@@ -76,7 +76,8 @@ function Triggers.step(physics)
                                     spent = spent + 1
                                     assert(
                                         spent <= physics.maxTriggerPairs,
-                                        'Trigger narrow-phase budget exceeded; reduce active trigger candidates'
+                                        'Trigger narrow-phase budget exceeded; reduce active '
+                                            .. 'trigger candidates'
                                     )
                                     local ga, gb = a.raw:getGeometry(), b.raw:getGeometry()
                                     state.result:clear()

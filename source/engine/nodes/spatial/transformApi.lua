@@ -92,7 +92,8 @@ function TransformApi.install(Node3D)
     function Node3D:setWorldTransform(transform)
         local parentMatrix, parentOwner = Affine.parentMatrix(self, self.parent)
         if self:isA('Camera3D') and (not parentMatrix or parentOwner:isA('World3D')) then
-            return self:setLocalTransform(transform) -- Preserve unrestricted yaw without Euler decomposition.
+            -- Preserve unrestricted yaw without Euler decomposition.
+            return self:setLocalTransform(transform)
         end
         local r = { unpack(transform.rotation) }
         if self:isA('Camera3D') then
@@ -157,7 +158,8 @@ function TransformApi.install(Node3D)
                 and Math.multiply(Affine.inverse(parentMatrix), world)
             or world
         local target = pose(self, localMatrix)
-        compatible(self, target) -- Reject shear/physics incompatibility before modifying the live hierarchy.
+        compatible(self,
+            target) -- Reject shear/physics incompatibility before modifying the live hierarchy.
         if self.spatialPosition then
             self.spatialPosition = target.position
         else

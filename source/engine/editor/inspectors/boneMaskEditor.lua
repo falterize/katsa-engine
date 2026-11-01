@@ -23,7 +23,8 @@ function Editor.open(popup)
     popup.ui:text({
         position = { 0, 4, 0, y },
         size = { 1, -8, 0, 44 },
-        text = 'Empty mask: all bones. A nonempty mask excludes unlisted bones. Set each included weight from 0 to 1.',
+        text = 'Empty mask: all bones. A nonempty mask excludes unlisted bones. Set each '
+            .. 'included weight from 0 to 1.',
         fontSize = 12,
     }, popup.body)
     y = y + 48

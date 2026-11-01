@@ -14,7 +14,8 @@ Class.propertySchema = {
     shape = { options = { 'Box', 'Sphere', 'Capsule', 'Cylinder', 'Cone', 'Geometry', 'Points' } },
     geometrySource = {
         kind = 'node',
-        hint = 'Select a Node3D / Mesh3D or enter an OBJ, GLB or glTF model path. File sources use Size as local scale.',
+        hint = 'Select a Node3D / Mesh3D or enter an OBJ, GLB or glTF model path. File sources '
+            .. 'use Size as local scale.',
         visibleWhen = { key = 'shape', equals = 'Geometry' },
     },
     collisionLevel = {

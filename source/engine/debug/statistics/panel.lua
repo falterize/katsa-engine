@@ -335,7 +335,8 @@ function Panel:sample(context, time, visible)
     self.nextRefresh = time + 0.25
     for index, definition in ipairs(self.definitions) do
         local row = self.rows[index]
-        -- Offscreen labels do not need formatting or new text layouts. Histories still sample all rows.
+        -- Offscreen labels do not need formatting or new text layouts. Histories still sample all
+        -- rows.
         if
             row._y
             and row._height

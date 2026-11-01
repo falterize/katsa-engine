@@ -15,6 +15,7 @@ function Visibility.point(e, camera, x, y, z, radius)
         and sx - padding <= ui.offsetX + ui.width * ui.scale
         and sy - padding <= ui.offsetY + ui.height * ui.scale
 end
+
 function Visibility.relevant(e, camera, render)
     if not e:isVisible() or not e._plane:layerVisible(e) then
         return false

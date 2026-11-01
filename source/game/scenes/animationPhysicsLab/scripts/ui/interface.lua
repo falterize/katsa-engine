@@ -83,7 +83,8 @@ function Interface.create(self)
     self.info = ui:text({
         position = { 0, 8, 0, y },
         size = { 1, -16, 0, 100 },
-        text = 'Same Order blends weights. Higher Order overrides masked bones. Inspect constraints to choose attachments.',
+        text = 'Same Order blends weights. Higher Order overrides masked bones. Inspect '
+            .. 'constraints to choose attachments.',
         fontSize = 13,
         verticalAlign = 'top',
     }, panel)

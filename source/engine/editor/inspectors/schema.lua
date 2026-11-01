@@ -267,7 +267,8 @@ function Schema.descriptor(target, key)
     if target._settingsKind == 'Sky' then
         if key == 'texture' then
             return {
-                hint = 'Project-relative sky image path or registered image name. Cross requires a 4:3 image.',
+                hint = 'Project-relative sky image path or registered image name. Cross requires '
+                    .. 'a 4:3 image.',
             }
         end
         if key == 'pixelate' then
@@ -370,13 +371,15 @@ local hints = require('source.engine.editor.inspectors.schemaHints')
 
 function Schema.hint(target, key)
     if target.isA and target:isA('ScrollFrame') and key == 'canvasSize' then
-        return 'UDim2 canvas dimensions relative to the frame plus logical pixels. AutomaticCanvasSize can extend the authored minimum.'
+        return 'UDim2 canvas dimensions relative to the frame plus logical pixels. '
+            .. 'AutomaticCanvasSize can extend the authored minimum.'
     end
     if target._settingsKind == 'PhysicsDebug' and key == 'wireframe' then
         return 'Draw physics shapes as wire geometry. Does not change the main material renderer.'
     end
     if target._inputKind == 'Joystick' then
-        return 'Safe-area logical pixels; authored values persist across resizing and are clamped to the viewport.'
+        return 'Safe-area logical pixels; authored values persist across resizing and are '
+            .. 'clamped to the viewport.'
     end
     if key == 'sensitivity' then
         return 'Degrees per logical pixel for Free cameras. Follow cameras use followSensitivity.'

@@ -46,7 +46,8 @@ function Interface.create(self)
         position = { 0, 8, 0, 270 },
         size = { 1, -16, 0, 88 },
 
-        text = 'Enable both directional sources to compare independent cascades. Rotation controls their rays; camera movement keeps local maps cached.',
+        text = 'Enable both directional sources to compare independent cascades. Rotation '
+            .. 'controls their rays; camera movement keeps local maps cached.',
         fontSize = 15,
     }, self.toolbar)
     self.toolbar.length = 366

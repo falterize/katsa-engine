@@ -65,7 +65,8 @@ function Interface.create(self)
     ui:text({
         position = { 0, 8, 0, 268 },
         size = { 1, -16, 0, 52 },
-        text = 'Aim at the orange cube.\nInteract / F toggles the flashlight.\nTap the cube also works.',
+        text = 'Aim at the orange cube.\nInteract / F toggles the flashlight.\nTap the cube also '
+            .. 'works.',
         fontSize = 12,
         align = 'left',
     }, self.toolbar)

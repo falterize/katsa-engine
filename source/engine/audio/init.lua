@@ -186,6 +186,7 @@ end
 function Audio:removeEffect(node)
     require('source.engine.audio.nodeEffects').remove(self, node)
 end
+
 function Audio:release()
     if self.released then
         return

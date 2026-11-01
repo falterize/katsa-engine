@@ -112,7 +112,8 @@ function Builder.build(node, body, parts)
         triangles = triangles + #vertices / 3
         assert(
             triangles <= node.maxTriangles,
-            'Collider geometry exceeds MaxTriangles; select a simpler source or raise the explicit limit'
+            'Collider geometry exceeds MaxTriangles; select a simpler source or raise the '
+                .. 'explicit limit'
         )
         if node.collisionLevel == 'Convex' then
             local a, b = vertices[1], nil

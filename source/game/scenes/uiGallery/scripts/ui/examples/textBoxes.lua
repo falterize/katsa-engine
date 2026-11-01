@@ -12,6 +12,7 @@ local function input(ui, parent, name, y, text, multiline)
         backgroundTransparency = 0,
     }, parent)
 end
+
 function Examples.create(state, left)
     local scene, ui = state.scene, state.scene.ui
     ui:text({

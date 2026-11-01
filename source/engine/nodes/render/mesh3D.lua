@@ -7,13 +7,15 @@ Class.propertySchema = {
         min = 1,
         max = 8,
         integer = true,
-        hint = 'Strongest weights retained per vertex (1..8), then normalized. Imported data stays intact.',
+        hint = 'Strongest weights retained per vertex (1..8), then normalized. Imported data '
+            .. 'stays intact.',
     },
     bonePaletteLimit = {
         min = 1,
         max = 32,
         integer = true,
-        hint = 'Requested bones per draw (1..32). Triangles keep all required joints; smaller palettes may add draws.',
+        hint = 'Requested bones per draw (1..32). Triangles keep all required joints; smaller '
+            .. 'palettes may add draws.',
     },
     effectiveBonePaletteLimit = {
         readOnly = true,

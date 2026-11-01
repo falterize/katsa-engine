@@ -105,7 +105,8 @@ function Display.initialSize(width, height)
     width, height = math.floor(width * scale + 0.5), math.floor(height * scale + 0.5)
     if user then
         local work = ffi.new('long[4]')
-        if user.SystemParametersInfoW(48, 0, work, 0) ~= 0 then -- SPI_GETWORKAREA.
+        if user.SystemParametersInfoW(48, 0, work, 0) ~= 0 then
+            -- SPI_GETWORKAREA.
             width = math.min(width, math.max(1, tonumber(work[2] - work[0]) - 32 * scale))
             height = math.min(height, math.max(1, tonumber(work[3] - work[1]) - 64 * scale))
         end

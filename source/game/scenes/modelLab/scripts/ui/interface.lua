@@ -104,7 +104,8 @@ function Interface.create(self)
         position = { 0, 6, 0, y },
         size = { 1, -12, 0, 74 },
         fontSize = 11,
-        text = 'Procedural demonstration clips; XBot FBX contains no motion. Green lines: bones. Purple: attachments.',
+        text = 'Procedural demonstration clips; XBot FBX contains no motion. Green lines: bones. '
+            .. 'Purple: attachments.',
     }, body)
 end
 

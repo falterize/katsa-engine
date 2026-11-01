@@ -49,7 +49,8 @@ function Packed.write(model, source, destination)
     for i, part in ipairs(model.parts) do
         assert(
             not part.material.image,
-            'Packed sidecar builder currently requires external/baked material maps without embedded image handles'
+            'Packed sidecar builder currently requires external/baked material maps without '
+                .. 'embedded image handles'
         )
         local vertices = part.geometry.vertices
         local vertexFloats = part.geometry.eightWeights and 24 or (part.palette and 16 or 8)

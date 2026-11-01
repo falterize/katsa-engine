@@ -283,18 +283,23 @@ end
 function Body:getAngularVelocity()
     return math.deg(self.raw:getAngularVelocity())
 end
+
 function Body:setAngularVelocity(value)
     self.raw:setAngularVelocity(math.rad(value))
 end
+
 function Body:getMass()
     return self.raw:getMass()
 end
+
 function Body:isSleeping()
     return not self.raw:isAwake()
 end
+
 function Body:wake()
     self.raw:setAwake(true)
 end
+
 function Body:sleep()
     self.raw:setAwake(false)
 end
@@ -326,6 +331,7 @@ end
 function Body:applyTorque(value)
     self.raw:applyTorque(value * self.physics.factor ^ 2)
 end
+
 function Body:applyAngularImpulse(value)
     self.raw:applyAngularImpulse(value * self.physics.factor ^ 2)
 end

@@ -17,7 +17,8 @@ function Interface.create(self)
     ui:text({
         position = { 0, 8, 0, 8 },
         size = { 1, -16, 0, 64 },
-        text = 'Highest supported resolution / MSAA. 32 lights, PCSS, mapped surfaces and shadowed colliding particles.',
+        text = 'Highest supported resolution / MSAA. 32 lights, PCSS, mapped surfaces and '
+            .. 'shadowed colliding particles.',
         textScaled = true,
         maxTextSize = 14,
     }, panel)

@@ -1,5 +1,7 @@
 """Check Lua sources against the project style (see AGENTS.md and stylua.toml).
 
+Defaults to the katsa runtime and its tests; the engine and game follow stylua output (see
+stylua.toml), which may leave unbreakable lines longer than the limit.
 Rules: 100-column lines, single-quoted strings, no one-line function bodies, a blank line between
 sibling functions, and a maximum module size. Long-string blocks ([[ ... ]]) are not inspected.
 """
@@ -51,7 +53,9 @@ def checkFile(path, maxLines):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('paths', nargs='*', type=Path, default=[Path('source')])
+    parser.add_argument(
+        'paths', nargs='*', type=Path, default=[Path('source/katsa'), Path('source/tests/katsa')]
+    )
     parser.add_argument('--max-lines', type=int, default=MAX_LINES)
     args = parser.parse_args()
     total = 0

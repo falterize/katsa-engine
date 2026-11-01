@@ -11,7 +11,8 @@ function Simulation:update3D(dt)
     lab.scene.world:updateNodes(dt)
     if lab.info then
         lab.info.text = string.format(
-            'Wave: %s / Order %d / Speed %.2f / Weight %.2f\n10 attachment constraints; rolling spheres and live motors.',
+            'Wave: %s / Order %d / Speed %.2f / Weight %.2f\n10 attachment constraints; rolling '
+                .. 'spheres and live motors.',
             lab.tracks.wave.state,
             lab.tracks.wave.order,
             lab.tracks.wave.speed,

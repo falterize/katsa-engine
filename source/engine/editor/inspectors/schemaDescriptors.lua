@@ -13,16 +13,19 @@ local descriptions = {
         orthoSize = {
             min = 0.001,
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Half of the visible height in world units at zoom 1; width follows the aspect ratio.',
+            hint = 'Half of the visible height in world units at zoom 1; width follows the '
+                .. 'aspect ratio.',
         },
         zoom = {
             min = 0.01,
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Orthographic magnification; the visible half-height is orthoSize / zoom. Mouse wheel zooms the free camera.',
+            hint = 'Orthographic magnification; the visible half-height is orthoSize / zoom. '
+                .. 'Mouse wheel zooms the free camera.',
         },
         orthoNear = {
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Orthographic clip start along the view direction; empty places it behind the camera.',
+            hint = 'Orthographic clip start along the view direction; empty places it behind the '
+                .. 'camera.',
         },
         near = {
             min = 0.001,
@@ -37,7 +40,8 @@ local descriptions = {
                 return node.mass or node.body and node.body:getMass()
             end,
             min = 0.00001,
-            hint = 'Mass in kg. Shows density-derived mass until an explicit override is authored; effective only for dynamic bodies.',
+            hint = 'Mass in kg. Shows density-derived mass until an explicit override is '
+                .. 'authored; effective only for dynamic bodies.',
         },
         density = { min = 0.00001 },
     },

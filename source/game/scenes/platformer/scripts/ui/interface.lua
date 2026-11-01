@@ -55,7 +55,8 @@ function Interface.create(lab)
         size = { 1, -16, 0, 54 },
         textScaled = true,
         maxTextSize = 14,
-        text = 'WASD / touch: move\nSpace: jump twice | Shift: dash\nC: slide | Crystals: checkpoint',
+        text = 'WASD / touch: move\nSpace: jump twice | Shift: dash\nC: slide | Crystals: '
+            .. 'checkpoint',
         backgroundTransparency = 1,
     }, panel)
     ui:button({

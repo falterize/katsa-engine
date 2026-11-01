@@ -1,5 +1,6 @@
 local ipairs = require('source.engine.math.array').ipairs
--- Test existing particles as well as the source: world-space trails can outlive an offscreen emitter.
+-- Test existing particles as well as the source: world-space trails can outlive an offscreen
+-- emitter.
 local M = require('source.engine.math.math3d')
 local bit = require('bit')
 

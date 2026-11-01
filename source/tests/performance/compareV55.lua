@@ -69,7 +69,8 @@ function P:draw()
         table.sort(values)
         print(
             string.format(
-                'COMPARE %dx%d objects=%d candidates=%d lights=%d density=%.2f MSAA=%d shadows=%s | %s',
+                'COMPARE %dx%d objects=%d candidates=%d lights=%d density=%.2f MSAA=%d '
+                    .. 'shadows=%s | %s',
                 self.sizes[self.case][1],
                 self.sizes[self.case][2],
                 s.objects,
