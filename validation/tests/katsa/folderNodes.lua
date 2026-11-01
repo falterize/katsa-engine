@@ -16,5 +16,14 @@ return function(T)
         'folderNodes: parts are shared through the module cache')
     local single = package:require('settings')
     T.check(single.nodes[1] == 'vehicle', 'folderNodes: a plain file module still loads')
+    T.check(package.compatibility.status == 'same', 'folderNodes: scene declares the running engine version')
     package:release()
+
+    local Version = require('source.engine.core.version')
+    T.check(Version.compatible('v108.3', 'v108.4') == 'older', 'version: earlier minor is older')
+    T.check(Version.compatible('v109', 'v108.4') == 'newer', 'version: later major is newer')
+    T.check(Version.compatible('v108.4', 'v108.4') == 'same', 'version: equal versions match')
+    T.check(Version.compatible(nil) == 'unknown' and Version.compatible('abc') == 'unknown',
+        'version: missing or invalid declarations are unknown')
+    T.check(Version.compare('v9.10', 'v9.9') == 1, 'version: minor compares numerically')
 end

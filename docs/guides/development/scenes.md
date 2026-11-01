@@ -84,6 +84,7 @@ katsa . --scene-package dist/exampleScene.zip
 ```lua
 local Settings = {
     layoutVersion = 3,
+    version = 'v108.4',
     id = 'exampleScene',
     title = 'Example scene',
     category = 'Gameplay',
@@ -102,6 +103,13 @@ return Settings
 `layoutVersion = 3` does not require the category directories to exist (empty folders are lost by Git and GitHub ZIPs); it validates the five lifecycle
 hooks. Version 2 archives retain their original root ui folder; archives without
 a layout version retain the earlier compatibility loader. New scenes use version 3.
+
+`version` (optional) is the engine version the scene was made for, in the form of
+`source/engine/core/version.lua` (`v108.4`). The loader compares it with the running engine
+(`Version.compatible`): a scene made for a newer engine logs a warning, an older one a note, and
+`package.compatibility` holds `{ status, message, declared }` (`same`, `older`, `newer`,
+`unknown`) for a launcher to show. Projects declare the same in `source/game/data/project.lua`
+(`version`). A mismatch never blocks loading.
 
 World settings apply before creation. `scene:createPhysics()` merges call-site
 defaults, scene settings, then explicit launch options. `physicsBackend` overrides
