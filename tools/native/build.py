@@ -34,14 +34,37 @@ def compiler(*names):
     sys.exit('No compiler found; tried: ' + ', '.join(names))
 
 
+HOST = SRC / 'katsa_host.c'
+LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
+
+
+def build_host_linux(out):
+    cc = compiler('clang', 'gcc', 'cc')
+    run([cc, '-O2', '-rdynamic', '-I' + str(LUAJIT) + '/include/luajit-2.1', HOST,
+         LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
+
+
+def build_host_windows(out):
+    cc = compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc')
+    inc = os.environ.get('LUAJIT_WIN_INCLUDE', LUAJIT + '/include/luajit-2.1')
+    lib = os.environ.get('LUAJIT_WIN_LIB')
+    if not lib:
+        sys.exit('Set LUAJIT_WIN_LIB to a Windows libluajit-5.1.a (see docs/guides/katsa/building.md)')
+    run([cc, '-O2', '-I' + inc, HOST, lib, '-static', '-mwindows' if os.environ.get('KATSA_GUI') else '-mconsole', '-o', out / 'katsa.exe'])
+
+
 def build_linux(out):
     cc = compiler('clang', 'gcc', 'cc')
     run([cc, '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.so'])
+    if os.environ.get('LUAJIT_PREFIX'):
+        build_host_linux(out)
 
 
 def build_windows(out):
     cc = compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc')
     run([cc, '-shared', *FLAGS, *SOURCES, '-o', out / 'katsa_native.dll', '-static'])
+    if os.environ.get('LUAJIT_WIN_LIB'):
+        build_host_windows(out)
 
 
 def build_macos(out):
