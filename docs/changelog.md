@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- `multiplayerCars` scene: LAN server list, authoritative cars (suspension, nitro, four riders, dents), pathfinding bot and nitro refill by rewarded ad. `server:setAuthority`, `Net.browse().refresh(address)`, `katsa.launchArguments`.
+- `ads` plugin: rewarded ads with `mock`, `admob` and `unity` providers and a provider interface.
 - Engine/scene `version`: `Version.parse/compare/compatible` in `source/engine/core/version.lua`; `project.lua` and scene `settings.lua` may declare the engine version they target (format `1.0.0a`, `a` = alpha), the scene loader reports mismatches (`package.compatibility`) for the future launcher.
 - Folder nodes: a scene node can be `nodes/<name>/init.lua` with sibling modules loaded through `require('scene.nodes.<name>.<part>')`.
 - `source/engine/net`: authoritative Server and predicting Client (fixed tick, snapshots, reconciliation, interpolation, remote events/functions, relevance, client authority, LAN server list). See [multiplayer](guides/development/multiplayer.md).

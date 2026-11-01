@@ -2,6 +2,10 @@
 local Registry = {}
 local entries = {
     ['--test-v108.1'] = { module = 'validation.tests.versions.v108_1.focused', mode = 'default' },
+    ['--test-v108.4.cars'] = {
+        module = 'validation.tests.versions.v108_4.carsScene',
+        mode = 'default',
+    },
     ['--test-v108.4'] = { module = 'validation.tests.versions.v108_4.focused', mode = 'default' },
     ['--test-v108'] = { module = 'validation.tests.versions.v108.focused', mode = 'default' },
     ['--test-v107.2-authoring'] = {
@@ -21,15 +25,24 @@ local entries = {
         module = 'validation.tests.versions.v106_8.dataSession',
         mode = 'default',
     },
-    ['--test-foundation'] = { module = 'validation.tests.versions.v106_8.foundation', mode = 'default' },
+    ['--test-foundation'] = {
+        module = 'validation.tests.versions.v106_8.foundation',
+        mode = 'default',
+    },
     ['--benchmark-physics'] = {
         module = 'validation.tests.performance.physicsComparison',
         mode = 'default',
     },
     ['--test-soak'] = { module = 'validation.tests.performance.soak', mode = 'default' },
     ['--test-v106.8'] = { module = 'validation.tests.versions.v106_8.runtime', mode = 'default' },
-    ['--test-menu-idle'] = { module = 'validation.tests.versions.v106_7.menuIdle', mode = 'default' },
-    ['--test-skin-menu'] = { module = 'validation.tests.versions.v106_7.skinAndMenu', mode = 'default' },
+    ['--test-menu-idle'] = {
+        module = 'validation.tests.versions.v106_7.menuIdle',
+        mode = 'default',
+    },
+    ['--test-skin-menu'] = {
+        module = 'validation.tests.versions.v106_7.skinAndMenu',
+        mode = 'default',
+    },
     ['--test-v106.7'] = { module = 'validation.tests.versions.v106_7.runtime', mode = 'default' },
     ['--test-stare-shooter'] = {
         module = 'validation.tests.versions.v106_6.stareShooter',
@@ -86,15 +99,24 @@ local entries = {
     ['--test-v104'] = { module = 'validation.tests.versions.v104.runtime', mode = 'default' },
     ['--preview-v103'] = { module = 'validation.tests.versions.v103.preview', mode = 'default' },
     ['--stress-v103'] = { module = 'validation.tests.versions.v103.stress', mode = 'default' },
-    ['--profile-v103-gc'] = { module = 'validation.tests.versions.v103.gcProfile', mode = 'default' },
+    ['--profile-v103-gc'] = {
+        module = 'validation.tests.versions.v103.gcProfile',
+        mode = 'default',
+    },
     ['--profile-v103'] = { module = 'validation.tests.versions.v102.workProfile', mode = 'default' },
     ['--test-v103'] = { module = 'validation.tests.versions.v103.runtime', mode = 'default' },
     ['--probe-v103-jolt'] = { module = 'validation.tests.versions.v103.probe', mode = 'default' },
-    ['--profile-v102-ab'] = { module = 'validation.tests.versions.v102.abProfile', mode = 'default' },
+    ['--profile-v102-ab'] = {
+        module = 'validation.tests.versions.v102.abProfile',
+        mode = 'default',
+    },
     ['--test-v102'] = { module = 'validation.tests.versions.v102.runtime', mode = 'default' },
     ['--preview-v102'] = { module = 'validation.tests.versions.v102.preview', mode = 'default' },
     ['--profile-v102'] = { module = 'validation.tests.versions.v102.workProfile', mode = 'default' },
-    ['--compare-v101-static'] = { module = 'validation.tests.versions.v101.static', mode = 'default' },
+    ['--compare-v101-static'] = {
+        module = 'validation.tests.versions.v101.static',
+        mode = 'default',
+    },
     ['--profile-v101-work'] = {
         module = 'validation.tests.versions.v101.workProfile',
         mode = 'default',
@@ -124,9 +146,15 @@ local entries = {
         module = 'validation.tests.versions.v98.combinedProbe',
         mode = 'default',
     },
-    ['--profile-v98-loading'] = { module = 'validation.tests.versions.v98.loading', mode = 'default' },
+    ['--profile-v98-loading'] = {
+        module = 'validation.tests.versions.v98.loading',
+        mode = 'default',
+    },
     ['--compare-v97'] = { module = 'validation.tests.versions.v96.compare', mode = 'default' },
-    ['--probe-v97-shader'] = { module = 'validation.tests.versions.v97.shaderProbe', mode = 'default' },
+    ['--probe-v97-shader'] = {
+        module = 'validation.tests.versions.v97.shaderProbe',
+        mode = 'default',
+    },
     ['--test-v97'] = { module = 'validation.tests.versions.v97.runtime', mode = 'default' },
     ['--profile-v97'] = { module = 'validation.tests.versions.v97.profile', mode = 'default' },
     ['--compare-v96'] = { module = 'validation.tests.versions.v96.compare', mode = 'default' },
@@ -172,7 +200,10 @@ local entries = {
     ['--test-v77'] = { module = 'validation.tests.versions.v77.runtime', mode = 'default' },
     ['--components-v77'] = { module = 'validation.tests.versions.v77.components', mode = 'default' },
     ['--test-v76'] = { module = 'validation.tests.versions.v76.runtime', mode = 'default' },
-    ['--profile-systems-v76'] = { module = 'validation.tests.versions.v76.systems', mode = 'default' },
+    ['--profile-systems-v76'] = {
+        module = 'validation.tests.versions.v76.systems',
+        mode = 'default',
+    },
     ['--profile-v76'] = { module = 'validation.tests.versions.v76.profile', mode = 'default' },
     ['--test-v75'] = { module = 'validation.tests.versions.v75.runtime', mode = 'default' },
     ['--profile-v75'] = { module = 'validation.tests.versions.v75.profile', mode = 'default' },
@@ -214,7 +245,10 @@ local entries = {
     ['--preview-v50'] = { module = 'validation.tests.versions.v50.previews', mode = 'default' },
     ['--preview-v49'] = { module = 'validation.tests.versions.v49.previews', mode = 'default' },
     ['--test-v49'] = { module = 'validation.tests.versions.v49.runtime', mode = 'default' },
-    ['--test-v48-inspector'] = { module = 'validation.tests.versions.v48.runtime', mode = 'extended' },
+    ['--test-v48-inspector'] = {
+        module = 'validation.tests.versions.v48.runtime',
+        mode = 'extended',
+    },
     ['--benchmark-shadows'] = {
         module = 'validation.tests.performance.shadowBenchmark',
         mode = 'default',

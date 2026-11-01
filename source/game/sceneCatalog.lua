@@ -30,6 +30,7 @@ local Catalog = {
         { id = 'surfaceGallery', path = 'source/game/scenes/surfaceGallery' },
         { id = 'uiGallery', path = 'source/game/scenes/uiGallery' },
         { id = 'audioNodes', path = 'source/game/scenes/audioNodes' },
+        { id = 'multiplayerCars', path = 'source/game/scenes/multiplayerCars' },
         { id = 'starterGame', path = 'source/game/scenes/starterGame', standalone = true },
         { id = 'nodeCatalog', path = 'source/game/scenes/nodeCatalog', interface = true },
     },

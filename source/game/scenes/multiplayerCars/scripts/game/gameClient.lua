@@ -88,6 +88,10 @@ function GameClient:isConnected()
     return self.client:isConnected()
 end
 
+function GameClient:getPing()
+    return self.client:getPing()
+end
+
 function GameClient:getPlayerId()
     return self.client.playerId
 end

@@ -14,8 +14,9 @@ function Net.browse(options)
     local browser = katsa.net.lan.browse(options)
     local list = {}
     return {
-        refresh = function()
-            browser:refresh()
+        -- Queries the LAN (broadcast), or one address such as '127.0.0.1' for this machine.
+        refresh = function(address)
+            browser:refresh(address)
         end,
         update = function()
             list = {}

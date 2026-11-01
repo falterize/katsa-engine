@@ -19,7 +19,10 @@ return function(T)
 
     local car = Vehicle.new()
     run(car, { throttle = 1 }, 4)
-    T.check(car.speed > 15 and car.speed <= car.config.maxSpeed, 'vehicle: accelerates toward top speed')
+    T.check(
+        car.speed > 15 and car.speed <= car.config.maxSpeed,
+        'vehicle: accelerates toward top speed'
+    )
     T.check(car.z > 20 and math.abs(car.x) < 1e-6, 'vehicle: drives straight along heading 0')
 
     -- Determinism: the same inputs give the same state (server and prediction must agree).
@@ -44,7 +47,10 @@ return function(T)
     local boosted, plain = Vehicle.new(), Vehicle.new()
     run(boosted, { throttle = 1, nitro = true }, 3)
     run(plain, { throttle = 1 }, 3)
-    T.check(boosted.speed > plain.speed and boosted.nitro < 1, 'vehicle: nitro is faster and drains')
+    T.check(
+        boosted.speed > plain.speed and boosted.nitro < 1,
+        'vehicle: nitro is faster and drains'
+    )
     run(boosted, { throttle = 1, nitro = true }, 6)
     T.check(boosted.nitro == 0, 'vehicle: nitro runs out')
     boosted:addNitro(2)
@@ -63,8 +69,10 @@ return function(T)
     T.check(moved, 'vehicle: springs compress over a bump')
     local flat = Vehicle.new()
     run(flat, { throttle = 1 }, 1)
-    T.check(math.abs(flat.spring[1]) < 1e-6 and math.abs(flat.y - flat.config.rideHeight) < 1e-6,
-        'vehicle: flat ground keeps the ride height')
+    T.check(
+        math.abs(flat.spring[1]) < 1e-6 and math.abs(flat.y - flat.config.rideHeight) < 1e-6,
+        'vehicle: flat ground keeps the ride height'
+    )
 
     -- Seats.
     local seated = Vehicle.new()
@@ -100,8 +108,10 @@ return function(T)
         dent = dent or dents:addImpact(hit)
     end
     T.check(dent ~= nil and dent.depth > 0, 'vehicle: a hard hit creates a dent')
-    T.check(dents:addImpact({ x = 0, z = 1, nx = 0, nz = -1, speed = 1 }) == nil,
-        'vehicle: a gentle bump leaves no dent')
+    T.check(
+        dents:addImpact({ x = 0, z = 1, nx = 0, nz = -1, speed = 1 }) == nil,
+        'vehicle: a gentle bump leaves no dent'
+    )
     local ox, _, oz = dents:offsetAt(dent.x, dent.y, dent.z)
     T.check(math.abs(ox) + math.abs(oz) > 0, 'vehicle: vertices near the dent move')
     local far = { dents:offsetAt(dent.x + 10, dent.y, dent.z) }

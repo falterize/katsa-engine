@@ -216,13 +216,19 @@ return function(T)
     two.authorityChanged:connect(function()
         changes = changes + 1
     end)
-    T.check(server:setAuthority(shared, server:getPlayers()[2]), 'netGame: setAuthority accepts a live entity')
+    T.check(
+        server:setAuthority(shared, server:getPlayers()[2]),
+        'netGame: setAuthority accepts a live entity'
+    )
     run(60)
     T.check(
         two.entities[sharedId].local_ and not one.entities[sharedId].local_ and changes == 1,
         'netGame: authority moves to the new player on every client'
     )
-    T.check(server:getAuthority(shared) == server:getPlayers()[2], 'netGame: server reports the new authority')
+    T.check(
+        server:getAuthority(shared) == server:getPlayers()[2],
+        'netGame: server reports the new authority'
+    )
     moveX = 1
     local before = shared.position[1]
     run(30)

@@ -230,6 +230,24 @@ A definition can instead return a plain node definition; its filename becomes th
 type name. Identical private names remain isolated between worlds. Engine classes
 cannot be replaced by scene definitions.
 
+### Folder nodes
+
+A large node can be a folder. `settings.nodes = { 'vehicle' }` loads `nodes/vehicle.lua`, or, when
+that file does not exist, `nodes/vehicle/init.lua`. `init.lua` assembles the node from sibling
+modules that it loads with `require('scene.nodes.vehicle.model')` (any `scene.` module name works
+from every file of the scene, and parts share the package's module cache):
+
+```text
+nodes/vehicle/
+  init.lua          -- the node definition (base, properties, initialize, register)
+  model.lua         -- deterministic driving, suspension, nitro, seats
+  collision.lua     -- obstacle and car-versus-car response
+  deformation.lua   -- replicable body dents
+```
+
+`multiplayerCars/nodes/vehicle` is the reference. Parts that do not touch the engine are plain Lua,
+so tests can load them without a window (`validation/tests/katsa/sceneRequire.lua`).
+
 ## Assets and Image properties
 
 `scene://` resolves from the current scene's `assets/`; `shared://` resolves from

@@ -19,7 +19,10 @@ local providers = {}
 local state = { provider = nil, name = nil, config = {}, loading = false }
 
 function Ads.registerProvider(name, provider)
-    assert(type(name) == 'string' and type(provider) == 'table', 'Provider needs a name and a table')
+    assert(
+        type(name) == 'string' and type(provider) == 'table',
+        'Provider needs a name and a table'
+    )
     providers[name] = provider
 end
 

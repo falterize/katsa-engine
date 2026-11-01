@@ -109,7 +109,12 @@ function Deformation:load(list)
     self.dents = {}
     for _, row in ipairs(list or {}) do
         self.dents[#self.dents + 1] = {
-            x = row[1], y = row[2], z = row[3], dx = row[4], dz = row[5], depth = row[6],
+            x = row[1],
+            y = row[2],
+            z = row[3],
+            dx = row[4],
+            dz = row[5],
+            depth = row[6],
             radius = row[7],
         }
     end
