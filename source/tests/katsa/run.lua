@@ -20,7 +20,7 @@ function T.skip(message)
     print('SKIP ' .. message)
 end
 
-local suites = { 'shaderTranslator', 'shaderCompile' }
+local suites = { 'shaderTranslator', 'shaderCompile', 'scenesArchive' }
 for _, name in ipairs(suites) do
     local ok, err = pcall(require('source.tests.katsa.' .. name), T)
     if not ok then
