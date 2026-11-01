@@ -6,8 +6,9 @@ local CarView = require('scene.scripts.view.carView')
 local GameServer = require('scene.scripts.game.gameServer')
 local GameClient = require('scene.scripts.game.gameClient')
 local AdsConfig = require('scene.scripts.game.adsConfig')
-local Menu = require('scene.scripts.ui.menu')
-local Hud = require('scene.scripts.ui.hud')
+local Interface = require('scene.scripts.ui.interface')
+local Menu = Interface.Menu
+local Hud = Interface.Hud
 
 local Session = {}
 Session.__index = Session
