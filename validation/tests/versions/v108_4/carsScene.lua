@@ -26,6 +26,7 @@ function Tests:draw()
         self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
+        self.manager.profiler:startRecording({ scene = 'multiplayerCars' })
         self:check(self.session.mode == 'menu', 'cars scene starts at the menu')
         self.session:host('Tester', 47990 + math.floor(os.clock() * 100) % 9)
     end
@@ -56,6 +57,20 @@ function Tests:draw()
         session.views[session.client:getCar()]:markDirty()
     elseif frame == 350 then
         self:shot('dent')
+        require('source.engine.editor.debug.diagnostics').open(host.workspace)
+    elseif frame == 356 then
+        self:shot('profiler')
+        host.workspace.popup:close(false)
+        local profiler = self.manager.profiler
+        self:check(#profiler.recording.rows > 300, 'the profiler records the running scene')
+        local summary = profiler:summary()
+        self:check(
+            summary.frame.frames > 100 and #summary.stages > 3,
+            'stage timings are collected'
+        )
+        local json = profiler.save(profiler:stopRecording(), 'json')
+        self:check(katsa.filesystem.getInfo(json) ~= nil, 'a session profile is written to logs/')
+        katsa.filesystem.remove(json)
     elseif frame == 360 then
         self:check(session.hud.info.text:find('Driving'), 'the HUD shows the seat')
         session:leave()

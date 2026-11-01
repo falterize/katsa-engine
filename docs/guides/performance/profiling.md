@@ -1,17 +1,47 @@
 # Profiling and budgets
 
-Open Debug / F4 → CPU profiler / error journal; enable profiling, close the popup,
-play, then reopen and Refresh observations. Samples show last, exponential average
-and peak milliseconds. Clear removes samples and journal entries. The profiler is
-also a Workspace settings target. It is disabled by default.
+Open Debug / F4 → CPU profiler / error journal. The profiler is disabled by default and
+costs nothing while off.
 
-Observed stages: scene update, Input, node/gameplay/physics update, existing model
-node animation, audio update, screen UI, render preparation, light selection, main
-submission, shadow map construction and physics solver. Nested stages overlap and
-must not be added together. These are CPU wall-clock/submission measurements,
-not isolated GPU durations. Memory is sampled once every 30 profiled rendered
-frames: Lua KiB and graphics texture bytes. GPU resources outside textures and
-native physics memory are not a complete process-memory measurement.
+## Panel
+
+- **Profiler ON/OFF**, **Record session / Stop recording** (captures every frame, up to twenty
+  minutes), **Export JSON / CSV** (writes `logs/profile-<utc>.json|csv` in the save directory),
+  **Clear**, **Refresh**.
+- Frame summary over the last ten seconds: mean frame time and FPS, p95, p99, worst frame,
+  1% low FPS and the number of spikes (frames slower than twice the median). A bar chart shows
+  the latest frames (red above the 60 Hz budget).
+- Stage list sorted by mean time with p95, peak and share of the frame. Nested stages overlap,
+  so shares can add up to more than 100%.
+- Memory is sampled every 30 profiled frames: Lua KiB and texture bytes.
+
+`--profile` on the command line records the whole session and saves both formats on quit.
+
+## Measuring your own code
+
+```lua
+local profiler = manager.profiler            -- scene.manager.profiler inside a scene
+local stamp = profiler:begin()               -- nil while disabled
+-- ... work ...
+profiler:finish('Bot AI', stamp)
+local path = profiler:scope('Pathfinding', function() return grid:findPath(...) end)
+```
+
+Stage names are free text; each appears in the panel and as a column in the exports.
+`profiler:summary()` returns `{ frame = {...}, stages = {...} }` for scripts and tests.
+
+## Export format
+
+CSV: one line per frame, columns `frame,time_s,frame_ms,lua_kib` followed by one column per
+stage in milliseconds. JSON: `schema`, `app_version`, `scene`, `started_utc`, `columns`,
+`summary` and `rows` (arrays in column order).
+
+## Built-in stages
+
+Scene update, Input, node/gameplay/physics update, model node animation, audio update, screen
+UI, render preparation, light selection, main submission, shadow map construction, particles
+and the physics solver. These are CPU wall-clock/submission measurements, not isolated GPU
+durations.
 
 Existing shadow statistics show faces/maps built, pending work/age, passes and depth
 atlas bytes. The explicit shadow sampling A/B probe blocks on GPU readback and

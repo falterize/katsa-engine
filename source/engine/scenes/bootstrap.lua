@@ -70,6 +70,15 @@ function Bootstrap.install(project, options)
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
         manager.sceneFactory, manager.startScene = createScene, project.startScene
+        -- --profile records every frame of the session and saves logs/profile-*.json and .csv on quit.
+        for _, argument in ipairs(arguments) do
+            if argument == '--profile' then
+                manager.profiler:startRecording({
+                    scene = source,
+                    started = os.date('!%Y-%m-%dT%H:%M:%SZ'),
+                })
+            end
+        end
         assert(manager:switch(createScene, source))
         if options.registry then
             testRunner = options.registry.create(arguments, manager)
@@ -96,6 +105,7 @@ function Bootstrap.install(project, options)
 
     function katsa.draw()
         manager:draw()
+        manager.profiler:frame()
         if testRunner then
             testRunner:draw()
         end
@@ -185,6 +195,17 @@ function Bootstrap.install(project, options)
 
     function katsa.quit()
         if manager then
+            local recording = manager.profiler:stopRecording()
+            if recording and #recording.rows > 0 then
+                for _, format in ipairs({ 'json', 'csv' }) do
+                    local ok, path = pcall(manager.profiler.save, recording, format)
+                    katsa.log.write(
+                        ok and 'log' or 'warn',
+                        'Profile ' .. tostring(path),
+                        'profiler'
+                    )
+                end
+            end
             manager:release()
         end
     end

@@ -45,7 +45,6 @@ function Game:draw()
     if self.physics then
         p:sample('Physics solver', self.physics.stats.solverMilliseconds or 0)
     end
-    p:frame()
 end
 
 return Game
