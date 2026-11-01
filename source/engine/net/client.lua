@@ -45,6 +45,7 @@ function Client.new(context, options)
         playerJoined = Signal.new(),
         playerLeft = Signal.new(),
         entitySpawned = Signal.new(),
+        authorityChanged = Signal.new(),
         entityRemoved = Signal.new(),
     }, Client)
 end
@@ -242,6 +243,21 @@ local function handleMessage(self, data)
         handleSpawn(self, reader)
     elseif kind == P.DESPAWN then
         removeEntity(self, reader:u32())
+    elseif kind == P.AUTHORITY then
+        local entity = self.entities[reader:u32()]
+        local id = reader:u16()
+        if entity then
+            entity.authorityId = id
+            entity.local_ = id == self.playerId
+            -- Restart interpolation from what is on screen so nothing jumps.
+            entity.buffer = {
+                {
+                    time = self:getServerTime(),
+                    state = Registry.capture(entity.definition, entity.object),
+                },
+            }
+            self.authorityChanged:fire(entity.object, id, entity.local_)
+        end
     elseif kind == P.SNAPSHOT then
         handleSnapshot(self, reader)
     elseif kind == P.PLAYER_JOIN then

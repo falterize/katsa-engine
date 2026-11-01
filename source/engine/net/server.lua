@@ -216,6 +216,33 @@ function Server:despawn(objectOrId)
     end
 end
 
+-- Hands an entity to another player (or nil for the server). The new authority's input drives
+-- `simulate` from then on; every client that knows the entity is told, so a car's driver can
+-- change while it keeps its state.
+function Server:setAuthority(objectOrId, player)
+    local entity = self:findEntity(objectOrId)
+    if not entity or entity.authority == player then
+        return entity ~= nil
+    end
+    entity.authority = player
+    local writer = Codec.writer()
+    writer:u8(P.AUTHORITY)
+    writer:u32(entity.id)
+    writer:u16(player and player.id or 0)
+    for _, other in pairs(self.players) do
+        if other.known[entity.id] then
+            other.sent[entity.id] = nil -- resend the full state to everyone
+            send(other, writer, P.RELIABLE)
+        end
+    end
+    return true
+end
+
+function Server:getAuthority(objectOrId)
+    local entity = self:findEntity(objectOrId)
+    return entity and entity.authority
+end
+
 function Server:kick(player, reason)
     player.peer:disconnect(reason or 0, 'later')
 end
