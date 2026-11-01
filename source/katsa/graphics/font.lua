@@ -90,7 +90,9 @@ local function build(data, size, hinting, dpiscale)
         _lineHeight = 1, _glyphs = {}, _atlases = {}, _filter = { 'linear', 'linear', 1 },
         _kernCache = {},
     }, Methods)
-    Core.track(self, { fontLifetime = true })
+    local res = { fontLifetime = true, counter = 'fonts', bytes = 0 }
+    Core.track(self, res)
+    Texture.counters.fonts = Texture.counters.fonts + 1
     return self
 end
 

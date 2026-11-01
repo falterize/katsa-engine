@@ -177,6 +177,9 @@ local function deleteResources(res)
     if Core.onDelete then
         Core.onDelete(res)
     end
+    if res.counter then
+        Core.releaseStatistics(res)
+    end
 end
 Core.deleteResources = deleteResources
 
