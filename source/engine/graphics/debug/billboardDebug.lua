@@ -1,0 +1,84 @@
+local unpack = require('source.engine.math.array').unpack
+local ipairs = require('source.engine.math.array').ipairs
+local Math = require('source.engine.math.math3d')
+local Support = require('source.engine.surfaces.support')
+
+local Debug = {}
+
+local function segment(camera, a, b, color)
+    local ax, ay, az = Math.transform(camera.view, unpack(a))
+    local bx, by, bz = Math.transform(camera.view, unpack(b))
+    if az < camera.near and bz < camera.near then
+        return
+    end
+    if az < camera.near then
+        local t = (camera.near - az) / (bz - az)
+        ax, ay, az = ax + (bx - ax) * t, ay + (by - ay) * t, camera.near
+    end
+    if bz < camera.near then
+        local t = (camera.near - bz) / (az - bz)
+        bx, by, bz = bx + (ax - bx) * t, by + (ay - by) * t, camera.near
+    end
+    love.graphics.setColor(unpack(color))
+    love.graphics.line(
+        camera.width / 2 + ax * camera.focal / az,
+        camera.height / 2 - ay * camera.focal / az,
+        camera.width / 2 + bx * camera.focal / bz,
+        camera.height / 2 - by * camera.focal / bz
+    )
+end
+
+function Debug.draw(world, camera)
+    local g = love.graphics
+    for _, board in ipairs(world.billboards) do
+        if board.debugEnabled and board.drawable and not board:isA('SurfaceUI') then
+            g.push('all')
+            g.setShader()
+            g.setDepthMode()
+            g.setLineWidth(2)
+            local ref = Support.resolve(board)
+            if ref then
+                segment(
+                    camera,
+                    ref:getRenderWorldPosition(),
+                    board.anchorWorldPosition,
+                    { 1, 0.75, 0.1, 1 }
+                )
+                segment(
+                    camera,
+                    board.anchorWorldPosition,
+                    { board.matrix[4], board.matrix[8], board.matrix[12] },
+                    { 0.1, 1, 1, 1 }
+                )
+                local m = board.matrix
+                local corners = {}
+                for i, p in ipairs({ { -0.5, -0.5 }, { 0.5, -0.5 }, { 0.5, 0.5 }, { -0.5, 0.5 } }) do
+                    corners[i] = { Math.transform(m, p[1], p[2], 0) }
+                end
+                for i = 1, 4 do
+                    segment(camera, corners[i], corners[i % 4 + 1], { 1, 0.25, 0.7, 1 })
+                end
+                for axis = 1, 3 do
+                    local length = axis == 3 and math.sqrt(m[1] ^ 2 + m[5] ^ 2 + m[9] ^ 2) * 0.3
+                        or 0.2
+                    local b = {
+                        m[4] + m[axis] * length,
+                        m[8] + m[4 + axis] * length,
+                        m[12] + m[8 + axis] * length,
+                    }
+                    segment(
+                        camera,
+                        { m[4], m[8], m[12] },
+                        b,
+                        axis == 1 and { 1, 0.2, 0.2, 1 }
+                            or axis == 2 and { 0.2, 1, 0.2, 1 }
+                            or { 0.3, 0.5, 1, 1 }
+                    )
+                end
+            end
+            g.pop()
+        end
+    end
+end
+
+return Debug

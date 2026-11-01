@@ -1,0 +1,64 @@
+# Project conventions
+
+- Physics is categorized by dimension: `source/engine/physics/2d` contains Box2D integration and `source/engine/physics/3d` contains the 3D facade and sibling Oimo/Jolt backends. `physics/init.lua` is a compatibility entry point for 3D only; add new implementation code inside the appropriate dimension.
+- Physics nodes are grouped under `source/engine/nodes/physics/2d` and `3d`. New dimension-specific spatial, collider, body, camera and constraint classes end with `2D` or `3D`. Preserve existing public compatibility aliases.
+- World2D owns its optional Physics2D and Camera2D. Screen widgets remain camera-independent. Spatial Node2D transforms use logical world units with Y up and counterclockwise degrees; do not reuse UI layout arrays for physics positions.
+- Never change the global `love.physics` meter per world. Convert units through each Physics2D instance. Dispatch user contact events after the native solver unlocks, and preserve transactional collider replacement, constraint ownership and teardown order.
+- Advance each simulation exactly once. World2D updates its physics from UI:update(realDelta, simulationDelta) by default; pass the scaled simulation delta separately from UI wall time; set `autoUpdatePhysics = false` before stepping it explicitly from a scene system. Camera tracking and UI input must use the documented world/screen conversions.
+- Changes to shared physics or spatial infrastructure require native regression tests for both dimensions, scene smoke tests, mixed-world lifecycle checks and current documentation. Keep 2D test commands available through the shared test registry.
+
+
+- Write all project content in English: code, comments, documentation, test descriptions, scripts, user-facing text and filenames. Russian is reserved for conversation with the user.
+- Preserve the v101 Lua style defined by `stylua.toml`: four spaces, a 100-column target and single-quoted strings. Separate sibling functions and logical phases with blank lines.
+- Explain non-obvious invariants, units, ownership, callback boundaries and cache invalidation. Do not narrate obvious assignments or add comments to every function.
+- Keep game features in `source/game`, engine services in `source/engine`, and third-party artifacts in `vendor`. Keep physics adapters in sibling backend directories.
+- Do not hand-format generated vendor code or historical comparison fixtures. Preserve upstream license notices and record dependency versions and local patches.
+- Preserve public APIs and simulation behavior during style maintenance. Keep allocations out of hot loops and retain native callback lifetime/JIT safeguards.
+- Runtime modules export named tables: imports, local bindings, module table, helpers, functions, final export. Use explicit create/new/build/install/register entry points; assemble backend methods at load time.
+- Keep one project README in the source root. Current guides belong in docs; update notes and historical release documents belong outside source.
+- Update the external release notes and dependency documentation when changing structure. Follow the user's requested version name and keep prior release folders intact.
+- Verify changes with the relevant LOVE tests, formatting checks and native integrity checks before packaging a release.
+
+- Scene composition belongs in scripts/content.lua. Keep other scene scripts in responsibility-based categories such as builders, behaviors, lighting, animation, data and catalog. Create internal categories only when used.
+- Keep UI entry modules at scripts/ui/interface.lua or scripts/ui/controller.lua; place supporting UI modules in appropriate scripts/ui subcategories. Executable systems remain directly under systems for the scene-owned startup loop.
+- Preserve empty scene categories as archive directory entries in project/scene packers and TAR conversion. Do not add marker files to retain empty folders.
+
+- Camera2D has immediate transforms/tracking and no built-in smoothing. FOV changes its reference-plane visible area; screen UI stays independent. Keep projection, inverse pointer conversion, zoom and FOV mathematically consistent.
+- Image-derived Collider2D geometry is built from alpha only when inputs change. Preserve transparent holes for Detailed quality, retain explicit resolution/fixture budgets, and never substitute a convex hull silently for a requested concave manual polygon.
+- Collider3D Points use body-local editable coordinates with optional triangle indices. Mesh extraction must copy source vertices/topology and must not alias or mutate render geometry. Keep automatic geometry sources separate from baked editable points.
+
+- Keep example scenes on the common collection runtime so Workspace, navigation, Stats, Debug and Tools remain available. Minimal standalone Host is for independent games or explicitly minimal examples. Scene main.create may conditionally call preparePresentation for portable collection presentation.
+- Each World2D and World3D has an independent timeScale (0..100). Pass the common application delta to 2D before applying any enclosing World3D scale. World2D.updatePhysics applies its own scale; never multiply by both parent and child clocks. manager.time.scale is a separate application override.
+- Processed spatial/UI scripts use their nearest World2D clock, while other nodes use their World3D clock. Preserve zero-time pause semantics and refresh a processed node's clock owner after reparenting. A nested viewport World3D does not inherit its enclosing World2D timeScale.
+- Editor node references must use the common nodeReferences policy so dimension and world ownership checks match the picker and writer. Use supported editor kinds such as vector/node; do not invent vector2/color field kinds that the shared editor cannot render.
+
+- Node2D and Node3D are spatial groups, not organizational folders: retain Position, Rotation and Scale. Node2D uses Vector2 scale and full affine child transforms. Bake affine transforms into Box2D fixtures transactionally; do not rebuild geometry for rigid motion or native float round-trip noise.
+- Keep Collider2D physical, with visual UINode children (or visual siblings under Body2D). Relative UDim2 fills the spatial parent's local size. HUD stays camera-independent; spatial visuals and pointer inversion must share camera, scale, shear and interpolation transforms.
+- Never sort authoritative children arrays for UI presentation. Use the layout order view for drawing and picking; Workspace and hierarchy APIs retain insertion order.
+- World3D defines fixed world coordinates; omit transform fields from its inspector. World2D transparency composites its whole visual plane without pausing physics. Cache spatial UI rasterization independently of body movement and release owned canvases when nodes are destroyed.
+- World gravity is scalar magnitude plus dimension-correct GravityDirection. Preserve legacy solver vector options, normalize direction for simulation, observe each world's edits and wake dynamic bodies only on gravity changes. Keep the shared gravity policy in engine/world/gravity.lua.
+
+- Spatial 2D and 3D both use positive Y up. Keep screen UDim2 layout Y down; Camera2D, spatial UI surfaces, inverse pointer coordinates and image-collider alpha rows perform that conversion at the boundary. Downward GravityDirection is {0,-1} / {0,-1,0}.
+- All physical example scenes explicitly disable UI autoUpdatePhysics and step Box2D in their own systems/simulation.lua:update2D. Refresh camera follow after stepping. Preserve independent World2D timeScale and leave menus responsive when simulation is disabled.
+- Visual UINodes, visual modifiers/gradients and SurfaceAppearance3D use the common named layerGroups registry. Filter rendering, picking and modifier layout consistently, and invalidate material/UI caches when viewer groups or the matrix change. Camera2D is the spatial viewer; World2D is the HUD viewer.
+- Reuse ui/widgets/collapsible for example control panels. Keep runner touch actions accessible and hide free-3D-camera controls in worlds without an active 3D camera. Example animations and controller logic stay inside their scene; reusable atlas playback belongs in engine/animation/flipbook.lua.
+- Orientation indicators are debug overlays, disabled by default. Project camera-relative axes after world/UI rendering; do not modify scene transforms to draw them.
+
+- The 2D runner authors atlas metadata and animation clips only in assets/animations/player.xml. Load them through engine/animation/formats/flipbookXml.lua; keep state selection in the scene's Lua controller. Do not duplicate clip frames, fps or atlas dimensions in Lua. Validate XML manifests once at scene creation, never per frame.
+
+- XML image mode uses the shared image component and flipbookXml binding cache. Keep xml visible only in XML mode and atlasFrame editable in both Atlas/XML modes. XML owns atlas grid/filter and automatically fills image from its image attribute; keep image (or material colorMap) editable as an optional override. Empty image fields must preserve the last resolved XML sprite when switching modes; rendering must never create playback, restart clips or reset atlasFrame. Rebind only when the manifest path or resource owner changes. The manifest is metadata; retain separate PNG assets and scene-owned state selection.
+
+- Missing/empty UI image sources and missing model files use cached diagnostic assets instead of fatal errors. Preserve explicit text-only buttons and intentionally untextured materials. XML must not validate placeholder image dimensions against real sprite dimensions or crop the diagnostic checker to one atlas cell. Keep manual XML image overrides when replacing manifests; update automatically filled paths only.
+
+- Use the shared TextBox node for editable strings and numbers, including inspector popup fields. Keep UTF-8 editing/selection/history in ui/widgets/textEditor.lua and keyboard ownership in textFocus.lua. Consume focused typing before gameplay shortcuts and release focus on destruction. Preserve Apply/Cancel semantics in Workspace.
+- Normal runtime errors must retain an interactive error screen and save last-error.txt; do not exit on Escape or queued gameplay events. Automated test/smoke modes may exit immediately. Keep the error screen independent of scene/UI state so a failing renderer cannot hide its own report.
+
+- Particle dimensions share system/simulation/lifetime/emitter defaults and image policy; put spatial rendering/sampling/visibility in particles/2d and particles/3d. Keep existing 3D entry points as compatibility wrappers. World2D:updatePhysics advances 2D particles exactly once with that world's clock, even without a physics solver. Keep point sweeps budgeted and pooled.
+- All image-bearing nodes use components/image.lua for sampler, XML and UV policy. Particle clip selection belongs in particles/image.lua. Missing/invalid XML or incompatible atlas art must report diagnostics and render a checker, never assert from a render callback. Preserve legacy decal.mode and particle atlas controls.
+- Each World2D/World3D automatically owns one required Environment node. In Workspace, group Debug, Particles2D/Particles3D and dimension-specific render/lighting categories beneath Environment. Keep settings tables shared with runtime services and available before service creation. Keep F4 controls grouped by dimension/responsibility. Crash history retains ten fixed slots and a legacy last-error.txt copy; preserve automated failure exits.
+
+- Keep 2D and 3D Workspace debug exposure consistent. Do not add a separate Physics2D Solver Settings row or expose solver internals asymmetrically; solver configuration belongs in scene settings/runtime APIs. F4 pause/step commands exist for both dimensions.
+
+- Use currentCamera and setCurrentCamera for both world dimensions; Camera2D and Camera3D expose fov. Example scenes must use canonical names, not historical compatibility aliases.
+
+- Collider3D GeometrySource accepts same-world Node3D references or model paths. Reuse the model importer format registry, scene resource scope and modelSource adapter; never instantiate visible nodes for collision-only assets. Cache successful and failed file loads. Preserve glTF transforms, apply Collider3D offsets once, and retain the last valid descriptor after invalid edits. Mesh/Model point extraction must return independent coordinates and topology.

@@ -1,0 +1,46 @@
+{
+  "binaries": {
+    "win-x64": {
+      "filename": "katsa_jolt.dll",
+      "target": "x86_64-windows-gnu",
+      "flags": [
+        "-std=gnu11",
+        "-shared",
+        "-O2",
+        "-s",
+        "-mcpu=baseline",
+        "-target",
+        "x86_64-windows-gnu",
+        "-Wall",
+        "-Wextra",
+        "-Werror"
+      ],
+      "bytes": 21504,
+      "sha256": "36d79feb833af71a83e84080a70c92c73cab72fcf3033293b8de6f5aca027cb1"
+    },
+    "linux-x64": {
+      "filename": "libkatsa_jolt.so",
+      "target": "x86_64-linux-gnu.2.17",
+      "flags": [
+        "-std=gnu11",
+        "-shared",
+        "-O2",
+        "-s",
+        "-mcpu=baseline",
+        "-target",
+        "x86_64-linux-gnu.2.17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fPIC",
+        "-pthread"
+      ],
+      "bytes": 8408,
+      "sha256": "5b69daa392dae2e425a0d5bfb18f18e17e0007a784efcb2aaa3023a1a1e9c9bd"
+    }
+  },
+  "abi": 1,
+  "compiler": "Zig 0.13.0",
+  "sourceSha256": "f0e315f7c328a5427bf68a8dc234b110daf5e5060f4e30cdb802ea87f64b038a",
+  "headerSha256": "5b6e2ca74170bb0c7760463e965f9958691a15bbf7b80ffd005886c9895759a7"
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flipbook version="1" image="scene://textures/player.png" columns="8" rows="1"
+          frameWidth="8" frameHeight="8" pixelate="true" initial="Idle">
+    <!-- Frame indices are zero-based and ordered left to right in the atlas. -->
+    <animation name="Idle" fps="2" loop="true">
+        <frame index="0" />
+        <frame index="1" />
+    </animation>
+    <animation name="Run" fps="10" loop="true">
+        <frame index="2" />
+        <frame index="3" />
+        <frame index="4" />
+        <frame index="3" />
+    </animation>
+    <animation name="Jump" fps="1" loop="false">
+        <frame index="5" />
+    </animation>
+    <animation name="Dash" fps="18" loop="true">
+        <frame index="6" />
+        <frame index="7" />
+    </animation>
+    <animation name="Slide" fps="1" loop="false">
+        <frame index="7" />
+    </animation>
+</flipbook>

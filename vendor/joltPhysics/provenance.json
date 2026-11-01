@@ -1,0 +1,29 @@
+{
+  "provider": "https://github.com/amerkoleci/JoltPhysicsSharp",
+  "provider_commit": "e468f1f30ef74726a799ceef1f8427fa39867e93",
+  "c_api": "https://github.com/amerkoleci/joltc",
+  "c_api_commit": "2bbcf73b1bec261e0351814662922f1b4784454c",
+  "build_dependency_tag": "JoltPhysics v5.6.0 (upstream joltc CMake)",
+  "files": {
+    "vendor/joltPhysics/native/android-arm/libjoltc.so": {
+      "bytes": 1989304,
+      "sha256": "724bbbf8ad35558bbddd79dd1f7f2e0809dc714234129c8ba6d4c7054ae016b8",
+      "download": "https://raw.githubusercontent.com/amerkoleci/JoltPhysicsSharp/e468f1f30ef74726a799ceef1f8427fa39867e93/native/android-arm/libjoltc.so"
+    },
+    "vendor/joltPhysics/native/android-arm64/libjoltc.so": {
+      "bytes": 2584976,
+      "sha256": "00f52af8c1d6d72e35baffa0e55fe6f0f256c92f1befe7b7b66d6bcf07dd7c88",
+      "download": "https://raw.githubusercontent.com/amerkoleci/JoltPhysicsSharp/e468f1f30ef74726a799ceef1f8427fa39867e93/native/android-arm64/libjoltc.so"
+    },
+    "vendor/joltPhysics/native/linux-x64/libjoltc.so": {
+      "bytes": 2087528,
+      "sha256": "3800cc6fff9e5470c524b15e8895599f90e9b96129b3f5cf9f76504beda178a3",
+      "download": "https://raw.githubusercontent.com/amerkoleci/JoltPhysicsSharp/e468f1f30ef74726a799ceef1f8427fa39867e93/native/linux-x64/libjoltc.so"
+    },
+    "vendor/joltPhysics/native/win-x64/joltc.dll": {
+      "bytes": 2013696,
+      "sha256": "79125ab6882a1aeeecd5509bfe9edf383e8e48a34d9a8b642a6b9a197d44df74",
+      "download": "https://raw.githubusercontent.com/amerkoleci/JoltPhysicsSharp/e468f1f30ef74726a799ceef1f8427fa39867e93/native/win-x64/joltc.dll"
+    }
+  }
+}

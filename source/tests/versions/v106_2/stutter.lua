@@ -1,0 +1,145 @@
+local Game = require('source.game.runtime.game')
+local Probe = {}
+Probe.__index = Probe
+
+function Probe.new(manager)
+    io.stdout:setvbuf('no')
+    local budget = os.getenv('KATSA_STUTTER_MCODE_KIB')
+    if budget then
+        assert(tonumber(budget) and tonumber(budget) >= 512, 'Invalid test code-cache budget')
+        require('jit.opt').start('maxmcode=' .. budget)
+    end
+    love.errorhandler = function(message)
+        print('FAILED STUTTER ' .. tostring(message))
+        os.exit(1)
+    end
+    local width = tonumber(os.getenv('KATSA_STUTTER_WIDTH') or 1920)
+    local height = tonumber(os.getenv('KATSA_STUTTER_HEIGHT') or 1080)
+    love.window.setMode(width, height, { vsync = 0, depth = 24, stencil = 8 })
+    return setmetatable({ manager = manager }, Probe)
+end
+
+function Probe:update() end
+
+function Probe:draw()
+    if self.done then
+        return
+    end
+    self.done = true
+    local scene = assert(
+        self.manager:switch(
+            Game.new,
+            os.getenv('KATSA_STUTTER_SCENE') or 'animationPhysicsLab',
+            { physicsBackend = 'jolt' }
+        )
+    )
+    print('RENDERER', love.graphics.getRendererInfo())
+    print('SCENE', scene.zone, 'RESOLUTION', love.graphics.getDimensions())
+    local original = love.graphics.newText
+    local created = 0
+    love.graphics.newText = function(...)
+        created = created + 1
+        return original(...)
+    end
+    local records = {}
+    local events = {}
+    if jit and os.getenv('KATSA_STUTTER_JIT') == '1' then
+        jit.attach(function(what, trace, func, pc, reason)
+            local key = what == 'abort' and what .. ':' .. tostring(reason) or what
+            events[key] = (events[key] or 0) + 1
+        end, 'trace')
+    end
+    local uiDraw, uiMilliseconds = scene.ui.draw, 0
+    scene.ui.draw = function(ui, ...)
+        local start = love.timer.getTime()
+        uiDraw(ui, ...)
+        uiMilliseconds = (love.timer.getTime() - start) * 1000
+    end
+    print(
+        'frame,mode,total_ms,update_ms,draw_ms,present_ms,physics_ms,KB_delta,new_text,ui_ms,jit_flushes'
+    )
+    for frame = 1, tonumber(os.getenv('KATSA_STUTTER_FRAMES') or 900) do
+        love.event.pump()
+        if frame == 121 then
+            scene.showStats = true
+        end
+        if frame == 181 then
+            for index, definition in ipairs(scene.statistics.panel.definitions) do
+                if definition.id == 'fps' then
+                    scene.statistics.panel:select(index)
+                end
+            end
+        end
+        local memory = collectgarbage('count')
+        created = 0
+        local begin = love.timer.getTime()
+        self.manager:update(1 / 60)
+        local updated = love.timer.getTime()
+        self.manager:draw()
+        love.graphics.flushBatch()
+        local drawn = love.timer.getTime()
+        love.graphics.present()
+        local finish = love.timer.getTime()
+        local row = {
+            frame,
+            frame < 121 and 'closed' or frame < 181 and 'list' or 'chart',
+            (finish - begin) * 1000,
+            (updated - begin) * 1000,
+            (drawn - updated) * 1000,
+            (finish - drawn) * 1000,
+            scene.physics.stats.updateMilliseconds or 0,
+            collectgarbage('count') - memory,
+            created,
+            uiMilliseconds,
+            events.flush or 0,
+        }
+        records[#records + 1] = row
+        if frame == 121 or frame == 181 or row[3] > 33 then
+            print(unpack(row))
+        end
+    end
+    love.graphics.newText = original
+    local path = os.getenv('KATSA_STUTTER_LOG')
+    if path then
+        local file = assert(io.open(path, 'w'))
+        file:write(
+            'frame,mode,total_ms,update_ms,draw_ms,present_ms,physics_ms,KB_delta,new_text,ui_ms,jit_flushes\n'
+        )
+        for _, row in ipairs(records) do
+            file:write(table.concat(row, ','), '\n')
+        end
+        file:close()
+    end
+    for _, mode in ipairs({ 'closed', 'list', 'chart' }) do
+        local values, sum = {}, 0
+        for _, row in ipairs(records) do
+            if row[2] == mode then
+                values[#values + 1] = row[3]
+                sum = sum + row[3]
+            end
+        end
+        if #values > 0 then
+            table.sort(values)
+            print(
+                'SUMMARY',
+                mode,
+                'mean/p95/p99/max',
+                sum / #values,
+                values[math.ceil(#values * 0.95)],
+                values[math.ceil(#values * 0.99)],
+                values[#values]
+            )
+        end
+    end
+    print('STUTTER PROFILE COMPLETE')
+    print(
+        'JIT FLUSHES',
+        os.getenv('KATSA_STUTTER_JIT') == '1' and (events.flush or 0) or 'not measured'
+    )
+    for key, value in pairs(events) do
+        print('JIT EVENT', key, value)
+    end
+    love.event.quit()
+end
+
+return Probe
