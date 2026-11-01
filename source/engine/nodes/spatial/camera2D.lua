@@ -40,7 +40,9 @@ function Camera2D:updateFollow()
         return
     end
     assert(target._plane == self._plane, 'Camera2D target must belong to the same World2D')
-    local x, y = target:getWorldPose()
+    -- Follow the pose that is drawn: interpolated bodies show a blend of the last two solver
+    -- steps, and a camera locked to the raw step pose would drift against them each frame.
+    local x, y = require('source.engine.ui.spatial.plane').pose(target)
     local _, _, angle = self:getWorldPose()
     self:setWorldPose(x + self.offset[1], y + self.offset[2], angle)
 end
