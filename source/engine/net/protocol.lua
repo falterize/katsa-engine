@@ -16,6 +16,7 @@ return {
     PLAYER_LEAVE = 8,
     REQUEST = 9,
     RESPONSE = 10,
+    AUTHORITY = 11,
     -- sequenced messages
     SNAPSHOT = 20,
     INPUT = 21,

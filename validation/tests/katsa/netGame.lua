@@ -209,6 +209,29 @@ return function(T)
         'netGame: client-authoritative state reaches the server'
     )
 
+    -- Handing an entity to another player (a car changing drivers).
+    local shared = avatars[one.localPlayer.id]
+    local sharedId = server:getNetId(shared)
+    local changes = 0
+    two.authorityChanged:connect(function()
+        changes = changes + 1
+    end)
+    T.check(server:setAuthority(shared, server:getPlayers()[2]), 'netGame: setAuthority accepts a live entity')
+    run(60)
+    T.check(
+        two.entities[sharedId].local_ and not one.entities[sharedId].local_ and changes == 1,
+        'netGame: authority moves to the new player on every client'
+    )
+    T.check(server:getAuthority(shared) == server:getPlayers()[2], 'netGame: server reports the new authority')
+    moveX = 1
+    local before = shared.position[1]
+    run(30)
+    T.check(shared.position[1] == before, 'netGame: the old owner no longer drives it')
+    moveX = 0
+    server:setAuthority(shared, server:getPlayers()[1])
+    run(30)
+    T.check(not server:setAuthority(99999, nil), 'netGame: setAuthority on an unknown entity fails')
+
     -- Late join, capacity and leaving.
     local three = newClient('Cy', function()
         return {}
