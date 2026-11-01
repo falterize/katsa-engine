@@ -100,7 +100,7 @@ function Inspector.install(Workspace)
                 self.ui:button({
                     position = { 0, 6, 0, y },
                     size = { 1, -12, 0, 30 },
-                    text = (self.categoryCollapsed[name] and '+ ' or '− ') .. name,
+                    text = (self.categoryCollapsed[name] and '+ ' or '- ') .. name,
                     fontSize = 15,
                     align = 'left',
                     backgroundColor = buttonColor,

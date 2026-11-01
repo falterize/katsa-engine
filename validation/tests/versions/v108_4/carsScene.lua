@@ -71,7 +71,30 @@ function Tests:draw()
         local json = profiler.save(profiler:stopRecording(), 'json')
         self:check(katsa.filesystem.getInfo(json) ~= nil, 'a session profile is written to logs/')
         katsa.filesystem.remove(json)
-    elseif frame == 360 then
+    elseif frame == 357 then
+        local ws = host.workspace
+        ws:toggle(true)
+        ws.collapsed = setmetatable({}, { __mode = 'k' })
+        ws:refreshTree()
+    elseif frame == 378 then
+        local ws = host.workspace
+        self:check(
+            #ws.rows > 20 and ws.tree.scrollingDirection == 'XY',
+            'Workspace tree lists nodes and scrolls on both axes'
+        )
+        self:check(
+            ws.tree.canvasSize[2] >= ws.tree._width,
+            'the tree canvas is at least as wide as its window'
+        )
+        local deepest = 0
+        for _, row in ipairs(ws.rows) do
+            deepest = math.max(deepest, row.depth)
+        end
+        self:check(deepest >= 2, 'nested nodes are listed with their depth')
+        self:shot('workspace')
+    elseif frame == 380 then
+        host.workspace:toggle(false)
+    elseif frame == 384 then
         self:check(session.hud.info.text:find('Driving'), 'the HUD shows the seat')
         session:leave()
         self:check(
@@ -80,7 +103,7 @@ function Tests:draw()
         )
         host:update(1 / 60, 1 / 60)
         host:draw()
-    elseif frame == 370 then
+    elseif frame == 390 then
         host:release()
         print('PASSED ' .. self.count .. ' v108.4 cars scene checks')
         katsa.event.quit()

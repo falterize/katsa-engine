@@ -27,6 +27,19 @@ profiler:finish('Bot AI', stamp)
 local path = profiler:scope('Pathfinding', function() return grid:findPath(...) end)
 ```
 
+Named tasks can span many frames and nest. `end` is a Lua keyword, so the call is `stop`:
+
+```lua
+katsa.profiler.start('generating map')     -- plain functions, no `self`
+-- ... across frames ...
+katsa.profiler.stop('generating map')      -- returns the elapsed milliseconds
+```
+
+A running task shows as `RUNNING <name> <seconds>` in the panel; each `stop` adds one sample under
+that name, so the task appears among the other stages with mean, p95, peak and its place in the
+exports. While the profiler is disabled both calls do nothing; `stop` without `start` logs one
+warning per name.
+
 Stage names are free text; each appears in the panel and as a column in the exports.
 `profiler:summary()` returns `{ frame = {...}, stages = {...} }` for scripts and tests.
 
