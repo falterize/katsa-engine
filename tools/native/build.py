@@ -35,6 +35,10 @@ def compiler(*names):
 
 
 HOST = SRC / 'katsa_host.c'
+BOX2D_DIR = THIRD / 'box2d' / 'Box2D'
+BOX2D_SOURCES = sorted(BOX2D_DIR.rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
+BOX2D_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(THIRD / 'box2d'), '-std=c++11']
+
 LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 
 
@@ -53,9 +57,25 @@ def build_host_windows(out):
     run([cc, '-O2', '-I' + inc, HOST, lib, '-static', '-mwindows' if os.environ.get('KATSA_GUI') else '-mconsole', '-o', out / 'katsa.exe'])
 
 
+def build_box2d_linux(out):
+    cxx = compiler('clang++', 'g++', 'c++')
+    run([cxx, '-shared', '-fPIC', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'libkatsa_box2d.so', '-static-libstdc++'])
+
+
+def build_box2d_windows(out):
+    cxx = compiler('x86_64-w64-mingw32-clang++', 'x86_64-w64-mingw32-g++')
+    run([cxx, '-shared', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'katsa_box2d.dll', '-static'])
+
+
+def build_box2d_macos(out):
+    cxx = compiler('clang++')
+    run([cxx, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'libkatsa_box2d.dylib'])
+
+
 def build_linux(out):
     cc = compiler('clang', 'gcc', 'cc')
     run([cc, '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.so'])
+    build_box2d_linux(out)
     if os.environ.get('LUAJIT_PREFIX'):
         build_host_linux(out)
 
@@ -63,6 +83,7 @@ def build_linux(out):
 def build_windows(out):
     cc = compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc')
     run([cc, '-shared', *FLAGS, *SOURCES, '-o', out / 'katsa_native.dll', '-static'])
+    build_box2d_windows(out)
     if os.environ.get('LUAJIT_WIN_LIB'):
         build_host_windows(out)
 
