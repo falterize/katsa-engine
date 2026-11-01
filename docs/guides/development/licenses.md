@@ -7,7 +7,7 @@
 | OimoPhysics 1.2.5, compiled Lua and Haxe source | MIT; vendor/oimoPhysics/LICENSE; pinned commit in UPSTREAM.md |
 | Haxe standard-library helpers in generated Lua | MIT; vendor/oimoPhysics/Haxe-Standard-Library-LICENSE |
 | LÖVE 11.5, external runtime | zlib/libpng; not bundled, dependencies have their own licenses |
-| Box2D 2.3.1, vendored in native/third_party/box2d and built into katsa_box2d | zlib license in native/third_party/box2d/LICENSE.txt; one local patch: polygon welding compares squared distances (as Box2D 2.4 does) so thin polygons stay valid |
+| Box2D 2.3.1, vendored in vendor/box2d and built into katsa_box2d | zlib license in vendor/box2d/LICENSE.txt; one local patch: polygon welding compares squared distances (as Box2D 2.4 does) so thin polygons stay valid |
 | Generated colliderMask.png examples and test fixture | CC0 1.0; procedurally generated for collider demonstrations |
 | Blender, external conversion tool | GPL; executable not bundled |
 | Eight supplied v33 images | Original license unspecified; no MIT relicensing of user assets |

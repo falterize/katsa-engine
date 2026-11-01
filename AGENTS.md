@@ -15,8 +15,10 @@
 - Do not hand-format generated vendor code or historical comparison fixtures. Preserve upstream license notices and record dependency versions and local patches.
 - Preserve public APIs and simulation behavior during style maintenance. Keep allocations out of hot loops and retain native callback lifetime/JIT safeguards.
 - Runtime modules export named tables: imports, local bindings, module table, helpers, functions, final export. Use explicit create/new/build/install/register entry points; assemble backend methods at load time.
-- Keep one project README in the source root. Current guides belong in docs; update notes and historical release documents belong outside source.
-- Update the external release notes and dependency documentation when changing structure. Follow the user's requested version name and keep prior release folders intact.
+- Keep one project README in the repository root. Current guides belong in `docs`; per-version notes go in `docs/changelog.md` (there is no `releases` folder; results and logs live in Git history and tags). Screenshots belong in `docs/images`, never in the repository root.
+- All tests, fixtures and validation reports live under `validation/` (`validation/tests`, logs in `validation/logs`, which is not committed). Game archives omit `validation/` unless packaged with `--with-validation`.
+- Third-party code, including Box2D and the stb headers used by the native layer, lives in `vendor`; `native` holds only the project's own C/C++ sources.
+- Update `docs/changelog.md` and dependency documentation when changing structure. Follow the user's requested version name.
 - Verify changes with the relevant katsa tests, formatting checks and native integrity checks before packaging a release.
 
 - Scene composition belongs in scripts/content.lua. Keep other scene scripts in responsibility-based categories such as builders, behaviors, lighting, animation, data and catalog. Create internal categories only when used.

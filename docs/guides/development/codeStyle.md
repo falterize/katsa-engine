@@ -28,7 +28,7 @@ Use descriptive state/domain names. Conventional loop indices and vector compone
 
 Game code belongs in `source/game`, reusable services in `source/engine`, dependencies in `vendor`, and build/import helpers in `tools`. Vendor code and historical comparison fixtures retain their reference formatting and licenses. Installation and class composition happen at load time, not in hot loops.
 
-Run StyLua 2.6.0 with `--syntax LuaJIT --verify`, then `--check`, over `source/engine source/game source/katsa source/tests main.lua conf.lua`. `.styluaignore` excludes vendor/reference files. Python tools use Black 24.10.0 and `pyproject.toml`. Follow formatting with relevant runtime tests; formatting alone does not verify behavior.
+Run StyLua 2.6.0 with `--syntax LuaJIT --verify`, then `--check`, over `source/engine source/game source/katsa validation/tests main.lua conf.lua`. `.styluaignore` excludes vendor/reference files. Python tools use Black 24.10.0 and `pyproject.toml`. Follow formatting with relevant runtime tests; formatting alone does not verify behavior.
 
 Project-owned C uses the checked-in `.clang-format` (four spaces, 100 columns); format only the bridge, not upstream vendor headers. Python build tools use the checked-in Black configuration.
 

@@ -209,7 +209,7 @@ These are engine helpers; ordinary node definitions use the public API above.
 ## A complete scene-owned node
 
 Create `nodes/spinner.lua` in your scene. This is the same module exercised by
-`source/tests/fixtures/lifecycle/basic/nodes/spinner.lua`:
+`validation/tests/fixtures/lifecycle/basic/nodes/spinner.lua`:
 
 ```lua
 local Spinner = {

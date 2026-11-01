@@ -1,2 +1,2 @@
 vendor/**
-source/tests/fixtures/**
+validation/tests/fixtures/**

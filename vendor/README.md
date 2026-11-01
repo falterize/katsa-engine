@@ -5,6 +5,8 @@
 | Directory | Included content | Project integration |
 | --- | --- | --- |
 | `json/` | JSON library and license | Data/import tools |
+| `box2d/` | Box2D 2.3.1 source and zlib license (one local patch: squared weld threshold in `b2PolygonShape.cpp`) | Built into `katsa_box2d` by `tools/native/build.py`; used by `source/katsa/physics` |
+| `stb/` | `stb_image`, `stb_image_write`, `stb_truetype`, `stb_vorbis` and the stb license | Compiled into `katsa_native` by `tools/native/build.py` |
 | `oimoPhysics/` | Generated Lua runtime, Haxe source, licenses and upstream/local-patch notes | `source/engine/physics/3d/backends/oimo/` |
 | `joltPhysics/` | Pinned joltc header, generated FFI declarations, platform libraries, licenses and provenance | `source/engine/physics/3d/backends/jolt/` |
 
@@ -15,6 +17,11 @@ Jolt executes compiled native code through the joltc C API. The full Jolt C++ tr
 ```text
 vendor/
   json/
+  box2d/
+    Box2D/                    upstream sources
+    LICENSE.txt
+  stb/
+    stb_*.h, stb_vorbis.c, LICENSE
   oimoPhysics/
     init.lua
     source/                   Haxe source snapshot
