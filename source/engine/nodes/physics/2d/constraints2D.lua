@@ -89,25 +89,6 @@ function Constraint2D:repair()
     self:releaseJoint()
 end
 
-local classes = {
-    HingeConstraint2D = 'Hinge',
-    BallSocketConstraint2D = 'Hinge',
-    PrismaticConstraint2D = 'Prismatic',
-    WeldConstraint2D = 'Weld',
-    RopeConstraint2D = 'Rope',
-    SpringConstraint2D = 'Spring',
-    DistanceConstraint2D = 'Distance',
-    WheelConstraint2D = 'Wheel',
-    FrictionConstraint2D = 'Friction',
-    MotorConstraint2D = 'Motor',
-    PulleyConstraint2D = 'Pulley',
-    GearConstraint2D = 'Gear',
-    MouseConstraint2D = 'Mouse',
-}
-for name, kind in pairs(classes) do
-    local class = Node.define(name, 'Constraint2D')
-    class.kind = kind
-    class.mount = Constraint2D.mount
-end
+require('source.engine.nodes.physics.2d.constraintTypes').register(Constraint2D)
 
 return Constraint2D

@@ -106,7 +106,7 @@ function Audio:update(camera)
             node:sync(true)
         end
     end
-    local routing = require('source.engine.audio.nodeEffects')
+    local routing = require('source.engine.audio.effects.routing')
     for _, effect in ipairs(self.effects) do
         if effect._defined then
             if not effect.enabled then
@@ -131,7 +131,7 @@ function Audio:update(camera)
 end
 
 function Audio:refreshEffects()
-    local routing = require('source.engine.audio.nodeEffects')
+    local routing = require('source.engine.audio.effects.routing')
     for _, effect in ipairs(self.effects) do
         if effect._defined then
             routing.define(self, effect)
@@ -184,7 +184,7 @@ function Audio:stop()
 end
 
 function Audio:removeEffect(node)
-    require('source.engine.audio.nodeEffects').remove(self, node)
+    require('source.engine.audio.effects.routing').remove(self, node)
 end
 
 function Audio:release()
