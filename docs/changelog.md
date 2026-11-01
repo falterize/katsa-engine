@@ -2,10 +2,13 @@
 
 Per-version notes. Test results and logs for each release live in Git history and tags.
 
-## v108.3
+## v108.4
 
 - `katsa.log` (levels log/warn/error, bounded history, listeners, `logs/latest.log`, print capture), JSON/CSV console export, crash reports as `crashes/crash-NN.log` with recent console lines. See [console and logs](guides/development/console.md).
-- Workspace inspector: `Image.describe` mutated the parent class schema, so every `Frame`/`TextLabel` listed image fields (and the reverse looked like ImageLabel showing the wrong parameters). Each class now owns its schema, and writing a property the class does not declare is rejected (`Schema.hasProperty`). Focused suite: `--test-v108.3`.
+- Workspace inspector: `Image.describe` mutated the parent class schema, so every `Frame`/`TextLabel` listed image fields (and the reverse looked like ImageLabel showing the wrong parameters). Each class now owns its schema, and writing a property the class does not declare is rejected (`Schema.hasProperty`). Focused suite: `--test-v108.4`.
+
+## v108.3
+
 The engine runs on its own katsa runtime.
 
 - Graphics (OpenGL 3.3 / GLES 3.0 through SDL2), audio (OpenAL, silent fallback), physics (Box2D 2.3.1 in
