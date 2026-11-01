@@ -75,7 +75,10 @@ function Tests.projection(tester)
                 worst = math.max(worst, math.abs(sx - mx), math.abs(sy - my))
             end
         end
-        tester:check(checked == 4 and worst < 1e-6, mode .. ': project() matches the GPU view-projection matrix')
+        tester:check(
+            checked == 4 and worst < 1e-6,
+            mode .. ': project() matches the GPU view-projection matrix'
+        )
         release()
     end
     local _, ortho, release = newCamera(tester, { projectionMode = 'Orthographic', orthoSize = 5 })
@@ -141,7 +144,10 @@ function Tests.culling(tester)
         drawDistance = 1000,
     })
     -- Half-width is 5 * 1280 / 720 = 8.89 units at every depth.
-    tester:check(camera:visible({ 8, 0, 400 }, 0.1), 'Orthographic frustum keeps edge objects at depth')
+    tester:check(
+        camera:visible({ 8, 0, 400 }, 0.1),
+        'Orthographic frustum keeps edge objects at depth'
+    )
     tester:check(
         not camera:visible({ 12, 0, 400 }, 0.1),
         'Orthographic frustum rejects objects outside the constant side planes'

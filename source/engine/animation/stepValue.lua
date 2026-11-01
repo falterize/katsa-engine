@@ -9,7 +9,10 @@ local TWO_PI = math.pi * 2
 
 function StepValue.new(initial, angular)
     initial = initial or 0
-    return setmetatable({ previous = initial, current = initial, angular = angular == true }, StepValue)
+    return setmetatable(
+        { previous = initial, current = initial, angular = angular == true },
+        StepValue
+    )
 end
 
 -- Call exactly once per fixed step, after the step changed the value.

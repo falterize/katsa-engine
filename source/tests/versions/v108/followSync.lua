@@ -17,7 +17,11 @@ function Tests.cameraFollowsRenderedPose(tester, frameDelta, label)
         scene:update(frameDelta, frameDelta)
         local rx, ry = Plane.pose(state.player)
         local cx, cy = camera:getWorldPose()
-        worst = math.max(worst, math.abs(cx - camera.offset[1] - rx), math.abs(cy - camera.offset[2] - ry))
+        worst = math.max(
+            worst,
+            math.abs(cx - camera.offset[1] - rx),
+            math.abs(cy - camera.offset[2] - ry)
+        )
         checked = checked + 1
     end
     tester:check(
