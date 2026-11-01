@@ -1,9 +1,21 @@
-# katsa runtime layer (v108.1 foundation)
+# katsa runtime layer
 
-`source/katsa` is the engine's own platform layer, replacing LÖVE step by step. v108.1 ships the
-parts that can be fully verified without a display: the shader translator, the GL validation
-helper and the headless EGL platform. Window, input, audio and 2D drawing arrive in later versions
-behind the same interface.
+`source/katsa` is the engine's platform layer. The engine only talks to the global `katsa.*` API.
+
+| Module | Folder | Content |
+| --- | --- | --- |
+| `katsa.filesystem`, `data`, `timer`, `math`, `window`, `keyboard`, `mouse`, `event`, `system` | `core/` | Virtual filesystem over directories and archives, hashing/encoding, clock, input |
+| archives | `core/archive.lua`, `inflate.lua`, `sevenZip.lua`, `lzma.lua` | ZIP/`.katsa` (DEFLATE), TAR, 7z (stored, LZMA, LZMA2) |
+| `katsa.graphics` | `graphics/` | State, transforms, canvases, shaders, meshes, fonts, sprite batches; one category per file |
+| `katsa.audio`, `katsa.sound` | `audio/`, `sound.lua` | Sources, listener, effects; OpenAL driver with a silent fallback (`KATSA_AUDIO=null`) |
+| `katsa.physics` | `physics/` | Box2D bindings: world, body, fixture, shape, joint, contact |
+| platform | `platform/` | SDL2 window and GL context, headless EGL for tests and servers |
+| host | `host/` | Program start for `katsa game.katsa` and for fused executables |
+
+Notes that differ from LÖVE: LuaJIT cannot run an FFI callback from compiled code, so the physics
+methods that enter native code which may call Lua back (`World:update`, destroying bodies, fixtures
+and joints) are excluded from the JIT. Box2D is built with `NDEBUG`; degenerate polygons become
+Box2D's unit box instead of aborting the process.
 
 ## Targets
 
