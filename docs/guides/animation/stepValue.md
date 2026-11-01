@@ -26,3 +26,11 @@ per frame defeats the purpose.
 
 Camera2D now follows the interpolated pose of its target, so a camera following a Body2D no longer
 drifts against interpolated spatial visuals between fixed steps.
+
+## Animator pose rate
+
+`Animator.poseRate` limits how many skeleton poses are evaluated per second of wall-clock time. It is not
+scaled by World3D `timeScale`: a world running at 0.1x still re-poses every rendered frame (up to the rate),
+while track time advances at the scaled speed. The scene hosts publish the unscaled frame time as
+`world.frameRealDelta` for throttles like this; code that gates work on it falls back to the scaled delta when
+no host sets it.

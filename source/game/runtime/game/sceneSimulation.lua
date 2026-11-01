@@ -16,6 +16,8 @@ function Game:update(dt, realDt)
     end
     local sceneDt = dt
     local uiDt = realDt or dt
+    -- Wall-clock frame time for throttles (Animator.poseRate) that must not slow with TimeScale.
+    self.world.frameRealDelta = uiDt
     dt = require('source.engine.world.clock').delta(self.world.root, dt)
     if self.lifecycle then
         self.lifecycle.update2D(self.demo, sceneDt, realDt or uiDt)

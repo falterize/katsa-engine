@@ -95,6 +95,7 @@ local cameraKeys = {
     'fov',
     'projectionMode',
     'orthoSize',
+    'orthoNear',
 }
 return {
     nodeKeys = nodeKeys,

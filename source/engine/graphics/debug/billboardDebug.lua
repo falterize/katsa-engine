@@ -8,16 +8,16 @@ local Debug = {}
 local function segment(camera, a, b, color)
     local ax, ay, az = Math.transform(camera.view, unpack(a))
     local bx, by, bz = Math.transform(camera.view, unpack(b))
-    if az < camera.near and bz < camera.near then
+    if az < (camera.nearClip or camera.near) and bz < (camera.nearClip or camera.near) then
         return
     end
-    if az < camera.near then
-        local t = (camera.near - az) / (bz - az)
-        ax, ay, az = ax + (bx - ax) * t, ay + (by - ay) * t, camera.near
+    if az < (camera.nearClip or camera.near) then
+        local t = ((camera.nearClip or camera.near) - az) / (bz - az)
+        ax, ay, az = ax + (bx - ax) * t, ay + (by - ay) * t, (camera.nearClip or camera.near)
     end
-    if bz < camera.near then
-        local t = (camera.near - bz) / (az - bz)
-        bx, by, bz = bx + (ax - bx) * t, by + (ay - by) * t, camera.near
+    if bz < (camera.nearClip or camera.near) then
+        local t = ((camera.nearClip or camera.near) - bz) / (az - bz)
+        bx, by, bz = bx + (ax - bx) * t, by + (ay - by) * t, (camera.nearClip or camera.near)
     end
     love.graphics.setColor(unpack(color))
     local sax, say = camera:viewToScreen(ax, ay, az)

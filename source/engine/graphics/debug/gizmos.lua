@@ -118,14 +118,16 @@ function Gizmos:draw(world, camera)
         then
             local ax, ay, az = M.transform(camera.view, unpack(line[1]))
             local bx, by, bz = M.transform(camera.view, unpack(line[2]))
-            if az >= camera.near or bz >= camera.near then
-                if az < camera.near then
-                    local t = (camera.near - az) / (bz - az)
-                    ax, ay, az = ax + (bx - ax) * t, ay + (by - ay) * t, camera.near
+            if az >= (camera.nearClip or camera.near) or bz >= (camera.nearClip or camera.near) then
+                if az < (camera.nearClip or camera.near) then
+                    local t = ((camera.nearClip or camera.near) - az) / (bz - az)
+                    ax, ay, az =
+                        ax + (bx - ax) * t, ay + (by - ay) * t, (camera.nearClip or camera.near)
                 end
-                if bz < camera.near then
-                    local t = (camera.near - bz) / (az - bz)
-                    bx, by, bz = bx + (ax - bx) * t, by + (ay - by) * t, camera.near
+                if bz < (camera.nearClip or camera.near) then
+                    local t = ((camera.nearClip or camera.near) - bz) / (az - bz)
+                    bx, by, bz =
+                        bx + (ax - bx) * t, by + (ay - by) * t, (camera.nearClip or camera.near)
                 end
                 local sax, say = camera:viewToScreen(ax, ay, az)
                 local sbx, sby = camera:viewToScreen(bx, by, bz)

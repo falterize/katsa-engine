@@ -25,6 +25,9 @@ function Camera3D.new(settings)
         -- visible height in world units). focalLength remains the legacy perspective input.
         projectionMode = settings.projectionMode or 'Perspective',
         orthoSize = settings.orthoSize or 10,
+        -- Orthographic clip start along the view direction. nil places it behind the camera
+        -- (at -far) so a tilted camera never slices away nearby ground; near is perspective-only.
+        orthoNear = settings.orthoNear,
         pitchLimit = settings.pitchLimit,
         layers = settings.layers or -1,
         followMode = settings.followMode or 'Free',
@@ -103,6 +106,7 @@ function Camera3D:update(width, height)
         and state[7] == self.far
         and state[8] == self.projectionMode
         and state[9] == self.orthoSize
+        and state[10] == self.orthoNear
     then
         return
     end
@@ -135,8 +139,17 @@ function Camera3D:update(width, height)
     v[4] = -(r[1] * p[1] + r[2] * p[2] + r[3] * p[3])
     v[8] = -(u[1] * p[1] + u[2] * p[2] + u[3] * p[3])
     v[12] = -(f[1] * p[1] + f[2] * p[2] + f[3] * p[3])
-    local n, far = self.near, self.far
-    assert(n > 0 and far > n, 'Camera3D requires 0 < near < far')
+    local far = self.far
+    local n = self.near
+    if self.orthographic then
+        -- Parallel projection has no eye point, so geometry behind the camera plane is
+        -- legitimately visible; clipping it at a positive near would cut off tilted views.
+        n = self.orthoNear or -far
+        assert(far > n, 'Orthographic Camera3D requires orthoNear < far')
+    else
+        assert(n > 0 and far > n, 'Camera3D requires 0 < near < far')
+    end
+    self.nearClip, self.farClip = n, far
     local q = self.projection
     for j = 1, 16 do
         q[j] = 0
@@ -160,12 +173,12 @@ function Camera3D:update(width, height)
     state[1], state[2], state[3] = self._renderRevision, width, height
     state[4], state[5], state[6], state[7] =
         self.focalLength, self.referenceHeight, self.near, self.far
-    state[8], state[9] = self.projectionMode, self.orthoSize
+    state[8], state[9], state[10] = self.projectionMode, self.orthoSize, self.orthoNear
 end
 
 function Camera3D:project(p)
     local x, y, z = M.transform(self.view, p[1], p[2], p[3])
-    if z < self.near or z > self.far then
+    if z < self.nearClip or z > self.far then
         return
     end
     if self.orthographic then

@@ -92,11 +92,21 @@ function Tests.projection(tester)
         near(ax - 640, 2 * 720 / 10) and near(360 - ay, 1 * 720 / 10),
         'Orthographic scale is height / (2 * orthoSize) pixels per unit'
     )
-    local _, _, nearDepth = matrixScreen(ortho, 0, 0, ortho.near)
+    local _, _, nearDepth = matrixScreen(ortho, 0, 0, ortho.nearClip)
     local _, _, farDepth = matrixScreen(ortho, 0, 0, ortho.far)
     tester:check(
-        near(nearDepth, -1, 1e-6) and near(farDepth, 1, 1e-6),
-        'Orthographic depth maps near to -1 and far to +1'
+        near(ortho.nearClip, -ortho.far) and near(nearDepth, -1, 1e-6) and near(farDepth, 1, 1e-6),
+        'Orthographic clipping starts behind the camera and maps its range to -1..+1'
+    )
+    tester:check(
+        ortho:project({ 0, 0, -10 }) ~= nil and ortho:visible({ 0, 0, -10 }, 0.1),
+        'Orthographic cameras keep geometry behind the camera plane'
+    )
+    ortho.orthoNear = 2
+    ortho:update(1280, 720)
+    tester:check(
+        near(ortho.nearClip, 2) and ortho:project({ 0, 0, 1 }) == nil,
+        'An explicit orthoNear restores a positive near clip'
     )
     release()
 end

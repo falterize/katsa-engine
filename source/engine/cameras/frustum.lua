@@ -11,7 +11,7 @@ function Frustum.capture(camera, state)
     state.orthographic = camera.orthographic == true
     state.view, state.position = camera.view, camera.worldPosition or camera.position
     state.distanceSquared = camera.drawDistance ^ 2
-    state.near, state.far = camera.near, camera.far
+    state.near, state.far = camera.nearClip or camera.near, camera.far
     state.hx, state.hy = hx, hy
     state.radiusX, state.radiusY = math.sqrt(1 + hx * hx), math.sqrt(1 + hy * hy)
     return state

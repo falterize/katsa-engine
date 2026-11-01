@@ -71,6 +71,7 @@ end
 function C:update(dt)
     local world = self._world
     local realDt = dt
+    world.frameRealDelta = realDt
     dt = require('source.engine.world.clock').delta(self, dt)
     if world.physics then
         world.physics:update(dt)

@@ -15,7 +15,15 @@ local descriptions = {
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
             hint = 'Half of the visible height in world units; width follows the aspect ratio.',
         },
-        near = { min = 0.001, hint = 'Near clip distance; must be below far.' },
+        orthoNear = {
+            visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
+            hint = 'Orthographic clip start along the view direction; empty places it behind the camera.',
+        },
+        near = {
+            min = 0.001,
+            visibleWhen = { key = 'projectionMode', equals = 'Perspective' },
+            hint = 'Perspective near clip distance; must be below far.',
+        },
         far = { min = 0.002, hint = 'Far clip distance; must be above near.' },
     },
     Body3D = {

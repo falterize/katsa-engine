@@ -8,7 +8,8 @@ function Receivers.prepare(camera, distance, out, normalBias)
     if not camera.forward or not camera.right or not camera.up or not camera.focal then
         return nil, false
     end
-    local near = camera.near - normalBias
+    -- Orthographic cameras clip behind their position; shadows only need receivers within range.
+    local near = math.max(camera.nearClip or camera.near, -distance) - normalBias
     local far = math.min(camera.far, distance) + normalBias
     if far <= near then
         return {}, true

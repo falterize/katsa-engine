@@ -7,8 +7,8 @@ Camera3D supports two projection modes selected by `projectionMode`:
 | `Perspective` (default) | `fov` | Distant objects shrink. `fov` is the vertical field of view in degrees (1..179). |
 | `Orthographic` | `orthoSize` | Constant scale at every depth. `orthoSize` is half of the visible height in world units; the width follows the aspect ratio. |
 
-`near` and `far` apply to both modes and must satisfy `0 < near < far`. Workspace shows `fov` only
-for Perspective and `orthoSize` only for Orthographic.
+`far` applies to both modes. Perspective requires `0 < near < far`. Workspace shows `fov` and `near`
+only for Perspective, and `orthoSize` and `orthoNear` only for Orthographic.
 
 ```lua
 local camera = world:create('Camera3D', { fov = 70, near = 0.5, far = 800 })
@@ -22,6 +22,18 @@ camera.orthoSize = 12 -- 24 world units visible from top to bottom
 Assign either one; the most recently changed value wins and the other is derived. Scenes written
 against `focalLength` keep their exact previous projection, and a camera created without `fov`
 reports the equivalent angle.
+
+## Orthographic clipping
+
+An orthographic camera has no eye point: its position is the center of the view plane, and geometry
+behind that plane is legitimately visible. A tilted camera near the ground therefore sees floor that
+lies "behind" its position. If clipping started at a positive `near`, that part of the map would be
+sliced off along a straight line and more would disappear the closer the camera got to the ground.
+
+`orthoNear` is the clip start along the view direction. When it is unset (the default) clipping starts
+at `-far`, so nothing behind the camera plane is cut. Set it to a number to restore a hard near plane.
+`camera.nearClip` always reports the value in effect for either mode. To zoom an orthographic
+camera change `orthoSize`; moving the camera along its view direction does not change the scale.
 
 ## Behavior in orthographic mode
 
