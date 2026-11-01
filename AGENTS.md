@@ -65,3 +65,4 @@
 
 - Camera3D has `projectionMode` (`Perspective` or `Orthographic`), `fov` and `orthoSize`; `fov` and legacy `focalLength` are one lens and the latest edit wins. Project, pick and cull through `camera:project`, `camera:screenRay`, `camera:viewToScreen` and `camera:pixelsPerUnitAt`; never divide by `camera.focal` in new code. Orthographic cameras skip software occlusion culling.
 - Gameplay state authored once per fixed step that drives visuals (facing, blend weights) must go through `engine/animation/stepValue.lua` and be sampled with the physics interpolation alpha. Camera2D follows the interpolated pose of its target, never the raw solver pose.
+- Git cannot store empty directories. Record intentionally empty scene categories in `tools/project/emptyDirectories.txt` (`python tools/build/restoreEmptyDirs.py --update`) and recreate them after cloning with `python tools/build/restoreEmptyDirs.py`; `packageProject.py` does this automatically. Never add marker files.
