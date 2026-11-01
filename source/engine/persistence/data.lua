@@ -1,3 +1,4 @@
+local Objects = require('source.engine.core.objects')
 local Store = require('source.engine.persistence.store')
 local Files = require('source.engine.persistence.files')
 local Settings = require('source.engine.persistence.settings')
@@ -38,7 +39,7 @@ local function operate(self, operation, filename, value, options)
         local backend = format == 'json' and storeFor(self, options) or self.files
         if operation == 'write' then
             assert(
-                format == 'json' or type(value) ~= 'table',
+                format == 'json' or Objects.isObject(value) or type(value) ~= 'table',
                 'Use a .json filename for tables, or specify format = json on write and read'
             )
             return backend:write(filename, value, exact)

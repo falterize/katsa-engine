@@ -1,3 +1,4 @@
+local Objects = require('source.engine.core.objects')
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
 -- Property revisions skip stable nodes; mutable geometry/matrices retain conservative checks.
@@ -92,7 +93,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
     if #(world.animators or empty) > 0 or #(world.rigidControllers or empty) > 0 then
         fastReason = 'Animation'
     end
-    if type(world.environment.sky.texture) == 'userdata' then
+    if Objects.isObject(world.environment.sky.texture) then
         fastReason = 'External sky texture'
     end
     if not fastReason or fastReason == 'Animation' or fastReason == 'Physics' then
@@ -288,7 +289,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
                     if surfaceChanged then
                         sr.externalTexture = false
                         for _, key in ipairs(mapKeys) do
-                            if type(child[key]) == 'userdata' then
+                            if Objects.isObject(child[key]) then
                                 sr.externalTexture = true
                                 break
                             end

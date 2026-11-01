@@ -1,3 +1,4 @@
+local Objects = require('source.engine.core.objects')
 local unpack = require('source.engine.math.array').unpack
 local ipairs = require('source.engine.math.array').ipairs
 -- Install one cohesive responsibility on the public class.
@@ -7,7 +8,7 @@ local PropertyWrite = {}
 
 function PropertyWrite.install(Properties)
     function Properties.set(scene, target, field, text, component)
-        if text == '<embedded image>' and type(target[field.key]) == 'userdata' then
+        if text == '<embedded image>' and Objects.isObject(target[field.key]) then
             return true
         end
         if field.kind == 'node' then

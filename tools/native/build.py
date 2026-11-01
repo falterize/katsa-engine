@@ -37,7 +37,7 @@ def compiler(*names):
 HOST = SRC / 'katsa_host.c'
 BOX2D_DIR = THIRD / 'box2d' / 'Box2D'
 BOX2D_SOURCES = sorted(BOX2D_DIR.rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
-BOX2D_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(THIRD / 'box2d'), '-std=c++11']
+BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(THIRD / 'box2d'), '-std=c++11']
 
 LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 
