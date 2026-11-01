@@ -348,7 +348,7 @@ function T:draw()
                 file:write(blob:getString())
                 file:close()
             else
-                -- Packaged .love sources cannot receive preview files.
+                -- Packaged archives cannot receive preview files.
                 katsa.filesystem.write('v70-' .. name .. '.png', blob)
             end
             blob:release()

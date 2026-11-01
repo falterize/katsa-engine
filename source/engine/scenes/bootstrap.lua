@@ -187,7 +187,7 @@ function Bootstrap.install(project, options)
     function katsa.errorhandler(message)
         local traceback = debug.traceback(tostring(message), 2)
         if manager and manager.journal then
-            manager.journal:record('Runtime', traceback, nil, 'love.errorhandler')
+            manager.journal:record('Runtime', traceback, nil, 'errorhandler')
         end
         print(traceback)
         if testing or smoke then

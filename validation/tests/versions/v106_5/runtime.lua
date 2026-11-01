@@ -58,7 +58,6 @@ function Tests:systems()
     for _, suffix in ipairs({
         'basic',
         'basic.zip',
-        'basic.love',
         'basic.tar',
         'basic.tar.gz',
         'basic.tgz',

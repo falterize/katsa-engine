@@ -92,10 +92,10 @@ local function sendBuiltins(shader, modelview, withColor)
             gl.glUniform4fv(b.ConstantColor, 1, ffi.new('float[4]', 1, 1, 1, 1))
         end
     end
-    if b.love_PointSize >= 0 then
-        gl.glUniform1fv(b.love_PointSize, 1, ffi.new('float[1]', S.pointSize))
+    if b.katsa_PointSize >= 0 then
+        gl.glUniform1fv(b.katsa_PointSize, 1, ffi.new('float[1]', S.pointSize))
     end
-    if b.love_ScreenSize >= 0 then
+    if b.katsa_ScreenSize >= 0 then
         if target.isCanvas then
             screenSize[0], screenSize[1], screenSize[2], screenSize[3] = target.pw, target.ph, 1, 0
         else
@@ -104,7 +104,7 @@ local function sendBuiltins(shader, modelview, withColor)
             screenSize[2] = -1
             screenSize[3] = target.ph
         end
-        gl.glUniform4fv(b.love_ScreenSize, 1, screenSize)
+        gl.glUniform4fv(b.katsa_ScreenSize, 1, screenSize)
     end
 end
 

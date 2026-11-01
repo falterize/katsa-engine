@@ -184,7 +184,7 @@ function Shader.new(code, extra)
     self._builtin = {}
     local builtins = {
         'TransformMatrix', 'ProjectionMatrix', 'TransformProjectionMatrix', 'NormalMatrix',
-        'ConstantColor', 'love_PointSize', 'love_ScreenSize',
+        'ConstantColor', 'katsa_PointSize', 'katsa_ScreenSize',
     }
     for _, name in ipairs(builtins) do
         local entry = self._uniforms[name]

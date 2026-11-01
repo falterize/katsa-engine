@@ -1,6 +1,5 @@
 __pycache__/
 *.pyc
 dist/
-*.love
 build/
 validation/logs/

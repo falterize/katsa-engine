@@ -45,7 +45,7 @@ local function base64decode(text)
     return table.concat(out)
 end
 
--- container is accepted for love.data compatibility; only 'string' is produced.
+-- container is accepted for API compatibility; only 'string' is produced.
 function M.encode(container, format_, data)
     data = Input.toString(data)
     assert(container == 'string' or container == 'data', 'Unknown container')

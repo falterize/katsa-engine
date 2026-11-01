@@ -1,11 +1,11 @@
--- love.data.pack / unpack with the format subset used by the engine.
+-- katsa.data.pack / unpack with the format subset used by the engine.
 
 local ffi = require('ffi')
 local char, byte, format = string.char, string.byte, string.format
 
 local M = {}
 
--- love.data.pack / unpack with the format subset used by the engine:
+-- Supported format subset:
 -- endianness (< > =), b B h H i I l L j J with optional sizes, f d, s[n], z, x, and spaces.
 local function parse(fmt)
     local items, little, i = {}, true, 1
@@ -105,7 +105,7 @@ function M.pack(container, fmt, ...)
     return table.concat(out)
 end
 
--- Returns the values followed by the next position (love.data.unpack contract).
+-- Returns the values followed by the next position (katsa.data.unpack contract).
 function M.unpack(fmt, data, position)
     position = position or 1
     local results = {}

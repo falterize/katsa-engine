@@ -54,7 +54,7 @@ local function chooseSource(host, FS, nativeLib)
         FS.setSource('.', false)
         return '.'
     end
-    return nil, 'No game to run.\nUsage: katsa <game folder | game.katsa | game.love | game.zip>'
+    return nil, 'No game to run.\nUsage: katsa <game folder | game.katsa | game.zip>'
 end
 
 local function defaultConfig()

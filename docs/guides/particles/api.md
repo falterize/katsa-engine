@@ -136,6 +136,4 @@ inspection. Every setting is described by the shared property schema; conditiona
 settings preserve their values when hidden. Numeric range/curve fields show Min/Max
 or Start/50%/End labels. Invalid edited settings are rejected with previous values retained.
 
-The renderer uses LÖVE 11.5 dynamic Mesh APIs:
-[Mesh:setVertices](https://love2d.org/wiki/Mesh:setVertices) and
-[Mesh:setDrawRange](https://love2d.org/wiki/Mesh:setDrawRange).
+The renderer uses dynamic Mesh vertex updates (`Mesh:setVertices`) and draw ranges (`Mesh:setDrawRange`).

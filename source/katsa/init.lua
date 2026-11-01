@@ -1,6 +1,5 @@
--- katsa: the engine's own runtime API. It mirrors the parts of LÖVE the engine uses so that
--- `love.*` can be replaced by `katsa.*` mechanically. Modules load lazily; heavy ones (graphics,
--- audio, physics) are only required when first touched.
+-- katsa: the engine's own runtime API (graphics, audio, physics, filesystem, ...).
+-- Modules load lazily; heavy ones (graphics, audio, physics) are only required when first touched.
 local katsa = {
     _VERSION = '0.2.0',
     _NAME = 'Katsa',
@@ -40,7 +39,7 @@ setmetatable(katsa, {
     end,
 })
 
--- Runtime version: major, minor, revision, codename (what love.getVersion reported for LÖVE).
+-- Runtime version: major, minor, revision, codename.
 function katsa.getVersion()
     return 1, 0, 0, 'Katsa'
 end

@@ -111,19 +111,19 @@ local vertexBuiltins = table.concat({
     'uniform highp mat4 TransformProjectionMatrix;',
     'uniform highp mat3 NormalMatrix;',
     'uniform highp vec4 ConstantColor;',
-    'uniform highp float love_PointSize;',
-    'uniform highp vec4 love_ScreenSize;',
-    '#define love_VertexID gl_VertexID',
-    '#define love_InstanceID gl_InstanceID',
+    'uniform highp float katsa_PointSize;',
+    'uniform highp vec4 katsa_ScreenSize;',
+    '#define katsa_VertexID gl_VertexID',
+    '#define katsa_InstanceID gl_InstanceID',
     '#define varying out',
 }, '\n')
 
 local pixelBuiltins = table.concat({
-    'uniform highp vec4 love_ScreenSize;',
+    'uniform highp vec4 katsa_ScreenSize;',
     'uniform sampler2D MainTex;',
     '#define varying in',
-    'highp vec2 love_PixelCoord(highp vec2 fragment) {',
-    '    return vec2(fragment.x, fragment.y * love_ScreenSize.z + love_ScreenSize.w);',
+    'highp vec2 katsa_PixelCoord(highp vec2 fragment) {',
+    '    return vec2(fragment.x, fragment.y * katsa_ScreenSize.z + katsa_ScreenSize.w);',
     '}',
 }, '\n')
 
@@ -134,7 +134,7 @@ local defaultEffect = 'vec4 effect(vec4 color, Image tex, vec2 textureCoords, '
     .. '    return Texel(tex, textureCoords) * color;\n}'
 
 local effectCall = 'effect(VaryingColor, MainTex, VaryingTexCoord.st, '
-    .. 'love_PixelCoord(gl_FragCoord.xy));'
+    .. 'katsa_PixelCoord(gl_FragCoord.xy));'
 
 local vertexMain = table.concat({
     'out vec4 VaryingTexCoord;',
@@ -142,7 +142,7 @@ local vertexMain = table.concat({
     'void main() {',
     '    VaryingTexCoord = VertexTexCoord;',
     '    VaryingColor = VertexColor * ConstantColor;',
-    '    gl_PointSize = love_PointSize;',
+    '    gl_PointSize = katsa_PointSize;',
     '    gl_Position = position(TransformProjectionMatrix, VertexPosition);',
     '}',
 }, '\n')
@@ -150,11 +150,11 @@ local vertexMain = table.concat({
 local function pixelMain(targets)
     local outputs
     if targets > 1 then
-        outputs = ('layout(location = 0) out vec4 love_Canvases[%d];'):format(targets)
+        outputs = ('layout(location = 0) out vec4 katsa_Canvases[%d];'):format(targets)
     else
-        outputs = 'layout(location = 0) out vec4 love_PixelColor;'
+        outputs = 'layout(location = 0) out vec4 katsa_PixelColor;'
     end
-    local target = targets > 1 and 'love_Canvases[0]' or 'love_PixelColor'
+    local target = targets > 1 and 'katsa_Canvases[0]' or 'katsa_PixelColor'
     return table.concat({
         'in vec4 VaryingTexCoord;',
         'in vec4 VaryingColor;',
@@ -185,7 +185,7 @@ function Translator.translate(source, options)
     local report = { errors = {} }
     local result = { dialect = dialect, target = target }
     local renderTargets = options.renderTargets or 1
-    if bare:find('love_Canvases', 1, true) then
+    if bare:find('katsa_Canvases', 1, true) then
         renderTargets = math.max(renderTargets, options.renderTargets or 4)
     end
 

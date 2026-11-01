@@ -1,4 +1,4 @@
--- ZIP reader used for .katsa, .love and .zip projects and for archives appended to an executable.
+-- ZIP reader used for .katsa and .zip projects and for archives appended to an executable.
 --
 -- Entries are read lazily. DEFLATE is decoded in pure Lua; STORE entries are returned as-is, which
 -- is what the katsa packager writes for fast startup. Offsets are relative to the start of the

@@ -123,8 +123,8 @@ vec4 effect(vec4 color, Image tex, vec2 texCoord, vec2 screenCoord) {
     )
     local mrt = assert(
         Translator.translate(
-            'vec4 effect(vec4 c, Image t, vec2 u, vec2 p){ love_Canvases[1] = c; return c; }'
+            'vec4 effect(vec4 c, Image t, vec2 u, vec2 p){ katsa_Canvases[1] = c; return c; }'
         )
     )
-    T.check(mrt.pixel:find('out vec4 love_Canvases[4]', 1, true) ~= nil, 'multiple render targets')
+    T.check(mrt.pixel:find('out vec4 katsa_Canvases[4]', 1, true) ~= nil, 'multiple render targets')
 end

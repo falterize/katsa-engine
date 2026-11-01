@@ -1,4 +1,4 @@
--- katsa.keyboard: key state and text input (love.keyboard compatible subset).
+-- katsa.keyboard: key state and text input.
 local Keys = require('source.katsa.platform.sdl2keys')
 
 local Keyboard = {}

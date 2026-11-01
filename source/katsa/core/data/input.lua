@@ -1,4 +1,4 @@
--- love.data functions take either a string or a Data object (FileData, ByteData, ...).
+-- katsa.data functions take either a string or a Data object (FileData, ByteData, ...).
 local Input = {}
 
 function Input.toString(value)

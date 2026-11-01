@@ -19,4 +19,4 @@ The JSON parser is pure Lua. OimoPhysics is compiled from Haxe 4.3.7 with analyz
 
 g3d was consulted as a conceptual 3D reference; it is not bundled or required and its source was not copied. Source/image audit hashes from the original migration remain in docs/sourceAudit.json.
 
-Upstream: https://github.com/rxi/json.lua, https://github.com/saharan/OimoPhysics, https://github.com/love2d/love/tree/11.5, https://haxe.org/foundation/open-source.html, https://www.blender.org/about/license/, https://creativecommons.org/publicdomain/zero/1.0/.
+Upstream: https://github.com/rxi/json.lua, https://github.com/saharan/OimoPhysics, https://haxe.org/foundation/open-source.html, https://www.blender.org/about/license/, https://creativecommons.org/publicdomain/zero/1.0/.

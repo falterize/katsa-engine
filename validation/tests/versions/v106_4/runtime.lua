@@ -114,7 +114,7 @@ function Tests:scenePackages()
         'Unmounting one archive preserves another with the same filename'
     )
     second:release()
-    for _, extension in ipairs({ 'zip', 'love', 'tar', 'tar.gz', 'tgz', '7z' }) do
+    for _, extension in ipairs({ 'zip', 'tar', 'tar.gz', 'tgz', '7z' }) do
         self:package(fixture .. 'basic.' .. extension)
     end
     self:package(fixture .. 'basic')

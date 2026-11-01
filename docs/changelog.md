@@ -12,7 +12,7 @@ The engine runs on the katsa runtime instead of LÖVE.
   split by category (one concern per file).
 - Archives: ZIP/`.katsa`, TAR, TAR.GZ and 7z (stored, LZMA, LZMA2; pure Lua decoder).
 - `tools/build/packageProject.py` produces a `.katsa` archive or, with `--host`, a fused executable.
-- Docs, tools and fixtures no longer reference LÖVE; `love.*` became `katsa.*`.
+- The project is fully on the katsa API (`katsa.*`).
 - Engine fixes found during the port: runtime objects are opaque values (not copied as tables),
   `graphics.push('all')` keeps the current font, shader uniforms accept plain numbers and flush queued draws,
   `SoundData:getSampleCount` counts frames, physics stays out of the JIT while native code can call back.
@@ -26,7 +26,7 @@ See `docs/guides/katsa/building.md`.
 
 ## v108.1
 
-Stage 2 of the migration plan, first increment. Open `Katsa-v108.1.love` with LÖVE 11.5 as before.
+Stage 2 of the migration plan, first increment. The shader translator and audio modules land here.
 
 
 
@@ -47,7 +47,7 @@ Shader2D no longer processes the 3D render behind it by default. Scenes that rel
 
 ## v108
 
-Stage 1 of the migration plan: frame-synchronization fixes and Camera3D projection modes. The engine still runs on LOVE 11.5; the `katsa` platform layer starts in the next stage.
+Stage 1 of the migration plan: frame-synchronization fixes and Camera3D projection modes. The `katsa` platform layer starts in the next stage.
 
 - Fixed slow-motion stutter in per-tick gameplay state. Facing and animation blend weights authored in the fixed step (Stare Shooter body turn, walk/crouch blending) are now sampled with the same interpolation alpha as bodies through the new `engine/animation/stepValue.lua`. At TimeScale 0.1 the visual yaw changes on 110 of 119 frames instead of 12.
 - Fixed Camera2D lagging behind interpolated Body2D visuals. `followTarget` now follows the drawn (interpolated) pose, which removes the jitter of the Ability Runner 2D sprite inside its Body2D at high refresh rates and in slow motion.
