@@ -1,6 +1,7 @@
 return function(T)
     local Audio = require('source.katsa.audio')
     local Sound = require('source.katsa.sound')
+    Audio.setDriver(require('source.katsa.audio.nullDriver'))
 
     local data = Sound.newSoundData(4410, 44100, 16, 1)
     local source = Audio.newSource(data, 'static')

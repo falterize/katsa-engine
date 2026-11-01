@@ -5,6 +5,7 @@ local Audio = State.Audio
 
 function Audio.setDriver(newDriver)
     State.driver = newDriver
+    State.driverChosen = true
 end
 
 function Audio.getDriver()

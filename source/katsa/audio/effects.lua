@@ -42,6 +42,9 @@ end
 
 function Audio.setDistanceModel(model)
     State.distanceModel = model
+    if State.driver.updateGlobal then
+        State.driver.updateGlobal(State)
+    end
 end
 
 function Audio.getDopplerScale()
@@ -50,6 +53,9 @@ end
 
 function Audio.setDopplerScale(value)
     State.doppler = value
+    if State.driver.updateGlobal then
+        State.driver.updateGlobal(State)
+    end
 end
 
 function Audio.getSourceCount()
