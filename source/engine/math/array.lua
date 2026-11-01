@@ -1,10 +1,11 @@
 -- Internal array adapters; public callers can explicitly request value:toArray().
+local Objects = require('source.engine.core.objects')
 local Managed = require('source.engine.math.managedValue')
 
 local Array = {}
 
 function Array.is(value)
-    return type(value) == 'table' or Managed.is(value)
+    return type(value) == 'table' and not Objects.isObject(value) or Managed.is(value)
 end
 
 function Array.ipairs(value)

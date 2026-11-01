@@ -1,3 +1,4 @@
+local Objects = require('source.engine.core.objects')
 local Array = require('source.engine.math.array')
 local Paths = require('source.engine.scenes.paths')
 local ipairs = require('source.engine.math.array').ipairs
@@ -136,7 +137,7 @@ function Resources:loadImage(source, label)
     end
     if ok and pixels then
         local opacitySource = encoded
-        if not opacitySource and type(source) == 'userdata' and source:typeOf('FileData') then
+        if not opacitySource and Objects.isObject(source) and source:typeOf('FileData') then
             opacitySource = source
         end
         require('source.engine.materials.opacity').register(value, pixels, opacitySource)

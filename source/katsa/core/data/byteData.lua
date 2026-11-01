@@ -32,6 +32,20 @@ function ByteData:getString()
     return ffi.string(self._buffer, self._size)
 end
 
-function ByteData:release() end
+function ByteData:clone()
+    return M.newByteData(self:getString())
+end
+
+function ByteData:release()
+    return true
+end
+
+function ByteData:type()
+    return 'ByteData'
+end
+
+function ByteData:typeOf(name)
+    return name == 'ByteData' or name == 'Data' or name == 'Object'
+end
 
 return M

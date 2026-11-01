@@ -113,7 +113,7 @@ end
 function M.newGearJoint(j1, j2, ratio, collide)
     local world = j1._world
     local handle = B().kb2_joint_gear(world._h, j1._h, j2._h, ratio or 1, flag(collide))
-    local joint = newJoint(world, handle, j1._a, j2._a)
+    local joint = newJoint(world, handle, j1._b or j1._a, j2._b or j2._a)
     joint._gear = { j1, j2 }
     return joint
 end

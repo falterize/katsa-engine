@@ -1,3 +1,4 @@
+local Objects = require('source.engine.core.objects')
 local Array = require('source.engine.math.array')
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
@@ -29,7 +30,7 @@ function PropertyRead.install(Properties)
             }
             result[#result + 1] = { key = 'animated', kind = 'boolean', value = target.animated }
             for key, value in pairs(target.uniforms) do
-                local kind = Array.is(value) and 'table' or type(value)
+                local kind = Array.is(value) and 'table' or Objects.kind(value)
                 if
                     kind == 'number'
                     or kind == 'boolean'
@@ -156,7 +157,7 @@ function PropertyRead.install(Properties)
             if key == 'color' and target.isA and target:isA('Mesh3D') and Array.is(value) then
                 value = { value[1], value[2], value[3] }
             end
-            local kind = Array.is(value) and 'table' or type(value)
+            local kind = Array.is(value) and 'table' or Objects.kind(value)
             local descriptor = Schema.descriptor(target, key)
             if reference then
                 kind = 'structured'

@@ -318,7 +318,7 @@ KB2 void* kb2_joint_pulley(void* w, void* a, void* b, float gax, float gay, floa
 }
 KB2 void* kb2_joint_gear(void* w, void* j1, void* j2, float ratio, int collide) {
     b2GearJointDef d; d.joint1 = (b2Joint*)j1; d.joint2 = (b2Joint*)j2; d.ratio = ratio; d.collideConnected = collide != 0;
-    d.bodyA = d.joint1->GetBodyA(); d.bodyB = d.joint2->GetBodyA();
+    d.bodyA = d.joint1->GetBodyB(); d.bodyB = d.joint2->GetBodyB();
     return ((KWorld*)w)->world->CreateJoint(&d);
 }
 KB2 void* kb2_joint_mouse(void* w, void* body, float x, float y, float maxForce) {

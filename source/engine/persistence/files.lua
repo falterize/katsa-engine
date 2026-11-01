@@ -1,3 +1,4 @@
+local Objects = require('source.engine.core.objects')
 local Paths = require('source.engine.persistence.paths')
 local FileIO = require('source.engine.persistence.fileIO')
 
@@ -52,8 +53,8 @@ function Files:write(relative, bytes)
         local path = self:path(relative)
         if type(bytes) ~= 'string' then
             assert(
-                type(bytes) == 'userdata' and bytes.typeOf and bytes:typeOf('Data'),
-                'Data file content must be a string or LÖVE Data object'
+                Objects.isObject(bytes) and bytes:typeOf('Data'),
+                'Data file content must be a string or Data object'
             )
             bytes = bytes:getString()
         end
