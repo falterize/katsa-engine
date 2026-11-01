@@ -31,10 +31,10 @@ function T:draw()
     local Tree = require('source.engine.editor.tree.traversal')
     local debugRow, oldGizmos
     for _, row in ipairs(Tree.children(environment)) do
-        if row.name == 'debug' then
+        if row.name == 'Debug' then
             debugRow = row
         end
-        if row.name == 'gizmos' then
+        if row.name == 'Gizmos' then
             oldGizmos = row
         end
     end
