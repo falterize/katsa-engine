@@ -24,6 +24,10 @@ function FileData:getPointer()
     return ffi.cast('const void*', self._data)
 end
 
+function FileData:getFFIPointer()
+    return ffi.cast('const void*', self._data)
+end
+
 function FileData:clone()
     return setmetatable({ _data = self._data, _name = self._name }, FileData)
 end

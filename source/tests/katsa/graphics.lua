@@ -199,6 +199,19 @@ return function(T)
     local text = g.newText(font, 'abc')
     T.check(math.abs(text:getWidth() - font:getWidth('abc')) < 0.01, 'Text reports the font width')
 
+    -- A released canvas must not leave a cached framebuffer behind: GL reuses the texture id.
+    for round = 1, 3 do
+        local reused = g.newCanvas(16, 16, { dpiscale = 1 })
+        g.setCanvas({ reused, stencil = true })
+        g.clear(0.2, 0.4, 0.6, 1)
+        g.setCanvas()
+        local reusedData = reused:newImageData()
+        T.check(rgb(reusedData, 2, 2, 0.2, 0.4, 0.6),
+            'canvas ' .. round .. ' keeps its clear color after reuse')
+        reused:release()
+        g.present()
+    end
+
     local name, version = g.getRendererInfo()
     T.check(name:find('OpenGL') and #version > 0, 'renderer info')
     platform:close()

@@ -125,6 +125,14 @@ function Core.forgetTexture(id)
     end
 end
 
+-- A texture or renderbuffer that was a framebuffer attachment is going away: cached framebuffers
+-- that reference it (GL ids are reused) must be dropped. Set by the canvas module.
+function Core.attachmentDeleted(kind, id)
+    if Core.onAttachmentDeleted then
+        Core.onAttachmentDeleted(kind, id)
+    end
+end
+
 -- GL objects are deleted on the main thread at a safe point, never inside a GC finalizer.
 function Core.defer(resources)
     Core.garbage[#Core.garbage + 1] = resources
@@ -138,11 +146,13 @@ local function deleteResources(res)
     local one = ffi.new('GLuint[1]')
     if res.texture then
         Core.forgetTexture(res.texture)
+        Core.attachmentDeleted('t', res.texture)
         one[0] = res.texture
         gl.glDeleteTextures(1, one)
     end
     if res.renderbuffers then
         for _, id in ipairs(res.renderbuffers) do
+            Core.attachmentDeleted('r', id)
             one[0] = id
             gl.glDeleteRenderbuffers(1, one)
         end

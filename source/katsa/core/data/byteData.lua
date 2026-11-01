@@ -24,6 +24,10 @@ function ByteData:getPointer()
     return self._buffer
 end
 
+function ByteData:getFFIPointer()
+    return self._buffer
+end
+
 function ByteData:getString()
     return ffi.string(self._buffer, self._size)
 end

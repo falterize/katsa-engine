@@ -98,6 +98,21 @@ local function fboFor(canvases, options)
 end
 Core.onFramebufferDeleted = dropFbo
 
+-- Cache keys list their attachments as '<t|r><id>' (depth attachments carry a 'd' prefix).
+Core.onAttachmentDeleted = function(kind, id)
+    local token = kind .. id
+    for key, fbo in pairs(fboCache) do
+        for piece in key:gmatch('[^,]+') do
+            if piece == token or piece == 'd' .. token then
+                fboCache[key] = nil
+                Core.forgetFramebuffer(fbo)
+                gl.glDeleteFramebuffers(1, ffi.new('GLuint[1]', fbo))
+                break
+            end
+        end
+    end
+end
+
 local function markTargetsDirty()
     if S.canvases then
         for _, c in ipairs(S.canvases) do
