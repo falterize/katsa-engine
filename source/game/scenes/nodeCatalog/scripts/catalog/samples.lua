@@ -36,15 +36,18 @@ local routes = {
     OrbitNode = 'nodes',
 }
 local descriptions = {
-    SurfaceAppearance3D = 'Toggle normal, roughness, metalness and emission maps on the imported cube.',
+    SurfaceAppearance3D = 'Toggle normal, roughness, metalness and emission maps on the imported '
+        .. 'cube.',
     Animator = 'Blend procedural states, toggle bone debug, inspect tracks and their masks.',
-    AnimationTrack = 'Tune speed, loop, weight, Order and FadeIn/FadeOut; edit BoneMask in Workspace.',
+    AnimationTrack = 'Tune speed, loop, weight, Order and FadeIn/FadeOut; edit BoneMask in '
+        .. 'Workspace.',
     Bone3D = 'Inspect bind pose, apply local offsets and parent an Attachment3D.',
     Body3D = 'Switch body mode, friction, restitution or isTrigger. Use the Physics controls.',
     Collider3D = 'Resize/change its shape in Workspace; watch the body and enable collider debug.',
     Camera3D = 'Switch first/third person. Drag to look; tune follow and layer-group properties.',
     ClickDetector3D = 'Close Workspace and tap the orange cube; camera dragging cancels a click.',
-    DirectionalLight3D = 'Use Rotation; multiple sources share maxActiveLights. Priority selects directional winners.',
+    DirectionalLight3D = 'Use Rotation; multiple sources share maxActiveLights. Priority selects '
+        .. 'directional winners.',
     Node = 'Emit a sample event; rename/reparent and inspect its lifecycle in Workspace.',
     Ramp = 'Edit points, alpha and Offset; the gallery also demonstrates a stroke gradient.',
     UIStroke = 'Change Thickness or Enabled. Transparent text keeps only an exterior outline.',

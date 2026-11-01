@@ -42,6 +42,7 @@ function BouncePad:update(dt)
     body:setVelocity(velocity)
     self:emit('launched', body)
 end
+
 function BouncePad.register(world)
     return world:registerNodeType('BouncePad', BouncePad)
 end

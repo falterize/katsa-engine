@@ -6,6 +6,7 @@ local blendModes = { Alpha = 'alpha', Add = 'add', Multiply = 'multiply' }
 local function sample(e, key, t, out)
     return Sequence.evaluate(e.lifetimeRamp.bindings[key], t, e.lifetimeRamp.interpolation, out)
 end
+
 function Renderer.draw(system)
     local g, ui = katsa.graphics, system.world
     local started = katsa.timer.getTime()

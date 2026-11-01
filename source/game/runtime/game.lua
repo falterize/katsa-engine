@@ -79,7 +79,8 @@ function Game:load()
     self.ui = UI.new(1280, 720, self.resources):bindWorld(self.world)
     self.ui.parent = self.world.root
     self.ui.name = 'World2D'
-    self.ui.layoutMode = 'Fit' -- Reference layout is converted to viewport fractions after construction.
+    -- Reference layout is converted to viewport fractions after construction.
+    self.ui.layoutMode = 'Fit'
     -- Scene-owned mobile layout. One pointer stays assigned until release.
     self.controls = {
         joystick = { x = 125, y = 570, radius = 88 },

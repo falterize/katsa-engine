@@ -4,6 +4,7 @@ function Policy.initialize(node)
     node.imageMode = node.imageMode or (node.atlasEnabled and 'Atlas' or 'Decal')
     Image.initialize(node)
 end
+
 function Policy.uv(node, p, image, size)
     local frame = node.atlasFrame or 0
     local mode = node.imageMode

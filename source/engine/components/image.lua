@@ -171,7 +171,8 @@ function Image.describe(class)
             get = function(node)
                 return node.image or ''
             end,
-            hint = 'Optional image override. An empty path uses the XML manifest image in XML mode.',
+            hint = 'Optional image override. An empty path uses the XML manifest image in XML '
+                .. 'mode.',
         }
     end
     schema.pixelate = {

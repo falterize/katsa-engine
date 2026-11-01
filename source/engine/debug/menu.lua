@@ -363,7 +363,8 @@ function Debug.new(scene)
             position = { 0, 20, 0, y },
             size = { 0, 700, 0, 75 },
 
-            text = 'This scene has no physics world. Open Physics Lab, Collision Models or Night Player.',
+            text = 'This scene has no physics world. Open Physics Lab, Collision Models or Night '
+                .. 'Player.',
             fontSize = 22,
         }, panel)
         register(unavailable)

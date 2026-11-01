@@ -47,7 +47,8 @@ function ShadowDepthPass.install(Shadows)
             local source = katsa.filesystem.read('assets/shaders/engine/shadow.glsl')
             source = source:gsub(
                 '#ifdef PIXEL.-#endif',
-                '#ifdef PIXEL\nvec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) { return vec4(1.0); }\n#endif'
+                '#ifdef PIXEL\nvec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) { '
+                    .. 'return vec4(1.0); }\n#endif'
             )
             self.opaqueShader = self.resources:own(katsa.graphics.newShader(source))
         end

@@ -134,7 +134,8 @@ function Creation.install(Physics, Body3D)
             scale > 1e-6
                 and math.abs(object.scale[2] - scale) < 1e-6
                 and math.abs(object.scale[3] - scale) < 1e-6,
-            'Rigid bodies support positive uniform scale at creation; nonuniform scale is unsupported'
+            'Rigid bodies support positive uniform scale at creation; nonuniform scale is '
+                .. 'unsupported'
         )
         if owner and not object._independentBody then
             local matrix = owner:getWorldMatrix()

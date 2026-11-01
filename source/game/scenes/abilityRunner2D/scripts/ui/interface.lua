@@ -29,7 +29,8 @@ function Interface.create(state)
     ui:text({
         position = { 0, 8, 0, 8 },
         size = { 1, -16, 0, 92 },
-        text = 'A/D or touch: move\nSpace: jump twice | Shift: dash\nC: slide | R: respawn\nGold crystals save checkpoints.\nRed lava resets to the last checkpoint.',
+        text = 'A/D or touch: move\nSpace: jump twice | Shift: dash\nC: slide | R: respawn\nGold '
+            .. 'crystals save checkpoints.\nRed lava resets to the last checkpoint.',
         textScaled = true,
         maxTextSize = 14,
     }, panel)

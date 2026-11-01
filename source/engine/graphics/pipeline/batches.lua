@@ -212,7 +212,8 @@ function Batches:draw(renderer)
     for _, group in ipairs(self.groups) do
         if group.count > 0 then
             if group.count == 1 then
-                -- The example can be offscreen after regrouping, so use the current instance matrix.
+                -- The example can be offscreen after regrouping, so use the current instance
+                -- matrix.
                 renderer:drawBatch(group, 1)
             else
                 renderer:drawBatch(group, group.count)

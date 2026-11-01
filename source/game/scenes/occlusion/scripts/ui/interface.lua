@@ -20,7 +20,8 @@ function Interface.create(self)
         size = { 1, -16, 0, 54 },
         textScaled = true,
         maxTextSize = 14,
-        text = 'Compare whole objects and hidden triangles. Partial mesh mode exposes a single tiled panel.',
+        text = 'Compare whole objects and hidden triangles. Partial mesh mode exposes a single '
+            .. 'tiled panel.',
     }, panel)
     self.toggle = ui:button({
         position = { 0, 8, 0, 70 },

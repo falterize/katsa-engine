@@ -213,7 +213,8 @@ function Sim.step(system, e, dt)
             if not e.collisionEnabled then
                 p.collisionX, p.collisionY, p.collisionZ = nil, nil, nil
             elseif not queryVisible then
-                -- Offscreen integration deliberately omits collisions; do not replay that path on return.
+                -- Offscreen integration deliberately omits collisions; do not replay that path on
+                -- return.
                 p.collisionX, p.collisionY, p.collisionZ = nx, ny, nz
             end
             if p.space == 'Local' then

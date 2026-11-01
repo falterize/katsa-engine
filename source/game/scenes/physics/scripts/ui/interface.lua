@@ -34,7 +34,8 @@ function Interface.create(self)
     ui:text({
         position = { 0, 8, 0, 114 },
         size = { 1, -16, 0, 76 },
-        text = 'Stack, bouncing ball and pendulum. Select Mesh3D / Body3D / Collider3D in Workspace for physical settings.',
+        text = 'Stack, bouncing ball and pendulum. Select Mesh3D / Body3D / Collider3D in '
+            .. 'Workspace for physical settings.',
         textScaled = true,
         maxTextSize = 15,
     }, self.toolbar)

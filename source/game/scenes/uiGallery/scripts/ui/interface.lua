@@ -37,7 +37,8 @@ function Interface.create(self)
     ui:text({
         position = { 0, 12, 0, 10 },
         size = { 1, -24, 0, 90 },
-        text = '<b>Bold</b> <i>Italic</i> <u>Underline</u>\n<font color="#55CCFF">Blue</font> <s>Strike</s>\n&lt;escaped&gt;',
+        text = '<b>Bold</b> <i>Italic</i> <u>Underline</u>\n<font color="#55CCFF">Blue</font> '
+            .. '<s>Strike</s>\n&lt;escaped&gt;',
         richText = true,
         textScaled = true,
         maxTextSize = 22,

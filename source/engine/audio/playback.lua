@@ -91,7 +91,8 @@ function Playback.install(Audio)
             if spatial and sources[1]:getChannelCount() ~= 1 then
                 sources[1]:release()
                 error(
-                    'Spatial stereo streaming is not supported. Use a mono stream or a static stereo sound: '
+                    'Spatial stereo streaming is not supported. Use a mono stream or a static '
+                        .. 'stereo sound: '
                         .. path
                 )
             end
@@ -128,7 +129,8 @@ function Playback.install(Audio)
                 source:setRelative(not spatial)
             end
             if spatial then
-                -- Attenuate explicitly so maxDistance is a hard silence boundary, independent of OpenAL's model.
+                -- Attenuate explicitly so maxDistance is a hard silence boundary, independent of
+                -- OpenAL's model.
                 source:setRolloff(0)
                 source:setAttenuationDistances(math.max(0.001, minDistance), maxDistance)
             end

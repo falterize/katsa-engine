@@ -16,7 +16,8 @@ function ShadowAtlas.install(Shadows)
             self.depth:release()
         end
         self.atlasAllocations = self.atlasAllocations + 1
-        assert(katsa.graphics.getCanvasFormats().depth24, 'Shadow mapping requires readable depth24')
+        assert(katsa.graphics.getCanvasFormats().depth24,
+            'Shadow mapping requires readable depth24')
         self.depth = katsa.graphics.newCanvas(
             effective * columns,
             effective * rows,

@@ -23,12 +23,15 @@ Contact.__index = Contact
 function Contact:getShape1()
     return self.first
 end
+
 function Contact:getShape2()
     return self.second
 end
+
 function Contact:getManifold()
     return self
 end
+
 function Contact:getNormal()
     return self.normal
 end
@@ -111,7 +114,8 @@ callbacks.jobs = ffi.cast('JPH_QueueJobsCallback*', function(_, fn, args, count)
     end
 end)
 callbacks.validate = ffi.cast(
-    'JPH_ValidateResult (*)(void*, const JPH_Body*, const JPH_Body*, const JPH_RVec3*, const JPH_CollideShapeResult*)',
+    'JPH_ValidateResult (*)(void*, const JPH_Body*, const JPH_Body*, const JPH_RVec3*, const '
+        .. 'JPH_CollideShapeResult*)',
     function(user, a, b)
         local world = worlds[tonumber(ffi.cast('uintptr_t', user))]
         local first, second = tonumber(C.JPH_Body_GetID(a)), tonumber(C.JPH_Body_GetID(b))
@@ -122,7 +126,8 @@ callbacks.validate = ffi.cast(
     end
 )
 callbacks.added = ffi.cast(
-    'void (*)(void*, const JPH_Body*, const JPH_Body*, const JPH_ContactManifold*, JPH_ContactSettings*)',
+    'void (*)(void*, const JPH_Body*, const JPH_Body*, const JPH_ContactManifold*, '
+        .. 'JPH_ContactSettings*)',
     function(user, a, b, manifold, settings)
         guarded(user, collectContact, a, b, manifold, settings)
     end

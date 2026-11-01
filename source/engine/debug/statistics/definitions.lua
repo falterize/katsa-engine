@@ -213,7 +213,8 @@ function Statistics:sample()
         self.panel.exportMetadata.backend = (physics and physics.backendName or 'none')
             .. (scene.ui.physics2D and ' + Box2D (2D)' or '')
         self.panel.header.text = string.format(
-            '%s | Physics: %s | requested: %s%s\nRuntime: %s (%s, %s) | Light loop: %s\nClick any numeric row for history. %s',
+            '%s | Physics: %s | requested: %s%s\nRuntime: %s (%s, %s) | Light loop: %s\nClick '
+                .. 'any numeric row for history. %s',
             scene.zone,
             (physics and physics.backendName or 'none')
                 .. (scene.ui.physics2D and ' + Box2D (2D)' or ''),

@@ -112,9 +112,11 @@ function Class:emissionMatrix(render)
     m[13], m[14], m[15], m[16] = 0, 0, 0, 1
     return m
 end
+
 function Class:getWorldMatrix()
     return self:emissionMatrix(false)
 end
+
 function Class:getRenderWorldMatrix()
     return self:emissionMatrix(true)
 end
