@@ -1,0 +1,100 @@
+-- Canonical authored rendering fields shared by node tracking and renderer snapshots.
+local nodeKeys = {
+    'parent',
+    'visible',
+    'enabled',
+    'transparency',
+    'inheritScale',
+    'layerGroup',
+    'shadowGroup',
+    'layers',
+    'shadowLayers',
+}
+local nodeVectors =
+    { 'position', 'spatialPosition', 'rotation', 'scale', 'size', 'poseMatrix', 'physicsMatrix' }
+local meshKeys = {
+    'maxBoneInfluences',
+    'bonePaletteLimit',
+    'geometry',
+    'castShadow',
+    'receiveShadow',
+    'onTop',
+    'doubleSided',
+    'unlit',
+    'blend',
+    'alphaCutoff',
+    'maxDistance',
+    'shadowBoundsPadding',
+    'imageMode',
+    'xml',
+    'fitMode',
+    'atlasFrame',
+    'pixelate',
+    'shadowRevision',
+}
+local meshVectors = {
+    'color',
+    'localMatrix',
+    'atlasGrid',
+    'textureSize',
+    'textureOffset',
+    'tileSize',
+    'tileOffset',
+}
+local surfaceKeys = {
+    'layerGroup',
+    'enabled',
+    'transparency',
+    'colorMap',
+    'normalMap',
+    'roughnessMap',
+    'metalnessMap',
+    'occlusionMap',
+    'emissionMap',
+    'roughness',
+    'metalness',
+    'normalScale',
+    'occlusionStrength',
+    'emissionStrength',
+    'pixelate',
+    'alphaMode',
+    'alphaCutoff',
+    'imageMode',
+    'xml',
+    'fitMode',
+    'atlasFrame',
+    '_packedMR',
+}
+local surfaceVectors = {
+    'color',
+    'emissionColor',
+    'atlasGrid',
+    'textureSize',
+    'textureOffset',
+    'tileSize',
+    'tileOffset',
+}
+local lightKeys = {
+    'enabled',
+    'type',
+    'range',
+    'radius',
+    'brightness',
+    'rainbow',
+    'castShadow',
+    'priority',
+    'forceUpdate',
+}
+local lightVectors = { 'color', 'direction' }
+local cameraKeys = { 'near', 'far', 'drawDistance', 'focalLength', 'referenceHeight' }
+return {
+    nodeKeys = nodeKeys,
+    nodeVectors = nodeVectors,
+    meshKeys = meshKeys,
+    meshVectors = meshVectors,
+    surfaceKeys = surfaceKeys,
+    surfaceVectors = surfaceVectors,
+    lightKeys = lightKeys,
+    lightVectors = lightVectors,
+    cameraKeys = cameraKeys,
+}

@@ -1,0 +1,3 @@
+newmtl Clay
+Kd 1 0.7 0.35
+map_Kd ../../textures/surfaces/bricks.jpg

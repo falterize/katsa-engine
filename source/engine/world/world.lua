@@ -1,0 +1,377 @@
+local ipairs = require('source.engine.math.array').ipairs
+local pairs = require('source.engine.math.array').pairs
+local M = require('source.engine.math.math3d')
+local Geometry = require('source.engine.graphics.geometry.primitives')
+local Validate = require('source.engine.core.validate')
+local Node = require('source.engine.nodes')
+local NodeTree = require('source.engine.nodes.core.nodeTree')
+
+local World3D = {}
+World3D.__index = function(world, key)
+    if key == 'debug' then
+        return world.environment and world.environment.debug
+    end
+    return World3D[key]
+end
+World3D.__newindex = function(world, key, value)
+    if key == 'physics' and value and value.bindDebug then
+        require('source.engine.world.gravity').bind(world.root, value)
+        value:bindDebug(world.environment.debug.physics)
+        rawset(world, key, value)
+        world.root:onDestroy(function()
+            value:release()
+        end)
+    elseif key == 'debug' and world.environment then
+        value = value or {}
+        value.gizmos = value.gizmos or world.environment.debug.gizmos
+        value.physics = value.physics or world.environment.debug.physics
+        if world.physics then
+            world.physics:bindDebug(value.physics)
+        end
+        world.environment.debug = value
+        world.environment.gizmos = value.gizmos
+    else
+        rawset(world, key, value)
+    end
+end
+
+function World3D.new(resources, lighting, options)
+    lighting = lighting or require('source.engine.lighting.defaults').create()
+    local self = setmetatable({
+        resources = resources,
+        lighting = lighting,
+        uis = {},
+        objects = {},
+        byName = {},
+        lights = {},
+        billboards = {},
+        geometry = {},
+        root = Node.new(
+            'World3D',
+            { name = 'World3D', position = { 0, 0, 0 }, rotation = { 0, 0, 0 }, size = { 1, 1, 1 } }
+        ),
+        cameras = {},
+        layers = { default = 1, player = 2 },
+    }, World3D)
+    self.animations = require('source.engine.animation.scheduler').new()
+    self.shaderLayers = require('source.engine.shaders.layers').new()
+    self:initializeLayerGroups()
+    self.root._world = self
+    self.root._sceneWorld = self
+    Node.create('Environment', lighting, self.root, self)
+    self.prefabs = require('source.engine.core.prefabs').new(self)
+    self.decals = {}
+    self.directionalLights = {}
+    self.surfaceQuad = Geometry.quad()
+    resources:own(self.surfaceQuad.mesh)
+    self.folders = {}
+    for _, name in ipairs({
+        'Geometry',
+        'Lights',
+        'Cameras',
+        'Billboards',
+        'Physics',
+        'Effects',
+        'Audio',
+        'Scripts',
+    }) do
+        self.folders[name] = Node.new('Folder', { name = name }, self.root)
+    end
+    self.root._world = self
+    self.nodeTree = NodeTree.new(self.root)
+    self.root._nodeTree = self.nodeTree
+    self.geometry.cube = Geometry.cube()
+    self.geometry.plane = Geometry.plane()
+    resources:own(self.geometry.cube.mesh)
+    resources:own(self.geometry.plane.mesh)
+    if options and options.physics then
+        self:createPhysics(options.physics)
+    end
+    return self
+end
+
+function World3D:createPhysics(settings)
+    assert(not self.physics, 'World physics is already configured')
+    self.physics = require('source.engine.physics').new(settings)
+    return self.physics
+end
+
+function World3D:addLayer(name)
+    return self.layerGroups:add(name)
+end
+
+function World3D:setLayerVisible(camera, name, enabled)
+    self:resolveLayerGroup(camera)
+    self.layerGroups:add(name)
+    self.layerGroups:set(camera.layerGroup, name, enabled)
+end
+
+function World3D:updateCameras(dt)
+    local camera = self.activeCamera
+    if not camera or camera.followMode == 'Free' then
+        return
+    end
+    if not camera._controller then
+        local name = camera.followTarget
+        local target
+        for _, node in ipairs(self.root:getDescendants()) do
+            if node.name == name and node.getWorldMatrix then
+                target = node
+                break
+            end
+        end
+        require('source.engine.cameras.controller').new(camera, {
+            target = target,
+            mode = camera.followMode,
+            physics = self.physics,
+            distance = camera.followDistance,
+            sensitivity = camera.followSensitivity,
+            positionSmooth = camera.followSmooth,
+            minPitch = camera.pitchMin,
+            maxPitch = camera.pitchMax,
+        })
+        camera.followTarget = name
+    end
+    camera._controller:update(dt)
+end
+
+function World3D:create(className, properties, parent)
+    className = Node.aliases[className] or className
+    properties = properties or {}
+    if className == 'World2D' or className == 'Environment' or className == 'Shader3D' then
+        parent = parent or self.root
+    end
+    local category = ({
+        Mesh3D = 'Geometry',
+        Camera3D = 'Cameras',
+        PointLight3D = 'Lights',
+        SpotLight3D = 'Lights',
+        DirectionalLight3D = 'Lights',
+        BillboardUI = 'Billboards',
+        Body3D = 'Physics',
+        ParticleEmitter3D = 'Effects',
+        SoundGroup = 'Audio',
+        Sound = 'Audio',
+    })[className]
+    local class = Node.getClass(className, self)
+    local constraintClass = class
+    while constraintClass do
+        if constraintClass.name == 'Constraint3D' then
+            category = 'Physics'
+            break
+        end
+        constraintClass = constraintClass.base
+    end
+    local c = class
+    local context = self
+    if class._types.Node2D or class._types.Constraint2D then
+        local owner = parent
+        while owner and not owner:isA('World2D') do
+            owner = owner.parent
+        end
+        context = owner or self.uis[1]
+        assert(context, '2D spatial nodes require World2D')
+        parent = parent or context
+    end
+    while c do
+        if c.name == 'UINode' then
+            context = parent and (parent.ui or parent._plane or parent:isA('World2D') and parent)
+                or self.uis[1]
+            assert(context, 'UI nodes require World2D')
+            parent = parent or context.content
+            break
+        end
+        c = c.base
+    end
+    local node =
+        Node.create(className, properties, parent or self.folders[category or 'Scripts'], context)
+    if node._class.registrationWorld and node._class.scriptUpdate then
+        node:setProcess(true)
+    end
+    return node
+end
+
+function World3D:loadModel(path, settings)
+    local Models = require('source.engine.import.models')
+    local model = Models.load(path, self.resources)
+    local objects, root = Models.instantiate(self, model, settings)
+    return root, model, objects
+end
+
+function World3D:registerNodeType(name, definition)
+    return require('source.engine.nodes.core.specialNode').register(self, name, definition)
+end
+
+function World3D:setInteractionSource(node)
+    assert(
+        node == nil
+            or node._node
+                and node:isA('Node3D')
+                and not node.destroyed
+                and (node._world or node._sceneWorld) == self,
+        'Interaction source must be a live Node3D in this World3D'
+    )
+    self.interactionSource = node
+end
+
+function World3D:setQualityProfile(name)
+    local profile = assert(
+        require('source.engine.graphics.quality.qualityProfiles')[name],
+        'Unknown quality profile'
+    )
+    for key, value in pairs(profile.shadows) do
+        self.lighting.shadows[key] = value
+    end
+    for key, value in pairs(profile.lights) do
+        self.lighting.lightSettings[key] = value
+    end
+    self.qualityProfile = name
+end
+
+function World3D:updateNodes(dt)
+    self.simulationTime = (self.simulationTime or 0) + dt
+    self.animations:update(dt)
+    self.nodeTree:update(dt)
+    for _, controller in ipairs(self.rigidControllers or {}) do
+        controller:update(dt)
+    end
+    if self.particles then
+        self.particles:update(dt)
+    end
+end
+
+function World3D:invalidateRender()
+    self._renderInvalidationRevision = (self._renderInvalidationRevision or 0) + 1
+end
+
+function World3D:release()
+    self.animations:release()
+    local ok, message = pcall(self.root.destroy, self.root)
+    self.nodeTree:release()
+    self.nodeTypes, self.interactionSource = {}, nil
+    if not ok then
+        error(message, 0)
+    end
+end
+
+function World3D:addLight(l)
+    assert(not l._world or l._world == self, 'Light belongs to another World3D')
+    l._world = self
+    Node.adopt(l, l.className or l.type or 'PointLight3D')
+    l._world = self
+    l.parent = l.parent or self.folders.Lights
+    l.worldPosition = {}
+    l.worldDirection = {}
+    l:onDestroy(function()
+        self:removeLight(l)
+    end)
+    l.type = l.type or 'PointLight3D'
+    assert(
+        l.type == 'PointLight3D' or l.type == 'SpotLight3D' or l.type == 'DirectionalLight3D',
+        'Unknown light type'
+    )
+    l.position = l.position or { 0, 0, 0 }
+    l.rotation = l.rotation or { 0, 0, 0 }
+    l.color = l.color or { 255, 255, 255 }
+    l.range = l.range or 100
+    l.radius = l.radius or 5
+    l.brightness = l.brightness or 3
+    l.enabled = l.enabled ~= false
+    Validate.vector(l.position, 'Light.position', 3)
+    Validate.vector(l.rotation, 'Light.rotation', 3)
+    Validate.vector(l.color, 'Light.color', 3)
+    Validate.number(l.range, 'Light.range', 0.001)
+    Validate.number(l.radius, 'Light.radius', 0)
+    Validate.number(l.brightness, 'Light.brightness', 0)
+    self.lights[#self.lights + 1] = l
+    return l
+end
+-- Picking occurs only on a press, never as per-frame CPU triangle rendering.
+function World3D:occluded(camera, x, y, distance)
+    local dx = (x - camera.width / 2) / camera.focal
+    local dy = -(y - camera.height / 2) / camera.focal
+    local r, u, f = camera.right, camera.up, camera.forward
+    local wx, wy, wz =
+        r[1] * dx + u[1] * dy + f[1], r[2] * dx + u[2] * dy + f[2], r[3] * dx + u[3] * dy + f[3]
+    local p = (camera.worldPosition or camera.position)
+    local a, b, c = {}, {}, {}
+    for _, o in ipairs(self.objects) do
+        if
+            o:isVisible()
+            and o.transparency < 1
+            and (o.color[4] or 1) > 0
+            and camera:visible(o.worldPosition or o.position, o.radius)
+        then
+            local m = o.combined or o.matrix
+            local vertices = o.geometry.vertices
+            for i = 1, #vertices, 3 do
+                for j, target in ipairs({ a, b, c }) do
+                    local v = vertices[i + j - 1]
+                    target[1], target[2], target[3] = M.transform(m, v[1], v[2], v[3])
+                end
+                local ex, ey, ez = b[1] - a[1], b[2] - a[2], b[3] - a[3]
+                local fx, fy, fz = c[1] - a[1], c[2] - a[2], c[3] - a[3]
+                local facing = (ey * fz - ez * fy) * wx
+                    + (ez * fx - ex * fz) * wy
+                    + (ex * fy - ey * fx) * wz
+                local t = (o.doubleSided or facing < 0)
+                    and M.rayTriangle(p[1], p[2], p[3], wx, wy, wz, a, b, c)
+                if t and t < distance - 0.001 then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+function World3D:removeObject(name)
+    local object = self.byName[name]
+    if object and not object.destroyed then
+        object:destroy()
+        return
+    end
+    if not object then
+        return
+    end
+    for i, o in ipairs(self.objects) do
+        if o == object then
+            table.remove(self.objects, i)
+            break
+        end
+    end
+    self.byName[name] = nil
+end
+
+function World3D:removeLight(light)
+    if not light.destroyed then
+        light:destroy()
+        return
+    end
+    light.enabled = false
+    for i, item in ipairs(self.lights) do
+        if item == light then
+            table.remove(self.lights, i)
+            break
+        end
+    end
+end
+
+function World3D:removeBillboard(billboard)
+    if not billboard.destroyed then
+        billboard:destroy()
+        return
+    end
+    billboard.enabled = false
+    for i, item in ipairs(self.billboards) do
+        if item == billboard then
+            table.remove(self.billboards, i)
+            break
+        end
+    end
+    self.resources:releaseOwned(billboard.canvas)
+end
+require('source.engine.world.objects').install(World3D)
+require('source.engine.world.cameras').install(World3D)
+require('source.engine.world.layerGroups').install(World3D)
+return World3D
