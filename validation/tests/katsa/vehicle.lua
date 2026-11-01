@@ -1,5 +1,24 @@
--- Vehicle plugin: driving, suspension, nitro, seats, collisions and body dents.
-local Vehicle = require('source.plugins.vehicle')
+-- Scene node folder nodes/vehicle: driving, suspension, nitro, seats, collisions and body dents.
+-- The parts are pure Lua, so they load here the way a scene package resolves `scene.` requires.
+local ROOT = 'source/game/scenes/multiplayerCars/'
+local cache = {}
+local function sceneRequire(name)
+    if name:sub(1, 6) ~= 'scene.' then
+        return require(name)
+    end
+    local relative = name:sub(7):gsub('%.', '/')
+    if cache[relative] == nil then
+        local chunk = assert(loadfile(ROOT .. relative .. '.lua'))
+        setfenv(chunk, setmetatable({ require = sceneRequire }, { __index = _G }))
+        cache[relative] = chunk()
+    end
+    return cache[relative]
+end
+local Vehicle = {
+    Collision = sceneRequire('scene.nodes.vehicle.collision'),
+    Deformation = sceneRequire('scene.nodes.vehicle.deformation'),
+}
+Vehicle.new = sceneRequire('scene.nodes.vehicle.model').new
 
 return function(T)
     local function run(car, input, seconds)
