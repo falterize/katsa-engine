@@ -13,7 +13,11 @@ vec4 position(mat4 transform_projection, vec4 vertex_position) {
 #endif
 #ifdef PIXEL
 uniform bool multiplyMode;
-#define worldPosition particleWorldPosition
+// Shadow lookups read this copy: it is nudged toward the light so a particle never compares
+// its own depth with the billboard its emitter casts into the atlas (self-shadow flicker).
+highp vec3 particleShadowPosition;
+uniform highp float particleShadowOffset;
+#define worldPosition particleShadowPosition
 // @include assets/shaders/engine/shadowSampling.glsl
 uniform highp vec3 cameraPosition;
 uniform float particleShadowSlot[8];
@@ -37,6 +41,7 @@ vec4 effect(vec4 color, Image spriteImage, vec2 uv, vec2 screen_coords) {
             if(particleLightPosition[i].w==0.0) {
                 vec3 direction=-particleLightDirection[i].xyz;
                 int slot=int(particleShadowSlot[i]);
+                particleShadowPosition=particleWorldPosition+direction*particleShadowOffset;
                 float visibility=receiveShadow && slot>=0 && lightShadowData[slot].x>=0.0
                     ? directionalVisibility(slot,particleFacing,direction) : 1.0;
                 light+=visibility*particleLightColor[i].rgb*particleLightColor[i].a*abs(dot(particleFacing,direction));
@@ -50,6 +55,7 @@ vec4 effect(vec4 color, Image spriteImage, vec2 uv, vec2 screen_coords) {
             float attenuation=1.0-distance/radius;
             float visibility=1.0;
             int slot=int(particleShadowSlot[i]);
+            particleShadowPosition=particleWorldPosition+direction*particleShadowOffset;
             if(receiveShadow && slot>=0 && lightShadowData[slot].x>=0.0) {
                 int side=lightShadowData[slot].y>.5 ? pointShadowFace(worldPosition-shadowLightPosition[slot].xyz) : 0;
                 if((int(lightShadowData[slot].z)&(1<<side))!=0)

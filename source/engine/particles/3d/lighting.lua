@@ -30,6 +30,17 @@ function L.bind(shader, world, camera, emitter)
         enabled and emitter.receiveShadow == true and world.environment.shadows.enabled
     )
     send('cameraPosition', camera.worldPosition or camera.position)
+    -- A receiving emitter that also casts shadows would test against its own billboards. Offset
+    -- the lookup toward the light by the largest live half-size so those quads never occlude it.
+    local offset = 0
+    if emitter.castShadow and emitter.receiveShadow then
+        local largest = 0
+        for i = 1, math.min(#emitter.particles, emitter.shadowMaxParticles or 64) do
+            largest = math.max(largest, emitter.particles[i].size or 0)
+        end
+        offset = largest * 0.5 + 0.02
+    end
+    send('particleShadowOffset', offset)
     emitter._shadowSlots = emitter._shadowSlots or {}
     local count = 0
     emitter._lightPositions = emitter._lightPositions or {}
