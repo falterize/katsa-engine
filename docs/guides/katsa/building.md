@@ -61,5 +61,8 @@ platform code.
 
 ## Status
 
-Window, input, filesystem, timer, data, math and the archive/exe path work in the standalone
-runtime. Graphics, audio and physics still use LÖVE until the following versions move them.
+The standalone runtime provides the whole `katsa.*` API the engine uses: window, input, filesystem
+(directories, ZIP/`.katsa`, TAR, TAR.GZ, 7z), timer, data, math, utf8, event, graphics (OpenGL 3.3 /
+GLES 3.0 through SDL2), image, sound (WAV and Ogg Vorbis), audio (OpenAL, silent fallback) and
+physics (Box2D 2.3.1 built into `katsa_box2d`). The engine suite (`katsa . --test`) passes on it.
+Not verified on real hardware here: Windows host build, macOS, Android, GPU and audio output.
