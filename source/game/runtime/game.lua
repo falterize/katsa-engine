@@ -268,7 +268,15 @@ function Game:wheelmoved(x, y)
     if self.input.wheelmoved and self.input:wheelmoved(x, y) then
         return
     end
-    self.ui:wheel(love.mouse.getX(), love.mouse.getY(), y, x)
+    if self.ui:wheel(love.mouse.getX(), love.mouse.getY(), y, x) then
+        return
+    end
+    -- Orthographic free cameras have no dolly zoom (moving does not change scale), so the
+    -- wheel adjusts magnification instead.
+    local camera = self.camera
+    if self.freeDebugCamera and camera and camera.orthographic and y ~= 0 then
+        camera:zoomBy(y)
+    end
 end
 
 function Game:release()

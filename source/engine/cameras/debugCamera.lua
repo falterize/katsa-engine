@@ -22,6 +22,11 @@ function Debug.toggle(scene)
         rotation = r,
         layerGroup = previous.layerGroup,
         drawDistance = previous.drawDistance,
+        -- Keep the scene's projection so an orthographic view stays orthographic while flying.
+        projectionMode = previous.projectionMode,
+        orthoSize = previous.orthoSize,
+        orthoNear = previous.orthoNear,
+        zoom = previous.zoom,
     })
     scene.freeDebugCamera = { camera = camera, previous = previous }
     scene.camera = scene.world:setCamera(camera)

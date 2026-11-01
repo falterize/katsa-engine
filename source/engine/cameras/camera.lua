@@ -25,6 +25,8 @@ function Camera3D.new(settings)
         -- visible height in world units). focalLength remains the legacy perspective input.
         projectionMode = settings.projectionMode or 'Perspective',
         orthoSize = settings.orthoSize or 10,
+        -- Orthographic magnification: the visible half-height is orthoSize / zoom.
+        zoom = settings.zoom or 1,
         -- Orthographic clip start along the view direction. nil places it behind the camera
         -- (at -far) so a tilted camera never slices away nearby ground; near is perspective-only.
         orthoNear = settings.orthoNear,
@@ -83,6 +85,13 @@ function Camera3D:syncLens()
     self._syncedFov, self._syncedFocal = self.fov, self.focalLength
 end
 
+-- Multiplies zoom by 1.1 per step (positive steps zoom in), clamped to a usable range.
+function Camera3D:zoomBy(steps)
+    assert(self.projectionMode == 'Orthographic', 'Camera3D:zoomBy requires Orthographic mode')
+    self.zoom = math.max(0.01, math.min(1000, self.zoom * 1.1 ^ steps))
+    return self.zoom
+end
+
 function Camera3D:isOrthographic()
     return self.projectionMode == 'Orthographic'
 end
@@ -107,16 +116,21 @@ function Camera3D:update(width, height)
         and state[8] == self.projectionMode
         and state[9] == self.orthoSize
         and state[10] == self.orthoNear
+        and state[11] == self.zoom
     then
         return
     end
     self.width, self.height = width, height
     self.orthographic = self.projectionMode == 'Orthographic'
     assert(self.orthoSize > 0, 'Camera3D orthoSize must be positive')
+    assert(
+        type(self.zoom) == 'number' and self.zoom > 0 and self.zoom < math.huge,
+        'Camera3D zoom must be finite and positive'
+    )
     -- Pixels per world unit at depth z is focal / z for perspective, and constant for
     -- orthographic cameras. focal stays defined for both so legacy readers keep working.
     self.focal = self.focalLength * height / self.referenceHeight
-    self.pixelsPerUnit = height / (2 * self.orthoSize)
+    self.pixelsPerUnit = height / (2 * self.orthoSize / self.zoom)
     -- Camera3D projection uses a rigid frame; scale affects inherited offsets,
     -- never focal length. Reject a sheared basis rather than skew the view.
     self._cameraFrame = self._cameraFrame or M.identity()
@@ -174,6 +188,7 @@ function Camera3D:update(width, height)
     state[4], state[5], state[6], state[7] =
         self.focalLength, self.referenceHeight, self.near, self.far
     state[8], state[9], state[10] = self.projectionMode, self.orthoSize, self.orthoNear
+    state[11] = self.zoom
 end
 
 function Camera3D:project(p)

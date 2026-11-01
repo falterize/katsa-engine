@@ -13,7 +13,12 @@ local descriptions = {
         orthoSize = {
             min = 0.001,
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Half of the visible height in world units; width follows the aspect ratio.',
+            hint = 'Half of the visible height in world units at zoom 1; width follows the aspect ratio.',
+        },
+        zoom = {
+            min = 0.01,
+            visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
+            hint = 'Orthographic magnification; the visible half-height is orthoSize / zoom. Mouse wheel zooms the free camera.',
         },
         orthoNear = {
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
