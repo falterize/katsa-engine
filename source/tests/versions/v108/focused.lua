@@ -19,7 +19,7 @@ function Tests:draw()
     require('source.tests.versions.v108.orthoRender').run(self)
     require('source.tests.versions.v108.poseRate').run(self)
     print('PASSED ' .. self.count .. ' v108 focused checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

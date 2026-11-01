@@ -90,7 +90,7 @@ function Image.resolve(resources, node, source, environment)
     resources.samplerVariants[source] = variants
     local variant = variants[filter]
     if not variant then
-        local g = love.graphics
+        local g = katsa.graphics
         local w, h = source:getDimensions()
         variant = resources:own(g.newCanvas(w, h))
         g.push('all')

@@ -3,7 +3,7 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     local scene = assert(manager:switch(require('source.game.runtime.game').new, 'combined'))
     scene.world.environment.render.frameCache = false
     scene.world.environment.shadows.enabled = false
@@ -25,11 +25,11 @@ function T:draw()
             callback()
         end
         collectgarbage('collect')
-        local start = love.timer.getTime()
+        local start = katsa.timer.getTime()
         for i = 1, count do
             callback()
         end
-        print(label, string.format('%.3f ms', (love.timer.getTime() - start) * 1000 / count))
+        print(label, string.format('%.3f ms', (katsa.timer.getTime() - start) * 1000 / count))
     end
     measure('UPDATE', 120, function()
         scene:update(1 / 60, 1 / 60)
@@ -54,7 +54,7 @@ function T:draw()
         'SIZE',
         scene.renderer.canvas:getPixelDimensions()
     )
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

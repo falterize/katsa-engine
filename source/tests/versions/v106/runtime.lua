@@ -9,7 +9,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106 ' .. tostring(message))
         os.exit(1)
     end
@@ -203,16 +203,16 @@ function Tests:draw()
     local path = os.getenv('KATSA_PREVIEW_PATH')
     if path then
         self.manager:draw()
-        love.graphics.captureScreenshot(function(image)
+        katsa.graphics.captureScreenshot(function(image)
             local file = assert(io.open(path, 'wb'))
             file:write(image:encode('png'):getString())
             file:close()
             image:release()
             print('V106 PREVIEW COMPLETE')
-            love.event.quit()
+            katsa.event.quit()
         end)
     else
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

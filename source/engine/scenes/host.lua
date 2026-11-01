@@ -47,7 +47,7 @@ function Host:load()
     self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
     local layer = self.ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self.ui.content)
     self.statistics = Statistics.new(self, layer)
-    self:resize(love.graphics.getDimensions())
+    self:resize(katsa.graphics.getDimensions())
 end
 
 function Host:createPhysics2D(options, ui)
@@ -67,7 +67,7 @@ function Host:createPhysics(options)
 end
 
 function Host:update(dt, realDt)
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     local sceneDt = dt
     self.world.frameRealDelta = realDt or sceneDt
     dt = require('source.engine.world.clock').delta(self.world.root, dt)
@@ -79,9 +79,9 @@ function Host:update(dt, realDt)
     self.lifecycle.update3D(self.state, dt)
     self.world:updateCameras(dt)
     self.camera = self.world.activeCamera or self.camera
-    self.camera:update(love.graphics.getDimensions())
+    self.camera:update(katsa.graphics.getDimensions())
     self.audio:update(self.camera)
-    self.updateMilliseconds = (love.timer.getTime() - started) * 1000
+    self.updateMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 
 function Host:draw()
@@ -89,14 +89,14 @@ function Host:draw()
         self.renderer:draw(self.world, self.camera, self.time)
         self.ui.backgroundCanvas = self.renderer.canvas
     else
-        love.graphics.clear(0.03, 0.04, 0.06, 1)
+        katsa.graphics.clear(0.03, 0.04, 0.06, 1)
         self.ui.backgroundCanvas = nil
     end
     self.statistics:sample()
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     self.ui:draw()
     require('source.engine.graphics.debug.orientation').draw(self)
-    self.uiMilliseconds = (love.timer.getTime() - started) * 1000
+    self.uiMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 
 function Host:resize(width, height)
@@ -141,7 +141,7 @@ function Host:keyreleased(key)
 end
 
 function Host:wheelmoved(x, y)
-    self.ui:wheel(love.mouse.getX(), love.mouse.getY(), y, x)
+    self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 function Host:release()

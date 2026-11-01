@@ -52,12 +52,12 @@ function Runtime:update()
         self.index = self.index + 1
         if self.index > self.limit then
             print('PASSED ' .. self.count .. ' native v48 assertions')
-            love.event.quit()
+            katsa.event.quit()
             return
         end
         local zone = zones[(self.index - 1) % #zones + 1]
         local size = sizes[math.floor((self.index - 1) / #zones) + 1]
-        love.window.setMode(
+        katsa.window.setMode(
             size[1],
             size[2],
             { resizable = true, depth = 24, stencil = 8, highdpi = true, vsync = 0 }
@@ -88,7 +88,7 @@ function Runtime:update()
             walk(board.children)
         end
         self:check(
-            ui.scale == 1 and ui.width == love.graphics.getWidth(),
+            ui.scale == 1 and ui.width == katsa.graphics.getWidth(),
             'Viewport / UDim2 ' .. scene.zone .. ' ' .. ui.width .. 'x' .. ui.height
         )
         self:check(
@@ -153,7 +153,7 @@ function Runtime:update()
             self:check(#scene.demo.button.position == 4, 'Inspector UI coordinate schema')
         end
         if self.index == 15 or self.index == 16 or self.index == 21 or self.index == 46 then
-            love.graphics.captureScreenshot(function(img)
+            katsa.graphics.captureScreenshot(function(img)
                 img:encode(
                     'png',
                     'v48-' .. scene.zone .. '-' .. ui.width .. 'x' .. ui.height .. '.png'
@@ -175,7 +175,7 @@ end
 function Runtime:draw()
     if self.wsShot then
         self.wsShot = nil
-        love.graphics.captureScreenshot(function(img)
+        katsa.graphics.captureScreenshot(function(img)
             img:encode('png', 'v48-workspace-800x360.png')
             img:release()
         end)

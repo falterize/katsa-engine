@@ -2,10 +2,10 @@ local Test = {}
 Test.__index = Test
 
 function Test.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v63 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, Test)
@@ -28,7 +28,7 @@ end
 function Test:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
+        katsa.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
         local scene = self:load('animationLab')
         local ramp = scene.demo.ramp
         ramp.Playing = true
@@ -275,7 +275,7 @@ function Test:update()
             'Scene teardown and new systems leave no runtime errors'
         )
         print('PASSED ' .. self.count .. ' focused v63 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -285,10 +285,10 @@ function Test:draw()
     end
     local name = self.capture
     self.capture = nil
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local bytes = image:encode('png')
         local f = assert(
-            io.open(love.filesystem.getSource() .. '/docs/previews/v63/' .. name .. '.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v63/' .. name .. '.png', 'wb')
         )
         f:write(bytes:getString())
         f:close()

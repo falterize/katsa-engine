@@ -6,23 +6,23 @@ local M = require('source.engine.math.math3d')
 local GLB = {}
 
 function GLB.load(path, resources)
-    local data = assert(love.filesystem.read(path), 'Missing GLB: ' .. path)
+    local data = assert(katsa.filesystem.read(path), 'Missing GLB: ' .. path)
     if path:lower():match('%.gltf$') then
         local document = JSON.decode(data)
         local dir = path:match('^(.*[/])') or ''
         local uri = assert(document.buffers[1].uri, 'glTF buffer URI is required')
         local binary = uri:match('^data:')
-                and love.data.decode('string', 'base64', uri:match(',([%s%S]+)$'))
-            or assert(love.filesystem.read(dir .. uri), 'Missing glTF binary buffer')
+                and katsa.data.decode('string', 'base64', uri:match(',([%s%S]+)$'))
+            or assert(katsa.filesystem.read(dir .. uri), 'Missing glTF binary buffer')
         assert(#document.buffers == 1, 'Combine glTF buffers before import')
         return GLB.decode(document, binary, path, resources)
     end
     assert(data:sub(1, 4) == 'glTF', 'Invalid GLB magic')
-    local version, length = love.data.unpack('<I4I4', data, 5)
+    local version, length = katsa.data.unpack('<I4I4', data, 5)
     assert(version == 2 and length == #data, 'GLB must be a complete glTF 2.0 container')
     local offset, document, binary = 13, nil, nil
     while offset <= #data do
-        local size, kind = love.data.unpack('<I4I4', data, offset)
+        local size, kind = katsa.data.unpack('<I4I4', data, offset)
         offset = offset + 8
         assert(offset + size - 1 <= #data, 'Truncated GLB chunk')
         local chunk = data:sub(offset, offset + size - 1)

@@ -51,7 +51,7 @@ function Class.initialize(self)
     end
     require('source.engine.particles.image').initialize(self)
     self.particles, self.pool, self.emission = {}, {}, 0
-    self.random = love.math.newRandomGenerator(self.seed)
+    self.random = katsa.math.newRandomGenerator(self.seed)
 end
 
 function Class.mount(ui, properties, parent)

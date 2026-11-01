@@ -18,7 +18,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local s = self.manager:switch(require('source.game.runtime.game').new, 'combined')
     local r, w, c = s.renderer, s.world, s.camera
     w.environment.shadows.enabled, w.environment.gizmos.enabled = false, false
@@ -145,7 +145,7 @@ function T:draw()
     -- Compare retained glyph geometry with the original print/printf operations,
     -- under the same transforms, clipping, outlines and rich text styles.
     local Text = require('source.engine.ui.drawing.text')
-    local g = love.graphics
+    local g = katsa.graphics
     local label = ui:text({
         position = { 0, 8, 0, 8 },
         size = { 0, 230, 0, 90 },
@@ -209,7 +209,7 @@ function T:draw()
     label:destroy()
     self:check(#resources == 0, 'Destroying text releases its retained glyph resources')
     print('PASSED ' .. self.count .. ' focused v75 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

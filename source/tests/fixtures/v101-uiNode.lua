@@ -35,11 +35,11 @@ function UINode:drawSelf(ui)
     local style = require('source.engine.ui.style')
     local c = style.color(self, 'background')
     if c then
-        love.graphics.push('all')
+        katsa.graphics.push('all')
         require('source.engine.ui.drawing.modifiers').bindGradient(ui, self, 'Background')
-        love.graphics.setColor(c[1], c[2], c[3], style.alpha(self, 'background', c))
-        love.graphics.rectangle('fill', self._x, self._y, self._width, self._height, self._radius)
-        love.graphics.pop()
+        katsa.graphics.setColor(c[1], c[2], c[3], style.alpha(self, 'background', c))
+        katsa.graphics.rectangle('fill', self._x, self._y, self._width, self._height, self._radius)
+        katsa.graphics.pop()
     end
     if self._paintComponent then
         self._paintComponent:draw(ui, self)

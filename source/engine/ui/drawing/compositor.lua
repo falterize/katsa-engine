@@ -32,7 +32,7 @@ local function collect(list, out)
 end
 
 local function canvas(ui, key, w, h, density)
-    density = density or love.graphics.getDPIScale()
+    density = density or katsa.graphics.getDPIScale()
     if not ui._compositorCleanup then
         ui._compositorCleanup = true
         ui:onDestroy(function()
@@ -49,14 +49,14 @@ local function canvas(ui, key, w, h, density)
         if old then
             ui.resources:releaseOwned(old)
         end
-        old = ui.resources:own(love.graphics.newCanvas(w, h, { dpiscale = density }))
+        old = ui.resources:own(katsa.graphics.newCanvas(w, h, { dpiscale = density }))
         ui[key] = old
     end
     return old
 end
 
 local function reset()
-    local g = love.graphics
+    local g = katsa.graphics
     g.origin()
     g.setScissor()
     g.setStencilTest()
@@ -82,7 +82,7 @@ function Compositor.draw(ui, draw)
     if #effects == 0 and alpha == 1 or ui._compositing then
         return draw(ui)
     end
-    local g = love.graphics
+    local g = katsa.graphics
     local target = g.getCanvas()
     local w, h = g.getDimensions()
     if target then
@@ -123,7 +123,7 @@ local function shader(ui, node)
             ui.resources:releaseOwned(node._postShader)
         end
         local source = assert(
-            love.filesystem.read(ui.resources:canonical(node.shaderPath)),
+            katsa.filesystem.read(ui.resources:canonical(node.shaderPath)),
             'Missing Shader2D: ' .. node.shaderPath
         )
         source = source:gsub('vec4%s+effect%s*%(', 'vec4 userEffect(', 1)
@@ -136,7 +136,7 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
 }
 #endif
 ]]
-        node._postShader = ui.resources:own(love.graphics.newShader(source))
+        node._postShader = ui.resources:own(katsa.graphics.newShader(source))
         node._shaderPath = node.shaderPath
         node:onDestroy(function()
             if node._postShader then
@@ -167,7 +167,7 @@ function Compositor.apply(ui, node)
     if not ui._sceneColor or not active(node) then
         return
     end
-    local g = love.graphics
+    local g = katsa.graphics
     local scene = ui._sceneColor
     local w, h = scene:getDimensions()
     local x, y = g.transformPoint(node._x, node._y)

@@ -5,8 +5,8 @@ local Tests = setmetatable({}, { __index = Previous })
 Tests.__index = Tests
 
 local function hasOnlyEntries(path, allowed)
-    for _, name in ipairs(love.filesystem.getDirectoryItems(path)) do
-        if love.filesystem.getInfo(path .. '/' .. name, 'file') and not allowed[name] then
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems(path)) do
+        if katsa.filesystem.getInfo(path .. '/' .. name, 'file') and not allowed[name] then
             return false
         end
     end
@@ -14,12 +14,12 @@ local function hasOnlyEntries(path, allowed)
 end
 
 local function markerFree(path)
-    for _, name in ipairs(love.filesystem.getDirectoryItems(path)) do
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems(path)) do
         if name == '.keep' then
             return false
         end
         local child = path .. '/' .. name
-        if love.filesystem.getInfo(child, 'directory') and not markerFree(child) then
+        if katsa.filesystem.getInfo(child, 'directory') and not markerFree(child) then
             return false
         end
     end
@@ -28,7 +28,7 @@ end
 
 function Tests.new(manager)
     local self = Previous.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.6 ' .. tostring(message))
         os.exit(1)
     end
@@ -43,10 +43,10 @@ end
 
 function Tests:layout()
     Previous.layout(self)
-    for _, name in ipairs(love.filesystem.getDirectoryItems('source/game/scenes')) do
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems('source/game/scenes')) do
         local root = 'source/game/scenes/' .. name
         self:check(
-            not love.filesystem.getInfo(root .. '/ui'),
+            not katsa.filesystem.getInfo(root .. '/ui'),
             'UI code belongs under scripts: ' .. name
         )
         self:check(
@@ -180,7 +180,7 @@ function Tests:draw()
     require('source.tests.versions.v106_6.stareShooter').run(self)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v106.6 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

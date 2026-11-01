@@ -4,7 +4,7 @@ local Application = require('source.game.runtime.application')
 local Module = {}
 
 local function render(scene, effect)
-    local g = love.graphics
+    local g = katsa.graphics
     local w, h = g.getDimensions()
     local canvas = g.newCanvas(w, h, { dpiscale = 1 })
     g.push('all')

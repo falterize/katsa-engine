@@ -13,7 +13,7 @@ function Image.rect(mode, w, h, iw, ih)
 end
 
 function Image.draw(ui, node)
-    local g = love.graphics
+    local g = katsa.graphics
     local component = require('source.engine.components.image')
     local world = ui._sceneWorld or ui.owner and ui.owner._world
     local image = component.resolve(ui.resources, node, node.image, world and world.environment)

@@ -43,12 +43,12 @@ function UINode:drawSelf(ui)
     -- Zero-alpha built-in backgrounds cannot contribute color. Custom materials
     -- may ignore vertex alpha, so preserve their draw and the paint component.
     local alpha = c and style.alpha(self, 'background', c)
-    if c and (alpha > 0 or self.material or love.graphics.getShader()) then
-        love.graphics.push('all')
+    if c and (alpha > 0 or self.material or katsa.graphics.getShader()) then
+        katsa.graphics.push('all')
         require('source.engine.ui.drawing.modifiers').bindGradient(ui, self, 'Background')
-        love.graphics.setColor(c[1], c[2], c[3], alpha)
-        love.graphics.rectangle('fill', self._x, self._y, self._width, self._height, self._radius)
-        love.graphics.pop()
+        katsa.graphics.setColor(c[1], c[2], c[3], alpha)
+        katsa.graphics.rectangle('fill', self._x, self._y, self._width, self._height, self._radius)
+        katsa.graphics.pop()
     end
     if self._paintComponent then
         self._paintComponent:draw(ui, self)

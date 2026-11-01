@@ -44,11 +44,11 @@ function Benchmark:draw()
         end
         collectgarbage('collect')
         for step = 1, 180 do
-            local started = love.timer.getTime()
+            local started = katsa.timer.getTime()
             world:updateNodes(1 / 60)
             world.physics:update(1 / 60)
             if step > 60 then
-                samples[#samples + 1] = (love.timer.getTime() - started) * 1000
+                samples[#samples + 1] = (katsa.timer.getTime() - started) * 1000
                 solves[#solves + 1] = world.physics.stats.solverMilliseconds
                 native = native + (world.physics.stats.nativeSolverMilliseconds or 0)
                 nativeSamples = nativeSamples + 1
@@ -80,7 +80,7 @@ function Benchmark:draw()
     )
     print('native_solver_mean_ms', native / nativeSamples)
     print('V105 BENCHMARK COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Benchmark

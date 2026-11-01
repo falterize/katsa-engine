@@ -14,11 +14,11 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(m)
+    katsa.errorhandler = function(m)
         print('FAILED occlusion profile ' .. tostring(m))
         os.exit(1)
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -44,8 +44,8 @@ function T:draw()
         return
     end
     self.done = true
-    print('LOVE', love.getVersion())
-    print('GPU', love.graphics.getRendererInfo())
+    print('LOVE', katsa.getVersion())
+    print('GPU', katsa.graphics.getRendererInfo())
     print('JIT', jit.version, jit.status(), jit.arch)
     print(
         'case,total mean/p50/p95/p99,update,draw CPU,wait+present,occlusion,checks,prepare,hidden,saved triangles,partial triangles,mask bytes,KB growth/retained'
@@ -55,7 +55,7 @@ function T:draw()
             not os.getenv('KATSA_OCCLUSION_CASE')
             or os.getenv('KATSA_OCCLUSION_CASE') == case[1]
         then
-            love.math.setRandomSeed(384)
+            katsa.math.setRandomSeed(384)
             math.randomseed(384)
             local scene =
                 assert(self.manager:switch(require('source.game.runtime.game').new, case[2]))
@@ -81,16 +81,16 @@ function T:draw()
                     scene.camera.position[1] = x + math.sin(frame / 45) * 30
                     scene.camera.rotation[2] = yaw + math.sin(frame / 60) * 5
                 end
-                local t = love.timer.getTime()
+                local t = katsa.timer.getTime()
                 self.manager:update(1 / 60)
-                local updated = love.timer.getTime()
+                local updated = katsa.timer.getTime()
                 self.manager:draw()
-                love.graphics.flushBatch()
-                local drawn = love.timer.getTime()
+                katsa.graphics.flushBatch()
+                local drawn = katsa.timer.getTime()
                 local image = scene.renderer.canvas:newImageData()
                 image:release()
-                love.graphics.present()
-                local finished = love.timer.getTime()
+                katsa.graphics.present()
+                local finished = katsa.timer.getTime()
                 if frame == 30 then
                     collectgarbage('collect')
                     memory = collectgarbage('count')
@@ -128,7 +128,7 @@ function T:draw()
     end
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('OCCLUSION FULL LOOP COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

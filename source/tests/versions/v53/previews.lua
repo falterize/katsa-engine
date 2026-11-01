@@ -13,10 +13,10 @@ function Preview:update()
         local stage = stages[self.index]
         if not stage then
             print('v53 previews complete')
-            love.event.quit()
+            katsa.event.quit()
             return
         end
-        love.window.setMode(stage[1], stage[2], { depth = 24, stencil = 8, vsync = 0 })
+        katsa.window.setMode(stage[1], stage[2], { depth = 24, stencil = 8, vsync = 0 })
         self.scene = self.manager:switch(require('source.game.runtime.game').new, 'physics')
         self.scene.showStats = true
     elseif self.frame % 6 == 5 then
@@ -28,7 +28,7 @@ function Preview:draw()
     if self.capture then
         self.capture = nil
         local stage = stages[self.index]
-        love.graphics.captureScreenshot(function(image)
+        katsa.graphics.captureScreenshot(function(image)
             image:encode('png', 'v53-physics-' .. stage[1] .. 'x' .. stage[2] .. '.png')
             image:release()
         end)

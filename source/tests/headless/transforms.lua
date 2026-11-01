@@ -1,5 +1,5 @@
 require('source.tests.integration.luaCompatibility')
-love = { timer = { getTime = os.clock } }
+katsa = { timer = { getTime = os.clock } }
 local count = 0
 local test = {
     check = function(_, ok, msg)

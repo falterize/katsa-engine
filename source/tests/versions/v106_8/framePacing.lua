@@ -5,7 +5,7 @@ local Deadline = require('source.engine.core.timing.deadline')
 local Tests = {}
 
 function Tests.run(tester)
-    local original = love
+    local original = katsa
     local frameDelta = Runtime.frameDelta
     local activeScene = Runtime.activeScene
     local limit, policy, dirty, timings =
@@ -15,7 +15,7 @@ function Tests.run(tester)
         Runtime.timings
     local elapsed, slept, draws, statsOpen, work = 0, 0, 0, false, 0.001
     local ok, failure = pcall(function()
-        love = {
+        katsa = {
             timer = {
                 getTime = function()
                     return elapsed
@@ -142,7 +142,7 @@ function Tests.run(tester)
         )
         Runtime.frameRateLimit, Runtime.activeScene, work = 240, nil, 0
         local eventWork = 0.0005
-        love.event.pump = function()
+        katsa.event.pump = function()
             elapsed = elapsed + eventWork
         end
         tick()
@@ -153,7 +153,7 @@ function Tests.run(tester)
             'FPS uses equal frame boundaries instead of fluctuating event-pump offsets'
         )
     end)
-    love = original
+    katsa = original
     Runtime.frameDelta = frameDelta
     Runtime.activeScene = activeScene
     Runtime.frameRateLimit, Runtime.canReuseWindowFrame, Runtime.windowFrameDirty, Runtime.timings =

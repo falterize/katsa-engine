@@ -14,7 +14,7 @@ function RenderItems.install(Renderer)
                 + (self.world.particles.stats.rendered - before) * 2
             return
         end
-        local s, g = self:bindMaterial(o), love.graphics
+        local s, g = self:bindMaterial(o), katsa.graphics
         if s:hasUniform('debugWireframe') then
             s:send('debugWireframe', wire)
         end
@@ -121,7 +121,7 @@ function RenderItems.install(Renderer)
     end
 
     function Renderer:drawBatch(group, count)
-        local o, g = group.example, love.graphics
+        local o, g = group.example, katsa.graphics
         if o.geometry.eightWeights then
             assert(count == 1, 'Extended skins require individual draws')
             return self:drawItem(group.members[1])

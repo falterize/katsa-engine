@@ -44,7 +44,7 @@ function C.initialize(self)
     self.render = self.render
         or {
             surfaceBlendResolution = 256,
-            renderDensity = math.max(1, math.min(3, love.graphics.getDPIScale())),
+            renderDensity = math.max(1, math.min(3, katsa.graphics.getDPIScale())),
             msaa = require('source.engine.graphics.quality.renderQuality').defaultSamples(),
             maxMeshDistance = 0,
             maxRenderPixels = require('source.engine.graphics.quality.renderQuality').defaultPixels(),

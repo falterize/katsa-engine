@@ -90,7 +90,7 @@ local g = {
         }
     end,
 }
-love = { graphics = g }
+katsa = { graphics = g }
 local resources = {
     own = function(_, v)
         return v

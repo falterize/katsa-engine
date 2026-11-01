@@ -3,12 +3,12 @@ local T = {}
 
 local function smoke(test)
     local function syntax(directory)
-        for _, name in ipairs(love.filesystem.getDirectoryItems(directory)) do
+        for _, name in ipairs(katsa.filesystem.getDirectoryItems(directory)) do
             local path = directory .. '/' .. name
-            if love.filesystem.getInfo(path, 'directory') then
+            if katsa.filesystem.getInfo(path, 'directory') then
                 syntax(path)
             elseif name:match('%.lua$') then
-                assert(loadstring(love.filesystem.read(path), path))
+                assert(loadstring(katsa.filesystem.read(path), path))
             end
         end
     end
@@ -75,7 +75,7 @@ local function smoke(test)
         'UI, Ramp, shaders, audio and particle scenes run without journal errors'
     )
     print('PASSED ' .. test.count .. ' v84 regression/integration checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 function T.new(manager)

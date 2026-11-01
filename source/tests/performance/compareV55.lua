@@ -3,7 +3,7 @@ local P = {}
 P.__index = P
 
 function P.new(manager)
-    love.window.setVSync(0)
+    katsa.window.setVSync(0)
     local scene = manager:switch(require('source.game.runtime.game').new, 'combined')
     scene.world.lighting.gizmos.enabled = false
     scene.showStats = false
@@ -15,9 +15,9 @@ function P.new(manager)
     local ui = scene.ui
     local original = ui.draw
     ui.draw = function(owner, ...)
-        local t = love.timer.getTime()
+        local t = katsa.timer.getTime()
         local result = original(owner, ...)
-        self.uiTime = (self.uiTime or 0) + (love.timer.getTime() - t) * 1000
+        self.uiTime = (self.uiTime or 0) + (katsa.timer.getTime() - t) * 1000
         return result
     end
     return self
@@ -25,7 +25,7 @@ end
 
 function P:resize()
     local size = self.sizes[self.case]
-    love.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
     self.scene:resize(unpack(size))
     collectgarbage('collect')
 end
@@ -34,16 +34,16 @@ function P:update() end
 
 function P:draw()
     self.uiTime = 0
-    local t = love.timer.getTime()
+    local t = katsa.timer.getTime()
     self.scene:update(1 / 60, 1 / 60)
-    local update = (love.timer.getTime() - t) * 1000
-    t = love.timer.getTime()
+    local update = (katsa.timer.getTime() - t) * 1000
+    t = katsa.timer.getTime()
     self.scene:draw()
-    local submit = (love.timer.getTime() - t) * 1000
-    love.graphics.flushBatch()
+    local submit = (katsa.timer.getTime() - t) * 1000
+    katsa.graphics.flushBatch()
     local data = self.scene.renderer.canvas:newImageData()
     data:release()
-    local synced = (love.timer.getTime() - t) * 1000
+    local synced = (katsa.timer.getTime() - t) * 1000
     self.frame = self.frame + 1
     if self.frame > 3 then
         local s = self.scene.renderer.stats
@@ -82,7 +82,7 @@ function P:draw()
             )
         )
         if self.case == #self.sizes then
-            love.event.quit()
+            katsa.event.quit()
             return
         end
         self.case = self.case + 1

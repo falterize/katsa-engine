@@ -3,10 +3,10 @@ local T = {}
 local function extra(test)
     local Opacity = require('source.engine.materials.opacity')
     local ffi = require('ffi')
-    local data = love.image.newImageData(257, 65, 'rgba8')
+    local data = katsa.image.newImageData(257, 65, 'rgba8')
     local pointer = ffi.cast('uint8_t*', data:getFFIPointer())
     ffi.fill(pointer, data:getSize(), 255)
-    local image = love.graphics.newImage(data)
+    local image = katsa.graphics.newImage(data)
     Opacity.register(image, data)
     test:check(
         Opacity.image(image),
@@ -32,7 +32,7 @@ local function extra(test)
     data:release()
     local Batches = require('source.engine.graphics.pipeline.batches')
     local batch = Batches.new()
-    local mesh = love.graphics.newMesh(
+    local mesh = katsa.graphics.newMesh(
         { { 'VertexPosition', 'float', 3 } },
         { { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } },
         'triangles'

@@ -8,7 +8,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, Tests)
 end
 
@@ -51,18 +51,18 @@ function Tests:draw()
     for _, backend in ipairs({ 'oimo', 'jolt' }) do
         Physics.setDefaultBackend(backend)
         for _, zone in ipairs(zones) do
-            love.math.setRandomSeed(384)
+            katsa.math.setRandomSeed(384)
             math.randomseed(384)
             local scene = assert(self.manager:switch(Game.new, zone))
             for _ = 1, 3 do
                 self.manager:update(1 / 60)
             end
             self.manager:draw()
-            love.graphics.present()
+            katsa.graphics.present()
             local capture = scene.renderer.canvas:newImageData()
             capture:release()
             scenes = scenes + 1
-            love.event.pump()
+            katsa.event.pump()
             print('PASS STRUCTURE SCENE', backend, zone)
         end
     end
@@ -73,7 +73,7 @@ function Tests:draw()
     self.manager:switch(require('source.game.runtime.menu').new)
     assert(#self.manager.journal.entries == 0, 'Scene/module migration produced journal errors')
     print('STRUCTURE CHECKS COMPLETE', scenes, 'scenes, legacy GLB readers and node catalog')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

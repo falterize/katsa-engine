@@ -7,15 +7,15 @@ local Playback = {}
 
 function Playback.install(Audio)
     local function loadSamples(path, spatialStereo)
-        assert(love.filesystem.getInfo(path), 'Missing sound: ' .. path)
+        assert(katsa.filesystem.getInfo(path), 'Missing sound: ' .. path)
         local list
         if spatialStereo then
-            local data = love.sound.newSoundData(path)
+            local data = katsa.sound.newSoundData(path)
             local channels = data:getChannelCount()
             assert(channels <= 2, 'Spatial audio supports mono or stereo files: ' .. path)
             list = {}
             for channel = 1, channels do
-                local mono = love.sound.newSoundData(
+                local mono = katsa.sound.newSoundData(
                     data:getSampleCount(),
                     data:getSampleRate(),
                     data:getBitDepth(),
@@ -24,12 +24,12 @@ function Playback.install(Audio)
                 for i = 0, data:getSampleCount() - 1 do
                     mono:setSample(i, data:getSample(i, channel))
                 end
-                list[channel] = love.audio.newSource(mono, 'static')
+                list[channel] = katsa.audio.newSource(mono, 'static')
                 mono:release()
             end
             data:release()
         else
-            list = { love.audio.newSource(path, 'static') }
+            list = { katsa.audio.newSource(path, 'static') }
         end
 
         return list
@@ -55,7 +55,7 @@ function Playback.install(Audio)
     function Audio:play(path, options)
         options = options or {}
         path = self.resources:canonical(path)
-        assert(love.filesystem.getInfo(path), 'Missing sound: ' .. path)
+        assert(katsa.filesystem.getInfo(path), 'Missing sound: ' .. path)
         local spatial = options.object ~= nil or options.position ~= nil
         local stream = options.stream or options.music or false
         local minDistance = options.minDistance or options.referenceDistance or 20
@@ -87,7 +87,7 @@ function Playback.install(Audio)
         )
         local sources = {}
         if stream then
-            sources[1] = love.audio.newSource(path, 'stream')
+            sources[1] = katsa.audio.newSource(path, 'stream')
             if spatial and sources[1]:getChannelCount() ~= 1 then
                 sources[1]:release()
                 error(

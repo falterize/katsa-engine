@@ -11,7 +11,7 @@ local fixtures = 'source/tests/fixtures/lifecycle/'
 
 function Tests.new(manager)
     local self = Previous.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.5 ' .. tostring(message))
         os.exit(1)
     end
@@ -26,9 +26,9 @@ end
 
 function Tests:layout()
     local count = 0
-    for _, name in ipairs(love.filesystem.getDirectoryItems('source/game/scenes')) do
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems('source/game/scenes')) do
         local root = 'source/game/scenes/' .. name
-        self:check(love.filesystem.getInfo(root, 'directory'), 'Scene entry is a folder: ' .. name)
+        self:check(katsa.filesystem.getInfo(root, 'directory'), 'Scene entry is a folder: ' .. name)
         local package = Package.open(root)
         self:check(
             package.settings.layoutVersion == 2 or package.settings.layoutVersion == 3,
@@ -198,7 +198,7 @@ function Tests:portableScenes()
         'Failed startup releases all constructed systems'
     )
     self:check(
-        not love.filesystem.getInfo(root .. '/main.lua'),
+        not katsa.filesystem.getInfo(root .. '/main.lua'),
         'Failed startup releases archive resource leases'
     )
 end
@@ -217,7 +217,7 @@ function Tests:draw()
     self:portableScenes()
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v106.5 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

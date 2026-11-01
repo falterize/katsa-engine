@@ -5,11 +5,11 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED motion compare ' .. tostring(message))
         os.exit(1)
     end
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -21,7 +21,7 @@ function T:draw()
     end
     self.done = true
     for _, zone in ipairs({ 'combined', 'animationPhysicsLab', 'viewports', 'occlusion' }) do
-        love.math.setRandomSeed(384)
+        katsa.math.setRandomSeed(384)
         math.randomseed(384)
         local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
         scene.world.debug.bones = false
@@ -64,7 +64,7 @@ function T:draw()
                     encoded:release()
                 end
                 local digest =
-                    love.data.encode('string', 'hex', love.data.hash('sha256', image:getString()))
+                    katsa.data.encode('string', 'hex', katsa.data.hash('sha256', image:getString()))
                 image:release()
                 print('FRAME ' .. zone .. ' ' .. frame .. ' ' .. digest)
                 if zone == 'animationPhysicsLab' then
@@ -110,10 +110,10 @@ function T:draw()
                     print(
                         'PHYSICS',
                         frame,
-                        love.data.encode(
+                        katsa.data.encode(
                             'string',
                             'hex',
-                            love.data.hash('sha256', table.concat(numbers, ','))
+                            katsa.data.hash('sha256', table.concat(numbers, ','))
                         )
                     )
                     numbers = {}
@@ -125,10 +125,10 @@ function T:draw()
                     print(
                         'SKELETON',
                         frame,
-                        love.data.encode(
+                        katsa.data.encode(
                             'string',
                             'hex',
-                            love.data.hash('sha256', table.concat(numbers, ','))
+                            katsa.data.hash('sha256', table.concat(numbers, ','))
                         )
                     )
                     numbers = {}
@@ -140,10 +140,10 @@ function T:draw()
                     print(
                         'MESHES',
                         frame,
-                        love.data.encode(
+                        katsa.data.encode(
                             'string',
                             'hex',
-                            love.data.hash('sha256', table.concat(numbers, ','))
+                            katsa.data.hash('sha256', table.concat(numbers, ','))
                         )
                     )
                 end
@@ -153,10 +153,10 @@ function T:draw()
                             local canvas = kind == 'world' and view.world.renderer.canvas
                                 or view.world.overlayCanvas
                             local image = canvas:newImageData()
-                            local hash = love.data.encode(
+                            local hash = katsa.data.encode(
                                 'string',
                                 'hex',
-                                love.data.hash('sha256', image:getString())
+                                katsa.data.hash('sha256', image:getString())
                             )
                             image:release()
                             print(
@@ -173,12 +173,12 @@ function T:draw()
                     end
                 end
             end
-            love.graphics.present()
+            katsa.graphics.present()
         end
     end
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('PASSED 24 moving/world/viewport-overlay captures')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

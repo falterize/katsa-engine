@@ -94,20 +94,20 @@ function Resources:loadImage(source, label)
     label = label or tostring(source)
     local pixels, encoded
     if type(source) == 'string' then
-        local read, data = pcall(love.filesystem.newFileData, source)
+        local read, data = pcall(katsa.filesystem.newFileData, source)
         if read then
             encoded = data
         end
     end
     if type(source) == 'string' or source.typeOf and not source:typeOf('ImageData') then
-        local decoded, data = pcall(love.image.newImageData, encoded or source)
+        local decoded, data = pcall(katsa.image.newImageData, encoded or source)
         if decoded then
             pixels = data
         end
     elseif source.typeOf and source:typeOf('ImageData') then
         pixels = source
     end
-    local ok, value = pcall(love.graphics.newImage, pixels or source, { mipmaps = true })
+    local ok, value = pcall(katsa.graphics.newImage, pixels or source, { mipmaps = true })
     if not ok then
         self.imageErrors[label] = tostring(value)
         if self.store.journal then
@@ -118,17 +118,17 @@ function Resources:loadImage(source, label)
                 label
             )
         end
-        local fallback, image = pcall(love.graphics.newImage, missingImage)
+        local fallback, image = pcall(katsa.graphics.newImage, missingImage)
         if fallback then
             value = image
         else
             -- The diagnostic texture must also survive a missing fallback file.
-            local data = love.image.newImageData(16, 16)
+            local data = katsa.image.newImageData(16, 16)
             data:mapPixel(function(x, y)
                 local cell = (math.floor(x / 4) + math.floor(y / 4)) % 2
                 return cell * 0.7, 0, cell * 0.9, 1
             end)
-            value = love.graphics.newImage(data)
+            value = katsa.graphics.newImage(data)
             data:release()
         end
     else
@@ -174,7 +174,7 @@ function Resources:imageVariant(name, pixel)
     local path = self:canonical(authored)
     local image = self:cached('image', path .. '|' .. filter, function(owner)
         local value = owner:loadImage(path, path)
-        local anisotropy = math.min(8, love.graphics.getSystemLimits().textureanisotropy or 1)
+        local anisotropy = math.min(8, katsa.graphics.getSystemLimits().textureanisotropy or 1)
         local sampler = (path == missingImage or owner.imageErrors[path]) and 'nearest' or filter
         value:setFilter(sampler, sampler, sampler == 'linear' and anisotropy or 1)
         if sampler == 'linear' and value:getMipmapCount() > 1 then
@@ -213,8 +213,8 @@ function Resources:preload(items)
         elseif item.kind == 'sound' then
             local path = self:canonical(item.path)
             result[i] = self:cached('sound', path .. '|flat', function(owner)
-                assert(love.filesystem.getInfo(path), 'Missing sound: ' .. path)
-                return { owner:own(love.audio.newSource(path, 'static')) }
+                assert(katsa.filesystem.getInfo(path), 'Missing sound: ' .. path)
+                return { owner:own(katsa.audio.newSource(path, 'static')) }
             end)
         else
             error('Unknown preload kind: ' .. tostring(item.kind))

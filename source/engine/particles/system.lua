@@ -240,7 +240,7 @@ function S:update(dt)
     if dt <= 0 then
         return
     end
-    local start = love.timer.getTime()
+    local start = katsa.timer.getTime()
     self.accumulator = math.min(self.accumulator + dt, self.fixedDelta * self.maxSteps)
     self.stats.collisionQueries, self.stats.steps = 0, 0
     local camera
@@ -252,8 +252,8 @@ function S:update(dt)
     self.visibilityCamera = camera
     if camera and self.dimension == 3 then
         camera:update(
-            camera.width or love.graphics.getWidth(),
-            camera.height or love.graphics.getHeight()
+            camera.width or katsa.graphics.getWidth(),
+            camera.height or katsa.graphics.getHeight()
         )
     end
     self.stats.pausedEmitters = 0
@@ -282,7 +282,7 @@ function S:update(dt)
     for _, e in ipairs(self.emitters) do
         self.stats.live = self.stats.live + #e.particles
     end
-    self.stats.updateMilliseconds = (love.timer.getTime() - start) * 1000
+    self.stats.updateMilliseconds = (katsa.timer.getTime() - start) * 1000
 end
 
 function S:draw(camera, emitter)

@@ -3,7 +3,7 @@ local Tests = {}
 
 function Tests.run(tester)
     local path = 'source/game/scenes/abilityRunner2D/assets/animations/player.xml'
-    local text = assert(love.filesystem.read(path))
+    local text = assert(katsa.filesystem.read(path))
     local definition = Xml.parse(text)
     tester:check(
         definition.frameWidth == 8

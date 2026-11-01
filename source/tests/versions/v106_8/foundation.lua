@@ -97,7 +97,7 @@ function Tests.saves(tester)
         'The newest valid generation loads with nested defaults'
     )
     local fs = {}
-    for key, value in pairs(love.filesystem) do
+    for key, value in pairs(katsa.filesystem) do
         fs[key] = value
     end
     fs.rename = function()
@@ -117,15 +117,15 @@ function Tests.saves(tester)
         'A subsequent write recovers after interrupted commit'
     )
     local current = store:latest('progress')
-    assert(love.filesystem.write(current.path, '{broken'))
+    assert(katsa.filesystem.write(current.path, '{broken'))
     data, metadata = store:read('progress')
     tester:check(
         data.score == 20 and metadata.status == 'recovered',
         'Damaged newest file falls back to its sibling'
     )
     local a, b = store:paths('progress')
-    assert(love.filesystem.write(a, 'bad'))
-    assert(love.filesystem.write(b, 'bad'))
+    assert(katsa.filesystem.write(a, 'bad'))
+    assert(katsa.filesystem.write(b, 'bad'))
     tester:check(
         not store:read('progress') and not store:write('progress', {}),
         'Two damaged files are reported and never silently overwritten'
@@ -218,8 +218,8 @@ function Tests.starter(tester)
         scene.statistics.panel.histories.fps == background and background:summary().samples == 2,
         'Opening Stats preserves the recorded hidden-overlay history'
     )
-    local graphicsStats, queries = love.graphics.getStats, 0
-    love.graphics.getStats = function(...)
+    local graphicsStats, queries = katsa.graphics.getStats, 0
+    katsa.graphics.getStats = function(...)
         queries = queries + 1
         return graphicsStats(...)
     end
@@ -230,7 +230,7 @@ function Tests.starter(tester)
             scene:draw()
         end
     end)
-    love.graphics.getStats = graphicsStats
+    katsa.graphics.getStats = graphicsStats
     assert(sampled, samplingError)
     tester:check(
         queries == 1,
@@ -272,7 +272,7 @@ end
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED foundation ' .. tostring(message))
         os.exit(1)
     end
@@ -294,7 +294,7 @@ function Tests:draw()
     self.done = true
     Tests.run(self)
     print('PASSED ' .. self.count .. ' foundation checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

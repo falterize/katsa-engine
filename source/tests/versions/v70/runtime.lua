@@ -2,13 +2,13 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.errorhandler = function(err)
+    katsa.errorhandler = function(err)
         print('FAILED v70 ' .. tostring(err))
         return function()
             return 1
         end
     end
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
 end
 
@@ -183,7 +183,7 @@ function T:update()
             keys.castShadow and keys.receiveShadow and keys.shadowGroup and not keys.quality,
             'Particle shadow and budget properties appear in Workspace'
         )
-        local source = love.audio.newSource('assets/audio/effects/effectProbe.wav', 'static')
+        local source = katsa.audio.newSource('assets/audio/effects/effectProbe.wav', 'static')
         local filter = {
             enabled = true,
             effectType = 'filter',
@@ -239,7 +239,7 @@ function T:update()
         scene.renderer:draw(scene.world, scene.camera, 0)
         self:check(calls == 0 and shadows.drawCalls == 0, 'Wireframe bypasses shadow generation')
         self:check(
-            love.graphics.getShader() == nil,
+            katsa.graphics.getShader() == nil,
             'Wireframe graphics state does not leak into UI'
         )
         shadows.update = oldUpdate
@@ -322,13 +322,13 @@ function T:update()
             'Spatial UI has consistent new class names'
         )
         print('PASSED ' .. self.count .. ' focused v70 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
 function T:draw()
     if self.frame == 5 then
-        love.graphics.captureScreenshot(function(data)
+        katsa.graphics.captureScreenshot(function(data)
             self.clean = data
         end)
     end
@@ -338,10 +338,10 @@ function T:draw()
             [3] = 'maximum-graphics',
             [7] = 'shader-effects',
         })[self.frame]
-        love.graphics.captureScreenshot(function(data)
+        katsa.graphics.captureScreenshot(function(data)
             local blob = data:encode('png')
             local file = io.open(
-                love.filesystem.getSource() .. '/docs/previews/v70/' .. name .. '.png',
+                katsa.filesystem.getSource() .. '/docs/previews/v70/' .. name .. '.png',
                 'wb'
             )
             if file then
@@ -349,7 +349,7 @@ function T:draw()
                 file:close()
             else
                 -- Packaged .love sources cannot receive preview files.
-                love.filesystem.write('v70-' .. name .. '.png', blob)
+                katsa.filesystem.write('v70-' .. name .. '.png', blob)
             end
             blob:release()
             data:release()

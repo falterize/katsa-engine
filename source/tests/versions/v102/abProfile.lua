@@ -4,7 +4,7 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.window.setMode(1280, 720, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(1280, 720, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -15,7 +15,7 @@ function T:draw()
         return
     end
     self.done = true
-    local g = love.graphics
+    local g = katsa.graphics
     local UI = require('source.engine.ui')
     local Text = require('source.engine.ui.drawing.text')
     local Node = require('source.engine.nodes')
@@ -28,14 +28,14 @@ function T:draw()
     }
     local function fixture(name)
         return assert(
-            loadstring(love.filesystem.read('source/tests/fixtures/v101-' .. name .. '.lua'))
+            loadstring(katsa.filesystem.read('source/tests/fixtures/v101-' .. name .. '.lua'))
         )()
     end
     local oldText, oldVariants = fixture('text'), fixture('shaderVariants')
     local baselineUI = {}
     fixture('drawing')(baselineUI)
     -- Load the original UINode drawSelf without registering a duplicate class.
-    local oldNodeSource = love.filesystem.read('source/tests/fixtures/v101-uiNode.lua')
+    local oldNodeSource = katsa.filesystem.read('source/tests/fixtures/v101-uiNode.lua')
     oldNodeSource =
         oldNodeSource:gsub("local UINode = Node.define%('UINode', 'Node'%)", 'local UINode = {}')
     local oldNode = assert(loadstring(oldNodeSource))()
@@ -54,7 +54,7 @@ function T:draw()
             for pass = 1, 2 do
                 local baseline = (round % 2 == 1) == (pass == 1)
                 mode(baseline)
-                love.math.setRandomSeed(384)
+                katsa.math.setRandomSeed(384)
                 math.randomseed(384)
                 local scene =
                     assert(self.manager:switch(require('source.game.runtime.game').new, zone))
@@ -76,9 +76,9 @@ function T:draw()
                         fence:release()
                         collectgarbage('collect')
                         calls = 0
-                        started = love.timer.getTime()
+                        started = katsa.timer.getTime()
                     end
-                    love.event.pump()
+                    katsa.event.pump()
                     self.manager:update(1 / 60)
                     self.manager:draw()
                     if frame > 60 then
@@ -94,7 +94,7 @@ function T:draw()
                         zone,
                         round,
                         baseline and 'v101' or 'v102',
-                        (love.timer.getTime() - started) * 1000 / frames,
+                        (katsa.timer.getTime() - started) * 1000 / frames,
                         calls / frames
                     )
                 )
@@ -104,7 +104,7 @@ function T:draw()
     mode(false)
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('A/B PROFILE COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

@@ -25,10 +25,10 @@ local zones = {
 }
 
 function T.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v66 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
@@ -100,7 +100,7 @@ function T:update()
         )
         self.manager:switch(require('source.game.runtime.menu').new)
         print('PASSED ' .. self.count .. ' focused v66 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -109,10 +109,10 @@ function T:draw()
         return
     end
     self.capture = false
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local bytes = image:encode('png')
         local f = assert(
-            io.open(love.filesystem.getSource() .. '/docs/previews/v66/material-fallback.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v66/material-fallback.png', 'wb')
         )
         f:write(bytes:getString())
         f:close()

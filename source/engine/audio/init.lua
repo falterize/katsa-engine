@@ -91,8 +91,8 @@ function Audio:update(camera)
             self.listener[i] = (camera.worldPosition or camera.position)[i]
         end
         -- Mirror Z to map the left-handed game world into OpenAL coordinates.
-        love.audio.setPosition(self.listener[1], self.listener[2], -self.listener[3])
-        love.audio.setOrientation(
+        katsa.audio.setPosition(self.listener[1], self.listener[2], -self.listener[3])
+        katsa.audio.setOrientation(
             camera.forward[1],
             camera.forward[2],
             -camera.forward[3],

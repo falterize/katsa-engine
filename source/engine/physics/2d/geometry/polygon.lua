@@ -41,7 +41,7 @@ function Polygon.parts(values)
     if convex and #flat <= 16 then
         return { flat }
     end
-    return love.math.triangulate(flat)
+    return katsa.math.triangulate(flat)
 end
 
 return Polygon

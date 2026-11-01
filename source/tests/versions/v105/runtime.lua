@@ -266,7 +266,7 @@ function Tests:draw()
     self:settings()
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v105 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

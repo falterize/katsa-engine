@@ -4,7 +4,7 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED profile ' .. tostring(message))
         os.exit(1)
     end
@@ -19,7 +19,7 @@ function T.new(manager)
             jit.flush()
         end
     end
-    love.window.setMode(810, 330, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 330, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -30,7 +30,7 @@ function T:draw()
         return
     end
     self.done = true
-    print('DEVICE', love.graphics.getRendererInfo())
+    print('DEVICE', katsa.graphics.getRendererInfo())
     print('JIT', jit.status(), jit.arch)
     print('case,checks,meshes,lights,other,prepare,submit,complete,updated,reused')
     local referencePath = os.getenv('KATSA_REFERENCE_INSPECTOR')
@@ -76,9 +76,9 @@ function T:draw()
 
             local function sample(inspector, cache, samples)
                 r._frameCache = cache
-                local start = love.timer.getTime()
+                local start = katsa.timer.getTime()
                 local result = inspector.inspect(r, w, c, t, true)
-                local elapsed = (love.timer.getTime() - start) * 1000
+                local elapsed = (katsa.timer.getTime() - start) * 1000
                 if frame > 30 then
                     samples[#samples + 1] = elapsed
                 end
@@ -95,7 +95,7 @@ function T:draw()
         end
         for frame = 1, 150 do
             local t = frame / 60
-            local start = love.timer.getTime()
+            local start = katsa.timer.getTime()
             scene:update(1 / 60, 1 / 60)
             if mode == 'Cube' then
                 cube.position[2] = math.sin(t * 2) * 18
@@ -111,7 +111,7 @@ function T:draw()
             r:draw(w, c, t, true)
             local data = r.canvas:newImageData()
             data:release()
-            local complete = (love.timer.getTime() - start) * 1000
+            local complete = (katsa.timer.getTime() - start) * 1000
             if frame > 30 then
                 local phases = r._frameCache.timings
                 local values = {
@@ -175,7 +175,7 @@ function T:draw()
         end
     end
     print('PROFILE COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

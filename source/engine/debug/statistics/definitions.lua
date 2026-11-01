@@ -206,7 +206,7 @@ end
 function Statistics:sample()
     local scene = self.scene
     if scene.showStats and scene.manager.frameTime >= self.panel.nextRefresh then
-        love.graphics.getStats(self.graphics)
+        katsa.graphics.getStats(self.graphics)
         local physics = scene.physics or scene.world.physics
         self.panel.exportMetadata = self.panel.exportMetadata or {}
         self.panel.exportMetadata.scene = scene.zone

@@ -16,8 +16,8 @@ function Tests.run(tester)
         'A fresh data service reads committed data from another scene or application session'
     )
     tester:check(
-        shared:directory() == love.filesystem.getSaveDirectory()
-            and shared:directory() ~= love.filesystem.getSource(),
+        shared:directory() == katsa.filesystem.getSaveDirectory()
+            and shared:directory() ~= katsa.filesystem.getSource(),
         'Persistent data lives in the application save directory outside the replaceable game source'
     )
     local updated = Data.new('validation-shared-v1068', {
@@ -64,7 +64,7 @@ function Tests.run(tester)
             and files:readFile('text/config.ini') == 'volume=0.5\n',
         'Text files round-trip without JSON wrapping'
     )
-    local bytes = love.data.newByteData('revision-2\0')
+    local bytes = katsa.data.newByteData('revision-2\0')
     assert(files:writeFile('profiles/player.bin', bytes))
     bytes:release()
     tester:check(
@@ -77,7 +77,7 @@ function Tests.run(tester)
             and files:fileExists('profiles/player.bin'),
         'File writes cannot replace a data directory'
     )
-    assert(love.filesystem.remove(primary))
+    assert(katsa.filesystem.remove(primary))
     local recovered, recovery = files:readFile('profiles/player.bin')
     tester:check(
         recovered == binary and recovery.recovered and files:fileExists('profiles/player.bin'),
@@ -85,14 +85,14 @@ function Tests.run(tester)
     )
     assert(files:writeFile('profiles/player.bin', 'committed'))
     local fs = {}
-    for key, value in pairs(love.filesystem) do
+    for key, value in pairs(katsa.filesystem) do
         fs[key] = value
     end
     fs.rename = function(source, target)
         if source:match('%.tmp$') then
             return nil, 'Injected raw-file commit failure'
         end
-        return FileIO.rename(love.filesystem, source, target)
+        return FileIO.rename(katsa.filesystem, source, target)
     end
     local failing = Data.new('validation-files-v1068', { filesystem = fs })
     tester:check(

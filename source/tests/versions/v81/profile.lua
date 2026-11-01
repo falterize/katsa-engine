@@ -3,7 +3,7 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -14,7 +14,7 @@ function T:draw()
         return
     end
     self.done = true
-    print('DEVICE', love.getVersion(), love.graphics.getRendererInfo())
+    print('DEVICE', katsa.getVersion(), katsa.graphics.getRendererInfo())
     print(
         'zone,shadows,motion,occlusion,updateCPU,renderCPU,sceneCullCPU,occlusionCPU,shadowCPU,mainCPU,shadowGPU,mainGPU,readbackWait,total,meshBefore,meshAfter,mainTriangles,shadowTriangles,culled,drawCalls,shadowFaces,canvasSwitches,shaderSwitches,reused'
     )
@@ -118,7 +118,7 @@ function T:draw()
                         totals[key] = (totals[key] or 0) + (value or 0)
                     end
                     for i = 1, 36 do
-                        local start, t = love.timer.getTime(), i / 60
+                        local start, t = katsa.timer.getTime(), i / 60
                         scene:update(1 / 60)
                         camera.position[1] = baseX
                             + ((motion == 'Camera' or motion == 'All') and math.sin(t) * 80 or 0)
@@ -154,16 +154,16 @@ function T:draw()
                         end
                         renderer.shadows.nextUpdate = -1
                         renderer.lights.nextSelection = 0
-                        local updated = love.timer.getTime()
-                        local before = love.graphics.getStats()
+                        local updated = katsa.timer.getTime()
+                        local before = katsa.graphics.getStats()
                         renderer:draw(world, camera, t, true)
                         if timer and not renderer.stats.frameReused then
                             timer:finish()
                         end
-                        local submitted = love.timer.getTime()
-                        local after = love.graphics.getStats()
+                        local submitted = katsa.timer.getTime()
+                        local after = katsa.graphics.getStats()
                         local image = renderer.canvas:newImageData()
-                        local finished = love.timer.getTime()
+                        local finished = katsa.timer.getTime()
                         local shadowGPU, mainGPU = 0, 0
                         if timer and not renderer.stats.frameReused then
                             shadowGPU, mainGPU = timer:read(0), timer:read(1)
@@ -240,8 +240,8 @@ function T:draw()
         f:write(table.concat(rows, '\n'))
         f:close()
     end
-    love.filesystem.write('profile-v81.csv', table.concat(rows, '\n'))
-    love.event.quit()
+    katsa.filesystem.write('profile-v81.csv', table.concat(rows, '\n'))
+    katsa.event.quit()
 end
 
 return T

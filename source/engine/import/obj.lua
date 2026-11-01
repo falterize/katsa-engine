@@ -29,7 +29,7 @@ local function resolve(i, list)
 end
 
 local function materials(path, resources)
-    local text = assert(love.filesystem.read(path), 'Missing MTL: ' .. path)
+    local text = assert(katsa.filesystem.read(path), 'Missing MTL: ' .. path)
     local dir = path:match('^(.*[/])') or ''
     local result, current = {}, nil
     for line in text:gmatch('[^\r\n]+') do
@@ -53,7 +53,7 @@ local function materials(path, resources)
 end
 
 function OBJ.load(path, resources)
-    local text = assert(love.filesystem.read(path), 'Missing OBJ: ' .. path)
+    local text = assert(katsa.filesystem.read(path), 'Missing OBJ: ' .. path)
     local dir = path:match('^(.*[/])') or ''
     local positions, uvs, normals = {}, {}, {}
     local groups, group, mtl = {}, nil, {}

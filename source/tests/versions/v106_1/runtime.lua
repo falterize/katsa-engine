@@ -9,7 +9,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.1 ' .. tostring(message))
         os.exit(1)
     end
@@ -80,10 +80,10 @@ function Tests:exports()
     )
     options.scope, options.metricId = 'all', 'a'
     local path1 = Export.save(definitions, histories, options)
-    local saved = love.filesystem.read(path1)
+    local saved = katsa.filesystem.read(path1)
     local path2 = Export.save(definitions, histories, options)
     self:check(
-        path1 ~= path2 and love.filesystem.read(path1) == saved,
+        path1 ~= path2 and katsa.filesystem.read(path1) == saved,
         'Repeated saves never overwrite an existing export'
     )
     self:check(
@@ -96,8 +96,8 @@ function Tests:exports()
         file:write(saved)
         file:close()
     end
-    assert(love.filesystem.remove(path1))
-    assert(love.filesystem.remove(path2))
+    assert(katsa.filesystem.remove(path1))
+    assert(katsa.filesystem.remove(path2))
 end
 
 function Tests:ui()
@@ -164,7 +164,7 @@ function Tests:ui()
     }) do
         panel.exportButtons[index].onPress()
         local path = panel.lastExport
-        local content = assert(path and love.filesystem.read(path))
+        local content = assert(path and katsa.filesystem.read(path))
         self:check(
             content:find(',' .. choice[1] .. ',' .. choice[2] .. ',', 1, true),
             'Export button writes the requested scope/window ' .. index
@@ -180,7 +180,7 @@ function Tests:ui()
     panel:sample(scene.statistics.context, scene.manager.frameTime, false)
     self:check(not panel.exportDialog.visible, 'Closing Stats hides the export dialog')
     for _, path in ipairs(paths) do
-        assert(love.filesystem.remove(path))
+        assert(katsa.filesystem.remove(path))
     end
     local reference = os.getenv('KATSA_REFERENCE_TEXT')
     if reference then
@@ -188,22 +188,22 @@ function Tests:ui()
         local source = file:read('*a')
         file:close()
         local previous = assert(loadstring(source, 'v106-text-reference'))()
-        local first, second = love.graphics.newCanvas(400, 180), love.graphics.newCanvas(400, 180)
+        local first, second = katsa.graphics.newCanvas(400, 180), katsa.graphics.newCanvas(400, 180)
         for _, content in ipairs({
             'Wrapped plain text with several words 12345',
             '<b>Bold</b> <i>italic</i> <u>underlined</u>\n<font color="#55CCFF">Color</font>',
         }) do
             label.text, label.richText, label._preparedText =
                 content, content:find('<', 1, true) ~= nil, nil
-            love.graphics.push('all')
-            love.graphics.setCanvas(first)
-            love.graphics.clear(0, 0, 0, 0)
+            katsa.graphics.push('all')
+            katsa.graphics.setCanvas(first)
+            katsa.graphics.clear(0, 0, 0, 0)
             previous.drawLabel(ui, label)
-            love.graphics.setCanvas(second)
-            love.graphics.clear(0, 0, 0, 0)
+            katsa.graphics.setCanvas(second)
+            katsa.graphics.clear(0, 0, 0, 0)
             label._preparedText = nil
             Text.drawLabel(ui, label)
-            love.graphics.pop()
+            katsa.graphics.pop()
             local a, b = first:newImageData(), second:newImageData()
             self:check(
                 a:getString() == b:getString(),
@@ -242,16 +242,16 @@ function Tests:draw()
     local path = os.getenv('KATSA_PREVIEW_PATH')
     if path then
         self.manager:draw()
-        love.graphics.captureScreenshot(function(image)
+        katsa.graphics.captureScreenshot(function(image)
             local file = assert(io.open(path, 'wb'))
             file:write(image:encode('png'):getString())
             file:close()
             image:release()
             print('V106.1 PREVIEW COMPLETE')
-            love.event.quit()
+            katsa.event.quit()
         end)
     else
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

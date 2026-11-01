@@ -23,7 +23,7 @@ function T:draw()
     if baseline then
         local original = assert(loadfile(baseline .. '/source/engine/core/valueSnapshot.lua'))()
         local old, current = {}, {}
-        local random = love.math.newRandomGenerator(77)
+        local random = katsa.math.newRandomGenerator(77)
         for round = 1, 1000 do
             local value = {}
             for i = 1, random:random(0, 20) do

@@ -143,9 +143,9 @@ end
 
 function World:step(dt)
     self:stepMotors(dt)
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     local code = C.JPH_PhysicsSystem_Update(self.system, dt, 1, Jobs.select(self))
-    self.physics.stats.nativeSolverMilliseconds = (love.timer.getTime() - started) * 1000
+    self.physics.stats.nativeSolverMilliseconds = (katsa.timer.getTime() - started) * 1000
     self.poseEpoch = self.poseEpoch + 1
     assert(code == 0, 'Jolt capacity error: ' .. tonumber(code))
     Jobs.collect(self)

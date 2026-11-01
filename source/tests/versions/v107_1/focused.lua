@@ -21,7 +21,7 @@ function Tests:draw()
     require('source.tests.versions.v107_1.textEditing').run(self)
     require('source.tests.versions.v107_1.expansion').run(self)
     print('PASSED ' .. self.count .. ' v107.1 authoring checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

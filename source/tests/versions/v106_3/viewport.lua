@@ -23,14 +23,14 @@ function Viewport.run(tests, ui, density)
             clicks = clicks + 1
         end,
     }, scroll)
-    local canvas = love.graphics.newCanvas(480 * density, 320 * density, { dpiscale = 1 })
+    local canvas = katsa.graphics.newCanvas(480 * density, 320 * density, { dpiscale = 1 })
     local function render()
-        love.graphics.push('all')
-        love.graphics.setCanvas({ canvas, stencil = true })
-        love.graphics.origin()
-        love.graphics.clear(0, 0, 0, 0, 0)
+        katsa.graphics.push('all')
+        katsa.graphics.setCanvas({ canvas, stencil = true })
+        katsa.graphics.origin()
+        katsa.graphics.clear(0, 0, 0, 0, 0)
         ui:draw()
-        love.graphics.pop()
+        katsa.graphics.pop()
     end
     render()
     tests:check(

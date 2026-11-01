@@ -2,10 +2,10 @@ local Test = {}
 Test.__index = Test
 
 function Test.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v62 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, Test)
@@ -36,7 +36,7 @@ end
 function Test:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
+        katsa.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
         local scene = self.manager.stack[#self.manager.stack]
         assert(scene, 'Menu scene unavailable')
         scene.input:press('blank-menu', 959, 539)
@@ -180,7 +180,7 @@ function Test:update()
             'Scene transitions and edited curve rendering leave no errors'
         )
         print('PASSED ' .. self.count .. ' focused v62 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

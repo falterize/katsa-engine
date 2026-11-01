@@ -305,7 +305,7 @@ function T:draw()
     require('source.tests.versions.v103.optimization')(self)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v103 backend checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

@@ -176,7 +176,7 @@ function ImageCollider.collect(descriptor, resources)
         descriptor.imageRevision or 0,
     }, '|')
     if descriptor._imageKey ~= key then
-        local data = love.image.newImageData(canonical)
+        local data = katsa.image.newImageData(canonical)
         local ok, parts = pcall(build, data, descriptor)
         data:release()
         if not ok then

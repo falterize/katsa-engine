@@ -19,14 +19,14 @@ local function segment(camera, a, b, color)
         local t = ((camera.nearClip or camera.near) - bz) / (az - bz)
         bx, by, bz = bx + (ax - bx) * t, by + (ay - by) * t, (camera.nearClip or camera.near)
     end
-    love.graphics.setColor(unpack(color))
+    katsa.graphics.setColor(unpack(color))
     local sax, say = camera:viewToScreen(ax, ay, az)
     local sbx, sby = camera:viewToScreen(bx, by, bz)
-    love.graphics.line(sax, say, sbx, sby)
+    katsa.graphics.line(sax, say, sbx, sby)
 end
 
 function Debug.draw(world, camera)
-    local g = love.graphics
+    local g = katsa.graphics
     for _, board in ipairs(world.billboards) do
         if board.debugEnabled and board.drawable and not board:isA('SurfaceUI') then
             g.push('all')

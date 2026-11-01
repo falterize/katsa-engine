@@ -7,7 +7,7 @@ function T.new(manager)
         jit.off()
         jit.flush()
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -22,7 +22,7 @@ function T:draw()
     print('case,backend,round,KB allocated per update with GC stopped,update mean ms')
     for _, zone in ipairs({ 'animationPhysicsLab', 'animationLab', 'combined' }) do
         for round = 1, 3 do
-            love.math.setRandomSeed(384)
+            katsa.math.setRandomSeed(384)
             math.randomseed(384)
             local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
             scene.showStats = false
@@ -31,11 +31,11 @@ function T:draw()
             end
             collectgarbage('collect')
             collectgarbage('stop')
-            local memory, start = collectgarbage('count'), love.timer.getTime()
+            local memory, start = collectgarbage('count'), katsa.timer.getTime()
             for i = 1, 120 do
                 self.manager:update(1 / 60)
             end
-            local elapsed = (love.timer.getTime() - start) * 1000 / 120
+            local elapsed = (katsa.timer.getTime() - start) * 1000 / 120
             local allocated = (collectgarbage('count') - memory) / 120
             collectgarbage('restart')
             collectgarbage('collect')
@@ -49,12 +49,12 @@ function T:draw()
                     elapsed
                 )
             )
-            love.event.pump()
+            katsa.event.pump()
         end
     end
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('GC PROFILE COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

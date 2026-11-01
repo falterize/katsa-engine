@@ -23,7 +23,7 @@ function Tests:draw()
     require('source.tests.versions.v107.colliderAuthoring').run(self)
     require('source.tests.versions.v107_2.colliderSources').run(self)
     print('PASSED ' .. self.count .. ' v107.2 authoring checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

@@ -18,7 +18,7 @@ function Textures.create(document, binary, path, resources)
                 local view = document.bufferViews[sourceImage.bufferView + 1]
                 local bytes =
                     binary:sub((view.byteOffset or 0) + 1, (view.byteOffset or 0) + view.byteLength)
-                local file = love.filesystem.newFileData(
+                local file = katsa.filesystem.newFileData(
                     bytes,
                     'embedded.' .. (sourceImage.mimeType == 'image/png' and 'png' or 'jpg')
                 )

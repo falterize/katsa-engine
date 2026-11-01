@@ -20,17 +20,17 @@ function Tests:draw()
         assert(awareness == 2, 'Windows must not bitmap-scale the game window')
         print('WINDOWS DPI AWARENESS', awareness)
     end
-    print('DPI', love.graphics.getDPIScale(), love.graphics.getDimensions())
+    print('DPI', katsa.graphics.getDPIScale(), katsa.graphics.getDimensions())
     local resources = self.manager.resources:scope()
     local ui = require('source.engine.ui').new(800, 600, resources)
     ui:setDensity(0.75)
     assert(ui:font(22):getDPIScale() == 0.75, 'Shrunken UI must rasterize at its target density')
     local node = ui:text({ text = 'Sharp aligned text', size = { 0, 271, 0, 49 } }, ui.content)
     ui:layout()
-    love.graphics.push('all')
-    love.graphics.scale(1.25)
+    katsa.graphics.push('all')
+    katsa.graphics.scale(1.25)
     ui:drawRaw()
-    love.graphics.pop()
+    katsa.graphics.pop()
     assert(node._textDrawables[1] ~= nil, 'Aligned text retains its glyph geometry')
     local image = resources:image('assets/textures/ui/litter.png')
     assert(image:getMipmapCount() > 1, 'Linear image variants must support mipmaps')
@@ -46,13 +46,13 @@ function Tests:draw()
             and renderer.density >= 1,
         'Default preserves native density with hardware-aware AA'
     )
-    if renderer.msaa > 0 and love.graphics.getSystemLimits().canvasmsaa >= 2 then
+    if renderer.msaa > 0 and katsa.graphics.getSystemLimits().canvasmsaa >= 2 then
         assert(renderer.actualMSAA >= 2, 'Supported edge AA must reach the actual target')
     end
     local defaultSamples = renderer.actualMSAA
     renderer.msaa = 2
     renderer:resize(640, 360)
-    if love.graphics.getSystemLimits().canvasmsaa >= 2 then
+    if katsa.graphics.getSystemLimits().canvasmsaa >= 2 then
         assert(renderer.actualMSAA >= 2, 'Optional MSAA still works on supported Intel hardware')
     end
     print('DEFAULT MSAA', defaultSamples)
@@ -61,6 +61,6 @@ function Tests:draw()
     ui:release()
     resources:release()
     print('QUALITY CHECK COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 return Tests

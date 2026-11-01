@@ -42,7 +42,7 @@ function Tests:draw()
         assert(data:removeFile('payload.bin'))
     end
     print('PASSED DATA SESSION ' .. phase .. ' ' .. data:directory())
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

@@ -6,7 +6,7 @@ function State.restoreUIStencil(ui)
     if not ui._stencilLevel or ui._stencilLevel == 0 then
         return
     end
-    local g = love.graphics
+    local g = katsa.graphics
     g.push('all')
     g.setScissor()
     g.setShader()
@@ -20,7 +20,7 @@ function State.restoreUIStencil(ui)
 end
 
 function State.reapplyScissor()
-    local g = love.graphics
+    local g = katsa.graphics
     local x, y, w, h = g.getScissor()
     g.setScissor()
     if x then

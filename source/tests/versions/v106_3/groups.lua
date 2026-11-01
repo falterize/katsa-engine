@@ -14,31 +14,31 @@ function Groups.run(tests, ui, density)
         align = 'left',
         verticalAlign = 'top',
     }, group)
-    local a = love.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
-    local b = love.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
-    local font = love.graphics.newFont(math.floor(13 * density + 0.5), 'normal', 1)
-    love.graphics.push('all')
-    love.graphics.setCanvas({ a, stencil = true })
-    love.graphics.origin()
-    love.graphics.setScissor()
-    love.graphics.setStencilTest()
-    love.graphics.setShader()
-    love.graphics.clear(0, 0, 0, 0, 0)
+    local a = katsa.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
+    local b = katsa.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
+    local font = katsa.graphics.newFont(math.floor(13 * density + 0.5), 'normal', 1)
+    katsa.graphics.push('all')
+    katsa.graphics.setCanvas({ a, stencil = true })
+    katsa.graphics.origin()
+    katsa.graphics.setScissor()
+    katsa.graphics.setStencilTest()
+    katsa.graphics.setShader()
+    katsa.graphics.clear(0, 0, 0, 0, 0)
     ui:draw()
     local cached = group._groupCanvas
-    love.graphics.clear(0, 0, 0, 0, 0)
+    katsa.graphics.clear(0, 0, 0, 0, 0)
     ui:draw()
-    love.graphics.setCanvas(b)
-    love.graphics.origin()
-    love.graphics.clear(0, 0, 0, 0)
-    love.graphics.setColor(1, 1, 1, 0.5)
-    love.graphics.setFont(font)
-    love.graphics.print(
+    katsa.graphics.setCanvas(b)
+    katsa.graphics.origin()
+    katsa.graphics.clear(0, 0, 0, 0)
+    katsa.graphics.setColor(1, 1, 1, 0.5)
+    katsa.graphics.setFont(font)
+    katsa.graphics.print(
         'Workspace 12345',
         math.floor(3.3 * density + 0.5),
         math.floor(2.7 * density + 0.5)
     )
-    love.graphics.pop()
+    katsa.graphics.pop()
     tests:check(
         group._groupCanvas == cached and cached:getDPIScale() == 1,
         'CanvasGroup reuses a physical-pixel target at density ' .. density

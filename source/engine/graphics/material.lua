@@ -25,10 +25,10 @@ function Material.new(resources, options)
         code = insert(code, '// MATERIAL_VERTEX', options.vertexCode)
         code = insert(code, '// MATERIAL_PIXEL', options.fragmentCode)
     else
-        code = options.code or (options.path and assert(love.filesystem.read(options.path)))
+        code = options.code or (options.path and assert(katsa.filesystem.read(options.path)))
         assert(code, 'UI material requires code or path')
     end
-    local success, shader = pcall(love.graphics.newShader, code)
+    local success, shader = pcall(katsa.graphics.newShader, code)
     assert(success, 'Material shader failed: ' .. tostring(shader))
     resources:own(shader)
     local self = setmetatable({
@@ -46,11 +46,11 @@ function Material.new(resources, options)
         assert(shader:hasUniform(name), 'Unknown or unused material uniform: ' .. name)
     end
     if kind == 'world' then
-        local shadowCode = assert(love.filesystem.read('assets/shaders/engine/shadow.glsl'))
+        local shadowCode = assert(katsa.filesystem.read('assets/shaders/engine/shadow.glsl'))
         shadowCode =
             insert(shadowCode, '// MATERIAL_VERTEX_DECLARATIONS', options.vertexDeclarations)
         shadowCode = insert(shadowCode, '// MATERIAL_VERTEX', options.vertexCode)
-        local ok, shadowShader = pcall(love.graphics.newShader, shadowCode)
+        local ok, shadowShader = pcall(katsa.graphics.newShader, shadowCode)
         assert(ok, 'Material shadow shader failed: ' .. tostring(shadowShader))
         self.shadowShader = resources:own(shadowShader)
     end

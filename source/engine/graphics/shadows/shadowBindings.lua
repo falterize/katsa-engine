@@ -16,7 +16,7 @@ function ShadowBindings.install(Shadows)
                 local seconds = settings.sourceFadeSeconds or 0.15
                 self.lightFade[slot] = record.publishedAt
                         and seconds > 0
-                        and math.min(1, (love.timer.getTime() - record.publishedAt) / seconds)
+                        and math.min(1, (katsa.timer.getTime() - record.publishedAt) / seconds)
                     or 1
             end
         end

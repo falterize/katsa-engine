@@ -15,7 +15,7 @@ function Runtime:check(condition, message)
 end
 
 function Runtime:capture(name)
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         image:encode(
             'png',
             'test' .. name:gsub('^%l', string.upper):gsub('[-_](%l)', string.upper) .. '.png'
@@ -30,7 +30,7 @@ function Runtime:update()
     local s = m.stack[#m.stack]
     if self.shadowsOnly then
         require('source.tests.integration.shadows')(self)
-        love.event.quit(0)
+        katsa.event.quit(0)
         return
     end
     if self.frame == 3 then
@@ -39,10 +39,10 @@ function Runtime:update()
             'assets/shaders/engine/world.glsl',
             'assets/shaders/engine/sky.glsl',
         }) do
-            local code = love.filesystem.read(path)
+            local code = katsa.filesystem.read(path)
             local vertex = path == 'assets/shaders/engine/world.glsl' and code
                 or 'vec4 position(mat4 transformProjection, vec4 vertexPosition) { return transformProjection * vertexPosition; }'
-            local valid, message = love.graphics.validateShader(true, code, vertex)
+            local valid, message = katsa.graphics.validateShader(true, code, vertex)
             self:check(
                 valid,
                 'GLES shader validation: ' .. path .. (valid and '' or ': ' .. message)
@@ -169,8 +169,8 @@ function Runtime:update()
         self:check(#s.world.objects == 401 and s.renderer.stats.lights == 32, 'Combined test zone')
         self.screenshot = 'combined'
     elseif self.frame == 63 then
-        love.window.setMode(960, 540, { resizable = true, depth = 24, stencil = 8 })
-        love.resize(960, 540)
+        katsa.window.setMode(960, 540, { resizable = true, depth = 24, stencil = 8 })
+        katsa.resize(960, 540)
     elseif self.frame == 68 then
         self:check(
             s.renderer.width == 960 and s.ui.scale == 1 and s.ui.width == 960,
@@ -347,12 +347,12 @@ function Runtime:update()
         m:switch(require('source.game.runtime.menu').new)
     elseif self.frame == 134 then
         self:check(#m.stack == 1 and not m.stack[1].world, 'Return to menu releases game scene')
-        local name, version, vendor, device = love.graphics.getRendererInfo()
+        local name, version, vendor, device = katsa.graphics.getRendererInfo()
         self.report[#self.report + 1] = 'Renderer: '
             .. table.concat({ name, version, vendor, device }, ' / ')
-        love.filesystem.write('testReport.txt', table.concat(self.report, '\n'))
+        katsa.filesystem.write('testReport.txt', table.concat(self.report, '\n'))
         print('ALL RUNTIME TESTS PASSED')
-        love.event.quit(0)
+        katsa.event.quit(0)
     end
 end
 

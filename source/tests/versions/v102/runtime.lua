@@ -2,7 +2,7 @@ local T = {}
 
 local function extra(test)
     local scene = assert(test.manager:switch(require('source.game.runtime.game').new, 'combined'))
-    local ui, g = scene.ui, love.graphics
+    local ui, g = scene.ui, katsa.graphics
     for _, density in ipairs({ 1, 1.25, 1.5, 1.75, 2 }) do
         ui:setDensity(density)
         test:check(
@@ -168,7 +168,7 @@ local function extra(test)
     end
     r.forceGeneralShader = false
     local conf = { window = {}, modules = {} }
-    love.conf(conf)
+    katsa.conf(conf)
     test:check(conf.window.vsync == 0, 'Normal startup disables VSync')
 end
 

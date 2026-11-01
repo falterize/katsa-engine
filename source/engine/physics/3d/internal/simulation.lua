@@ -3,14 +3,14 @@ local Triggers = require('source.engine.physics.3d.triggers')
 local Simulation = {}
 
 local function step(physics, dt)
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     physics.world:step(dt)
     physics.stats.solverMilliseconds = physics.stats.solverMilliseconds
-        + (love.timer.getTime() - started) * 1000
-    started = love.timer.getTime()
+        + (katsa.timer.getTime() - started) * 1000
+    started = katsa.timer.getTime()
     Triggers.step(physics)
     physics.stats.triggerMilliseconds = physics.stats.triggerMilliseconds
-        + (love.timer.getTime() - started) * 1000
+        + (katsa.timer.getTime() - started) * 1000
 end
 
 function Simulation.install(Physics, Body3D)
@@ -33,7 +33,7 @@ function Simulation.install(Physics, Body3D)
         if self._interpolationMode ~= self.interpolate then
             self:setInterpolation(self.interpolate)
         end
-        local started = love.timer.getTime()
+        local started = katsa.timer.getTime()
         assert(
             type(dt) == 'number' and dt == dt and dt >= 0 and dt < math.huge,
             'Physics delta must be finite and nonnegative'
@@ -89,7 +89,7 @@ function Simulation.install(Physics, Body3D)
         end
         self.stats.steps = steps
         self.interpolationAlpha = self.accumulator / self.fixedDelta
-        self.stats.updateMilliseconds = (love.timer.getTime() - started) * 1000
+        self.stats.updateMilliseconds = (katsa.timer.getTime() - started) * 1000
     end
 end
 

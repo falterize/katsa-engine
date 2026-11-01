@@ -28,7 +28,7 @@ local function resource()
         setPixel = function() end,
     }
 end
-love = {
+katsa = {
     timer = {
         getTime = function()
             return clock

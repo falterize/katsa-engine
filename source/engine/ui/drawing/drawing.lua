@@ -11,7 +11,7 @@ function Drawing.install(UI)
         if not n.text then
             return
         end
-        local g = love.graphics
+        local g = katsa.graphics
         if n.textScaled or n.richText then
             local x, y = g.transformPoint(n._x, n._y)
             local x2, y2 = g.transformPoint(n._x + n._width, n._y + n._height)
@@ -35,7 +35,7 @@ function Drawing.install(UI)
     end
 
     function UI:drawCanvasGroup(n)
-        local g = love.graphics
+        local g = katsa.graphics
         local alpha = 1 - math.max(0, math.min(1, n.transparency or 0))
         if alpha <= 0 then
             return
@@ -129,7 +129,7 @@ function Drawing.install(UI)
             n._rounded
             and inheritedClip
             and not n.material
-            and not love.graphics.getShader()
+            and not katsa.graphics.getShader()
             and (
                 n._x >= inheritedClip[3]
                 or n._y >= inheritedClip[4]
@@ -149,17 +149,17 @@ function Drawing.install(UI)
         end
         local clipped = n.clip
         if clipped then
-            love.graphics.push('all')
+            katsa.graphics.push('all')
             local c = n._childClip
             if n.scrollable then
                 -- The frame and its bars use the outer clip; only children use the inset window.
                 c = n._frameClip
             end
-            local x1, y1 = love.graphics.transformPoint(c[1], c[2])
-            local x2, y2 = love.graphics.transformPoint(c[3], c[4])
-            love.graphics.intersectScissor(x1, y1, math.max(0, x2 - x1), math.max(0, y2 - y1))
+            local x1, y1 = katsa.graphics.transformPoint(c[1], c[2])
+            local x2, y2 = katsa.graphics.transformPoint(c[3], c[4])
+            katsa.graphics.intersectScissor(x1, y1, math.max(0, x2 - x1), math.max(0, y2 - y1))
         end
-        local g = love.graphics
+        local g = katsa.graphics
         if n._rounded then
             g.push('all')
             self._stencilStack = self._stencilStack or {}
@@ -217,7 +217,7 @@ function Drawing.install(UI)
         if not layoutReady then
             self:layout()
         end
-        local g = love.graphics
+        local g = katsa.graphics
         g.push('all')
         self._stencilLevel, self._stencilStack = 0, {}
         if self.hasCorners then

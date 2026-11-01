@@ -21,7 +21,7 @@ local function defaults(data, fallback)
 end
 
 local function checksum(payload)
-    return love.data.encode('string', 'hex', love.data.hash('sha256', payload))
+    return katsa.data.encode('string', 'hex', katsa.data.hash('sha256', payload))
 end
 
 function Store.new(namespace, options)
@@ -33,7 +33,7 @@ function Store.new(namespace, options)
         version = version,
         defaults = copy(options.defaults or {}),
         migrations = options.migrations or {},
-        fs = options.filesystem or love.filesystem,
+        fs = options.filesystem or katsa.filesystem,
         maxBytes = options.maxBytes or 8 * 1024 * 1024,
     }, Store)
 end

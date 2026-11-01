@@ -36,7 +36,7 @@ return function(test, scene)
     local camera = scene.world:create('Camera3D', { name = 'SocketCamera' }, child)
     local offset = C.new(1, 2, 3) * C.fromEulerAngles(0.1, 0.3, 0.2)
     camera:setCFrame(offset)
-    camera:update(love.graphics.getDimensions())
+    camera:update(katsa.graphics.getDimensions())
     local expected = child:getWorldCFrame() * offset
     test:check(
         (camera:getWorldCFrame():position() - expected:position()):magnitude() < 1e-6
@@ -61,7 +61,7 @@ return function(test, scene)
         scene.ui:button({ width = 8, height = 8 }, child)
     end), 'Screen widgets cannot be parented to Attachment3D')
     parent.position[1] = parent.position[1] + 7
-    camera:update(love.graphics.getDimensions())
+    camera:update(katsa.graphics.getDimensions())
     board:update(scene.world, scene.camera)
     test:check(
         math.abs(camera.worldPosition[1] - expected:position()[1] - 7) < 1e-6

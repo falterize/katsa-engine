@@ -43,7 +43,7 @@ function Masks.select(state, object, indices)
         if count >= 256 or state.maskBytes + bytes > (state.maskByteLimit or 16777216) then
             return
         end -- Retain original geometry when cache capacity is exhausted.
-        local mesh = love.graphics.newMesh(
+        local mesh = katsa.graphics.newMesh(
             { { 'maskCarrier', 'float', 1 } },
             source:getVertexCount(),
             'triangles',

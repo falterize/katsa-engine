@@ -19,7 +19,7 @@ local function collectDirectory(fs, path, root, files)
 end
 
 function SaveData.migrate(fs)
-    fs = fs or love.filesystem
+    fs = fs or katsa.filesystem
     if fs.getIdentity() ~= SaveData.identity or fs.getInfo(marker) then
         return true, 0
     end

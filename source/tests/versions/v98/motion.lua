@@ -6,11 +6,11 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(m)
+    katsa.errorhandler = function(m)
         print('FAILED motion ' .. tostring(m))
         os.exit(1)
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -22,8 +22,8 @@ function T:draw()
     end
     self.done = true
     local allocations, compiles = 0, 0
-    local newMesh, newShader = love.graphics.newMesh, love.graphics.newShader
-    love.graphics.newMesh = function(format, ...)
+    local newMesh, newShader = katsa.graphics.newMesh, katsa.graphics.newShader
+    katsa.graphics.newMesh = function(format, ...)
         if
             type(format) == 'table'
             and type(format[1]) == 'table'
@@ -33,15 +33,15 @@ function T:draw()
         end
         return newMesh(format, ...)
     end
-    love.graphics.newShader = function(...)
+    katsa.graphics.newShader = function(...)
         compiles = compiles + 1
         return newShader(...)
     end
-    local started = love.timer.getTime()
+    local started = katsa.timer.getTime()
     local scene = assert(self.manager:switch(require('source.game.runtime.game').new, 'combined'))
     scene.world.environment.shadows.enabled = false
     scene.world.environment.debug.gizmos.enabled = false
-    print('ENTER MS', (love.timer.getTime() - started) * 1000)
+    print('ENTER MS', (katsa.timer.getTime() - started) * 1000)
     local totalAllocations, totalCompiles = 0, 0
     print(
         'frame,total ms,update,checks,prepare,main,depth ms,visible,instance allocations,shader compiles,KB'
@@ -59,15 +59,15 @@ function T:draw()
                 or math.sin((frame - 130) / 80 * math.pi) * 170
         end
         allocations, compiles = 0, 0
-        local t = love.timer.getTime()
+        local t = katsa.timer.getTime()
         self.manager:update(1 / 60)
-        local updated = love.timer.getTime()
+        local updated = katsa.timer.getTime()
         self.manager:draw()
-        love.graphics.flushBatch()
+        katsa.graphics.flushBatch()
         local image = scene.renderer.canvas:newImageData()
         image:release()
-        love.graphics.present()
-        local elapsed = (love.timer.getTime() - t) * 1000
+        katsa.graphics.present()
+        local elapsed = (katsa.timer.getTime() - t) * 1000
         local stats = scene.renderer.stats
         totalAllocations = totalAllocations + allocations
         totalCompiles = totalCompiles + compiles
@@ -87,7 +87,7 @@ function T:draw()
     end
     print('TOTAL INSTANCE ALLOCATIONS', totalAllocations, 'SHADER COMPILES', totalCompiles)
     print('MOTION COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

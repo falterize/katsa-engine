@@ -11,7 +11,7 @@ local sections = {
 }
 
 local function read(path)
-    local source = assert(love.filesystem.read(path), 'Missing Shader3D source: ' .. path)
+    local source = assert(katsa.filesystem.read(path), 'Missing Shader3D source: ' .. path)
     local result = {}
     local current
     for line in (source .. '\n'):gmatch('(.-)\n') do

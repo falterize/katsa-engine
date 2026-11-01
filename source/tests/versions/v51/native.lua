@@ -59,8 +59,8 @@ return function(test)
     check(frame._radius == 10, 'UICorner clamps Radius to half the smaller side after resize')
     frame.size = { 0, 120, 0, 80 }
     corner.radius = { 0, 0 }
-    local target = love.graphics.newCanvas(200, 160, { dpiscale = 1 })
-    local g = love.graphics
+    local target = katsa.graphics.newCanvas(200, 160, { dpiscale = 1 })
+    local g = katsa.graphics
 
     local function pixels()
         g.push('all')

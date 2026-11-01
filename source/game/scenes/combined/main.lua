@@ -16,10 +16,10 @@ function Scene.create(scene, context)
     local systems = state.scene.systems
     -- Discover once at creation; order and startup are controlled by this scene.
     local entries = {}
-    for _, filename in ipairs(love.filesystem.getDirectoryItems(context.root .. '/systems')) do
+    for _, filename in ipairs(katsa.filesystem.getDirectoryItems(context.root .. '/systems')) do
         if
             filename:match('%.lua$')
-            and love.filesystem.getInfo(context.root .. '/systems/' .. filename, 'file')
+            and katsa.filesystem.getInfo(context.root .. '/systems/' .. filename, 'file')
         then
             local name =
                 assert(filename:match('^([%w_]+)%.lua$'), 'Invalid system module: ' .. filename)

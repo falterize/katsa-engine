@@ -20,7 +20,7 @@ function Modifiers.bindGradient(ui, node, target, override)
         return
     end
     assert(not node.material, 'UIGradient and custom material cannot target the same element')
-    local g = love.graphics
+    local g = katsa.graphics
     ui.gradientShader = ui.gradientShader
         or ui.resources:own(g.newShader('assets/shaders/engine/uiGradient.glsl'))
     local shader = ui.gradientShader
@@ -87,7 +87,7 @@ function Modifiers.strokeGradient(stroke, node)
 end
 
 function Modifiers.drawBorders(node)
-    local g = love.graphics
+    local g = katsa.graphics
     for _, stroke in ipairs(node.children) do
         if
             stroke:isA('UIStroke')
@@ -142,7 +142,7 @@ function Modifiers.textStrokes(node, draw)
         return
     end
     local ui = node.ui
-    local g = love.graphics
+    local g = katsa.graphics
     if not ui.outlineMaskShader then
         ui.outlineMaskShader =
             ui.resources:own(g.newShader('assets/shaders/engine/uiOutlineMask.glsl'))
@@ -157,7 +157,7 @@ function Modifiers.textStrokes(node, draw)
     end, 'replace', 255, true)
     g.setStencilTest('equal', level)
     g.setShader()
-    local g = love.graphics
+    local g = katsa.graphics
     for _, stroke in ipairs(node.children) do
         if
             stroke:isA('UIStroke')

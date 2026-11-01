@@ -22,7 +22,7 @@ return function(test)
         math.abs(sound._voice.source:getVolume() - 0.255) < 0.0001,
         'Native SoundGroup updates source gain'
     )
-    if love.audio.isEffectsSupported() and love.audio.getMaxSourceEffects() > 0 then
+    if katsa.audio.isEffectsSupported() and katsa.audio.getMaxSourceEffects() > 0 then
         test:check(
             effect.status == 'Applied',
             'Native reverb is defined and attached on supported device'
@@ -60,11 +60,11 @@ return function(test)
         },
     }, label)
     ui:create('UIStroke', { target = 'Border', thickness = 2, color = { 1, 1, 1, 1 } }, label)
-    local code = love.filesystem.read('assets/shaders/engine/uiGradient.glsl')
-    local valid, message = love.graphics.validateShader(true, code, code)
+    local code = katsa.filesystem.read('assets/shaders/engine/uiGradient.glsl')
+    local valid, message = katsa.graphics.validateShader(true, code, code)
     test:check(valid, 'Native GLES gradient shader validation: ' .. tostring(message))
-    local canvas = love.graphics.newCanvas(64, 64)
-    local g = love.graphics
+    local canvas = katsa.graphics.newCanvas(64, 64)
+    local g = katsa.graphics
     g.push('all')
     g.setCanvas({ canvas, stencil = true })
     g.origin()

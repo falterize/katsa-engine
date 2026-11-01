@@ -39,7 +39,7 @@ function Accessors.create(document, binary)
             local v = {}
             for j = 0, count - 1 do
                 local value =
-                    love.data.unpack('<' .. format[1], binary, start + i * stride + j * format[2])
+                    katsa.data.unpack('<' .. format[1], binary, start + i * stride + j * format[2])
                 if a.normalized and a.componentType ~= 5126 then
                     local divisor = ({
                         [5120] = 127,

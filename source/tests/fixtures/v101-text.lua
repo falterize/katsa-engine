@@ -108,7 +108,7 @@ function Text.prepare(ui, node)
     node._textLines, node._textHeight = layout(ui, runs, size, width)
     for _, line in ipairs(node._textLines) do
         for _, run in ipairs(line.runs) do
-            run.drawable = love.graphics.newText(run.font, run.text)
+            run.drawable = katsa.graphics.newText(run.font, run.text)
             glyphs[#glyphs + 1] = run.drawable
         end
     end
@@ -121,7 +121,7 @@ function Text.prepare(ui, node)
     return node._textLines, node._textHeight
 end
 function Text.draw(ui, node, dx, dy, outline, exactOffsets)
-    local g = love.graphics
+    local g = katsa.graphics
     local lines, height = Text.prepare(ui, node)
     local padding = node.padding or 6
     local width = node._width - 2 * padding
@@ -172,7 +172,7 @@ function Text.draw(ui, node, dx, dy, outline, exactOffsets)
     end
 end
 function Text.drawLabel(ui, node)
-    local g = love.graphics
+    local g = katsa.graphics
     -- printf rounds fractional outline offsets differently from retained Text.
     -- Keep the original path for outlined labels to preserve their stencil edges.
     local exactOffsets = false

@@ -6,11 +6,11 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED shader probe ' .. tostring(message))
         os.exit(1)
     end
-    love.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(810, 456, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -41,10 +41,10 @@ function T:draw()
         '// Both diffuse and GGX contributions are zero on the unlit hemisphere.\n            if(dot(normal,toward)<=0.0) continue;\n'
     local first, last = assert(source:find(rejection, 1, true))
     local reference = source:sub(1, first - 1) .. source:sub(last + 1)
-    print('PROBE GPU', love.graphics.getRendererInfo())
+    print('PROBE GPU', katsa.graphics.getRendererInfo())
     print('case,reference mean/p50/p95,new mean/p50/p95,pixels equal')
     for _, zone in ipairs({ 'combined', 'shadows', 'animationPhysicsLab' }) do
-        love.math.setRandomSeed(384)
+        katsa.math.setRandomSeed(384)
         math.randomseed(384)
         local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
         scene.showStats = false
@@ -59,11 +59,11 @@ function T:draw()
         for _ = 1, 35 do
             self.manager:update(1 / 60)
             self.manager:draw()
-            love.graphics.present()
+            katsa.graphics.present()
         end
         local r = scene.renderer
-        local old = scene.resources:own(love.graphics.newShader(reference))
-        local new = scene.resources:own(love.graphics.newShader(source))
+        local old = scene.resources:own(katsa.graphics.newShader(reference))
+        local new = scene.resources:own(katsa.graphics.newShader(source))
         r.forceGeneralShader = true
         r.freezeShadowUpdates = true
         scene.world.environment.render.frameCache = false
@@ -74,10 +74,10 @@ function T:draw()
 
             local function sample(shader, values, index)
                 r.shader = shader
-                local started = love.timer.getTime()
+                local started = katsa.timer.getTime()
                 r:draw(scene.world, scene.camera, scene.time, true)
                 local image = r.canvas:newImageData()
-                local elapsed = (love.timer.getTime() - started) * 1000
+                local elapsed = (katsa.timer.getTime() - started) * 1000
                 images[index] = image:getString()
                 image:release()
                 if pair > 20 then
@@ -97,7 +97,7 @@ function T:draw()
         assert(equal, 'A zero-contribution directional rejection changed pixels')
     end
     print('PAIRED SHADER PROBE COMPLETE')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

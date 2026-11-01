@@ -57,7 +57,7 @@ function Lab:update(dt)
     self.views.position = narrow and { 0.42, 8, 0, 8 } or { 0, 254, 0, 8 }
     self.views.size = narrow and { 0.58, -16, 1, -16 } or { 1, -262, 1, -16 }
     self.scene.ui:layout()
-    local width, height = love.graphics.getDimensions()
+    local width, height = katsa.graphics.getDimensions()
     local x, y = self.pixel._x * ui.scale + ui.offsetX, self.pixel._y * ui.scale + ui.offsetY
     local w, h = self.pixel._width * ui.scale, self.pixel._height * ui.scale
     for _, effect in ipairs({ self.tv, self.pixel }) do

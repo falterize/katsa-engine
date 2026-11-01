@@ -8,7 +8,7 @@ function Demo.new(scene)
     local self = setmetatable({ scene = scene, clicks = 0, panels = {} }, Demo)
     scene.showStats = false
     scene.camera.position = { 0, 70, -95 }
-    local viewportWidth, viewportHeight = love.graphics.getDimensions()
+    local viewportWidth, viewportHeight = katsa.graphics.getDimensions()
     scene.camera.rotation = { viewportHeight > viewportWidth and 5 or -15, 0, 0 }
     scene.camera.drawDistance = 700
     local world = scene.world

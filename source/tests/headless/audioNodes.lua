@@ -110,7 +110,7 @@ local function data()
         release = function() end,
     }
 end
-love = {
+katsa = {
     filesystem = {
         getInfo = function()
             return true
@@ -166,8 +166,8 @@ check(
     'Native effect settings use documented LÖVE types'
 )
 local definitionsCount = 0
-local original = love.audio.setEffect
-love.audio.setEffect = function(...)
+local original = katsa.audio.setEffect
+katsa.audio.setEffect = function(...)
     definitionsCount = definitionsCount + 1
     return original(...)
 end
@@ -261,7 +261,7 @@ check(
 local fallback = create('Sound', { resource = 'probe.wav' })
 local unavailable = create('SoundEcho', {}, fallback)
 audio.effectsSupported = nil
-love.audio.isEffectsSupported = function()
+katsa.audio.isEffectsSupported = function()
     return false
 end
 fallback:play()
@@ -283,10 +283,10 @@ for _, s in ipairs(created) do
 end
 check(allReleased, 'Scene cleanup releases cloned sources and cached samples')
 -- Build the actual example, including BillboardUI/UI nodes and preset callbacks.
-love.audio.isEffectsSupported = function()
+katsa.audio.isEffectsSupported = function()
     return true
 end
-love.graphics = {
+katsa.graphics = {
     getSystemLimits = function()
         return { texturesize = 4096 }
     end,

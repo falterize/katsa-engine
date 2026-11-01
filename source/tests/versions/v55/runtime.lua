@@ -15,7 +15,7 @@ end
 function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+        katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
         local scene, err = self.manager:switch(require('source.game.runtime.game').new, 'physics')
         assert(scene, err)
         self.scene = scene
@@ -236,7 +236,7 @@ function R:update()
         local controls = scene.controls.joystick
         controls.custom = true
         controls.x, controls.y, controls.radius = 80, 90, 40
-        scene:resize(love.graphics.getDimensions())
+        scene:resize(katsa.graphics.getDimensions())
         self:check(
             controls.x == 80 and controls.y == 90 and controls.radius == 40,
             'Authored joystick placement survives resize'
@@ -283,7 +283,7 @@ function R:update()
             'Shadow sampling probe restores renderer flags'
         )
         print('PASSED ' .. self.count .. ' targeted v55 checks and four live scene transitions')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

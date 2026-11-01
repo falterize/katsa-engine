@@ -3,7 +3,7 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
     return setmetatable({ manager = manager }, T)
 end
 
@@ -33,11 +33,11 @@ function T:draw()
             for round = 1, 3 do
                 collectgarbage('collect')
                 local memory = collectgarbage('count')
-                local start = love.timer.getTime()
+                local start = katsa.timer.getTime()
                 for _ = 1, 60 do
                     callback()
                 end
-                rounds[round] = (love.timer.getTime() - start) * 1000 / 60
+                rounds[round] = (katsa.timer.getTime() - start) * 1000 / 60
                 print('MEMORY', zone, label, round, collectgarbage('count') - memory)
             end
             table.sort(rounds)
@@ -76,7 +76,7 @@ function T:draw()
         end)
         s.workspace:toggle(false)
     end
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

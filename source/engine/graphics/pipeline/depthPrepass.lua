@@ -47,7 +47,7 @@ function Prepass.draw(renderer)
             return
         end
     end
-    local start, g = love.timer.getTime(), love.graphics
+    local start, g = katsa.timer.getTime(), katsa.graphics
     local width, height = renderer.canvas:getPixelDimensions()
     if width * height * 16 > renderer.maxRenderBytes then
         return
@@ -140,7 +140,7 @@ function Prepass.draw(renderer)
     else
         renderer.prepassCache = nil
     end
-    stats.depthPrepassMilliseconds = (love.timer.getTime() - start) * 1000
+    stats.depthPrepassMilliseconds = (katsa.timer.getTime() - start) * 1000
 end
 
 function Prepass.release(renderer)

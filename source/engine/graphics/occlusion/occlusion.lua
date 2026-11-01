@@ -123,7 +123,7 @@ function Occlusion.apply(renderer, camera)
         renderer.occlusionTriangleBudget == math.floor(renderer.occlusionTriangleBudget),
         'Render.occlusionTriangleBudget must be an integer'
     )
-    local start = love.timer.getTime()
+    local start = katsa.timer.getTime()
     renderer.occlusionState = renderer.occlusionState or { rect = {} }
     local state = renderer.occlusionState
     if not state.maskSources then
@@ -137,12 +137,12 @@ function Occlusion.apply(renderer, camera)
     stats.occlusionOccluders, stats.occlusionTrianglesTested = #polygons, work
     stats.occlusionGeometryReused = state.geometryReused
     if #polygons == 0 then
-        stats.occlusionMilliseconds = (love.timer.getTime() - start) * 1000
+        stats.occlusionMilliseconds = (katsa.timer.getTime() - start) * 1000
         return
     end
     filter(renderer, renderer.opaque, camera, polygons, state.rect)
     filter(renderer, renderer.transparent, camera, polygons, state.rect)
-    stats.occlusionMilliseconds = (love.timer.getTime() - start) * 1000
+    stats.occlusionMilliseconds = (katsa.timer.getTime() - start) * 1000
 end
 
 return Occlusion

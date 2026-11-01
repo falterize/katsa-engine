@@ -1,7 +1,7 @@
 local T = {}
 
 local function fixture(name)
-    return assert(loadstring(love.filesystem.read('source/tests/fixtures/v100-' .. name .. '.lua')))()
+    return assert(loadstring(katsa.filesystem.read('source/tests/fixtures/v100-' .. name .. '.lua')))()
 end
 
 local function sampling(test)

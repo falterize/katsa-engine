@@ -24,7 +24,7 @@ function T:update()
             'Scene teardown releases composition buffers'
         )
         print('PASSED ' .. self.count .. ' focused v69 checks')
-        love.event.quit()
+        katsa.event.quit()
         return
     end
     if self.frame ~= 1 then
@@ -32,7 +32,7 @@ function T:update()
     end
     local scene, err = self.manager:switch(require('source.game.runtime.game').new, 'platformer')
     assert(scene, err)
-    local w, g = scene.world, love.graphics
+    local w, g = scene.world, katsa.graphics
     local mesh = w:create('Mesh3D', {
         name = 'PixelBlendTest',
         color = { 1, 1, 1 },
@@ -116,7 +116,7 @@ function T:update()
     r, gg, bb, aa = pixel()
     self:check(aa > 0.99, 'Material buffers rebuild after parent mesh becomes visible')
     for _, node in ipairs({ a, b }) do
-        local data = love.image.newImageData(1, 1)
+        local data = katsa.image.newImageData(1, 1)
         data:setPixel(
             0,
             0,

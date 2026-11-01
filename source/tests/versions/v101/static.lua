@@ -6,7 +6,7 @@ function T.new(manager)
     io.stdout:setvbuf('no')
     jit.off()
     jit.flush()
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED comparison ' .. tostring(message))
         os.exit(1)
     end
@@ -20,7 +20,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     for _, zone in ipairs({
         'shadows',
         'occlusion',
@@ -33,7 +33,7 @@ function T:draw()
         'audioNodes',
         'particles',
     }) do
-        love.math.setRandomSeed(384)
+        katsa.math.setRandomSeed(384)
         math.randomseed(384)
         local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
         assert(scene, err)
@@ -54,13 +54,13 @@ function T:draw()
         scene.renderer.shadows.nextUpdate = -1
         scene.renderer:draw(scene.world, scene.camera, 10, true)
         local data = scene.renderer.canvas:newImageData()
-        local digest = love.data.encode('string', 'hex', love.data.hash('sha256', data:getString()))
+        local digest = katsa.data.encode('string', 'hex', katsa.data.hash('sha256', data:getString()))
         data:release()
         print('FRAME ' .. zone .. ' ' .. digest)
     end
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors during comparison')
     print('PASSED 10 deterministic scene captures')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

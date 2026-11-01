@@ -3,7 +3,7 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v82 ' .. tostring(message))
         os.exit(1)
     end
@@ -23,7 +23,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     require('source.tests.integration.shadowCacheRuntime')(self)
     local scene = self.manager:switch(require('source.game.runtime.game').new, 'shadows')
     local world, renderer, camera = scene.world, scene.renderer, scene.camera
@@ -167,7 +167,7 @@ function T:draw()
     )
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' lighting/debug checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return T

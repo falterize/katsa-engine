@@ -3,7 +3,7 @@ T.__index = T
 
 function T.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v83 ' .. tostring(message))
         os.exit(1)
     end
@@ -23,7 +23,7 @@ function T:draw()
         return
     end
     self.done = true
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Resources = require('source.engine.core.resources')
     local World = require('source.engine.world.world')
     local resources = Resources.new(require('source.game.data.manifest'))
@@ -286,7 +286,7 @@ function T:draw()
     if self.finish then
         self:finish()
     else
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 

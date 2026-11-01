@@ -41,7 +41,7 @@ function Tests:draw()
     package.loaded[module], package.preload[module] = nil, previous
     assert(not ok and tostring(message):find('Jolt backend unavailable', 1, true))
     print('PASSED v104 backend selection: lazy Oimo, auto fallback, strict Jolt')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

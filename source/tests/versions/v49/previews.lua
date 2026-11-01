@@ -21,10 +21,10 @@ function Preview:update()
         local entry = stages[self.index]
         if not entry then
             print('PREVIEWS COMPLETE')
-            love.event.quit()
+            katsa.event.quit()
             return
         end
-        love.window.setMode(entry[2], entry[3], { depth = 24, stencil = 8, vsync = 0 })
+        katsa.window.setMode(entry[2], entry[3], { depth = 24, stencil = 8, vsync = 0 })
         if entry[1] == 'menu' or entry[1] == 'pause' then
             self.scene = self.manager:switch(require('source.game.scenes.' .. entry[1]).new)
         else
@@ -59,7 +59,7 @@ function Preview:draw()
     if self.capture then
         self.capture = nil
         local name = stages[self.index][1]
-        love.graphics.captureScreenshot(function(image)
+        katsa.graphics.captureScreenshot(function(image)
             image:encode('png', 'v49-preview-' .. name .. '.png')
             image:release()
         end)

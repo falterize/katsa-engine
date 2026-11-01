@@ -13,7 +13,7 @@ function Journal:record(system, message, node, script)
         node = node and (node.name or node.className) or '',
         class = node and node.className or '',
         script = script or '',
-        time = love.timer.getTime(),
+        time = katsa.timer.getTime(),
     }
     self.entries[#self.entries + 1] = entry
     if #self.entries > self.limit then

@@ -2,8 +2,8 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    love.errorhandler = function(err)
+    katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
+    katsa.errorhandler = function(err)
         print('FAILED v73 ' .. tostring(err))
         return function()
             return 1
@@ -185,12 +185,12 @@ function T:update()
         scans = scans + 1
         return old(...)
     end
-    r.shadows.nextUpdate = love.timer.getTime() - 1 / 60
+    r.shadows.nextUpdate = katsa.timer.getTime() - 1 / 60
     c.rotation[2] = c.rotation[2] + 2
     draw()
     self:check(r.shadows.updatedFaces == 0, 'Camera rotation retains valid local depth maps')
     self:check(scans == 0, 'Camera-only movement skips complete caster scanning')
-    r.shadows.nextUpdate = love.timer.getTime() - 1 / 60
+    r.shadows.nextUpdate = katsa.timer.getTime() - 1 / 60
     mesh.position[1] = mesh.position[1] + 10
     draw()
     self:check(scans > 0, 'Moving a caster resumes shadow dependency scanning')
@@ -202,12 +202,12 @@ function T:update()
     draw()
     self:check(r.shadows.sunValid, 'Sun cascades are published')
     c.position[1] = c.position[1] + 100
-    r.shadows.nextUpdate = love.timer.getTime() - 1 / 60
+    r.shadows.nextUpdate = katsa.timer.getTime() - 1 / 60
     draw()
     self:check(r.shadows.updatedSun, 'Camera translation updates dependent sun cascades')
     self:check(#self.manager.journal.entries == 0, 'Cached and live paths report no runtime errors')
     print('PASSED ' .. self.count .. ' focused v73 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 function T:draw() end

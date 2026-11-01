@@ -45,8 +45,8 @@ end
 
 function Input:update(dt)
     local playing = self:playing()
-    if self.captureMouse ~= false and love.mouse.getRelativeMode() ~= playing then
-        love.mouse.setRelativeMode(playing)
+    if self.captureMouse ~= false and katsa.mouse.getRelativeMode() ~= playing then
+        katsa.mouse.setRelativeMode(playing)
     end
     Base.update(self, dt)
     local input, keys = self.player.input, self.actions.keys
@@ -60,14 +60,14 @@ function Input:update(dt)
 end
 
 function Input:press(id, x, y)
-    if id == 'mouse' and love.mouse.getRelativeMode() and self:playing() then
+    if id == 'mouse' and katsa.mouse.getRelativeMode() and self:playing() then
         return
     end
     Base.press(self, id, x, y)
 end
 
 function Input:move(id, x, y, dx, dy)
-    if id == 'mouse' and love.mouse.getRelativeMode() and self:playing() then
+    if id == 'mouse' and katsa.mouse.getRelativeMode() and self:playing() then
         self.actions:look(dx, dy)
         return
     end
@@ -85,7 +85,7 @@ function Input:toggleMenu()
         self.menuButton.text = self.captureWanted and 'Engine menu' or 'Resume game'
     end
     if self.captureMouse ~= false then
-        love.mouse.setRelativeMode(self:playing())
+        katsa.mouse.setRelativeMode(self:playing())
     end
 end
 

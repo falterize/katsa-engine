@@ -28,7 +28,7 @@ function Preview:draw()
     end
     local menu = self.stage == 0
     self.stage = menu and -1 or 3
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local path = self.prefix .. (menu and '-menu.png' or '-workspace.png')
         local file = assert(io.open(path, 'wb'))
         file:write(image:encode('png'):getString())
@@ -38,7 +38,7 @@ function Preview:draw()
         if menu then
             self.stage = 1
         else
-            love.event.quit()
+            katsa.event.quit()
         end
     end)
 end

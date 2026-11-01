@@ -6,7 +6,7 @@ function ShadowAtlas.install(Shadows)
     function Shadows:resize(resolution, faceCount)
         local columns = math.ceil(math.sqrt(faceCount))
         local rows = math.ceil(faceCount / columns)
-        local limit = love.graphics.getSystemLimits().texturesize
+        local limit = katsa.graphics.getSystemLimits().texturesize
         local effective = math.min(resolution, math.floor(limit / math.max(columns, rows)))
         assert(effective >= 32, 'GPU texture limit cannot fit the active shadow maps')
         if self.resolution == effective and self.columns == columns and self.rows == rows then
@@ -16,8 +16,8 @@ function ShadowAtlas.install(Shadows)
             self.depth:release()
         end
         self.atlasAllocations = self.atlasAllocations + 1
-        assert(love.graphics.getCanvasFormats().depth24, 'Shadow mapping requires readable depth24')
-        self.depth = love.graphics.newCanvas(
+        assert(katsa.graphics.getCanvasFormats().depth24, 'Shadow mapping requires readable depth24')
+        self.depth = katsa.graphics.newCanvas(
             effective * columns,
             effective * rows,
             { format = 'depth24', readable = true, dpiscale = 1 }

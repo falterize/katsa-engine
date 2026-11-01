@@ -111,7 +111,7 @@ function C.initialize(self)
     self._requestedAdornee = rawget(self, 'adornee')
     rawset(self, 'adornee', nil)
     self.particles, self.pool = {}, {}
-    self.random = love.math.newRandomGenerator(self.seed)
+    self.random = katsa.math.newRandomGenerator(self.seed)
     self.emission = 0
 end
 

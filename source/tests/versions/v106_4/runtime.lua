@@ -13,7 +13,7 @@ local fixture = 'source/tests/fixtures/scenes/'
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.4 ' .. tostring(message))
         os.exit(1)
     end
@@ -81,36 +81,36 @@ function Tests:package(source)
     audio:release()
     package:release()
     self:check(
-        love.filesystem.getInfo(root .. '/settings.lua') ~= nil,
+        katsa.filesystem.getInfo(root .. '/settings.lua') ~= nil,
         'Asset scopes retain the mounted package'
     )
     resources:release()
     second:release()
     self:check(
-        not package.archive or not love.filesystem.getInfo(root .. '/settings.lua'),
+        not package.archive or not katsa.filesystem.getInfo(root .. '/settings.lua'),
         'Last resource scope unmounts package'
     )
 end
 
 function Tests:scenePackages()
-    local firstData = love.filesystem.newFileData(
-        assert(love.filesystem.read(fixture .. 'basic.zip')),
+    local firstData = katsa.filesystem.newFileData(
+        assert(katsa.filesystem.read(fixture .. 'basic.zip')),
         'scene.zip'
     )
-    local secondData = love.filesystem.newFileData(
-        assert(love.filesystem.read(fixture .. 'wrapped.zip')),
+    local secondData = katsa.filesystem.newFileData(
+        assert(katsa.filesystem.read(fixture .. 'wrapped.zip')),
         'scene.zip'
     )
     local first, second = Package.open(firstData), Package.open(secondData)
     self:check(
         first.root ~= second.root
-            and love.filesystem.getInfo(first.root .. '/settings.lua')
-            and love.filesystem.getInfo(second.root .. '/settings.lua'),
+            and katsa.filesystem.getInfo(first.root .. '/settings.lua')
+            and katsa.filesystem.getInfo(second.root .. '/settings.lua'),
         'Different archives with identical filenames mount independently'
     )
     first:release()
     self:check(
-        love.filesystem.getInfo(second.root .. '/settings.lua'),
+        katsa.filesystem.getInfo(second.root .. '/settings.lua'),
         'Unmounting one archive preserves another with the same filename'
     )
     second:release()
@@ -160,7 +160,7 @@ function Tests:scenePackages()
     local system, root = scene.demo.system, scene.package.root
     assert(self.manager:switch(Game.new, 'physics'))
     self:check(
-        system.released and not love.filesystem.getInfo(root .. '/settings.lua'),
+        system.released and not katsa.filesystem.getInfo(root .. '/settings.lua'),
         'Scene switch releases systems and archive scopes'
     )
     local updates, starts = 0, 0
@@ -264,7 +264,7 @@ function Tests:draw()
     self:allScenes()
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v106.4 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

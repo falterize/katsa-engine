@@ -1,5 +1,5 @@
 local WindowsWait = require('source.engine.core.timing.windowsWait')
-local systemTimer = love.timer
+local systemTimer = katsa.timer
 
 local Deadline = {}
 

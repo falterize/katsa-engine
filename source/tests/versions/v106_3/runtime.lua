@@ -7,7 +7,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     io.stdout:setvbuf('no')
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.3 ' .. tostring(message))
         os.exit(1)
     end
@@ -38,36 +38,36 @@ function Tests:typography(ui, density)
         align = 'left',
         verticalAlign = 'top',
     }, ui.content)
-    local a = love.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
-    local b = love.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
-    local font = love.graphics.newFont(math.floor(13 * density + 0.5), 'normal', 1)
+    local a = katsa.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
+    local b = katsa.graphics.newCanvas(480 * density, 80 * density, { dpiscale = 1 })
+    local font = katsa.graphics.newFont(math.floor(13 * density + 0.5), 'normal', 1)
     for _, size in ipairs({ 11, 13, 16, 18, 24 }) do
         label.fontSize, label.minTextSize, label.maxTextSize = size, size, size
         font:release()
-        font = love.graphics.newFont(math.floor(size * density + 0.5), 'normal', 1)
+        font = katsa.graphics.newFont(math.floor(size * density + 0.5), 'normal', 1)
         for _, mode in ipairs({ 'plain', 'scaled', 'rich' }) do
             label.textScaled, label.richText = mode == 'scaled', mode == 'rich'
             ui:layout()
-            love.graphics.push('all')
-            love.graphics.setScissor()
-            love.graphics.setStencilTest()
-            love.graphics.setShader()
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.origin()
-            love.graphics.setCanvas(a)
-            love.graphics.clear(0, 0, 0, 0)
-            love.graphics.scale(density)
+            katsa.graphics.push('all')
+            katsa.graphics.setScissor()
+            katsa.graphics.setStencilTest()
+            katsa.graphics.setShader()
+            katsa.graphics.setColor(1, 1, 1, 1)
+            katsa.graphics.origin()
+            katsa.graphics.setCanvas(a)
+            katsa.graphics.clear(0, 0, 0, 0)
+            katsa.graphics.scale(density)
             Text.drawLabel(ui, label)
-            love.graphics.origin()
-            love.graphics.setCanvas(b)
-            love.graphics.clear(0, 0, 0, 0)
-            love.graphics.setFont(font)
-            love.graphics.print(
+            katsa.graphics.origin()
+            katsa.graphics.setCanvas(b)
+            katsa.graphics.clear(0, 0, 0, 0)
+            katsa.graphics.setFont(font)
+            katsa.graphics.print(
                 label.text,
                 math.floor(label._x * density + 0.5),
                 math.floor(label._y * density + 0.5)
             )
-            love.graphics.pop()
+            katsa.graphics.pop()
             local first, second = a:newImageData(), b:newImageData()
             self:check(
                 first:getString() == second:getString(),
@@ -267,7 +267,7 @@ function Tests:draw()
     resources:release()
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v106.3 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

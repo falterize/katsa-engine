@@ -52,7 +52,7 @@ function Body.new(physics, object, settings)
         currentX = x,
         currentY = y,
         currentAngle = math.rad(rotation),
-        raw = love.physics.newBody(
+        raw = katsa.physics.newBody(
             physics.world,
             x * physics.factor,
             y * physics.factor,
@@ -116,7 +116,7 @@ function Body:rebuildFixtures(descriptors)
         for _, descriptor in ipairs(descriptors) do
             local shapes = Shapes.createAll(descriptor, p.factor, p.resources)
             for _, shape in ipairs(shapes) do
-                local fixture = love.physics.newFixture(
+                local fixture = katsa.physics.newFixture(
                     self.raw,
                     shape,
                     descriptor.density or object.density or 1

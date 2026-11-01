@@ -151,7 +151,7 @@ function S.prepare(world, camera, output)
                         proxy.geometry.mesh:release()
                     end
                     proxy.geometry.mesh =
-                        love.graphics.newMesh(format, vertices, 'triangles', 'stream')
+                        katsa.graphics.newMesh(format, vertices, 'triangles', 'stream')
                     proxy.capacity = count
                 else
                     proxy.geometry.mesh:setVertices(vertices, 1, count)

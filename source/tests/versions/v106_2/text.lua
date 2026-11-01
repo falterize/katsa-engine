@@ -18,7 +18,7 @@ function Checks.run(tests, scene)
         fontSize = 18,
         align = 'left',
     }, ui.content)
-    local a, b = love.graphics.newCanvas(320, 160), love.graphics.newCanvas(320, 160)
+    local a, b = katsa.graphics.newCanvas(320, 160), katsa.graphics.newCanvas(320, 160)
     local contents = {
         '',
         '\n',
@@ -34,21 +34,21 @@ function Checks.run(tests, scene)
                 label.text, label.richText = content, content:find('<', 1, true) ~= nil
                 label.size = { 0, width, 0, 110 }
                 ui:layout()
-                love.graphics.push('all')
-                love.graphics.origin()
-                love.graphics.setShader()
-                love.graphics.setScissor()
-                love.graphics.setStencilTest()
-                love.graphics.setCanvas(a)
-                love.graphics.clear(0, 0, 0, 0)
+                katsa.graphics.push('all')
+                katsa.graphics.origin()
+                katsa.graphics.setShader()
+                katsa.graphics.setScissor()
+                katsa.graphics.setStencilTest()
+                katsa.graphics.setCanvas(a)
+                katsa.graphics.clear(0, 0, 0, 0)
                 label._preparedText = nil
                 reference.drawLabel(ui, label)
                 local size = label._resolvedTextSize
-                love.graphics.setCanvas(b)
-                love.graphics.clear(0, 0, 0, 0)
+                katsa.graphics.setCanvas(b)
+                katsa.graphics.clear(0, 0, 0, 0)
                 label._preparedText = nil
                 Text.drawLabel(ui, label)
-                love.graphics.pop()
+                katsa.graphics.pop()
                 local first, second = a:newImageData(), b:newImageData()
                 tests:check(
                     size == label._resolvedTextSize and first:getString() == second:getString(),
@@ -69,13 +69,13 @@ function Checks.run(tests, scene)
     local function allocated(module)
         collectgarbage('collect')
         collectgarbage('stop')
-        local before, started = collectgarbage('count'), love.timer.getTime()
+        local before, started = collectgarbage('count'), katsa.timer.getTime()
         for index = 1, 200 do
             label.text = 'Sample ' .. index .. ' ' .. string.rep('Measurement text 0123 ', 12)
             label._preparedText = nil
             module.prepare(ui, label)
         end
-        local memory, elapsed = collectgarbage('count') - before, love.timer.getTime() - started
+        local memory, elapsed = collectgarbage('count') - before, katsa.timer.getTime() - started
         collectgarbage('restart')
         return memory, elapsed * 1000
     end

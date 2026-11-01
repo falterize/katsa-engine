@@ -107,8 +107,8 @@ function Gizmos:draw(world, camera)
         return
     end
     local limit = settings.maxDistance > 0 and settings.maxDistance or camera.drawDistance
-    love.graphics.setColor(1, 220 / 255, 70 / 255, 0.8)
-    love.graphics.setLineWidth(1)
+    katsa.graphics.setColor(1, 220 / 255, 70 / 255, 0.8)
+    katsa.graphics.setLineWidth(1)
     for _, line in ipairs(self.lines) do
         if
             M.distanceSquared(
@@ -131,7 +131,7 @@ function Gizmos:draw(world, camera)
                 end
                 local sax, say = camera:viewToScreen(ax, ay, az)
                 local sbx, sby = camera:viewToScreen(bx, by, bz)
-                love.graphics.line(sax, say, sbx, sby)
+                katsa.graphics.line(sax, say, sbx, sby)
             end
         end
     end

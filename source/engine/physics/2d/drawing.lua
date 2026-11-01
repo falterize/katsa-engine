@@ -1,7 +1,7 @@
 local Drawing = {}
 
 local function shape(fixture, body, mode, factor)
-    local g, collider = love.graphics, fixture:getShape()
+    local g, collider = katsa.graphics, fixture:getShape()
     local kind = collider:getType()
     if kind == 'circle' then
         local x, y = collider:getPoint()
@@ -32,7 +32,7 @@ function Drawing.debug(self)
     if self.released or not self.debug.enabled then
         return
     end
-    local g, f = love.graphics, self.factor
+    local g, f = katsa.graphics, self.factor
     g.push('all')
     g.setShader()
     g.setDepthMode()

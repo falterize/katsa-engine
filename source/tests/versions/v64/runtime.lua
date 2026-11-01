@@ -2,10 +2,10 @@ local T = {}
 T.__index = T
 
 function T.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v64 ' .. tostring(message))
         return function()
-            love.event.quit(1)
+            katsa.event.quit(1)
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
@@ -18,24 +18,24 @@ function T:check(ok, message)
 end
 
 function T:load(zone)
-    local start = love.timer.getTime()
+    local start = katsa.timer.getTime()
     local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
     assert(scene, err)
     self.scene = scene
     scene:update(0.02, 0.02)
-    print('LOAD ' .. zone .. ' ' .. string.format('%.3f seconds', love.timer.getTime() - start))
+    print('LOAD ' .. zone .. ' ' .. string.format('%.3f seconds', katsa.timer.getTime() - start))
     return scene
 end
 
 function T:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
-        love.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
+        katsa.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
         local Resources = require('source.engine.core.resources')
         local r = Resources.new(require('source.game.data.manifest'))
-        local start = love.timer.getTime()
+        local start = katsa.timer.getTime()
         local raw = require('source.engine.import.glb').load('assets/models/characters/xbot.glb', r)
-        local direct = love.timer.getTime() - start
+        local direct = katsa.timer.getTime() - start
         local triangles = 0
         for _, part in ipairs(raw.parts) do
             triangles = triangles + #part.geometry.vertices / 3
@@ -43,10 +43,10 @@ function T:update()
         r:release()
         collectgarbage()
         r = Resources.new(require('source.game.data.manifest'))
-        start = love.timer.getTime()
+        start = katsa.timer.getTime()
         local packed =
             require('source.engine.import.packedModel').try('assets/models/characters/xbot.glb', r)
-        local cached = love.timer.getTime() - start
+        local cached = katsa.timer.getTime() - start
         local count = 0
         for _, part in ipairs(packed.parts) do
             count = count + part.geometry.mesh:getVertexCount() / 3
@@ -157,7 +157,7 @@ function T:update()
             'Hierarchy migration and scene teardown leave no errors'
         )
         print('PASSED ' .. self.count .. ' focused v64 checks')
-        love.event.quit()
+        katsa.event.quit()
     end
 end
 
@@ -167,10 +167,10 @@ function T:draw()
     end
     local name = self.capture
     self.capture = nil
-    love.graphics.captureScreenshot(function(image)
+    katsa.graphics.captureScreenshot(function(image)
         local bytes = image:encode('png')
         local f = assert(
-            io.open(love.filesystem.getSource() .. '/docs/previews/v64/' .. name .. '.png', 'wb')
+            io.open(katsa.filesystem.getSource() .. '/docs/previews/v64/' .. name .. '.png', 'wb')
         )
         f:write(bytes:getString())
         f:close()

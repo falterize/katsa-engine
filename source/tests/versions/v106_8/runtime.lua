@@ -5,7 +5,7 @@ Tests.__index = Tests
 
 function Tests.new(manager)
     local self = Previous.new(manager)
-    love.errorhandler = function(message)
+    katsa.errorhandler = function(message)
         print('FAILED v106.8 ' .. tostring(message))
         os.exit(1)
     end
@@ -39,7 +39,7 @@ function Tests:draw()
     require('source.tests.versions.v106_6.stareShooter').run(self)
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')
     print('PASSED ' .. self.count .. ' v106.8 checks')
-    love.event.quit()
+    katsa.event.quit()
 end
 
 return Tests

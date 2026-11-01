@@ -12,7 +12,7 @@ function RenderBindings.install(Renderer)
         if not s.enabled then
             return
         end
-        local g = love.graphics
+        local g = katsa.graphics
         local image = require('source.engine.components.image').resolve(
             world.resources,
             s,
@@ -110,7 +110,7 @@ function RenderBindings.install(Renderer)
         local shader = wire and self.wireShader
             or material and material.shader
             or require('source.engine.graphics.pipeline.shaderVariants').get(self, object)
-        love.graphics.setShader(shader)
+        katsa.graphics.setShader(shader)
         if self.shaderFrames[shader] ~= self.frame then
             self:sendFrame(shader)
             self.shaderFrames[shader] = self.frame

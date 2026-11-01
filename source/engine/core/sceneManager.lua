@@ -158,7 +158,7 @@ end
 
 function Manager:update(dt, realDt)
     if self.drawFinishedAt then
-        self.frameGapMilliseconds = (love.timer.getTime() - self.drawFinishedAt) * 1000
+        self.frameGapMilliseconds = (katsa.timer.getTime() - self.drawFinishedAt) * 1000
     end
     -- Diagnostics retain full wall delta even when the caller clamps simulation dt.
     local frameDelta = realDt or dt
@@ -188,7 +188,7 @@ function Manager:draw()
             scene:draw()
         end
     end
-    self.drawFinishedAt = love.timer.getTime()
+    self.drawFinishedAt = katsa.timer.getTime()
 end
 
 function Manager:dispatch(event, ...)

@@ -28,7 +28,7 @@ end
 
 function Content:release()
     self.scene.physics.beforeStep = nil
-    love.mouse.setRelativeMode(false)
+    katsa.mouse.setRelativeMode(false)
 end
 
 return Content
