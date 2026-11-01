@@ -112,7 +112,7 @@ function Tests.run(tester)
     local screen = require('source.engine.debug.errorScreen').create(report, api)
     queue = { { 'keypressed', 'escape' }, { 'keypressed', 'c' } }
     tester:check(
-        screen() == nil and copied == report and saved == report,
+        screen() == nil and copied == report and saved:find(report, 1, true) ~= nil,
         'Error screen stays open on Escape, saves the report and supports clipboard copying'
     )
     queue = { { 'quit' } }

@@ -40,7 +40,7 @@ Joystick, camera and UI own distinct pointer IDs until release/cancel. Vertical 
 gestures can transfer from labels/buttons/sliders; a transferred gesture never clicks
 the old target. `input:cancel(id)` cancels only that pointer. `input:reset()` clears all
 pointers, held keys and queued actions on focus loss, suspension and scene transitions.
-LÖVE 11.5 has touchreleased, not a separate touchcancelled callback; integrations with
+katsa has touchreleased, not a separate touchcancelled callback; integrations with
 an explicit cancellation event should call `input:cancel(id)`.
 
 Workspace → Lighting / Render → Mobile input / Joystick edits radius and center in

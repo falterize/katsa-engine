@@ -112,10 +112,10 @@ rotation, shared slots/priority, static reuse, mixed local/directional shadows,
 Direct/Masked agreement, particles, physical lines in the world canvas, and the
 existing local-cache integration checks. Migrated Shadows, Occlusion,
 SurfaceGallery, ModelLab, Platformer, Viewports and NightPlayer examples render.
-The source and packaged release each passed **53 checks** in LÖVE.
+The source and packaged release each passed **53 checks** in katsa.
 Historical measurements are retained with the external release reports.
 
-The runtime is desktop LÖVE 11.5 with Mesa llvmpipe software OpenGL. These checks
+The runtime is the katsa runtime with Mesa llvmpipe software OpenGL. These checks
 are not Android/device FPS measurements. Multiple directional lights add both
 pixel work and shadow passes; one slot does not mean a negligible GPU cost.
 Historical version-specific test commands and guides describe their older API;

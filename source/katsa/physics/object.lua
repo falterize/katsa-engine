@@ -1,4 +1,4 @@
--- Shared helpers for physics classes: class creation with LÖVE-style type()/typeOf(), liveness
+-- Shared helpers for physics classes: class creation with type()/typeOf(), liveness
 -- checks and ordered access to object sets.
 local Object = {}
 

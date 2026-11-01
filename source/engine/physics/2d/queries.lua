@@ -142,7 +142,7 @@ local function touches(self, fixture, query)
     if shape:getType() ~= 'chain' then
         return katsa.physics.getDistance(fixture, query) <= 0
     end
-    -- LÖVE 11.x getDistance checks child zero only. Test every chain segment in
+    -- katsa getDistance checks child zero only. Test every chain segment in
     -- a separate scratch world, leaving the queried solver tree untouched.
     self.chainQueryBody = self.chainQueryBody
         or katsa.physics.newBody(self.queryWorld, 0, 0, 'static')

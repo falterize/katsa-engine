@@ -31,7 +31,7 @@ resumes a paused loaded voice; stop releases it. SoundPitch children multiply
 playbackSpeed, with total rate capped at 8. Positive finite rates are required.
 Pitch changes both pitch and playback duration, not independent time stretching.
 
-Sound resource is a LÖVE-supported audio path. stream=true uses streaming for
+Sound resource is a katsa-supported audio path. stream=true uses streaming for
 long recordings; static sample data is cached in the scene's existing Audio
 scope and voices clone it. Cache data is released with the scene, not on each
 stop. Stop/play after changing resource, stream or spatial mode. looped, gain,
@@ -58,7 +58,7 @@ preserves manually paused voices; resume does not restart those voices.
 
 Effects must be direct children of Sound or SoundGroup, including through ordinary
 World3D:create. They have enabled, volume and a read-only diagnostic status. Native
-settings below use LÖVE's names, not an invented DSP API.
+settings below use katsa's names, not an invented DSP API.
 
 | Node | Important settings | Processing |
 | --- | --- | --- |

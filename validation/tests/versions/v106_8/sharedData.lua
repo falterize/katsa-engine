@@ -69,7 +69,7 @@ function Tests.run(tester)
     bytes:release()
     tester:check(
         files:readFile('profiles/player.bin') == 'revision-2\0',
-        'LÖVE Data objects can be written as raw files'
+        'katsa Data objects can be written as raw files'
     )
     local primary = files:filePath('profiles/player.bin')
     tester:check(

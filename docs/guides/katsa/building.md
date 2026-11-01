@@ -1,4 +1,4 @@
-# Building and running Katsa without LÖVE
+# Building and running Katsa
 
 Katsa runs on its own runtime: a small C host (`katsa` / `katsa.exe`) that embeds LuaJIT and
 reads one appended ZIP archive. SDL2 provides the window, GL context and input; OpenAL Soft,

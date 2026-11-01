@@ -1,6 +1,6 @@
 # Framework and scenes
 
-main.lua forwards LÖVE events to SceneManager. Menu, Game and Pause are separate scene classes. Game uses reusable engine modules and independent sceneContent/sceneUI modules. Demo builders live in examples/labs, with separate interface, simulation and dayCycle modules.
+main.lua forwards katsa events to SceneManager. Menu, Game and Pause are separate scene classes. Game uses reusable engine modules and independent sceneContent/sceneUI modules. Demo builders live in examples/labs, with separate interface, simulation and dayCycle modules.
 
 SceneManager supports switch, push, pop and deferred requestSwitch. Physical contact callbacks queue transitions rather than destroying a World3D during solver updates. Scenes own resource scopes, audio scopes, UI, input and render targets. Exit resets captures and time scale. Release destroys world/UI nodes and renderer resources.
 

@@ -282,7 +282,7 @@ function Methods:send(name, ...)
             .. 'A common error is to define but not use the variable.'
         error(message:format(name), 2)
     end
-    -- Queued draws must see the old uniform values and textures (LÖVE flushes here too).
+    -- Queued draws must see the old uniform values and textures (flush before changing state).
     require('source.katsa.graphics.state').flush()
     local gl = Core.gl
     local info = entry.info

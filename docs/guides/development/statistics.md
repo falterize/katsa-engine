@@ -69,7 +69,7 @@ and histories. No third-party dependency is required.
 
 For isolated use, `History.new(capacity, interval, optionalAggregation)`, `history:sample(time, value)`,
 `history:get(index)` and `history:summary(seconds, reusableOutput, optionalTime)` are independent
-of LÖVE rendering. `get(1)` is the oldest retained bucket. Do not mutate internal
+of katsa rendering. `get(1)` is the oldest retained bucket. Do not mutate internal
 buckets; `summary` can reuse a caller-owned result table to avoid allocations. An explicit current
 time lets unavailable metrics age out even when their last sample is older.
 
@@ -120,7 +120,7 @@ the frames actually drawn. Missing update samples leave a gap in that history.
 
 `Between-frame wait / events` measures elapsed wall time from the previous
 manager draw completion to the next manager update. It includes presentation,
-event processing, the LÖVE loop sleep and OS scheduling; it is not a GPU timer
+event processing, the katsa loop sleep and OS scheduling; it is not a GPU timer
 and cannot identify a driver problem by itself. It helps locate waits outside
 the measured scene update and screen UI work. FPS still uses the full real frame
 delta, including long frames; it is never clamped or smoothed to hide spikes.

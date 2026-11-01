@@ -1,4 +1,4 @@
--- Native graphics and interaction regressions. Requires LÖVE 11.5.
+-- Native graphics and interaction regressions. Requires the katsa runtime.
 return function(test)
     local Resources = require('source.engine.core.resources')
     local World3D = require('source.engine.world.world')

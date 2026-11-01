@@ -11,7 +11,7 @@ function Deadline.waitUntil(target, timer, sleep)
         local blocked = sleep and sleep(remaining)
             or not sleep and timer == systemTimer and WindowsWait.sleep(remaining)
         if not blocked then
-            -- LÖVE/SDL may truncate fractional milliseconds to zero. Always
+            -- SDL may truncate fractional milliseconds to zero. Always
             -- block for at least 1 ms on the fallback path, then recheck time.
             timer.sleep(math.max(0.001, remaining))
         end

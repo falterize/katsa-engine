@@ -53,7 +53,7 @@ https://create.roblox.com/docs/ui/scrolling-frames
 
 Low-pass passes highgain only; high-pass passes lowgain only; band-pass supports both.
 Native filter failures report the underlying reason. Filter support still depends on
-the LÖVE/OpenAL backend. Numeric Debug labels initialize immediately and refresh while
+the katsa/OpenAL backend. Numeric Debug labels initialize immediately and refresh while
 visible. Selection updates Properties values. Particle budgets have a Workspace entry.
 
 Maximum Graphics Laboratory requests high render density, MSAA, shadow resolution and

@@ -1,4 +1,4 @@
--- Runtime objects (images, data, fonts...) are userdata in LÖVE and tables with a class
+-- Runtime objects (images, data, fonts...) are userdata in katsa and tables with a class
 -- metatable under katsa. Engine code asks this module instead of testing type() directly.
 local Objects = {}
 

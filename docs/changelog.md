@@ -4,8 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.3
 
+- `katsa.log` (levels log/warn/error, bounded history, listeners, `logs/latest.log`, print capture), JSON/CSV console export, crash reports as `crashes/crash-NN.log` with recent console lines. See [console and logs](guides/development/console.md).
 - Workspace inspector: `Image.describe` mutated the parent class schema, so every `Frame`/`TextLabel` listed image fields (and the reverse looked like ImageLabel showing the wrong parameters). Each class now owns its schema, and writing a property the class does not declare is rejected (`Schema.hasProperty`). Focused suite: `--test-v108.3`.
-The engine runs on the katsa runtime instead of LÖVE.
+The engine runs on its own katsa runtime.
 
 - Graphics (OpenGL 3.3 / GLES 3.0 through SDL2), audio (OpenAL, silent fallback), physics (Box2D 2.3.1 in
   `katsa_box2d`), image, sound, filesystem, data and the archive readers are implemented in `source/katsa`,
@@ -30,7 +31,7 @@ Stage 2 of the migration plan, first increment. The shader translator and audio 
 
 
 
-* **katsa layer foundation** (`source/katsa`): LÖVE-dialect to GLSL 330 core / GLSL ES 300 shader translator, headless
+* **katsa layer foundation** (`source/katsa`): shader-dialect to GLSL 330 core / GLSL ES 300 shader translator, headless
   EGL platform (desktop GL 3.3 core and GLES 3.0), GL compile/link validation. Window, input, audio and 2D drawing on
   GL follow in later versions. See `docs/guides/katsa/platform.md`.
 * **Audio modules**: `SoundManager` (`scene.audio.manager`), `AudioListener`, `AudioSource`.

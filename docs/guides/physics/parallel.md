@@ -1,6 +1,6 @@
 # Parallel physics
 
-The LÖVE runtime remains unchanged. Jolt performs a fixed simulation step with its
+The katsa runtime remains unchanged. Jolt performs a fixed simulation step with its
 native job system. Windows x64 and Linux x64 include a small project-owned C bridge;
 Oimo remains a Lua solver on the main thread. Linux is cross-compiled, not tested on
 a Linux device; Android currently uses the original synchronous Jolt callback path.

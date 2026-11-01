@@ -1,5 +1,5 @@
 -- Run from the project root: lua validation/tests/headless/parenting.lua
--- TeX Lua can also run this suite; no LÖVE graphics calls are required.
+-- TeX Lua can also run this suite; no katsa graphics calls are required.
 unpack = unpack or table.unpack
 local count = 0
 require('validation.tests.integration.parenting')({

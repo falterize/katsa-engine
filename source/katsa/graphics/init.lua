@@ -1,4 +1,4 @@
--- katsa.graphics: LÖVE-compatible 2D renderer on OpenGL 3.3 core / GLES 3.0.
+-- katsa.graphics: 2D renderer on OpenGL 3.3 core / GLES 3.0.
 --
 -- Coordinates are in logical units (pixels / dpi scale), y points down. Rendering into a canvas
 -- flips

@@ -1,5 +1,5 @@
 local ffi = require('ffi')
--- Parenthesize the read result: LÖVE also returns the byte count, whereas cdef
+-- Parenthesize the read result: katsa also returns the byte count, whereas cdef
 -- must receive only the header string.
 ffi.cdef((assert(katsa.filesystem.read('vendor/joltPhysics/include/joltc.ffi.h'))))
 local platformName, architectureName = katsa.system.getOS(), ffi.arch

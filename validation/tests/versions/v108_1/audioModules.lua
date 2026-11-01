@@ -1,4 +1,4 @@
--- AudioSource, AudioListener and SoundManager against instrumented LÖVE audio
+-- AudioSource, AudioListener and SoundManager against instrumented katsa audio
 -- (routing and bookkeeping, not audible output).
 local Module = {}
 

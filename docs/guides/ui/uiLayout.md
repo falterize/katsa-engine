@@ -1,10 +1,10 @@
 # Responsive UI
 
 The engine uses lowerCamelCase properties. UI coordinates are logical pixels;
-LÖVE/device DPI determines physical pixels. A new ScreenUI defaults to
+Device DPI determines physical pixels. A new ScreenUI defaults to
 `layoutMode = 'Viewport'`: call `ui:fit(windowWidth, windowHeight)` on resize.
 The safe viewport becomes ui.width/ui.height after conversion to logical units.
-On Windows, Viewport uses the monitor scale divided by LÖVE graphics DPI, so SDL
+On Windows, Viewport uses the monitor scale divided by katsa graphics DPI, so SDL
 native-pixel coordinates do not make controls smaller at 125% or 150%. A 48-unit
 button occupies 60 physical pixels at 125%. Font rasterization and hit-testing use
 the same conversion. Platforms already exposing logical coordinates retain their
@@ -67,7 +67,7 @@ textScaled fits text within the label's padded resolved bounds. minTextSize
 (default 8) and maxTextSize (default 72) constrain the logical font size (1..200).
 If text cannot fit at the minimum, it is clipped. Scaled/rich layouts are cached
 until content, bounds, size limits or density change. Rich text uses glyph-based
-wrapping; ordinary unscaled labels retain the existing LÖVE printf wrapping.
+wrapping; ordinary unscaled labels retain the existing katsa printf wrapping.
 
 richText enables a documented subset: `<b>`, `<i>`, `<u>`, `<s>`, `<br/>`,
 `<font color="#RRGGBB" size="28">` and closing tags. Entities &lt;, &gt;, &amp;,

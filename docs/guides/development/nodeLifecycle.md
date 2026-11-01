@@ -72,7 +72,7 @@ Node changes are immediate at the Lua hierarchy level. Physical body insertion/r
 
 ## Validation
 
-The headless suite checks query snapshots, tags, scene ownership, initialization failures, signals/errors/reentrancy, cleanup, processing mutations, real Oimo contact removal/insertion and stable light selection. The Lua 5.3 compatibility bridge is test-only; production remains LÖVE's LuaJIT. Graphics/Android tests require the actual target runtime.
+The headless suite checks query snapshots, tags, scene ownership, initialization failures, signals/errors/reentrancy, cleanup, processing mutations, real Oimo contact removal/insertion and stable light selection. The Lua 5.3 compatibility bridge is test-only; production remains katsa's LuaJIT. Graphics/Android tests require the actual target runtime.
 
 Spatial nodes in v45 also support `setParent(parent, {keepWorldTransform=true})`.
 The new local TRS is validated before hierarchy mutation. Ordinary parent assignment

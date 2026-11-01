@@ -62,6 +62,9 @@ function Bootstrap.install(project, options)
         if options.beforeLoad then
             options.beforeLoad(arguments)
         end
+        if not testing and not smoke then
+            require('source.engine.debug.session').start()
+        end
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
         manager.sceneFactory, manager.startScene = createScene, project.startScene
@@ -188,6 +191,8 @@ function Bootstrap.install(project, options)
         local traceback = debug.traceback(tostring(message), 2)
         if manager and manager.journal then
             manager.journal:record('Runtime', traceback, nil, 'errorhandler')
+        else
+            katsa.log.error(traceback, 'errorhandler')
         end
         print(traceback)
         if testing or smoke then

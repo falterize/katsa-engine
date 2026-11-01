@@ -3,7 +3,12 @@ local Screen = {}
 function Screen.create(traceback, api)
     api = api or katsa
     if api.filesystem then
-        pcall(require('source.engine.debug.crashHistory').write, api.filesystem, traceback)
+        pcall(
+            require('source.engine.debug.crashHistory').write,
+            api.filesystem,
+            traceback,
+            api.log and api.log.tail(50)
+        )
     end
     if api.mouse then
         pcall(api.mouse.setRelativeMode, false)
@@ -58,7 +63,7 @@ function Screen.create(traceback, api)
             g.setColor(1, 0.8, 0.8)
             g.printf(
                 'Katsa stopped after an error. Close the window to exit.\n'
-                    .. 'Ctrl+C: copy | Wheel: scroll | Saved: crashes/crash-01.txt (last 10)\n\n'
+                    .. 'Ctrl+C: copy | Wheel: scroll | Saved: crashes/crash-01.log (last 10)\n\n'
                     .. traceback,
                 24,
                 24 - scroll,

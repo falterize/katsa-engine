@@ -1,4 +1,4 @@
--- Instrumented LÖVE audio calls; routing/lifetime, not audible DSP.
+-- Instrumented katsa audio calls; routing/lifetime, not audible DSP.
 require('validation.tests.integration.luaCompatibility')
 local count, definitions, created = 0, {}, {}
 
@@ -163,7 +163,7 @@ check(
 )
 check(
     definitions[echo._effectName].type == 'echo' and definitions[reverb._effectName].decaytime == 2,
-    'Native effect settings use documented LÖVE types'
+    'Native effect settings use documented katsa types'
 )
 local definitionsCount = 0
 local original = katsa.audio.setEffect

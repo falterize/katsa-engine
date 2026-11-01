@@ -1,5 +1,5 @@
 -- Desktop-only profiling adapter. Never used by the renderer or on Android.
--- LÖVE 11.5 has no portable GPU timer API; unsupported contexts report unavailable.
+-- katsa has no portable GPU timer API; unsupported contexts report unavailable.
 local Timer = {}
 
 function Timer.new()

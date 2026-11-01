@@ -108,7 +108,7 @@ vary between runs. Compare CPU phases and allocation tests as well as totals.
 ## Real frame loop
 
 Foreground rendering has no artificial frame sleep or frame cap. VSync remains
-configurable through LÖVE; unfocused/inactive windows retain a 10 ms idle wait.
+configurable through katsa; unfocused/inactive windows retain a 10 ms idle wait.
 The loop preserves standard event/quit handling, real timer deltas and full draw/
 present execution. It does not busy-wait on a target deadline or change simulation
 steps. Material uniform buffers and shader feature lists are reused; resource

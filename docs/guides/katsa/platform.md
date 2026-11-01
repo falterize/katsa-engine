@@ -12,7 +12,7 @@
 | platform | `platform/` | SDL2 window and GL context, headless EGL for tests and servers |
 | host | `host/` | Program start for `katsa game.katsa` and for fused executables |
 
-Notes that differ from LÖVE: LuaJIT cannot run an FFI callback from compiled code, so the physics
+Platform notes: LuaJIT cannot run an FFI callback from compiled code, so the physics
 methods that enter native code which may call Lua back (`World:update`, destroying bodies, fixtures
 and joints) are excluded from the JIT. Box2D is built with `NDEBUG`; degenerate polygons become
 Box2D's unit box instead of aborting the process.
@@ -45,9 +45,9 @@ desktop, EGL on Android) implement the same three members plus presentation and 
 ## Shader translation
 
 `source.katsa.graphics.shaderTranslator.translate(source, { target = 'desktop' | 'es', renderTargets = n })`
-turns a LÖVE-dialect shader into separate vertex and pixel GLSL:
+turns a shader-dialect shader into separate vertex and pixel GLSL:
 
-* One source holds both stages behind `#ifdef VERTEX` / `#ifdef PIXEL`, as in LÖVE. User code goes to the stage
+* One source holds both stages behind `#ifdef VERTEX` / `#ifdef PIXEL`, as in katsa. User code goes to the stage
   whose entry point (`vec4 position(...)`, `vec4 effect(...)`) it defines; the other stage uses the default.
 * `varying`, `attribute`, `extern`, `Image`, `ArrayImage`, `CubeImage`, `VolumeImage`, `Texel` and `number`
   are supported. `#pragma language glsl1` additionally maps `texture2D`/`texture3D`/`textureCube`.

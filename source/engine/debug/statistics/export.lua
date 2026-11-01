@@ -1,5 +1,6 @@
 -- Manual CSV snapshots. Serialization is independent of the UI and never runs while idle.
 local Version = require('source.engine.core.version')
+local Csv = require('source.engine.debug.csv')
 local Export = {}
 local columns = {
     'schema',
@@ -24,23 +25,8 @@ local columns = {
     'duration_seconds',
 }
 
-local function csv(value)
-    if value == nil then
-        return ''
-    end
-    local text = type(value) == 'number' and string.format('%.17g', value) or tostring(value)
-    if text:find('[,"\r\n]') then
-        return '"' .. text:gsub('"', '""') .. '"'
-    end
-    return text
-end
-
 local function row(output, values)
-    local cells = {}
-    for index = 1, #columns do
-        cells[index] = csv(values[index])
-    end
-    output[#output + 1] = table.concat(cells, ',')
+    output[#output + 1] = Csv.row(values, #columns)
 end
 
 function Export.build(definitions, histories, options)
