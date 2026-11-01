@@ -33,6 +33,7 @@ local suites = {
     'openal',
     'audio',
     'sevenZip',
+    'net',
 }
 for _, name in ipairs(suites) do
     local ok, err = pcall(require('validation.tests.katsa.' .. name), T)

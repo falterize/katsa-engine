@@ -24,6 +24,8 @@ switching works the same in a folder, a `.katsa` and a fused executable.
 | OpenAL Soft | `OpenAL32.dll` | `libopenal.so.1` | `libopenal.dylib` | `libopenal.so` |
 | FreeType | `freetype.dll` | `libfreetype.so.6` | `libfreetype.dylib` | `libfreetype.so` |
 | katsa_native | `katsa_native.dll` | `libkatsa_native.so` | `libkatsa_native.dylib` | `libkatsa_native.so` |
+| katsa_box2d (2D physics) | `katsa_box2d.dll` | `libkatsa_box2d.so` | `libkatsa_box2d.dylib` | `libkatsa_box2d.so` |
+| katsa_net (networking, only when used) | `katsa_net.dll` | `libkatsa_net.so` | `libkatsa_net.dylib` | `libkatsa_net.so` |
 
 `KATSA_LIB_DIR` points the loader at another directory.
 
