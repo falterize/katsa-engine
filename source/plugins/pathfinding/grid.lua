@@ -9,7 +9,8 @@ Grid.__index = Grid
 local SQRT2 = math.sqrt(2)
 
 -- options: cellSize (default 1), origin = { x, y } of the grid's top-left corner (default 0, 0),
--- diagonal (default true), cornerCutting (default false: a diagonal step needs both side cells free).
+-- diagonal (default true), cornerCutting (default false: a diagonal step needs both side cells
+-- free).
 function Grid.new(width, height, options)
     options = options or {}
     assert(width >= 1 and height >= 1, 'Grid must have at least one cell')

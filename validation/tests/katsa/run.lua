@@ -4,7 +4,8 @@
 package.path = './?.lua;' .. package.path
 
 package.path = './?/init.lua;' .. package.path
-local Nat = require('source.katsa.core.native'); Nat.addDirectory('build/native/linux')
+local Nat = require('source.katsa.core.native')
+Nat.addDirectory('build/native/linux')
 local failures, passes, skipped = 0, 0, 0
 local T = {}
 
@@ -35,6 +36,7 @@ local suites = {
     'sevenZip',
     'net',
     'pathfinding',
+    'netGame',
 }
 for _, name in ipairs(suites) do
     local ok, err = pcall(require('validation.tests.katsa.' .. name), T)

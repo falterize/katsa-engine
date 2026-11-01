@@ -19,7 +19,8 @@ function AStar.search(space, start, goal, limit)
     if startKey == goalKey then
         return { start }, 0
     end
-    local open, best, parent, nodes, closed = Heap.new(), { [startKey] = 0 }, {}, { [startKey] = start }, {}
+    local open, best, parent, nodes, closed =
+        Heap.new(), { [startKey] = 0 }, {}, { [startKey] = start }, {}
     open:push(startKey, space.heuristic(start, goal))
     local expanded, maximum = 0, limit or math.huge
     while not open:isEmpty() do
@@ -44,7 +45,8 @@ function AStar.search(space, start, goal, limit)
                 if not closed[neighborKey] then
                     local cost = best[currentKey] + space.cost(current, neighbor)
                     if best[neighborKey] == nil or cost < best[neighborKey] then
-                        best[neighborKey], parent[neighborKey], nodes[neighborKey] = cost, currentKey, neighbor
+                        best[neighborKey], parent[neighborKey], nodes[neighborKey] =
+                            cost, currentKey, neighbor
                         open:push(neighborKey, cost + space.heuristic(neighbor, goal))
                     end
                 end
