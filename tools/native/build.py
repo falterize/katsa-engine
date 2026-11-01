@@ -17,7 +17,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SRC = ROOT / 'native' / 'src'
 THIRD = ROOT / 'native' / 'third_party'
-SOURCES = [SRC / 'katsa_native.c', SRC / 'katsa_vorbis_impl.c']
+SOURCES = [SRC / 'katsa_native.c', SRC / 'katsa_vorbis_impl.c', SRC / 'katsa_font_impl.c']
 FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(THIRD), '-I' + str(SRC)]
 
 

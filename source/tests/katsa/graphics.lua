@@ -136,6 +136,48 @@ return function(T)
     T.check(rgb(im, 4, 4, 1, 0, 0) and rgb(im, 12, 4, 0, 1, 0) and rgb(im, 4, 12, 0, 0, 1) and rgb(im, 12, 12, 1, 1, 1),
         'image draws with nearest filtering')
 
+    -- text
+    local font = g.newFont(16, 'normal', 1)
+    local w = font:getWidth('Hello')
+    T.check(w > 30 and w < 60 and font:getHeight() >= 16 and font:getHeight() <= 22, 'font metrics are plausible')
+    T.check(font:getWidth('HH') > font:getWidth('H') and font:getWidth('') == 0, 'font width grows with text')
+    local _, lines = font:getWrap('one two three four', font:getWidth('three four') + 1)
+    T.check(#lines == 2 and lines[1] == 'one two' and lines[2] == 'three four', 'getWrap breaks at spaces')
+    local _, long = font:getWrap('abcdefghijklmnop', font:getWidth('abcd') + 1)
+    T.check(#long >= 3, 'getWrap splits words that are too long')
+    g.setCanvas(target)
+    g.clear(0, 0, 0, 1)
+    g.setFont(font)
+    g.setColor(1, 1, 1, 1)
+    g.print('MMMM', 2, 2)
+    g.flushBatch()
+    g.setCanvas()
+    local tx = target:newImageData()
+    local lit = 0
+    for y = 0, 24 do
+        for x = 0, 50 do
+            if tx:getPixel(x, y) > 0.5 then lit = lit + 1 end
+        end
+    end
+    T.check(lit > 80 and tx:getPixel(60, 60) == 0, 'print draws glyph coverage')
+    g.setCanvas(target)
+    g.clear(0, 0, 0, 1)
+    g.printf('MM', 0, 2, 64, 'right')
+    g.flushBatch()
+    g.setCanvas()
+    local right = target:newImageData()
+    local leftHalf, rightHalf = 0, 0
+    for y = 0, 24 do
+        for x = 0, 63 do
+            if right:getPixel(x, y) > 0.5 then
+                if x < 32 then leftHalf = leftHalf + 1 else rightHalf = rightHalf + 1 end
+            end
+        end
+    end
+    T.check(rightHalf > 20 and leftHalf == 0, 'printf aligns right')
+    local text = g.newText(font, 'abc')
+    T.check(math.abs(text:getWidth() - font:getWidth('abc')) < 0.01, 'Text reports the font width')
+
     local name, version = g.getRendererInfo()
     T.check(name:find('OpenGL') and #version > 0, 'renderer info')
     platform:close()
