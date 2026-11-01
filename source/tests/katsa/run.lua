@@ -3,6 +3,8 @@
 -- GL checks are skipped with a notice when no EGL driver is available.
 package.path = './?.lua;' .. package.path
 
+package.path = './?/init.lua;' .. package.path
+local Nat = require('source.katsa.core.native'); Nat.addDirectory('build/native/linux')
 local failures, passes, skipped = 0, 0, 0
 local T = {}
 
@@ -20,7 +22,7 @@ function T.skip(message)
     print('SKIP ' .. message)
 end
 
-local suites = { 'shaderTranslator', 'shaderCompile', 'scenesArchive' }
+local suites = { 'shaderTranslator', 'shaderCompile', 'scenesArchive', 'imageData', 'graphics' }
 for _, name in ipairs(suites) do
     local ok, err = pcall(require('source.tests.katsa.' .. name), T)
     if not ok then
