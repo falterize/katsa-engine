@@ -158,8 +158,9 @@ function Image.uv(node, iw, ih, width, height, frame, selectedMode)
 end
 
 function Image.describe(class)
-    class.propertySchema = class.propertySchema or {}
-    local schema = class.propertySchema
+    -- rawget: the class inherits through its base, so a plain read would mutate the parent's schema.
+    local schema = rawget(class, 'propertySchema') or {}
+    class.propertySchema = schema
     schema.fitMode = {
         options = { 'Fit', 'Crop', 'Stretch' },
         visibleWhen = { key = 'imageMode', oneOf = { 'Decal', 'Atlas', 'XML' } },

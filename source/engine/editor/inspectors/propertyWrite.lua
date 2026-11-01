@@ -67,6 +67,9 @@ function PropertyWrite.install(Properties)
         if target.destroyed then
             return false, 'This node was removed'
         end
+        if not Schema.hasProperty(target, field.key) then
+            return false, (target.className or 'This node') .. ' has no property ' .. field.key
+        end
         local key, value = field.storageKey or field.key, text
         if field.kind == 'number' or field.kind == 'vector' then
             value = tonumber(text)
