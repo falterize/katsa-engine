@@ -121,13 +121,20 @@ function Animator:update(dt)
     for _, track in ipairs(self.tracks) do
         track:advance(dt)
     end
-    self._poseTime = (self._poseTime or 0) + dt
     assert(self.poseRate > 0 and self.poseRate <= 240, 'Animator.poseRate must be within 1..240')
-    if self._poseTime < 1 / self.poseRate then
+    local interval = 1 / self.poseRate
+    -- poseRate budgets pose evaluations per second of wall-clock time. Gating on scaled
+    -- simulation time would pose only every 1/(poseRate * timeScale) frames, so a slowed
+    -- world would animate at a fraction of the display rate.
+    local world = self._world
+    self._poseTime = (self._poseTime or 0) + dt
+    self._poseWall = (self._poseWall or 0) + (world and world.frameRealDelta or dt)
+    if self._poseWall < interval or self._poseTime <= 0 then
         return
     end
     self._poseStep = self._poseTime
-    self._poseTime = self._poseTime % (1 / self.poseRate)
+    self._poseTime = 0
+    self._poseWall = self._poseWall % interval
     self._active = self._active or {}
     local active = self._active
     local count = 0

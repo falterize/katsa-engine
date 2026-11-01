@@ -92,8 +92,9 @@ remove that contribution. `Started`, `Stopped`, `Completed`, `Marker` and
 state track. Calling it again for the already playing state keeps playback intact.
 State names and transition decisions belong to game code. Demo Idle/Walk/Run/Jump/
 Fall/Wave show this; there is no built-in player state machine in the core.
-`poseRate` defaults to 60 poses/second (1..240). Playback/markers advance every world
-update; pose evaluation follows this budget and World3D.TimeScale.
+`poseRate` defaults to 60 poses/second (1..240) of wall-clock time. Playback/markers advance
+every world update at the World3D.TimeScale speed; pose evaluation follows the budget in real
+time, so a slowed world still animates smoothly (see the [step smoothing guide](../animation/stepValue.md)).
 
 ## Markers, attachments and root motion
 

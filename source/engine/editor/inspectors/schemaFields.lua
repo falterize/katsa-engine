@@ -23,6 +23,7 @@ local groups = {
         'projectionMode',
         'fov',
         'orthoSize',
+        'orthoNear',
         'near',
         'far',
         'drawDistance',

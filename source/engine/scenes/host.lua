@@ -69,6 +69,7 @@ end
 function Host:update(dt, realDt)
     local started = love.timer.getTime()
     local sceneDt = dt
+    self.world.frameRealDelta = realDt or sceneDt
     dt = require('source.engine.world.clock').delta(self.world.root, dt)
     self.time = self.time + dt
     self.lifecycle.update2D(self.state, sceneDt, realDt or sceneDt)
