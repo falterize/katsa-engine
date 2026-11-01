@@ -30,9 +30,9 @@ python tools/build/packageProject.py --output dist
 
 Historical command names identify stable suites, not the current application version. Set `KATSA_TEST_INTERPRETER=1` to exercise supported suites with JIT disabled. The v104 suite covers both physics backends, mutation safety, lifecycle and animation caches. v102 covers rendering/UI regressions; v75 compares retained text geometry. Stress scenes check bounded finite body poses and debug drawing.
 
-Format first-party Lua using `stylua --syntax LuaJIT --verify source/engine source/game source/tests main.lua conf.lua`, followed by the same paths with `--check`. Preserve vendor files and historical comparison fixtures. Python tools use the checked-in Black configuration.
+Format first-party Lua using `stylua --syntax LuaJIT --verify source/engine source/game validation/tests main.lua conf.lua`, followed by the same paths with `--check`. Preserve vendor files and historical comparison fixtures. Python tools use the checked-in Black configuration.
 
-Release-wide runners, frame-hash comparisons, structural audits and completed results live in the external `validation/` directory beside the release archive. Re-test the packaged `.katsa` after changes to dependency paths. A Haxe/C++ rebuild requires the corresponding external compiler; library hash verification does not claim a source rebuild or device testing.
+Release-wide runners, frame-hash comparisons, structural audits and completed results live in `validation/` (tests in `validation/tests`, generated logs in `validation/logs`). Re-test the packaged `.katsa` after changes to dependency paths. A Haxe/C++ rebuild requires the corresponding external compiler; library hash verification does not claim a source rebuild or device testing.
 
 The v105 suite covers both scroll axes, automatic bounds, direction changes, inspector properties, invalid inputs, native worker execution and body-ID reuse. The forced-parallel suite runs the 174 existing adapter checks with the worker threshold set to zero, including contact mutation and scene teardown. `--benchmark-v105` measures CPU physics on a fixed scene; see [parallel physics](../physics/parallel.md).
 
@@ -105,9 +105,8 @@ module caches and cleanup. The frame-loop probe also has the alias
 `--test` / `--test-v106.6` adds categorized script/UI entry checks and marker-free
 scene directories to the retained lifecycle suite. It exercises TAR directory
 conversion, including a conventional `.` root directory, as well as all existing
-scene/archive formats. External `validation/testPackaging.py` checks project and
-scene archive entries, empty categories, cache/output exclusion, rebuilding into
-the project root and preservation of an existing release on invalid input.
+scene/archive formats. The retained lifecycle fixtures check project and
+scene archive entries and empty categories.
 
 The updated v106.6 suite also checks scene layout version 3 with scripts/ui,
 compatibility with version 2 root-ui archives, and the documented Spinner node:
@@ -156,7 +155,7 @@ orthographic frame. Set `KATSA_TEST_OUTPUT` to a directory to keep the rendered 
 
 ## katsa layer (v108.1)
 
-`luajit source/tests/katsa/run.lua` (from the repository root) tests the shader translator and compiles every
+`luajit validation/tests/katsa/run.lua` (from the repository root) tests the shader translator and compiles every
 project shader on desktop GL 3.3 core and GLES 3.0 through a headless EGL context. It needs LuaJIT and
 libEGL/Mesa; GL checks are skipped with a notice when no EGL driver exists. See
 [katsa runtime layer](../katsa/platform.md).

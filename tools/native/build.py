@@ -16,9 +16,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SRC = ROOT / 'native' / 'src'
-THIRD = ROOT / 'native' / 'third_party'
+VENDOR = ROOT / 'vendor'
 SOURCES = [SRC / 'katsa_native.c', SRC / 'katsa_vorbis_impl.c', SRC / 'katsa_font_impl.c']
-FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(THIRD), '-I' + str(SRC)]
+FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(VENDOR / 'stb'), '-I' + str(SRC)]
 
 
 def run(command):
@@ -35,9 +35,9 @@ def compiler(*names):
 
 
 HOST = SRC / 'katsa_host.c'
-BOX2D_DIR = THIRD / 'box2d' / 'Box2D'
+BOX2D_DIR = VENDOR / 'box2d' / 'Box2D'
 BOX2D_SOURCES = sorted(BOX2D_DIR.rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
-BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(THIRD / 'box2d'), '-std=c++11']
+BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(VENDOR / 'box2d'), '-std=c++11']
 
 LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 

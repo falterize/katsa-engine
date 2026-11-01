@@ -40,7 +40,7 @@ switching works the same in a folder, a `.katsa` and a fused executable.
    directory, then run `build.py windows` to get `katsa.exe`. Set `KATSA_GUI=1` for a build without a console window.
 3. **Package.**
    - Generic runtime: `python tools/build/packageKatsa.py --runtime-only --host build/native/windows/katsa.exe --output dist/katsa.exe`
-   - Game archive: `python tools/build/packageKatsa.py --source source --output dist/Game.katsa`, then `katsa.exe Game.katsa`
+   - Game archive: `python tools/build/packageKatsa.py --source <game folder> --output dist/Game.katsa`, then `katsa.exe Game.katsa`. `validation/` is omitted; `packageProject.py --with-validation` includes it.
    - Game and engine in one file: `python tools/build/packageKatsa.py --source <game folder> --host build/native/windows/katsa.exe --output dist/Game.exe`
 4. Copy the libraries from the table beside the result.
 

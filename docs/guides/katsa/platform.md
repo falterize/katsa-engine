@@ -24,7 +24,7 @@ Box2D's unit box instead of aborting the process.
 | `desktop` | OpenGL 3.3 core | Windows, Linux |
 | `es` | OpenGL ES 3.0 | Android |
 
-Both targets are validated in CI-style runs through Mesa llvmpipe: `luajit source/tests/katsa/run.lua`.
+Both targets are validated in CI-style runs through Mesa llvmpipe: `luajit validation/tests/katsa/run.lua`.
 
 ## Headless platform
 
@@ -67,6 +67,6 @@ raw `void position()` / `void effect()` style.
 
 ## Verification
 
-`source/tests/katsa/run.lua` runs 109 checks: translator unit tests, plus every project shader compiled and
+`validation/tests/katsa/run.lua` runs 109 checks: translator unit tests, plus every project shader compiled and
 linked on both targets (included libraries and material hooks are exempt). Fifty-one shader variants produced
 by the engine during `katsa . --test` were also compiled once on both targets without errors.

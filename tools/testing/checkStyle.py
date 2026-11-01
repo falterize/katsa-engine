@@ -57,7 +57,7 @@ def checkFile(path, maxLines):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        'paths', nargs='*', type=Path, default=[Path('source/katsa'), Path('source/tests/katsa')]
+        'paths', nargs='*', type=Path, default=[Path('source/katsa'), Path('validation/tests/katsa')]
     )
     parser.add_argument('--max-lines', type=int, default=MAX_LINES)
     args = parser.parse_args()

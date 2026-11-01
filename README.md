@@ -12,12 +12,13 @@ Build the katsa runtime (see [building](docs/guides/katsa/building.md)) and run 
 | --- | --- |
 | `source/engine/` | Reusable engine services and node APIs |
 | `source/game/` | Self-contained scene folders, common runtime and game data |
-| `source/tests/` | Integration, performance and versioned regression suites |
+| `validation/` | All tests: integration, performance, fixtures and versioned regression suites (`validation/tests/`) |
+| `native/` | The project's C/C++ runtime sources (host, bindings, Box2D bridge) |
 | `assets/` | Models, textures, shaders, audio and source assets |
-| `vendor/` | Pinned third-party dependencies and licenses |
+| `vendor/` | Pinned third-party dependencies and licenses (Box2D, stb, Jolt, Oimo, json) |
 | `tools/project/templates/game/` | Generator-only entry/configuration resources; scene code has one canonical source |
 | `tools/` | Asset generation, importing, building and dependency verification |
-| `docs/` | Current guides, architecture and reference images |
+| `docs/` | Current guides, architecture, changelog and reference images |
 
 Select your game's first scene in `source/game/data/project.lua`. Each scene owns its settings, lifecycle-only `main.lua`, assets, nodes, systems and scripts, including `scripts/ui` for its interface code. `scripts/content.lua` composes content; other scripts and UI helpers are grouped by responsibility. Empty directories are preserved by the packers without marker files. The default menu is an example selector; it can be bypassed. System discovery/order/enabling is visible directly in each scene's `main.lua`.
 

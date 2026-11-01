@@ -2,6 +2,7 @@
 
     python tools/build/packageProject.py --output dist
     python tools/build/packageProject.py --output dist --host build/host/linux/katsa   (fused exe)
+    python tools/build/packageProject.py --output dist --with-validation   (adds validation/ for `katsa x.katsa --test`)
 
 The archive is named after source/engine/core/version.lua. Run it with `katsa Katsa-<version>.katsa`.
 See docs/guides/katsa/building.md for every target platform.
@@ -27,16 +28,16 @@ def project_version(root: Path) -> str:
     return match.group(1)
 
 
-def package(root: Path, target: Path, host: Path | None = None) -> Path:
+def package(root: Path, target: Path, host: Path | None = None, with_validation: bool = False) -> Path:
     if not (root / 'main.lua').is_file():
         raise ValueError(f'Project is missing main.lua: {root}')
     target.parent.mkdir(parents=True, exist_ok=True)
     if host is None:
-        files, directories = packageKatsa.write_zip(str(target), str(root))
+        files, directories = packageKatsa.write_zip(str(target), str(root), with_validation=with_validation)
     else:
         temporary = target.with_suffix('.zip.tmp')
         try:
-            files, directories = packageKatsa.write_zip(str(temporary), str(root), runtime=True)
+            files, directories = packageKatsa.write_zip(str(temporary), str(root), runtime=True, with_validation=with_validation)
             target.write_bytes(host.read_bytes() + temporary.read_bytes())
         finally:
             temporary.unlink(missing_ok=True)
@@ -49,13 +50,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=Path('dist'))
     parser.add_argument('--host', type=Path, help='katsa host executable to fuse with')
+    parser.add_argument('--with-validation', action='store_true', help='include validation/ (tests, fixtures) in the archive')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     # A fresh Git checkout has no empty scene categories; the archive must keep them.
     restoreEmptyDirs.restore(root)
     name = f'Katsa-{project_version(root)}'
     target = args.output / (name if args.host else name + '.katsa')
-    result = package(root, target, args.host)
+    result = package(root, target, args.host, args.with_validation)
     print(hashlib.sha256(result.read_bytes()).hexdigest())
 
 

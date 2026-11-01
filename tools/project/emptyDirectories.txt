@@ -190,8 +190,8 @@ source/game/scenes/viewports/assets/models
 source/game/scenes/viewports/assets/shaders
 source/game/scenes/viewports/assets/textures
 source/game/scenes/viewports/nodes
-source/tests/fixtures/lifecycle/basic/assets/audio
-source/tests/fixtures/lifecycle/basic/assets/fonts
-source/tests/fixtures/lifecycle/basic/assets/models
-source/tests/fixtures/lifecycle/basic/assets/shaders
-source/tests/fixtures/lifecycle/basic/assets/textures
+validation/tests/fixtures/lifecycle/basic/assets/audio
+validation/tests/fixtures/lifecycle/basic/assets/fonts
+validation/tests/fixtures/lifecycle/basic/assets/models
+validation/tests/fixtures/lifecycle/basic/assets/shaders
+validation/tests/fixtures/lifecycle/basic/assets/textures

@@ -58,4 +58,4 @@ Custom code that projects points should call `camera:project`, `camera:viewToScr
 `camera:screenRay` or `camera:pixelsPerUnitAt` instead of using `camera.focal` directly.
 `camera.focal` remains available as the perspective lens value.
 
-See the focused checks in `source/tests/versions/v108/camera3D.lua` (run with `katsa . --test-v108`).
+See the focused checks in `validation/tests/versions/v108/camera3D.lua` (run with `katsa . --test-v108`).

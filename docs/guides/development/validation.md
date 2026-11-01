@@ -1,13 +1,14 @@
 # Repeatable validation
 
-Run these commands from the example collection's source directory. Python 3.12+
-and desktop LÖVE 11.5 are sufficient for the Python/Lua runners; native dependency
-verification uses only bundled files and hashes, without network access.
+Run these commands from the repository root. Python 3.12+ and a built katsa runtime
+are sufficient for the Python/Lua runners; native dependency verification uses only
+bundled files and hashes, without network access. Everything lives in `validation/`:
+tests in `validation/tests`, generated logs in `validation/logs` (not committed).
 
 ```text
-python tools/testing/checkProject.py test --output ../validation/logs/runtime
-python tools/testing/checkProject.py soak --output ../validation/logs/soak
-python tools/testing/checkProject.py benchmark --output ../validation/logs/benchmark
+python tools/testing/checkProject.py test --output validation/logs/runtime
+python tools/testing/checkProject.py soak --output validation/logs/soak
+python tools/testing/checkProject.py benchmark --output validation/logs/benchmark
 ```
 
 `--katsa` accepts a katsa executable path. The default launcher uses `katsa` on PATH.
@@ -30,17 +31,19 @@ only dedicated `validation-v1068` slots. Tests require write access to the
 application's LÖVE save directory for temporary data and exported test logs.
 Do not run multiple test processes against the same identity concurrently.
 
-Python build-tool tests are outside the packaged source:
+Static checks and dependency verification:
 
 ```text
-python ../validation/testTools.py
-python ../validation/testPackaging.py
+python tools/testing/checkStyle.py
+luajit validation/tests/katsa/run.lua
 python tools/build/jolt/prepareNative.py
-python tools/build/jolt/buildBridge.py --verify
 ```
 
+Game archives omit `validation/`. To run the suites from a package, build it with
+`python tools/build/packageProject.py --with-validation` and start `katsa <archive> --test`.
+
 Formatting uses the supplied `stylua.toml` with StyLua 2.6.0. No vendor files need
-reformatting. The release validation directory records actual checks and limits.
+reformatting.
 
 ## Real-time Menu and scene soak
 

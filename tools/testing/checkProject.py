@@ -13,7 +13,7 @@ def main():
     parser.add_argument('mode', choices=('test', 'soak', 'benchmark'))
     parser.add_argument('--project', type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument('--katsa', default=shutil.which('katsa') or 'katsa')
-    parser.add_argument('--output', type=Path, default=Path('validation-logs'))
+    parser.add_argument('--output', type=Path, default=Path('validation/logs'))
     parser.add_argument('--idle', type=float, default=60)
     parser.add_argument('--cycles', type=int, default=50)
     parser.add_argument('--hold', type=float, default=0.5)
