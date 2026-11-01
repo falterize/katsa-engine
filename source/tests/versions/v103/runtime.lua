@@ -160,6 +160,7 @@ function T:backend(name)
         'BallSocketConstraint3D',
         'HingeConstraint3D',
         'PrismaticConstraint3D',
+        'SliderConstraint3D',
         'CylindricalConstraint3D',
         'UniversalConstraint3D',
         'RagdollConstraint3D',
@@ -188,6 +189,7 @@ function T:backend(name)
         if
             class == 'HingeConstraint3D'
             or class == 'PrismaticConstraint3D'
+            or class == 'SliderConstraint3D'
             or class == 'CylindricalConstraint3D'
             or class == 'UniversalConstraint3D'
             or class == 'RagdollConstraint3D'
@@ -195,10 +197,9 @@ function T:backend(name)
             b.body:set({ gravityScale = 0 })
             joint.motorSpeed, joint.motorForce = 30, 100
             step(w, 12)
-            local v = class == 'PrismaticConstraint3D' and b.body:getVelocity()
-                or b.body.raw:getAngularVelocity()
-            local magnitude = class == 'PrismaticConstraint3D'
-                    and math.abs(v[1]) + math.abs(v[2]) + math.abs(v[3])
+            local linear = class == 'PrismaticConstraint3D' or class == 'SliderConstraint3D'
+            local v = linear and b.body:getVelocity() or b.body.raw:getAngularVelocity()
+            local magnitude = linear and math.abs(v[1]) + math.abs(v[2]) + math.abs(v[3])
                 or math.abs(v.x) + math.abs(v.y) + math.abs(v.z)
             self:check(magnitude > 0.01, name .. ': ' .. class .. ' motor drives motion')
         end

@@ -1,6 +1,7 @@
 -- Explicit runner metadata keeps historical commands available without eager imports.
 local Registry = {}
 local entries = {
+    ['--test-v108.1'] = { module = 'source.tests.versions.v108_1.focused', mode = 'default' },
     ['--test-v108'] = { module = 'source.tests.versions.v108.focused', mode = 'default' },
     ['--test-v107.2-authoring'] = {
         module = 'source.tests.versions.v107_2.focused',

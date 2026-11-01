@@ -28,6 +28,8 @@ require('source.engine.nodes.audio.soundGroup')
 require('source.engine.nodes.audio.soundEffect')
 require('source.engine.nodes.audio.effects')
 require('source.engine.nodes.audio.sound')
+require('source.engine.nodes.audio.audioSource')
+require('source.engine.nodes.audio.audioListener')
 require('source.engine.nodes.effects.particleEmitter3D')
 
 require('source.engine.nodes.animation.ramp')

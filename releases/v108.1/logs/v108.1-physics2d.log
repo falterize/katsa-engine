@@ -1,0 +1,180 @@
+Could not open device.
+PASS Physics2D	Dynamic circle rests on a static floor
+PASS Physics2D	Contact enter and persistent contact list agree
+PASS Physics2D	Creating a world does not change the global Box2D meter
+PASS Physics2D	2D statistics count bodies and fixtures
+PASS Physics2D	Paused physics does not advance
+PASS Physics2D	Vector teleport synchronizes position and clockwise degree rotation
+PASS Physics2D	Velocity API accepts the same vector convention as 3D
+PASS Physics2D	Impulse respects an explicit mass override
+PASS Physics2D	2D angular velocity uses degrees per second
+PASS Physics2D	Gravity access uses authored world units
+PASS Physics2D	Kinematic bodies move at their authored velocity
+PASS Physics2D	In-place authored position changes teleport the solver body
+PASS Physics2D	Catch-up is bounded and discarded time is measured
+PASS Physics2D	Negative simulation time is rejected
+PASS Physics2D	World teardown destroys its 2D nodes and native world
+PASS Physics2D	Release and post-release update are idempotent
+PASS Physics2D	Unchanged colliders retain their native fixtures
+PASS Physics2D	Raycast returns the nearest world-space hit
+PASS Physics2D	Raycast-all sorts unclipped hits
+PASS Physics2D	canQuery hides a body from raycasts
+PASS Physics2D	Point queries test exact fixture containment
+PASS Physics2D	Circle overlap uses exact Box2D shape distance
+PASS Physics2D	Box overlap deduplicates bodies
+PASS Physics2D	Circle query rejects an AABB-only false positive
+PASS Physics2D	Overlap filters receive body wrappers
+PASS Physics2D	Explicit Collider2D replaces the default collider
+PASS Physics2D	Changed collider properties rebuild safely
+PASS Physics2D	Multiple Collider2D children form a compound body
+PASS Physics2D	Disabling every explicit collider removes all fixtures
+PASS Physics2D	Removing explicit colliders restores the authored fallback shape
+PASS Physics2D	Polygon collider builds native fixtures
+PASS Physics2D	Edge collider builds native fixtures
+PASS Physics2D	Chain collider builds native fixtures
+PASS Physics2D	Compound collider builds native fixtures
+PASS Physics2D	Invalid collider input is rejected
+PASS Physics2D	A failed collider replacement preserves the current fixture
+PASS Physics2D	Sensors emit enter without a collision response
+PASS Physics2D	Leaving a trigger emits exit
+PASS Physics2D	Collision groups filter trigger contacts
+PASS Physics2D	Changing group interaction refilters existing fixtures
+PASS Physics2D	Nodes can be destroyed safely from contact events
+PASS Physics2D	Reentrant simulation from contact callbacks is rejected
+PASS Physics2D	A body cannot migrate between physical World2D owners
+PASS Physics2D	Rejected reparenting preserves the existing hierarchy
+PASS Physics2D	HingeConstraint2D builds a live Box2D joint
+PASS Physics2D	HingeConstraint2D retains its joint while bodies move
+PASS Physics2D	HingeConstraint2D disable releases native state
+PASS Physics2D	HingeConstraint2D can be enabled again
+PASS Physics2D	HingeConstraint2D handles endpoint deletion
+PASS Physics2D	PrismaticConstraint2D builds a live Box2D joint
+PASS Physics2D	PrismaticConstraint2D retains its joint while bodies move
+PASS Physics2D	PrismaticConstraint2D disable releases native state
+PASS Physics2D	PrismaticConstraint2D can be enabled again
+PASS Physics2D	PrismaticConstraint2D handles endpoint deletion
+PASS Physics2D	WeldConstraint2D builds a live Box2D joint
+PASS Physics2D	WeldConstraint2D retains its joint while bodies move
+PASS Physics2D	WeldConstraint2D disable releases native state
+PASS Physics2D	WeldConstraint2D can be enabled again
+PASS Physics2D	WeldConstraint2D handles endpoint deletion
+PASS Physics2D	RopeConstraint2D builds a live Box2D joint
+PASS Physics2D	RopeConstraint2D retains its joint while bodies move
+PASS Physics2D	RopeConstraint2D disable releases native state
+PASS Physics2D	RopeConstraint2D can be enabled again
+PASS Physics2D	RopeConstraint2D handles endpoint deletion
+PASS Physics2D	SpringConstraint2D builds a live Box2D joint
+PASS Physics2D	SpringConstraint2D retains its joint while bodies move
+PASS Physics2D	SpringConstraint2D disable releases native state
+PASS Physics2D	SpringConstraint2D can be enabled again
+PASS Physics2D	SpringConstraint2D handles endpoint deletion
+PASS Physics2D	DistanceConstraint2D builds a live Box2D joint
+PASS Physics2D	DistanceConstraint2D retains its joint while bodies move
+PASS Physics2D	DistanceConstraint2D disable releases native state
+PASS Physics2D	DistanceConstraint2D can be enabled again
+PASS Physics2D	DistanceConstraint2D handles endpoint deletion
+PASS Physics2D	WheelConstraint2D builds a live Box2D joint
+PASS Physics2D	WheelConstraint2D retains its joint while bodies move
+PASS Physics2D	WheelConstraint2D disable releases native state
+PASS Physics2D	WheelConstraint2D can be enabled again
+PASS Physics2D	WheelConstraint2D handles endpoint deletion
+PASS Physics2D	FrictionConstraint2D builds a live Box2D joint
+PASS Physics2D	FrictionConstraint2D retains its joint while bodies move
+PASS Physics2D	FrictionConstraint2D disable releases native state
+PASS Physics2D	FrictionConstraint2D can be enabled again
+PASS Physics2D	FrictionConstraint2D handles endpoint deletion
+PASS Physics2D	MotorConstraint2D builds a live Box2D joint
+PASS Physics2D	MotorConstraint2D retains its joint while bodies move
+PASS Physics2D	MotorConstraint2D disable releases native state
+PASS Physics2D	MotorConstraint2D can be enabled again
+PASS Physics2D	MotorConstraint2D handles endpoint deletion
+PASS Physics2D	PulleyConstraint2D builds a live Box2D joint
+PASS Physics2D	PulleyConstraint2D retains its joint while bodies move
+PASS Physics2D	PulleyConstraint2D disable releases native state
+PASS Physics2D	PulleyConstraint2D can be enabled again
+PASS Physics2D	PulleyConstraint2D handles endpoint deletion
+PASS Physics2D	MouseConstraint2D builds a live Box2D joint
+PASS Physics2D	MouseConstraint2D retains its joint while bodies move
+PASS Physics2D	MouseConstraint2D disable releases native state
+PASS Physics2D	MouseConstraint2D can be enabled again
+PASS Physics2D	MouseConstraint2D handles endpoint deletion
+PASS Physics2D	GearConstraint2D binds two existing hinges
+PASS Physics2D	Deleting a gear source first releases the dependent gear
+PASS Physics2D	Constraint break thresholds use solver reaction force
+PASS Physics2D	Broken constraints can be repaired explicitly
+PASS Physics2D	Camera2D world/screen conversions invert pan, zoom and rotation
+PASS Physics2D	World2D pointer conversion includes UI scale and offset
+PASS Physics2D	Camera2D follows a local spatial target
+PASS Physics2D	Body2D inherits rigid parent transforms
+PASS Physics2D	Solver world pose converts back to local hierarchy coordinates
+PASS Physics2D	2D and 3D solvers advance independently in the same scene
+PASS Physics2D	Dimension-specific constraints coexist without ambiguous class names
+PASS Physics2D	Destroying the current Camera2D clears the active camera reference
+PASS Physics2D	A concave manual polygon decomposes into convex fixtures
+PASS Physics2D	Manual polygon decomposition retains concave empty regions
+PASS Physics2D	Editing a nested point table updates the collider
+PASS Physics2D	Detailed image collision preserves transparent holes
+PASS Physics2D	Opaque image pixels create collision regions
+PASS Physics2D	Image geometry is not rebuilt when inputs are unchanged
+PASS Physics2D	Simple image collision uses the opaque bounding box
+PASS Physics2D	Convex image collision closes holes with a hull
+PASS Physics2D	Image colliders honor local size, offset and rotation
+PASS Physics2D	Image collision supports an explicit sampling resolution
+PASS Physics2D	Exact overlap checks all chain segments, including those after child zero
+PASS Physics2D	Changing a live solid to a sensor retires the solid channel and enters the trigger channel
+PASS Physics2D	A wider Camera2D field of view shows a larger world area
+PASS Physics2D	FOV and focal-length conversion use the same projection
+PASS Physics2D	Camera2D has no built-in follow smoothing
+PASS Physics2D	Pointer conversions remain correct after changing FOV
+PASS Physics2D	UI wall time cannot advance paused 2D simulation
+PASS Physics2D	UI accepts a separate scaled simulation delta
+PASS Physics2D	Explicit scene systems can disable automatic 2D stepping
+PASS Physics2D	oimo: mesh extraction welds cube vertices and retains topology
+PASS Physics2D	oimo: extracted points do not alias the source mesh
+PASS Physics2D	oimo: an edited point cloud creates a convex 3D collider
+PASS Physics2D	oimo: in-place edits rebuild a manual 3D collider
+PASS Physics2D	oimo: indexed manual points build static triangle collision
+PASS Physics2D	oimo: manual points support Simple collision quality
+PASS Physics2D	oimo: meshes expose the same extraction API
+PASS Physics2D	oimo: the 3D physics facade exposes extraction
+PASS Physics2D	oimo: large topology tables copy without Lua vararg limits
+PASS Physics2D	oimo: setPointsFromMesh stores an editable local copy
+PASS Physics2D	jolt: mesh extraction welds cube vertices and retains topology
+PASS Physics2D	jolt: extracted points do not alias the source mesh
+PASS Physics2D	jolt: an edited point cloud creates a convex 3D collider
+PASS Physics2D	jolt: in-place edits rebuild a manual 3D collider
+PASS Physics2D	jolt: indexed manual points build static triangle collision
+PASS Physics2D	jolt: manual points support Simple collision quality
+PASS Physics2D	jolt: meshes expose the same extraction API
+PASS Physics2D	jolt: the 3D physics facade exposes extraction
+PASS Physics2D	jolt: large topology tables copy without Lua vararg limits
+PASS Physics2D	jolt: setPointsFromMesh stores an editable local copy
+PASS Physics2D	World2D continues when its enclosing World3D is paused
+PASS Physics2D	A second World2D has an independent fractional time scale
+PASS Physics2D	World3D timeScale zero freezes only its simulation
+PASS Physics2D	Processed Node2D scripts use their own World2D clocks while World3D is paused
+PASS Physics2D	Pausing World2D freezes its physics and animation clock
+PASS Physics2D	Another World2D can run at double speed concurrently
+PASS Physics2D	World3D continues while World2D is paused
+PASS Physics2D	Changing World2D time scales affects scripts without changing other worlds
+PASS Physics2D	Reparenting a script changes its clock owner without retaining the old UI clock
+PASS Physics2D	Workspace exposes World2D timeScale
+PASS Physics2D	Workspace edits World2D timeScale through the common inspector
+PASS Physics2D	Body2D position uses the standard vector editor
+PASS Physics2D	Editing a Body2D position synchronizes its native pose
+PASS Physics2D	Camera2D target uses the common node picker
+PASS Physics2D	Camera2D target picking respects World2D ownership
+PASS Physics2D	Workspace accepts dimension-correct constraint attachments
+PASS Physics2D	Workspace rejects a 3D attachment on a 2D constraint
+PASS Physics2D	World2D timeScale validation rejects negative values
+PASS Physics2D	physics2D: the standard Workspace, navigation, Tools and Debug are installed
+PASS Physics2D	physics2D: F2 opens Workspace
+PASS Physics2D	physics2D: F4 opens the shared Debug menu
+PASS Physics2D	physics2D: the runtime does not apply the 3D clock to 2D physics
+PASS Physics2D	physics2D: the runtime respects the World2D pause independently
+PASS Physics2D	physicsMixed: the standard Workspace, navigation, Tools and Debug are installed
+PASS Physics2D	physicsMixed: F2 opens Workspace
+PASS Physics2D	physicsMixed: F4 opens the shared Debug menu
+PASS Physics2D	physicsMixed: the runtime does not apply the 3D clock to 2D physics
+PASS Physics2D	physicsMixed: the runtime respects the World2D pause independently
+PASSED 178 Physics2D checks

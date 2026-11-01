@@ -133,6 +133,7 @@ function Lab.new(scene)
         backgroundTransparency = 1,
         shaderTransparency = 1,
         shaderPath = 'assets/shaders/examples/speedBlur.glsl',
+        affects3D = true,
         uniforms = { strength = 0 },
     }, scene.ui.content)
     return self

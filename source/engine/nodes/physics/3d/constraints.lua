@@ -181,25 +181,6 @@ function C:step(dt)
     self._jointKey = key
     self.status = 'Active'
 end
-local classes = {
-    BallSocketConstraint3D = 'Spherical',
-    HingeConstraint3D = 'Revolute',
-    PrismaticConstraint3D = 'Prismatic',
-    CylindricalConstraint3D = 'Cylindrical',
-    UniversalConstraint3D = 'Universal',
-    RagdollConstraint3D = 'Ragdoll',
-    WeldConstraint3D = 'Generic',
-    GenericConstraint3D = 'Generic',
-    RopeConstraint3D = 'Rope',
-    SpringConstraint3D = 'Spring',
-}
-for name, kind in pairs(classes) do
-    local class = Node.define(name, 'Constraint3D')
-    class.kind = kind
-    class.mount = function(world, properties, parent)
-        properties.className = name
-        return C.mount(world, properties, parent)
-    end
-end
+require('source.engine.nodes.physics.3d.constraintTypes').register(C)
 
 return C

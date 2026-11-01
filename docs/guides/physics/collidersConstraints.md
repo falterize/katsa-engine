@@ -51,10 +51,12 @@ For editable point extraction, see [point colliders](pointColliders.md).
 Create Attachment3D children beneath each Body3D (or a descendant, including Bone3D).
 Create a constraint node in the same world and set attachment0 and attachment1 to
 those attachments. Their positions and orientations define the joint frames.
-Available classes: BallSocketConstraint3D, HingeConstraint3D,
-PrismaticConstraint3D, CylindricalConstraint3D, UniversalConstraint3D,
-RagdollConstraint3D, WeldConstraint3D, GenericConstraint3D, RopeConstraint3D and
-SpringConstraint3D. Constraint3D is the configurable base. The inspector provides
+Available classes: BallSocketConstraint3D, HingeConstraint3D, SliderConstraint3D,
+CylindricalConstraint3D, UniversalConstraint3D, RagdollConstraint3D, WeldConstraint3D,
+GenericConstraint3D, RopeConstraint3D and SpringConstraint3D. PrismaticConstraint3D is the earlier
+name of SliderConstraint3D and remains an identical class. Each family lives in its own module under
+`nodes/physics/3d/constraintTypes/` (hinge, slider, spring, ...) and registers through
+`constraintTypes/init.lua`; add a family by adding a module and listing it there. Constraint3D is the configurable base. The inspector provides
 reference pickers and applicable limits, motors and spring settings. Generic exposes
 translation and rotation limits. Disabled or destroyed constraints remove their
 native connection; attachment changes rebuild it. Rope/Spring use a radial impulse

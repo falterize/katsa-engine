@@ -7,6 +7,7 @@ function Interface.create(state)
         name = 'RetroScreen',
         size = { 1, 0, 1, 0 },
         shaderPath = 'scene://shaders/retro.glsl',
+        affects3D = true,
         enabled = scene.settings.retro.enabled,
         backgroundTransparency = 1,
         zIndex = 1,

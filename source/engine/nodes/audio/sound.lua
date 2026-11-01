@@ -82,7 +82,8 @@ function Sound:sync(deferApply)
         return
     end
     if self.spatial then
-        local parent = self.parent
+        -- AudioSource is itself a Node3D; Sound follows its nearest spatial ancestor.
+        local parent = self.getWorldMatrix and self or self.parent
         while parent and not parent.getWorldMatrix do
             parent = parent.parent
         end
