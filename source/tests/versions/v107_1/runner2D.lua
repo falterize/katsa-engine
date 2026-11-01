@@ -394,6 +394,14 @@ function Tests.scenes(tester)
         pcall(Image.resolve, scene.resources, state.sprite) and state.sprite._imageMissing,
         'An invalid manifest uses a diagnostic texture while retaining the error report'
     )
+    -- The report is expected here; consume it so later "no journal errors" checks stay meaningful.
+    local journal = tester.manager.journal
+    local reported = false
+    for _, entry in ipairs(journal.entries) do
+        reported = reported or tostring(entry.message):find('missing.xml', 1, true) ~= nil
+    end
+    tester:check(reported, 'The invalid manifest is recorded in the runtime journal')
+    journal:clear()
     state.sprite.xml = previous
     local checkpointSounds, play = 0, scene.audio.play
     scene.audio.play = function(audio, path, options)
