@@ -28,6 +28,8 @@ function Profiler.new()
         head = 0,
         count = 0,
         recording = nil,
+        running = {},
+        warned = {},
     }, Profiler)
 end
 
@@ -41,6 +43,55 @@ function Profiler:finish(name, start)
     if start then
         self:sample(name, (katsa.timer.getTime() - start) * 1000)
     end
+end
+
+-- Named tasks that can span many frames or nest:
+--   profiler:start('generating map')  ...  profiler:stop('generating map')
+-- Each stop records one sample of the elapsed milliseconds under that name (so it joins the
+-- stage list, the history and the exports). While a task runs it is listed in `running`.
+-- Starting a name that is already running nests; stops match the most recent start.
+-- Returns the elapsed milliseconds from stop(), or nil while disabled.
+function Profiler:start(name)
+    assert(type(name) == 'string' and name ~= '', 'Profiler task needs a name')
+    if not self.enabled then
+        return
+    end
+    local task = self.running[name]
+    if not task then
+        task = { stamps = {}, since = katsa.timer.getTime() }
+        self.running[name] = task
+    end
+    task.stamps[#task.stamps + 1] = katsa.timer.getTime()
+end
+
+function Profiler:stop(name)
+    local task = self.running[name]
+    if not task then
+        if self.enabled and not self.warned[name] then
+            self.warned[name] = true
+            katsa.log.write('warn', 'profiler.stop without start: ' .. tostring(name), 'profiler')
+        end
+        return
+    end
+    local stamp = table.remove(task.stamps)
+    if #task.stamps == 0 then
+        self.running[name] = nil
+    end
+    local elapsed = (katsa.timer.getTime() - stamp) * 1000
+    self:sample(name, elapsed)
+    return elapsed
+end
+
+-- Tasks started and not yet stopped: { name, seconds } sorted by name.
+function Profiler:getRunning()
+    local list, now = {}, katsa.timer.getTime()
+    for name, task in pairs(self.running) do
+        list[#list + 1] = { name = name, seconds = now - task.stamps[1], depth = #task.stamps }
+    end
+    table.sort(list, function(a, b)
+        return a.name < b.name
+    end)
+    return list
 end
 
 -- Times fn(...) as stage `name` and returns its results. Errors pass through.
@@ -114,6 +165,7 @@ function Profiler:clear()
     self.history = {}
     self.head, self.count = 0, 0
     self.lastFrame = nil
+    self.running, self.warned = {}, {}
 end
 
 -- History rows, oldest first.

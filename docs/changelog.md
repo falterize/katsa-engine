@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Profiler named tasks: `katsa.profiler.start(name)` / `stop(name)` (cross-frame, nestable, shown while running).
+- Workspace: restyled (rounded panels, accent header), tree rows with class color chips, unlimited indentation and X/Y scrolling; fixed the missing minus glyph in property category headers.
 - Profiler: per-frame history, percentiles/1% low/spikes, `scope()`, session recording with JSON/CSV export (`logs/profile-*`), `--profile`, new panel with frame bars and stage shares. See [profiling](guides/performance/profiling.md).
 - `multiplayerCars` scene: LAN server list, authoritative cars (suspension, nitro, four riders, dents), pathfinding bot and nitro refill by rewarded ad. `server:setAuthority`, `Net.browse().refresh(address)`, `katsa.launchArguments`.
 - `ads` plugin: rewarded ads with `mock`, `admob` and `unity` providers and a provider interface.

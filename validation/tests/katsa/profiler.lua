@@ -49,6 +49,38 @@ return function(T)
         error('x')
     end) and p.samples.Boom.count == 1, 'profiler: scope times and rethrows errors')
 
+    -- Named tasks that span frames and nest.
+    local clockNow = 100
+    local realTime = katsa.timer.getTime
+    katsa.timer.getTime = function()
+        return clockNow
+    end
+    local t = Profiler.new()
+    T.check(t:start('off') == nil, 'profiler: start is a no-op while disabled')
+    t.enabled = true
+    t:start('generating map')
+    clockNow = 100.25
+    t:start('generating map')
+    local running = t:getRunning()
+    T.check(
+        #running == 1 and running[1].depth == 2 and math.abs(running[1].seconds - 0.25) < 1e-9,
+        'profiler: a running task is listed with its elapsed time and nesting depth'
+    )
+    clockNow = 100.5
+    local inner = t:stop('generating map')
+    clockNow = 101
+    local outer = t:stop('generating map')
+    T.check(
+        math.abs(inner - 250) < 1e-6 and math.abs(outer - 1000) < 1e-6 and #t:getRunning() == 0,
+        'profiler: stops match the most recent start'
+    )
+    T.check(t.samples['generating map'].count == 2, 'profiler: each stop becomes a sample')
+    katsa.log.clear()
+    t:stop('never started')
+    t:stop('never started')
+    T.check(katsa.log.count('warn') == 1, 'profiler: a stop without a start warns once')
+    katsa.timer.getTime = realTime
+
     -- Recording and export.
     local q = Profiler.new()
     q:startRecording({ scene = 'demo', started = '2026-01-01T00:00:00Z' })

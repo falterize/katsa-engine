@@ -140,6 +140,17 @@ function D.open(workspace)
         }, popup.body)
     end
     y = y + 68
+    for _, task in ipairs(profile:getRunning()) do
+        popup.ui:text({
+            position = { 0, 8, 0, y },
+            size = { 1, -16, 0, 20 },
+            text = string.format('RUNNING  %s  %.2f s', task.name, task.seconds),
+            fontSize = 13,
+            textColor = { 1, 0.82, 0.4 },
+            align = 'left',
+        }, popup.body)
+        y = y + 24
+    end
     local top = summary.stages[1] and summary.stages[1].meanMilliseconds or 1
     for _, stage in ipairs(summary.stages) do
         popup.ui:text({

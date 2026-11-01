@@ -33,12 +33,20 @@ function Workspace.new(scene)
         clip = true,
         backgroundColor = panelColor,
     }, self.group)
+    ui:create('UICorner', { radius = { 0, 14 } }, self.panel)
     ui:text({
         position = { 0, 14, 0, 8 },
         size = { 1, -215, 0, 32 },
         text = 'Workspace',
         fontSize = 24,
         align = 'left',
+        textColor = { 0.75, 0.92, 1 },
+    }, self.panel)
+    -- Accent line under the header.
+    ui:container({
+        position = { 0, 14, 0, 44 },
+        size = { 0, 56, 0, 3 },
+        backgroundColor = { 0.3, 0.75, 1 },
     }, self.panel)
     self.groupsButton = ui:button({
         position = { 1, -110, 0, 8 },
@@ -92,6 +100,7 @@ function Workspace.new(scene)
             0.055,
         },
     }, self.panel)
+    ui:create('UICorner', { radius = { 0, 10 } }, self.tree)
     self.properties = ui:scroll({
         position = { 0.42, 0, 0, 94 },
         size = { 0.58, -12, 1, -174 },
@@ -101,6 +110,7 @@ function Workspace.new(scene)
             0.065,
         },
     }, self.panel)
+    ui:create('UICorner', { radius = { 0, 10 } }, self.properties)
     self.status = ui:text({
         position = { 0, 12, 1, -72 },
         size = { 1, -24, 0, 26 },

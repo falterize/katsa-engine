@@ -70,6 +70,22 @@ function Bootstrap.install(project, options)
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
         manager.sceneFactory, manager.startScene = createScene, project.startScene
+        -- Plain functions for scripts: katsa.profiler.start('name') ... katsa.profiler.stop('name').
+        local profiler = manager.profiler
+        katsa.profiler = {
+            start = function(name)
+                return profiler:start(name)
+            end,
+            stop = function(name)
+                return profiler:stop(name)
+            end,
+            scope = function(name, fn, ...)
+                return profiler:scope(name, fn, ...)
+            end,
+            isEnabled = function()
+                return profiler.enabled
+            end,
+        }
         -- --profile records every frame of the session and saves logs/profile-*.json and .csv on quit.
         for _, argument in ipairs(arguments) do
             if argument == '--profile' then
