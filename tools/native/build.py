@@ -91,6 +91,7 @@ def build_windows(out):
 def build_macos(out):
     cc = compiler('clang')
     run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.dylib'])
+    build_box2d_macos(out)
 
 
 def build_android(out):
@@ -108,6 +109,7 @@ def build_android(out):
         target = out / abi
         target.mkdir(parents=True, exist_ok=True)
         run([toolchain / (triple + '-clang' + suffix), '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', target / 'libkatsa_native.so'])
+        run([toolchain / (triple + '-clang++' + suffix), '-shared', '-fPIC', *BOX2D_FLAGS, *BOX2D_SOURCES, '-static-libstdc++', '-o', target / 'libkatsa_box2d.so'])
 
 
 TARGETS = {'linux': build_linux, 'windows': build_windows, 'macos': build_macos, 'android': build_android}
