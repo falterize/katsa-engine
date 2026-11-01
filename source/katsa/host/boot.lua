@@ -102,6 +102,11 @@ function Boot.start(host)
     local katsa = require('source.katsa')
     _G.katsa = katsa
     local FS = katsa.filesystem
+    if not package.loaded.utf8 and not package.preload.utf8 then
+        package.preload.utf8 = function()
+            return require('source.katsa.core.utf8')
+        end
+    end
 
     local argv = { [0] = host.exe }
     for i, value in ipairs(host.args or {}) do
