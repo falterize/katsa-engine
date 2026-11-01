@@ -62,3 +62,6 @@
 - Use currentCamera and setCurrentCamera for both world dimensions; Camera2D and Camera3D expose fov. Example scenes must use canonical names, not historical compatibility aliases.
 
 - Collider3D GeometrySource accepts same-world Node3D references or model paths. Reuse the model importer format registry, scene resource scope and modelSource adapter; never instantiate visible nodes for collision-only assets. Cache successful and failed file loads. Preserve glTF transforms, apply Collider3D offsets once, and retain the last valid descriptor after invalid edits. Mesh/Model point extraction must return independent coordinates and topology.
+
+- Camera3D has `projectionMode` (`Perspective` or `Orthographic`), `fov` and `orthoSize`; `fov` and legacy `focalLength` are one lens and the latest edit wins. Project, pick and cull through `camera:project`, `camera:screenRay`, `camera:viewToScreen` and `camera:pixelsPerUnitAt`; never divide by `camera.focal` in new code. Orthographic cameras skip software occlusion culling.
+- Gameplay state authored once per fixed step that drives visuals (facing, blend weights) must go through `engine/animation/stepValue.lua` and be sampled with the physics interpolation alpha. Camera2D follows the interpolated pose of its target, never the raw solver pose.
