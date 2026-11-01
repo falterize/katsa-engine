@@ -16,6 +16,7 @@ GL.signatures = {
     glGetIntegerv = 'void (*)(GLenum, GLint*)',
     glGetFloatv = 'void (*)(GLenum, GLfloat*)',
     glGetError = 'GLenum (*)(void)',
+    glGetStringi = 'const GLubyte* (*)(GLenum, GLuint)',
     glEnable = 'void (*)(GLenum)',
     glDisable = 'void (*)(GLenum)',
     glViewport = 'void (*)(GLint, GLint, GLsizei, GLsizei)',
@@ -77,6 +78,7 @@ GL.signatures = {
     glEnableVertexAttribArray = 'void (*)(GLuint)',
     glDisableVertexAttribArray = 'void (*)(GLuint)',
     glVertexAttribPointer = 'void (*)(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*)',
+    glVertexAttrib4f = 'void (*)(GLuint, GLfloat, GLfloat, GLfloat, GLfloat)',
     glVertexAttribDivisor = 'void (*)(GLuint, GLuint)',
     glDrawArrays = 'void (*)(GLenum, GLint, GLsizei)',
     glDrawElements = 'void (*)(GLenum, GLsizei, GLenum, const void*)',
@@ -152,11 +154,17 @@ GL.enum = {
     FLOAT_MAT2 = 0x8B5A, FLOAT_MAT3 = 0x8B5B, FLOAT_MAT4 = 0x8B5C,
     SAMPLER_2D = 0x8B5E, SAMPLER_3D = 0x8B5F, SAMPLER_CUBE = 0x8B60, SAMPLER_2D_ARRAY = 0x8DC1,
     VENDOR = 0x1F00, RENDERER = 0x1F01, VERSION = 0x1F02,
-    MAX_TEXTURE_SIZE = 0xD33, MAX_RENDERBUFFER_SIZE = 0x84E8, MAX_SAMPLES = 0x8D57,
+    NUM_EXTENSIONS = 0x821D, MAX_TEXTURE_SIZE = 0xD33, MAX_RENDERBUFFER_SIZE = 0x84E8, MAX_SAMPLES = 0x8D57,
     MAX_COLOR_ATTACHMENTS = 0x8CDF, MAX_TEXTURE_IMAGE_UNITS = 0x8872, MAX_VERTEX_ATTRIBS = 0x8869,
     ALIASED_LINE_WIDTH_RANGE = 0x846E, MAX_TEXTURE_MAX_ANISOTROPY = 0x84FF,
-    PACK_ALIGNMENT = 0xD05, UNPACK_ALIGNMENT = 0xCF5,
+    UNSIGNED_INT_2_10_10_10_REV = 0x8368, TEXTURE_MAX_LEVEL = 0x813D, TEXTURE_MAX_ANISOTROPY = 0x84FE,
+    TEXTURE_COMPARE_MODE = 0x884C, DRAW_BUFFER0 = 0x8825, PACK_ALIGNMENT = 0xD05, UNPACK_ALIGNMENT = 0xCF5,
     FRAMEBUFFER_BINDING = 0x8CA6, VIEWPORT = 0xBA2,
+}
+
+-- Entry points that may be missing (desktop only); loaded when present.
+GL.optional = {
+    glPolygonMode = 'void (*)(GLenum, GLenum)',
 }
 
 -- Loads every entry point; returns the table or nil plus the first missing name.
@@ -168,6 +176,12 @@ function GL.load(platform)
             return nil, 'Missing GL entry point: ' .. name
         end
         gl[name] = ffi.cast(signature, address)
+    end
+    for name, signature in pairs(GL.optional) do
+        local address = platform:getProcAddress(name)
+        if address ~= nil and address ~= ffi.cast('void*', 0) then
+            gl[name] = ffi.cast(signature, address)
+        end
     end
     return gl
 end
