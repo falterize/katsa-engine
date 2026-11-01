@@ -22,6 +22,7 @@ function Audio.newSource(a, kind)
         _minVolume = 0, _maxVolume = 1, _offset = 0, _state = 'stopped', _effects = {},
         _filter = nil,
     }, Methods)
+    State.ensureDriver()
     State.sources[self] = true
     State.driver.createVoice(self)
     return self

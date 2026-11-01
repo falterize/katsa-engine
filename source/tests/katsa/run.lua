@@ -30,6 +30,7 @@ local suites = {
     'graphics',
     'physics',
     'data',
+    'openal',
     'audio',
     'sevenZip',
 }

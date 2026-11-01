@@ -11,6 +11,7 @@ Driver.pause = noop
 Driver.seek = noop
 Driver.update = noop
 Driver.updateListener = noop
+Driver.updateGlobal = noop
 Driver.defineEffect = noop
 Driver.removeEffect = noop
 
