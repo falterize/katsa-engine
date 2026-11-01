@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Profiler: per-frame history, percentiles/1% low/spikes, `scope()`, session recording with JSON/CSV export (`logs/profile-*`), `--profile`, new panel with frame bars and stage shares. See [profiling](guides/performance/profiling.md).
 - `multiplayerCars` scene: LAN server list, authoritative cars (suspension, nitro, four riders, dents), pathfinding bot and nitro refill by rewarded ad. `server:setAuthority`, `Net.browse().refresh(address)`, `katsa.launchArguments`.
 - `ads` plugin: rewarded ads with `mock`, `admob` and `unity` providers and a provider interface.
 - Engine/scene `version`: `Version.parse/compare/compatible` in `source/engine/core/version.lua`; `project.lua` and scene `settings.lua` may declare the engine version they target (format `1.0.0a`, `a` = alpha), the scene loader reports mismatches (`package.compatibility`) for the future launcher.

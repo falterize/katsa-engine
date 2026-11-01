@@ -18,62 +18,152 @@ function D.open(workspace)
     popup.message.text = 'CPU wall-clock timings; GPU time is not measured.'
     local y = 0
 
-    local function button(text, fn)
+    local function button(text, fn, x, width)
         popup.ui:button({
-            position = { 0, 4, 0, y },
-            size = { 1, -8, 0, 34 },
+            position = { x or 0, 4, 0, y },
+            size = { width or 1, -8, 0, 34 },
             text = text,
             fontSize = 13,
             onPress = fn,
         }, popup.body)
+    end
+    local function row(buttons)
+        for index, entry in ipairs(buttons) do
+            button(entry[1], entry[2], (index - 1) / #buttons, 1 / #buttons)
+        end
         y = y + 38
     end
-    button(profile.enabled and 'Profiler: ON (disable)' or 'Profiler: OFF (enable)', function()
-        profile.enabled = not profile.enabled
-        D.open(workspace)
-    end)
-    button('Refresh observations', function()
-        D.open(workspace)
-    end)
-    button('Clear timings and journal', function()
-        profile:clear()
-        journal:clear()
-        D.open(workspace)
-    end)
+    local function exportRecording(format)
+        local recording = profile.recording or profile.lastRecording
+        if not recording or #recording.rows == 0 then
+            popup.message.text = 'Record some frames first.'
+            return
+        end
+        local ok, path = pcall(profile.save, recording, format)
+        popup.message.text = ok and ('Saved ' .. path) or ('Export failed: ' .. tostring(path))
+    end
+    row({
+        {
+            profile.enabled and 'Profiler: ON' or 'Profiler: OFF',
+            function()
+                profile.enabled = not profile.enabled
+                D.open(workspace)
+            end,
+        },
+        {
+            profile:isRecording() and 'Stop recording' or 'Record session',
+            function()
+                if profile:isRecording() then
+                    local recording = profile:stopRecording()
+                    profile.lastRecording = recording
+                else
+                    profile:startRecording({
+                        scene = workspace.scene.zone,
+                        started = os.date('!%Y-%m-%dT%H:%M:%SZ'),
+                    })
+                end
+                D.open(workspace)
+            end,
+        },
+    })
+    row({
+        {
+            'Export JSON',
+            function()
+                exportRecording('json')
+            end,
+        },
+        {
+            'Export CSV',
+            function()
+                exportRecording('csv')
+            end,
+        },
+        {
+            'Clear',
+            function()
+                profile:clear()
+                journal:clear()
+                D.open(workspace)
+            end,
+        },
+        {
+            'Refresh',
+            function()
+                D.open(workspace)
+            end,
+        },
+    })
+    local summary = profile:summary()
+    local frame = summary.frame
     popup.ui:text({
         position = { 0, 8, 0, y },
-        size = { 1, -16, 0, 42 },
+        size = { 1, -16, 0, 74 },
         text = string.format(
-            'Memory: Lua %.0f KiB / textures %.2f MiB (sampled every 30 frames)',
+            'Frame %.2f ms avg (%.0f FPS) | p95 %.2f | p99 %.2f | worst %.2f | 1%% low %.0f FPS | '
+                .. 'spikes %d\nMemory: Lua %.0f KiB / textures %.2f MiB%s',
+            frame.meanMilliseconds,
+            frame.fps,
+            frame.p95Milliseconds,
+            frame.p99Milliseconds,
+            frame.worstMilliseconds,
+            frame.onePercentLowFps,
+            frame.spikes,
             profile.luaKiB or 0,
-            (profile.textureBytes or 0) / 1048576
+            (profile.textureBytes or 0) / 1048576,
+            profile:isRecording() and ('\nRecording: ' .. #profile.recording.rows .. ' frames')
+                or ''
         ),
         fontSize = 12,
         align = 'left',
     }, popup.body)
-    y = y + 46
-    local keys = {}
-    for key in pairs(profile.samples) do
-        keys[#keys + 1] = key
+    y = y + 78
+    -- Last frames as bars (red above the 60 Hz budget).
+    local rows = profile:rows()
+    local shown = math.min(#rows, 120)
+    local peak = 1000 / 30
+    for index = 1, shown do
+        local ms = rows[#rows - shown + index].ms
+        peak = math.max(peak, ms)
     end
-    table.sort(keys)
-    for _, key in ipairs(keys) do
-        local sample = profile.samples[key]
+    popup.ui:container({
+        position = { 0, 8, 0, y },
+        size = { 1, -16, 0, 60 },
+        backgroundColor = { 0.02, 0.03, 0.05 },
+    }, popup.body)
+    for index = 1, shown do
+        local ms = rows[#rows - shown + index].ms
+        popup.ui:container({
+            position = { (index - 1) / 120, 8, 0, y + 60 - 60 * ms / peak },
+            size = { 1 / 120, 0, 0, 60 * ms / peak },
+            backgroundColor = ms > 1000 / 60 and { 0.95, 0.35, 0.3 } or { 0.3, 0.8, 0.5 },
+        }, popup.body)
+    end
+    y = y + 68
+    local top = summary.stages[1] and summary.stages[1].meanMilliseconds or 1
+    for _, stage in ipairs(summary.stages) do
         popup.ui:text({
             position = { 0, 8, 0, y },
-            size = { 1, -16, 0, 42 },
+            size = { 1, -16, 0, 32 },
             text = string.format(
-                '%s: %.2f ms / avg %.2f / peak %.2f',
-                key,
-                sample.last,
-                sample.average,
-                sample.peak
+                '%s  %.2f ms avg | p95 %.2f | peak %.2f | %.0f%%',
+                stage.name,
+                stage.meanMilliseconds,
+                stage.p95Milliseconds,
+                stage.peakMilliseconds,
+                stage.share * 100
             ),
             fontSize = 12,
             align = 'left',
         }, popup.body)
-        y = y + 46
+        popup.ui:container({
+            position = { 0, 8, 0, y + 34 },
+            size = { math.min(1, stage.meanMilliseconds / top), -16, 0, 6 },
+            backgroundColor = { 0.3, 0.65, 0.95 },
+        }, popup.body)
+        y = y + 48
     end
+    y = y + 8
     for i = #journal.entries, 1, -1 do
         local e = journal.entries[i]
         popup.ui:text({
