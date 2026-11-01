@@ -3,7 +3,7 @@
 local Scene = {}
 
 function Scene.create(scene, context)
-    local Session = context:require('scripts.session')
+    local Session = context:require('scripts.content')
     scene:preparePresentation()
     local state = Session.new(scene)
     context.instance = state
