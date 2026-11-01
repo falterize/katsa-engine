@@ -129,6 +129,19 @@ local function validateSubtree(node, parent, world, screenHierarchy, uiAnchor)
             owner = owner.parent
         end
     end
+    if node:isA('Shader3D') and parent then
+        -- 3D shaders affect descendants of their parent inside one World3D; interface
+        -- hierarchies use Shader2D.
+        local owner = parent
+        while owner and not owner:isA('World3D') do
+            assert(
+                not owner:isA('UINode') and not owner:isA('ScreenUI') and not owner:isA('World2D'),
+                'Shader3D belongs to World3D space; use Shader2D in interface hierarchies'
+            )
+            owner = owner.parent
+        end
+        assert(owner, 'Shader3D must be a descendant of a World3D')
+    end
     if node.body and not node._independentBody then
         local owner = parent
         while owner and owner:isA('Folder') do

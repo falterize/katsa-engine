@@ -94,16 +94,17 @@ function Compositor.draw(ui, draw)
     g.setCanvas({ scene, stencil = true })
     reset()
     g.clear(0, 0, 0, 0, 0)
+    -- The scene canvas holds interface pixels only. The 3D render underneath (the target, or the
+    -- UI background) is mixed in per effect, and only for Shader2D nodes with affects3D = true.
     local background = target or ui.backgroundCanvas
-    if background and #effects > 0 then
-        g.draw(background, 0, 0, 0, w / background:getWidth(), h / background:getHeight())
-    end
     g.setBlendMode('alpha', 'alphamultiply')
     ui._compositing = true
     ui._sceneColor = scene
+    ui._sceneBackground = background
     draw(ui)
     ui._compositing = false
     ui._sceneColor = nil
+    ui._sceneBackground = nil
     g.flushBatch()
     g.pop()
     restoreScissor()
@@ -179,6 +180,11 @@ function Compositor.apply(ui, node)
     g.setCanvas(snapshot)
     reset()
     g.clear(0, 0, 0, 0)
+    local background = node.affects3D and ui._sceneBackground
+    if background then
+        g.draw(background, 0, 0, 0, w / background:getWidth(), h / background:getHeight())
+        g.setBlendMode('alpha', 'alphamultiply')
+    end
     g.draw(scene)
     g.flushBatch()
     g.pop()

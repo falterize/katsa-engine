@@ -8,7 +8,7 @@ local modes, unit = Validation.modes, Validation.unit
 
 function Audio.new(options)
     options = options or {}
-    return setmetatable({
+    local self = setmetatable({
         clock = options.clock,
         groups = options.groups or {
             master = { volume = 0.85 },
@@ -22,8 +22,11 @@ function Audio.new(options)
         samples = {},
         paused = false,
         listener = { 0, 0, 0 },
+        listeners = {},
         resources = options.resources or require('source.engine.core.resources').new(),
     }, Audio)
+    self.manager = require('source.engine.audio.manager').new(self)
+    return self
 end
 
 function Audio:scope(resources)
@@ -76,6 +79,13 @@ require('source.engine.audio.playback').install(Audio)
 require('source.engine.audio.spatial').install(Audio)
 
 function Audio:update(camera)
+    local node = self.manager:getActiveListener()
+    if node then
+        local position, forward, up =
+            node:getPose(self._listenerPosition, self._listenerForward, self._listenerUp)
+        self._listenerPosition, self._listenerForward, self._listenerUp = position, forward, up
+        camera = { worldPosition = position, forward = forward, up = up }
+    end
     if camera then
         for i = 1, 3 do
             self.listener[i] = (camera.worldPosition or camera.position)[i]

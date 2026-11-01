@@ -160,3 +160,7 @@ orthographic frame. Set `KATSA_TEST_OUTPUT` to a directory to keep the rendered 
 project shader on desktop GL 3.3 core and GLES 3.0 through a headless EGL context. It needs LuaJIT and
 libEGL/Mesa; GL checks are skipped with a notice when no EGL driver exists. See
 [katsa runtime layer](../katsa/platform.md).
+
+`--test-v108.1` covers the SoundManager/AudioSource/AudioListener modules (against instrumented audio), Shader2D
+`affects3D` rendering and Shader3D scope rules. Constraint families are exercised by `--test-v103` on both physics
+backends, including SliderConstraint3D.

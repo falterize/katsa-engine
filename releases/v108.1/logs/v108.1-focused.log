@@ -1,0 +1,38 @@
+Could not open device.
+PASS Physics2D	Audio scope owns a SoundManager
+PASS Physics2D	SoundManager master volume
+PASS Physics2D	SoundManager group gain multiplies the hierarchy
+PASS Physics2D	SoundManager mute
+PASS Physics2D	SoundManager rejects volumes outside 0..1
+PASS Physics2D	unknown group
+PASS Physics2D	SoundManager lists groups
+PASS Physics2D	AudioSource is a Node3D
+PASS Physics2D	AudioSource is accepted wherever Sound is
+PASS Physics2D	AudioSource is spatial by default
+PASS Physics2D	AudioSource emits from its own transform
+PASS Physics2D	AudioSource follows its parent transform
+PASS Physics2D	Sound effects can be children of an AudioSource
+PASS Physics2D	SoundManager counts voices
+PASS Physics2D	AudioSource tracks position changes
+PASS Physics2D	AudioSource stops
+PASS Physics2D	AudioSource spatial can be disabled
+PASS Physics2D	Destroyed AudioSource unregisters
+PASS Physics2D	Camera is the listener when no AudioListener exists
+PASS Physics2D	No active listener by default
+PASS Physics2D	AudioListener becomes active
+PASS Physics2D	AudioListener overrides the camera position
+PASS Physics2D	AudioListener faces +Z with +Y up (OpenAL mirrored)
+PASS Physics2D	First enabled listener wins
+PASS Physics2D	Disabled listener is skipped
+PASS Physics2D	Camera returns when listeners are disabled
+PASS Physics2D	Destroyed listeners unregister
+PASS Physics2D	Attenuation is measured from the AudioListener
+PASS Physics2D	SoundManager pauses
+PASS Physics2D	stopAll
+PASS Physics2D	Shader2D ignores the 3D render by default
+PASS Physics2D	Shader2D leaves the 3D render untouched by default (0.20 0.40 0.60)
+PASS Physics2D	Shader2D with affects3D processes the 3D render (0.80 0.60 0.40)
+PASS Physics2D	affects3D can be switched off again
+PASS Physics2D	Shader3D cannot live under a UI node
+PASS Physics2D	Shader3D accepts a Folder inside World3D
+PASSED 36 v108.1 focused checks

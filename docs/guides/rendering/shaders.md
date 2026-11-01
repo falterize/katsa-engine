@@ -35,6 +35,17 @@ hierarchy/opacity/clipping are retained rather than flattened globally. Put effe
 that must be ordered solely by shader layers at the same ZIndex and UI parent.
 Descendants are included regardless of their local child ordering.
 
+### Scope: 2D by default, 3D on request
+
+A Shader2D processes interface pixels only. The 3D render underneath (the world drawn behind the
+UI, or the UI background of a ViewportFrame owner) is left untouched, so a CRT frame over a menu does not
+filter the game behind it. Set `affects3D = true` to include the 3D render in the snapshot the effect
+reads; the processed result then replaces the region, 3D pixels included. Full-screen filters over the
+game view (the Stare Shooter retro screen, the platformer speed blur) enable it explicitly.
+`affects3D` is a per-node property shown in the inspector; it does not change the shader layer rules
+below. In v108 and earlier every Shader2D processed the 3D render; existing scenes that relied on it need
+`affects3D = true`.
+
 BackgroundTransparency controls only the background. ShaderTransparency=0 applies
 the effect fully; 1 bypasses it. Intermediate values mix original and processed
 premultiplied RGBA. Enabled=false bypasses the effect and retains Frame visibility
@@ -49,7 +60,8 @@ Nested rounded clipping remains stencil-based; suppression uses rectangular excl
 
 ## Shader3D
 
-Shader3D is an organizational Folder plus a material modifier. world:create without
+Shader3D belongs to World3D space only: creating it under a UI node, ScreenUI or World2D is rejected
+("use Shader2D in interface hierarchies"), and it must have a World3D ancestor. Shader3D is an organizational Folder plus a material modifier. world:create without
 an explicit parent places it directly beneath World3D. As a direct child
 of World3D it affects that world's 3D renderables. Inside a Folder/Mesh it affects
 that parent's subtree, including its own descendants. It never reaches World2D,
