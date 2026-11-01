@@ -288,12 +288,8 @@ function World3D:addLight(l)
 end
 -- Picking occurs only on a press, never as per-frame CPU triangle rendering.
 function World3D:occluded(camera, x, y, distance)
-    local dx = (x - camera.width / 2) / camera.focal
-    local dy = -(y - camera.height / 2) / camera.focal
-    local r, u, f = camera.right, camera.up, camera.forward
-    local wx, wy, wz =
-        r[1] * dx + u[1] * dy + f[1], r[2] * dx + u[2] * dy + f[2], r[3] * dx + u[3] * dy + f[3]
-    local p = (camera.worldPosition or camera.position)
+    local p, ray = camera:screenRay(x, y)
+    local wx, wy, wz = ray[1], ray[2], ray[3]
     local a, b, c = {}, {}, {}
     for _, o in ipairs(self.objects) do
         if

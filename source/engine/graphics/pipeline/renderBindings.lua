@@ -38,6 +38,7 @@ function RenderBindings.install(Renderer)
         shader:send('forward', rotate(camera.forward, c, t, self.skyForward))
         self.skySize[1], self.skySize[2] = self.width, self.height
         shader:send('viewSize', self.skySize)
+        -- The sky is infinitely far, so orthographic cameras still show it with their fov lens.
         shader:send('focal', camera.focal)
         shader:send('panorama', s.layout == 'Panorama' or world.resources:isMissingImage(s.texture))
         self.skyInset[1] = (s.layout == 'Panorama' and 0.5 or 2) / image:getWidth()

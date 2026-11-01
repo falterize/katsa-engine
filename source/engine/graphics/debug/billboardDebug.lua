@@ -20,12 +20,9 @@ local function segment(camera, a, b, color)
         bx, by, bz = bx + (ax - bx) * t, by + (ay - by) * t, camera.near
     end
     love.graphics.setColor(unpack(color))
-    love.graphics.line(
-        camera.width / 2 + ax * camera.focal / az,
-        camera.height / 2 - ay * camera.focal / az,
-        camera.width / 2 + bx * camera.focal / bz,
-        camera.height / 2 - by * camera.focal / bz
-    )
+    local sax, say = camera:viewToScreen(ax, ay, az)
+    local sbx, sby = camera:viewToScreen(bx, by, bz)
+    love.graphics.line(sax, say, sbx, sby)
 end
 
 function Debug.draw(world, camera)

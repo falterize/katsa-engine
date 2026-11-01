@@ -67,17 +67,19 @@ function BillboardProjection.install(BillboardUI)
             self.drawable = false
             return
         end
+        -- World units per screen pixel at this depth (constant for orthographic cameras).
+        local pixels = camera:pixelsPerUnitAt(self.depth)
+        local unitsPerPixel = 1 / pixels
         if self.sizeMode == 'Screen' then
             local scale = #self.size == 4 and 1 or camera.height / camera.referenceHeight
-            w = w * scale * self.depth / camera.focal
-            h = h * scale * self.depth / camera.focal
+            w = w * scale * unitsPerPixel
+            h = h * scale * unitsPerPixel
         end
         if self.minScreenSize then
-            w = math.max(w, self.minScreenSize[1] * self.depth / camera.focal)
-            h = math.max(h, self.minScreenSize[2] * self.depth / camera.focal)
+            w = math.max(w, self.minScreenSize[1] * unitsPerPixel)
+            h = math.max(h, self.minScreenSize[2] * unitsPerPixel)
         end
-        self.screenWidth, self.screenHeight =
-            w * camera.focal / self.depth, h * camera.focal / self.depth
+        self.screenWidth, self.screenHeight = w * pixels, h * pixels
         local bounds = self.bounds
         local anchor = self.anchorPoint or { 0.5, 0.5 }
         local offsetX = ((bounds[1] + bounds[3]) / 2 - self.resolvedCanvasSize[1] * anchor[1])
@@ -96,8 +98,8 @@ function BillboardProjection.install(BillboardUI)
                 self.positionRelativeTo or self.relativeTo
             )
             self.screenX, self.screenY = self.screenX + sx, self.screenY + sy
-            offsetX = offsetX + sx * self.depth / camera.focal
-            offsetY = offsetY - sy * self.depth / camera.focal
+            offsetX = offsetX + sx * unitsPerPixel
+            offsetY = offsetY - sy * unitsPerPixel
         end
         local m = self.matrix
         local base = self._facingFrame or M.identity()

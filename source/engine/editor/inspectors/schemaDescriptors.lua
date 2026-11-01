@@ -1,4 +1,23 @@
 local descriptions = {
+    Camera3D = {
+        projectionMode = {
+            options = { 'Perspective', 'Orthographic' },
+            hint = 'Perspective shrinks distant objects; Orthographic keeps a constant scale.',
+        },
+        fov = {
+            min = 1,
+            max = 179,
+            visibleWhen = { key = 'projectionMode', equals = 'Perspective' },
+            hint = 'Vertical field of view in degrees. Linked to focalLength.',
+        },
+        orthoSize = {
+            min = 0.001,
+            visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
+            hint = 'Half of the visible height in world units; width follows the aspect ratio.',
+        },
+        near = { min = 0.001, hint = 'Near clip distance; must be below far.' },
+        far = { min = 0.002, hint = 'Far clip distance; must be above near.' },
+    },
     Body3D = {
         mass = {
             get = function(node)

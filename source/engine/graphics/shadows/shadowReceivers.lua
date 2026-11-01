@@ -15,7 +15,9 @@ function Receivers.prepare(camera, distance, out, normalBias)
     end
     out = out or {}
     local p = camera.worldPosition or camera.position
-    local hx, hy = camera.width / (2 * camera.focal), camera.height / (2 * camera.focal)
+    local orthographic = camera.orthographic == true
+    local scale = orthographic and camera.pixelsPerUnit or camera.focal
+    local hx, hy = camera.width / (2 * scale), camera.height / (2 * scale)
     local index = 0
     local changed = false
     for depth = 1, 2 do
@@ -25,11 +27,14 @@ function Receivers.prepare(camera, distance, out, normalBias)
                 index = index + 1
                 local corner = out[index] or {}
                 out[index] = corner
+                -- Perspective extents grow with depth; orthographic extents stay constant.
+                local spreadX = orthographic and hx + normalBias or (z + normalBias) * hx + normalBias
+                local spreadY = orthographic and hy + normalBias or (z + normalBias) * hy + normalBias
                 for i = 1, 3 do
                     local value = p[i]
                         + camera.forward[i] * z
-                        + camera.right[i] * ((z + normalBias) * hx + normalBias) * x
-                        + camera.up[i] * ((z + normalBias) * hy + normalBias) * y
+                        + camera.right[i] * spreadX * x
+                        + camera.up[i] * spreadY * y
                     changed = changed or value ~= corner[i]
                     corner[i] = value
                 end

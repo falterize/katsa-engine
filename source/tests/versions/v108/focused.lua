@@ -15,6 +15,8 @@ function Tests:draw()
     self.done = true
     require('source.tests.versions.v108.slowMotion').run(self)
     require('source.tests.versions.v108.followSync').run(self)
+    require('source.tests.versions.v108.camera3D').run(self)
+    require('source.tests.versions.v108.orthoRender').run(self)
     print('PASSED ' .. self.count .. ' v108 focused checks')
     love.event.quit()
 end
