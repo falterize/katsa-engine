@@ -153,3 +153,10 @@ invalid-source recovery and the Collision Models Workspace path picker.
 interpolated pose at 144 Hz and in slow motion, Camera3D fov/focalLength linkage, perspective and
 orthographic projection against the GPU matrix, pointer rays, frustum culling, picking and a rendered
 orthographic frame. Set `KATSA_TEST_OUTPUT` to a directory to keep the rendered PNGs.
+
+## katsa layer (v108.1)
+
+`luajit source/tests/katsa/run.lua` (from the repository root) tests the shader translator and compiles every
+project shader on desktop GL 3.3 core and GLES 3.0 through a headless EGL context. It needs LuaJIT and
+libEGL/Mesa; GL checks are skipped with a notice when no EGL driver exists. See
+[katsa runtime layer](../katsa/platform.md).
