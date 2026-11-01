@@ -41,6 +41,33 @@ Texture.lookupFormat = lookup
 local Methods = {}
 Methods.__index = Methods
 
+-- Texture statistics -------------------------------------------------------------------------
+
+local bytesPerPixel = {
+    r8 = 1, rg8 = 2, rgba16f = 8, rgba32f = 16, r16f = 2, r32f = 4, rg16f = 4, depth16 = 2,
+    stencil8 = 1,
+}
+
+-- Counts the texture in getStats(); the matching decrement runs when its GL objects are deleted.
+local function account(self, res, counter)
+    local counters = Texture.counters
+    local samples = math.max(self._msaa, 1)
+    res.counter = counter
+    res.bytes = self._pw * self._ph * (bytesPerPixel[self._formatName] or 4) * samples
+    counters[counter] = counters[counter] + 1
+    counters.texturememory = counters.texturememory + res.bytes
+end
+
+function Texture.release(res)
+    local counter = res.counter
+    if counter then
+        local counters = Texture.counters
+        counters[counter] = counters[counter] - 1
+        counters.texturememory = counters.texturememory - (res.bytes or 0)
+        res.counter = nil
+    end
+end
+
 local function glMin(filter)
     local E = Core.enum
     local linear = filter.min == 'linear'
@@ -117,6 +144,7 @@ local function createStorage(self, pixels, imageFormat)
     self._filter.mipmap = nil
     self:_applySampler()
     Core.track(self, res)
+    account(self, res, 'images')
 end
 
 -- Images -------------------------------------------------------------------------------------
@@ -143,6 +171,10 @@ function Texture.newImage(source, settings)
         self._mipmaps = count
         self._filter.mipmap = 'linear'
         self:_applySampler()
+        -- A full mip chain adds a third of the base level.
+        local extra = math.floor(self._res.bytes / 3)
+        Texture.counters.texturememory = Texture.counters.texturememory + extra
+        self._res.bytes = self._res.bytes + extra
     end
     return self
 end
@@ -219,6 +251,7 @@ function Texture.newCanvas(width, height, settings)
         end
     end
     Core.track(self, res)
+    account(self, res, 'canvases')
     return self
 end
 
@@ -457,5 +490,7 @@ end
 function Methods:typeOf(name)
     return name == self:type() or name == 'Texture' or name == 'Drawable' or name == 'Object'
 end
+
+Core.releaseStatistics = Texture.release
 
 return Texture

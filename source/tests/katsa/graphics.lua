@@ -212,6 +212,18 @@ return function(T)
         g.present()
     end
 
+    -- statistics follow creation and release
+    local before = g.getStats()
+    local counted = g.newCanvas(32, 32, { dpiscale = 1 })
+    local during = g.getStats()
+    T.check(during.canvases == before.canvases + 1
+        and during.texturememory == before.texturememory + 32 * 32 * 4,
+        'canvas creation is counted in getStats')
+    counted:release()
+    local after = g.getStats()
+    T.check(after.canvases == before.canvases and after.texturememory == before.texturememory,
+        'canvas release is subtracted from getStats')
+
     local name, version = g.getRendererInfo()
     T.check(name:find('OpenGL') and #version > 0, 'renderer info')
     platform:close()
