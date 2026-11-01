@@ -13,11 +13,13 @@ local iscratch = ffi.new('GLint[?]', 4096)
 local function typeInfo()
     local E = Core.enum
     return {
-        [E.FLOAT] = { 'float', 1 }, [E.FLOAT_VEC2] = { 'float', 2 }, [E.FLOAT_VEC3] = { 'float', 3 },
+        [E.FLOAT] = { 'float', 1 }, [E.FLOAT_VEC2] = { 'float', 2 },
+        [E.FLOAT_VEC3] = { 'float', 3 },
         [E.FLOAT_VEC4] = { 'float', 4 }, [E.INT] = { 'int', 1 }, [E.INT_VEC2] = { 'int', 2 },
         [E.INT_VEC3] = { 'int', 3 }, [E.INT_VEC4] = { 'int', 4 }, [E.BOOL] = { 'bool', 1 },
         [0x8B57] = { 'bool', 2 }, [0x8B58] = { 'bool', 3 }, [0x8B59] = { 'bool', 4 },
-        [E.FLOAT_MAT2] = { 'matrix', 4, 2 }, [E.FLOAT_MAT3] = { 'matrix', 9, 3 }, [E.FLOAT_MAT4] = { 'matrix', 16, 4 },
+        [E.FLOAT_MAT2] = { 'matrix', 4, 2 }, [E.FLOAT_MAT3] = { 'matrix', 9, 3 },
+        [E.FLOAT_MAT4] = { 'matrix', 16, 4 },
         [E.SAMPLER_2D] = { 'sampler', 1 },
     }
 end
@@ -125,7 +127,7 @@ function Shader.validate(code)
 end
 
 function Shader.new(code, extra)
-    assert(extra == nil, 'Separate vertex and pixel shader sources are not supported; use one source with VERTEX/PIXEL sections')
+    assert(extra == nil, 'Separate vertex and pixel sources are not supported; use one source')
     local source = resolveSource(code)
     local program, translated = build(source)
     if not program then
@@ -134,7 +136,8 @@ function Shader.new(code, extra)
     local gl, E = Core.gl, Core.enum
     local self = setmetatable({
         _program = program, _uniforms = {}, _attributes = translated.attributes or {},
-        _attributeOrder = translated.attributeOrder or {}, _renderTargets = translated.renderTargets or 1,
+        _attributeOrder = translated.attributeOrder or {},
+        _renderTargets = translated.renderTargets or 1,
         _source = source, _samplers = {},
     }, Methods)
     local types = typeInfo()
@@ -153,7 +156,13 @@ function Shader.new(code, extra)
         if location >= 0 then
             local base = name:gsub('%[0%]$', '')
             local info = types[kind[0]]
-            local entry = { name = base, location = location, count = size[0], info = info, glType = kind[0] }
+            local entry = {
+                name = base,
+                location = location,
+                count = size[0],
+                info = info,
+                glType = kind[0],
+            }
             self._uniforms[base] = entry
             if info and info[1] == 'sampler' and base ~= 'MainTex' then
                 entry.unit = unit
@@ -173,8 +182,11 @@ function Shader.new(code, extra)
         gl.glUniform1i(main.location, 0)
     end
     self._builtin = {}
-    for _, name in ipairs({ 'TransformMatrix', 'ProjectionMatrix', 'TransformProjectionMatrix', 'NormalMatrix',
-        'ConstantColor', 'love_PointSize', 'love_ScreenSize' }) do
+    local builtins = {
+        'TransformMatrix', 'ProjectionMatrix', 'TransformProjectionMatrix', 'NormalMatrix',
+        'ConstantColor', 'love_PointSize', 'love_ScreenSize',
+    }
+    for _, name in ipairs(builtins) do
         local entry = self._uniforms[name]
         self._builtin[name] = entry and entry.location or -1
         self._uniforms[name] = nil
@@ -222,7 +234,8 @@ local function packComponents(entry, values, componentCount, buffer, transposeRo
         local v = values[index]
         if type(v) == 'table' then
             if #v < componentCount and entry.info[1] ~= 'matrix' then
-                error(('Invalid number of components for uniform %s: expected %d, got %d'):format(name, componentCount, #v), 3)
+                local message = 'Invalid number of components for uniform %s: expected %d, got %d'
+                error(message:format(name, componentCount, #v), 3)
             end
             if entry.info[1] == 'matrix' and type(v[1]) == 'table' then
                 -- nested rows -> flat row-major
@@ -253,7 +266,9 @@ end
 function Methods:send(name, ...)
     local entry = self._uniforms[name]
     if not entry then
-        error(('Shader uniform \'%s\' does not exist.\nA common error is to define but not use the variable.'):format(name), 2)
+        local message = "Shader uniform '%s' does not exist.\n"
+            .. 'A common error is to define but not use the variable.'
+        error(message:format(name), 2)
     end
     local gl = Core.gl
     local info = entry.info
@@ -269,7 +284,9 @@ function Methods:send(name, ...)
     if info[1] == 'sampler' then
         for i = 1, math.min(#args, entry.count) do
             local texture = args[i]
-            if type(texture) == 'table' and texture._res and texture._res.texture or (type(texture) == 'table' and texture._info) then
+            local isTexture = type(texture) == 'table'
+                and (texture._info or (texture._res and texture._res.texture))
+            if isTexture then
                 entry.textures[i] = texture
             else
                 error('Invalid texture for uniform ' .. name, 2)
@@ -280,7 +297,7 @@ function Methods:send(name, ...)
     local values = args
     if #args == 1 and type(args[1]) == 'table' then
         local first = args[1][1]
-        local isList = entry.count > 1 or (info[1] == 'matrix' and type(first) == 'table' and type(first[1]) == 'table' and false)
+        local isList = entry.count > 1
         if entry.count > 1 then
             values = args[1]
         elseif info[2] == 1 and info[1] ~= 'matrix' then
@@ -319,7 +336,12 @@ function Methods:send(name, ...)
         fn(entry.location, #values, iscratch)
     else
         local n = packComponents(entry, values, comps, scratch)
-        local fn = ({ [4] = gl.glUniformMatrix2fv, [9] = gl.glUniformMatrix3fv, [16] = gl.glUniformMatrix4fv })[comps]
+        local matrixUniforms = {
+            [4] = gl.glUniformMatrix2fv,
+            [9] = gl.glUniformMatrix3fv,
+            [16] = gl.glUniformMatrix4fv,
+        }
+        local fn = matrixUniforms[comps]
         fn(entry.location, n, layout == 'row' and 1 or 0, scratch)
     end
 end

@@ -82,7 +82,11 @@ local function sha256(message, initial, outputWords)
 end
 
 local function sha1(message)
-    local h0, h1, h2, h3, h4 = 0x67452301, tobit(0xEFCDAB89), tobit(0x98BADCFE), 0x10325476, tobit(0xC3D2E1F0)
+    local h0 = 0x67452301
+    local h1 = tobit(0xEFCDAB89)
+    local h2 = tobit(0x98BADCFE)
+    local h3 = 0x10325476
+    local h4 = tobit(0xC3D2E1F0)
     message = padMessage(message, 64, 8)
     local w = {}
     for chunk = 1, #message, 64 do
@@ -109,9 +113,14 @@ local function sha1(message)
             local temp = rol(a, 5) + f + e + k + w[i]
             e, d, c, b, a = d, c, rol(b, 30), a, tobit(temp)
         end
-        h0, h1, h2, h3, h4 = tobit(h0 + a), tobit(h1 + b), tobit(h2 + c), tobit(h3 + d), tobit(h4 + e)
+        h0 = tobit(h0 + a)
+        h1 = tobit(h1 + b)
+        h2 = tobit(h2 + c)
+        h3 = tobit(h3 + d)
+        h4 = tobit(h4 + e)
     end
-    return bigEndian32(h0) .. bigEndian32(h1) .. bigEndian32(h2) .. bigEndian32(h3) .. bigEndian32(h4)
+    return bigEndian32(h0) .. bigEndian32(h1) .. bigEndian32(h2) .. bigEndian32(h3)
+        .. bigEndian32(h4)
 end
 
 local md5S = {
@@ -198,7 +207,10 @@ local function base64encode(data)
     for i = 1, #data, 3 do
         local a, b, c = byte(data, i, i + 2)
         local n = a * 65536 + (b or 0) * 256 + (c or 0)
-        local c1, c2, c3, c4 = math.floor(n / 262144) % 64, math.floor(n / 4096) % 64, math.floor(n / 64) % 64, n % 64
+        local c1 = math.floor(n / 262144) % 64
+        local c2 = math.floor(n / 4096) % 64
+        local c3 = math.floor(n / 64) % 64
+        local c4 = n % 64
         out[#out + 1] = alphabet:sub(c1 + 1, c1 + 1) .. alphabet:sub(c2 + 1, c2 + 1)
             .. (b and alphabet:sub(c3 + 1,
                 c3 + 1) or '=') .. (c and alphabet:sub(c4 + 1, c4 + 1) or '=')

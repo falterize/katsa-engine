@@ -66,6 +66,29 @@ def expandOneLiners(lines):
     return out
 
 
+INLINE_IF = re.compile(r'^(\s*)((?:else)?if\b.*?\bthen)\s+(\S.*?)(\s+end)?\s*$')
+
+
+def expandInlineIf(lines):
+    # `if c then x end` / `elseif c then x` -> block form.
+    out = []
+    for line in lines:
+        match = INLINE_IF.match(line)
+        body = match.group(3) if match else ''
+        if match and not re.search(r'\b(then|else|elseif|function|do)\b', body) and not (
+            match.group(4) is None and body.rstrip().endswith(('and', 'or', ',', '(', '{'))
+        ):
+            indent, head, body, closing = match.groups()
+            out.append(indent + head)
+            for statement in splitStatements(body):
+                out.append(indent + '    ' + statement)
+            if closing:
+                out.append(indent + 'end')
+        else:
+            out.append(line)
+    return out
+
+
 def separateFunctions(lines):
     out = []
     for line in lines:
@@ -146,10 +169,89 @@ def codeParens(line):
     return positions
 
 
-def wrapLine(line):
-    if len(line) <= MAX_COLUMNS or line.lstrip().startswith('--'):
-        return [line]
+def wrapComment(line):
     indent = re.match(r'\s*', line).group(0)
+    prefix = indent + ('-- ' if not line.lstrip().startswith('---') else '--- ')
+    words, rows, current = line.lstrip()[2:].split(), [], ''
+    for word in words:
+        if current and len(prefix) + len(current) + 1 + len(word) > MAX_COLUMNS:
+            rows.append(prefix + current)
+            current = word
+        else:
+            current = (current + ' ' + word).strip()
+    rows.append(prefix + current)
+    return rows
+
+
+def wrapString(line):
+    # key = 'long string', -> split the literal with a concatenation continuation.
+    match = re.match(r"^(\s*(?:[\w.\[\]]+\s*=\s*|return\s+)?)'((?:[^'\\]|\\.)*)'(,?)$", line)
+    if not match:
+        return None
+    head, text, tail = match.groups()
+    indent = re.match(r'\s*', line).group(0)
+    limit = MAX_COLUMNS - len(head) - 4
+    cut = text.rfind(' ', 0, limit)
+    if cut <= 0:
+        return None
+    first, rest = text[:cut + 1], text[cut + 1:]
+    rows = [head + "'" + first + "'", indent + "    .. '" + rest + "'" + tail]
+    return rows if all(len(r) <= MAX_COLUMNS for r in rows) else None
+
+
+def wrapList(line):
+    # Packed table fields: `A = 1, B = 2,` -> fill lines at the same indent.
+    indent = re.match(r'\s*', line).group(0)
+    fields = topLevelArguments(line.strip().rstrip(','))
+    if len(fields) < 2 or not line.rstrip().endswith(','):
+        return None
+    rows, current = [], ''
+    for field in fields:
+        piece = field + ','
+        if current and len(indent) + len(current) + 1 + len(piece) > MAX_COLUMNS:
+            rows.append(indent + current)
+            current = piece
+        else:
+            current = (current + ' ' + piece).strip()
+    rows.append(indent + current)
+    return rows if len(rows) > 1 and all(len(r) <= MAX_COLUMNS for r in rows) else None
+
+
+def splitAssignment(line):
+    # `a, b = x, y` -> one statement per target when no target is read on the right-hand side.
+    match = re.match(r'^(\s*)(local\s+)?([^=()]+?)\s*=\s*(.+)$', line)
+    if not match or '==' in line.split('=', 1)[0] + '=':
+        return None
+    indent, local, left, right = match.groups()
+    targets = topLevelArguments(left)
+    values = topLevelArguments(right)
+    if len(targets) < 2 or len(targets) != len(values):
+        return None
+    for target in targets:
+        base = re.match(r'[\w.]+', target)
+        if base and re.search(r'(?<![\w.])' + re.escape(base.group(0)) + r'\b', right):
+            return None
+    return [indent + (local or '') + t + ' = ' + v for t, v in zip(targets, values)]
+
+
+def trailingComment(line):
+    # `code -- comment` -> comment moves to its own line above.
+    match = re.match(r"^(\s*)(.*?\S)\s+(--\s.*)$", line)
+    if match and "'" not in match.group(3) and len(match.group(2)) <= MAX_COLUMNS:
+        return [match.group(1) + match.group(3), match.group(1) + match.group(2)]
+    return None
+
+
+def wrapLine(line):
+    if len(line) <= MAX_COLUMNS:
+        return [line]
+    if line.lstrip().startswith('--'):
+        return wrapComment(line)
+    indent = re.match(r'\s*', line).group(0)
+    for strategy in (wrapString, splitAssignment, wrapList):
+        rows = strategy(line)
+        if rows:
+            return rows
     # Try each call opening from the left; wrap the first whose arguments can be split.
     for start in codeParens(line):
         end = matchParen(line, start)
@@ -183,6 +285,9 @@ def wrapLine(line):
         result[-1] += tail
         if all(len(row) <= MAX_COLUMNS for row in result):
             return result
+    rows = trailingComment(line)
+    if rows and all(len(r) <= MAX_COLUMNS for r in rows):
+        return [r for row in rows for r in wrapLine(row)]
     return [line]
 
 
@@ -201,7 +306,7 @@ def fixFile(path):
             out.append(line)
             continue
         out.extend(wrapLine(line))
-    lines = separateFunctions(expandOneLiners(out))
+    lines = separateFunctions(expandInlineIf(expandOneLiners(out)))
     text = re.sub(r'\n{3,}', '\n\n', '\n'.join(lines)).rstrip('\n') + '\n'
     if text != original:
         path.write_text(text, encoding='utf-8')

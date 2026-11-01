@@ -47,8 +47,9 @@ end
 local function emitLine(font, cps, matrix, ox, oy, colorOverride)
     font:_layout(cps, function(texture, gx, gy, w, h, u0, v0, u1, v1)
         local dpi = font._dpi
-        Batch.addQuad(texture, (ox + gx) / dpi, (oy + gy) / dpi, (ox + gx + w) / dpi, (oy + gy) / dpi,
-            (ox + gx) / dpi, (oy + gy + h) / dpi, (ox + gx + w) / dpi, (oy + gy + h) / dpi, u0, v0, u1, v1, matrix)
+        local x0, y0 = (ox + gx) / dpi, (oy + gy) / dpi
+        local x1, y1 = (ox + gx + w) / dpi, (oy + gy + h) / dpi
+        Batch.addQuad(texture, x0, y0, x1, y0, x0, y1, x1, y1, u0, v0, u1, v1, matrix)
     end)
 end
 
@@ -82,7 +83,12 @@ local function printColored(text, matrix, draw)
     local multiplied = saved
     eachSegment(text, function(segment, color)
         if color then
-            S.color = { color[1] * multiplied[1], color[2] * multiplied[2], color[3] * multiplied[3], (color[4] or 1) * multiplied[4] }
+            S.color = {
+                color[1] * multiplied[1],
+                color[2] * multiplied[2],
+                color[3] * multiplied[3],
+                (color[4] or 1) * multiplied[4],
+            }
         else
             S.color = saved
         end
@@ -101,7 +107,14 @@ function G.print(text, x, y, angle, sx, sy, ox, oy, kx, ky)
         local lines = splitLines(segment)
         local m = matrix
         if cursor ~= 0 then
-            m = { matrix[1], matrix[2], matrix[3], matrix[4], matrix[1] * cursor + matrix[5], matrix[2] * cursor + matrix[6] }
+            m = {
+                matrix[1],
+                matrix[2],
+                matrix[3],
+                matrix[4],
+                matrix[1] * cursor + matrix[5],
+                matrix[2] * cursor + matrix[6],
+            }
         end
         printLines(font, lines, m)
         if #lines == 1 then
@@ -128,11 +141,18 @@ function G.printf(text, x, y, limit, align, angle, sx, sy, ox, oy, kx, ky)
         -- colors apply per wrapped text run; use the first color for the whole paragraph
         local first
         for _, item in ipairs(text) do
-            if type(item) == 'table' then first = item break end
+            if type(item) == 'table' then
+                first = item break
+            end
         end
         local saved = { unpack(S.color) }
         if first then
-            S.color = { first[1] * saved[1], first[2] * saved[2], first[3] * saved[3], (first[4] or 1) * saved[4] }
+            S.color = {
+                first[1] * saved[1],
+                first[2] * saved[2],
+                first[3] * saved[3],
+                (first[4] or 1) * saved[4],
+            }
         end
         printLines(font, lines, matrix, limit, align or 'left')
         S.color = saved

@@ -1,4 +1,5 @@
--- katsa.physics: LÖVE-style 2D physics over Box2D 2.3.1 (katsa_box2d). Lengths are given in pixels and
+-- katsa.physics: LÖVE-style 2D physics over Box2D 2.3.1 (katsa_box2d). Lengths are given in pixels
+-- and
 -- divided by the meter scale; forces scale with the meter, torques and inertia with its square.
 local Scale = require('source.katsa.physics.scale')
 

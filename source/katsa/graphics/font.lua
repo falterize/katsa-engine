@@ -43,9 +43,15 @@ local function decode(text)
         if c < 0x80 then
             cp, size = c, 1
         elseif c >= 0xF0 then
-            cp, size = ((c % 8) * 262144) + ((text:byte(i + 1) or 128) % 64) * 4096 + ((text:byte(i + 2) or 128) % 64) * 64 + ((text:byte(i + 3) or 128) % 64), 4
+            local b1 = text:byte(i + 1) or 128
+            local b2 = text:byte(i + 2) or 128
+            local b3 = text:byte(i + 3) or 128
+            cp = (c % 8) * 262144 + (b1 % 64) * 4096 + (b2 % 64) * 64 + (b3 % 64)
+            size = 4
         elseif c >= 0xE0 then
-            cp, size = ((c % 16) * 4096) + ((text:byte(i + 1) or 128) % 64) * 64 + ((text:byte(i + 2) or 128) % 64), 3
+            local b1, b2 = text:byte(i + 1) or 128, text:byte(i + 2) or 128
+            cp = (c % 16) * 4096 + (b1 % 64) * 64 + (b2 % 64)
+            size = 3
         elseif c >= 0xC0 then
             cp, size = ((c % 32) * 64) + ((text:byte(i + 1) or 128) % 64), 2
         else
@@ -77,10 +83,12 @@ local function build(data, size, hinting, dpiscale)
     local scale = nativeLib.fontScale(face, pixelSize)
     local ascent, descent, gap = nativeLib.fontVMetrics(face)
     local self = setmetatable({
-        _face = face, _data = data, _size = size, _dpi = dpiscale, _pixelSize = pixelSize, _scale = scale,
+        _face = face, _data = data, _size = size, _dpi = dpiscale, _pixelSize = pixelSize,
+        _scale = scale,
         _ascent = math.ceil(ascent * scale - 0.001), _descent = math.floor(descent * scale + 0.001),
         _height = math.floor((ascent - descent + gap) * scale + 0.5),
-        _lineHeight = 1, _glyphs = {}, _atlases = {}, _filter = { 'linear', 'linear', 1 }, _kernCache = {},
+        _lineHeight = 1, _glyphs = {}, _atlases = {}, _filter = { 'linear', 'linear', 1 },
+        _kernCache = {},
     }, Methods)
     Core.track(self, { fontLifetime = true })
     return self
@@ -132,7 +140,13 @@ local function glyph(self, cp)
     end
     local pixels, w, h, xoff, yoff = nativeLib.fontBitmap(self._face, cp, self._scale)
     local advance = nativeLib.fontHMetrics(self._face, cp)
-    local record = { advance = math.floor(advance * self._scale + 0.5), w = 0, h = 0, xoff = 0, yoff = 0 }
+    local record = {
+        advance = math.floor(advance * self._scale + 0.5),
+        w = 0,
+        h = 0,
+        xoff = 0,
+        yoff = 0,
+    }
     if not nativeLib.fontHasGlyph(self._face, cp) and cp ~= 32 then
         if cp ~= 0xFFFD and nativeLib.fontHasGlyph(self._face, 0xFFFD) then
             local fallback = glyph(self, 0xFFFD)
@@ -144,7 +158,10 @@ local function glyph(self, cp)
         local atlas, x, y = allocate(self, w, h)
         local rgba = ffi.new('uint8_t[?]', w * h * 4)
         for i = 0, w * h - 1 do
-            rgba[i * 4], rgba[i * 4 + 1], rgba[i * 4 + 2], rgba[i * 4 + 3] = 255, 255, 255, pixels[i]
+            rgba[i * 4] = 255
+            rgba[i * 4 + 1] = 255
+            rgba[i * 4 + 2] = 255
+            rgba[i * 4 + 3] = pixels[i]
         end
         local gl, E = Core.gl, Core.enum
         Core.bindForEdit(atlas.texture._res.texture)
@@ -426,7 +443,8 @@ end
 function TextMethods:add(text, x, y, angle, sx, sy, ox, oy, kx, ky)
     local width, height = measure(self._font, text)
     self._entries[#self._entries + 1] = {
-        text = text, x = x or 0, y = y or 0, args = { x or 0, y or 0, angle, sx, sy, ox, oy, kx, ky },
+        text = text, x = x or 0, y = y or 0,
+        args = { x or 0, y or 0, angle, sx, sy, ox, oy, kx, ky },
         width = width, height = height,
     }
     recompute(self)

@@ -27,7 +27,8 @@ local function installSearcher(FS)
     table.insert(package.loaders or package.searchers, 2, searcher)
 end
 
--- Game source choice: first non-option argument, else the fused archive, else the working directory.
+-- Game source choice: first non-option argument, else the fused archive, else the working
+-- directory.
 local function chooseSource(host, FS, nativeLib)
     local args = host.args or {}
     local positional
@@ -129,7 +130,8 @@ function Boot.start(host)
             return 1
         end
     end
-    FS.setIdentity(config.identity or (source:match('([^/\\]+)%.[%w]+$') or source:match('([^/\\]+)$') or 'game'))
+    local base = source:match('([^/\\]+)%.[%w]+$') or source:match('([^/\\]+)$') or 'game'
+    FS.setIdentity(config.identity or base)
 
     local Platform = require('source.katsa.platform.sdl2')
     local platform, message = Platform.new({ title = config.window and config.window.title })

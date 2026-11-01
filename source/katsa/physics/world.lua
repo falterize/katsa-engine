@@ -14,7 +14,9 @@ local World = Object.class('World')
 local trampolines
 
 local function installTrampolines()
-    if trampolines then return trampolines end
+    if trampolines then
+        return trampolines
+    end
     local t = {}
     local function contactEvent(name)
         return ffi.cast('kb2_contact_cb', Errors.guard(function(user, contactHandle)
@@ -44,7 +46,9 @@ local function installTrampolines()
     t.filter = ffi.cast('kb2_filter_cb', Errors.guard(function(user, ha, hb)
         local world = Registry.get(user)
         local filter = world and world._filter
-        if not filter then return 1 end
+        if not filter then
+            return 1
+        end
         return filter(Registry.fixtureOf(ha), Registry.fixtureOf(hb)) and 1 or 0
     end))
     trampolines = t
@@ -182,7 +186,9 @@ function World:isDestroyed()
 end
 
 function World:destroy()
-    if self._destroyed then return false end
+    if self._destroyed then
+        return false
+    end
     for body in pairs(self._bodies) do
         body._destroyed = true
         Registry.unregister(body._id)

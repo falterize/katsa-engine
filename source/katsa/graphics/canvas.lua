@@ -127,7 +127,8 @@ local function parseCanvasArgs(...)
         options.stencil = first.stencil
         options.depth = first.depth
         options.depthstencil = first.depthstencil
-        if first.depthstencil and type(first.depthstencil) == 'table' and first.depthstencil.canvas then
+        local depthstencil = first.depthstencil
+        if type(depthstencil) == 'table' and depthstencil.canvas then
             options.depthstencil = first.depthstencil.canvas
         end
     end
@@ -166,7 +167,8 @@ function G.setCanvasInternal(canvases, options)
         end
         local fbo, status = fboFor(canvases, options)
         if not fbo then
-            error(('Canvas cannot be used as a render target (framebuffer status 0x%X)'):format(status), 3)
+            local message = 'Canvas cannot be used as a render target (framebuffer status 0x%X)'
+            error(message:format(status), 3)
         end
         S.canvases, S.canvasOptions = canvases, options
         currentFbo = fbo
@@ -221,8 +223,11 @@ end
 local formatProbe = {}
 function G.getCanvasFormats(readable)
     State.requireReady()
-    local names = { 'normal', 'rgba8', 'srgb', 'r8', 'rg8', 'rgba16f', 'rgba32f', 'r16f', 'r32f', 'rg16f', 'rgb10a2',
-        'depth16', 'depth24', 'depth32f', 'depth24stencil8', 'depth32fstencil8', 'stencil8' }
+    local names = {
+        'normal', 'rgba8', 'srgb', 'r8', 'rg8', 'rgba16f', 'rgba32f', 'r16f', 'r32f', 'rg16f',
+        'rgb10a2', 'depth16', 'depth24', 'depth32f', 'depth24stencil8', 'depth32fstencil8',
+        'stencil8',
+    }
     local out = {}
     for _, name in ipairs(names) do
         if formatProbe[name] == nil then
@@ -232,7 +237,10 @@ function G.getCanvasFormats(readable)
                 local id = ffi.new('GLuint[1]')
                 gl.glGenFramebuffers(1, id)
                 Core.bindFramebuffer(id[0])
-                local point = info.depth and (info.stencil and E.DEPTH_STENCIL_ATTACHMENT or E.DEPTH_ATTACHMENT) or E.COLOR_ATTACHMENT0
+                local point = E.COLOR_ATTACHMENT0
+                if info.depth then
+                    point = info.stencil and E.DEPTH_STENCIL_ATTACHMENT or E.DEPTH_ATTACHMENT
+                end
                 c:_attachTo(point)
                 local status = gl.glCheckFramebufferStatus(E.FRAMEBUFFER)
                 Core.framebufferChanged()

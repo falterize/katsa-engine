@@ -21,7 +21,9 @@ local function newJoint(world, handle, a, b)
     B().kb2_joint_set_userid(handle, self._id)
     world._joints[self] = true
     a._joints[self] = true
-    if b then b._joints[self] = true end
+    if b then
+        b._joints[self] = true
+    end
     return self
 end
 
@@ -167,13 +169,17 @@ function Joint:getJoints()
 end
 
 function Joint:destroy()
-    if self._destroyed then return false end
+    if self._destroyed then
+        return false
+    end
     assert(not self._world:isLocked(), 'Cannot destroy a joint while the world is locked')
     B().kb2_joint_destroy(self._world._h, self._h)
     self._destroyed = true
     self._world._joints[self] = nil
     self._a._joints[self] = nil
-    if self._b then self._b._joints[self] = nil end
+    if self._b then
+        self._b._joints[self] = nil
+    end
     Registry.unregister(self._id)
     return true
 end

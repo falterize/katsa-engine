@@ -61,7 +61,8 @@ local function compareTable()
         notequal = E.NOTEQUAL, gequal = E.GEQUAL, always = E.ALWAYS,
     }
 end
--- The stencil test reads "pixel passes when stencil <compare> value", GL tests "value <func> stencil".
+-- The stencil test reads "pixel passes when stencil <compare> value", GL tests "value <func>
+-- stencil".
 local reversed = { less = 'greater', greater = 'less', lequal = 'gequal', gequal = 'lequal' }
 
 local function applyStencilTest()

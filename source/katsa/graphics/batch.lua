@@ -37,14 +37,22 @@ local function activeShader()
     return S.shader or State.defaultShader
 end
 
--- Sends built-in uniforms. `modelview` is the affine transform for mesh draws, nil for batched draws.
+-- Sends built-in uniforms. `modelview` is the affine transform for mesh draws, nil for batched
+-- draws.
 local function sendBuiltins(shader, modelview, withColor)
     local b = shader._builtin
     local proj = ffi.new('float[16]')
     projectionInto(proj)
     local t = modelview or { 1, 0, 0, 1, 0, 0 }
     local model = ffi.new('float[16]')
-    model[0], model[1], model[4], model[5], model[10], model[12], model[13], model[15] = t[1], t[2], t[3], t[4], 1, t[5], t[6], 1
+    model[0] = t[1]
+    model[1] = t[2]
+    model[4] = t[3]
+    model[5] = t[4]
+    model[10] = 1
+    model[12] = t[5]
+    model[13] = t[6]
+    model[15] = 1
     if b.TransformMatrix >= 0 then
         gl.glUniformMatrix4fv(b.TransformMatrix, 1, 0, model)
     end
@@ -68,7 +76,10 @@ local function sendBuiltins(shader, modelview, withColor)
         local det = t[1] * t[4] - t[2] * t[3]
         ffi.fill(normalMatrix, 36)
         if det ~= 0 then
-            normalMatrix[0], normalMatrix[1], normalMatrix[3], normalMatrix[4] = t[4] / det, -t[3] / det, -t[2] / det, t[1] / det
+            normalMatrix[0] = t[4] / det
+            normalMatrix[1] = -t[3] / det
+            normalMatrix[3] = -t[2] / det
+            normalMatrix[4] = t[1] / det
         end
         normalMatrix[8] = 1
         gl.glUniformMatrix3fv(b.NormalMatrix, 1, 0, normalMatrix)
@@ -88,7 +99,10 @@ local function sendBuiltins(shader, modelview, withColor)
         if target.isCanvas then
             screenSize[0], screenSize[1], screenSize[2], screenSize[3] = target.pw, target.ph, 1, 0
         else
-            screenSize[0], screenSize[1], screenSize[2], screenSize[3] = target.pw, target.ph, -1, target.ph
+            screenSize[0] = target.pw
+            screenSize[1] = target.ph
+            screenSize[2] = -1
+            screenSize[3] = target.ph
         end
         gl.glUniform4fv(b.love_ScreenSize, 1, screenSize)
     end
@@ -165,7 +179,14 @@ end
 
 local function push(x, y, u, v, r, g, b, a)
     local vertex = batch.vertices[batch.count]
-    vertex.x, vertex.y, vertex.u, vertex.v, vertex.r, vertex.g, vertex.b, vertex.a = x, y, u, v, r, g, b, a
+    vertex.x = x
+    vertex.y = y
+    vertex.u = u
+    vertex.v = v
+    vertex.r = r
+    vertex.g = g
+    vertex.b = b
+    vertex.a = a
     batch.count = batch.count + 1
 end
 

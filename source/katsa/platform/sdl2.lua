@@ -3,7 +3,7 @@
 --
 -- Backend contract (shared with any future backend such as GLFW or headless):
 --   Platform.new(config) -> platform | nil, message
---   platform:setMode(w, h, flags) -> true | nil, message     create/resize the window and GL context
+-- platform:setMode(w, h, flags) -> true | nil, message create/resize the window and GL context
 --   platform:getMode() -> w, h, flags
 --   platform:getDrawableSize() -> pixel width, pixel height
 --   platform:getDPIScale() -> number
@@ -12,7 +12,7 @@
 --   platform:poll() -> iterator of event tables { name, ... } already translated to katsa events
 --   platform:getTicks(), platform:setTitle(s), platform:hasFocus(), platform:isVisible()
 --   platform:setRelativeMouse(b), platform:getRelativeMouse(), platform:getMousePosition()
---   platform:setTextInput(b), platform:getClipboard(), platform:setClipboard(s), platform:openURL(u)
+-- platform:setTextInput(b), platform:getClipboard(), platform:setClipboard(s), platform:openURL(u)
 --   platform:getPrefPath(org, app), platform:close()
 local ffi = require('ffi')
 local bit = require('bit')
@@ -114,7 +114,8 @@ local EVENT = {
 }
 local WINDOW_EVENT = {
     SHOWN = 1, HIDDEN = 2, EXPOSED = 3, MOVED = 4, RESIZED = 5, SIZE_CHANGED = 6, MINIMIZED = 7,
-    MAXIMIZED = 8, RESTORED = 9, ENTER = 10, LEAVE = 11, FOCUS_GAINED = 12, FOCUS_LOST = 13, CLOSE = 14,
+    MAXIMIZED = 8, RESTORED = 9, ENTER = 10, LEAVE = 11, FOCUS_GAINED = 12, FOCUS_LOST = 13,
+    CLOSE = 14,
 }
 
 local Platform = {}
@@ -414,8 +415,15 @@ function Platform:translate(e)
     elseif t == EVENT.FINGERDOWN or t == EVENT.FINGERUP or t == EVENT.FINGERMOTION then
         local w, h = self:getMode()
         local id = tonumber(e.tfinger.fingerId)
-        local name = t == EVENT.FINGERDOWN and 'touchpressed' or t == EVENT.FINGERUP and 'touchreleased' or 'touchmoved'
-        return { name, id, e.tfinger.x * w, e.tfinger.y * h, e.tfinger.dx * w, e.tfinger.dy * h, e.tfinger.pressure }
+        local name = 'touchmoved'
+        if t == EVENT.FINGERDOWN then
+            name = 'touchpressed'
+        elseif t == EVENT.FINGERUP then
+            name = 'touchreleased'
+        end
+        local finger = e.tfinger
+        local x, y, dx, dy = finger.x * w, finger.y * h, finger.dx * w, finger.dy * h
+        return { name, id, x, y, dx, dy, finger.pressure }
     elseif t == EVENT.DROPFILE then
         local path = ffi.string(e.drop.file)
         self.sdl.SDL_free(e.drop.file)
@@ -436,7 +444,11 @@ function Platform:translate(e)
         elseif kind == WINDOW_EVENT.MINIMIZED or kind == WINDOW_EVENT.HIDDEN then
             self.visible = false
             return { 'visible', false }
-        elseif kind == WINDOW_EVENT.RESTORED or kind == WINDOW_EVENT.SHOWN or kind == WINDOW_EVENT.MAXIMIZED then
+        elseif
+            kind == WINDOW_EVENT.RESTORED
+            or kind == WINDOW_EVENT.SHOWN
+            or kind == WINDOW_EVENT.MAXIMIZED
+        then
             self.visible = true
             return { 'visible', true }
         elseif kind == WINDOW_EVENT.CLOSE then

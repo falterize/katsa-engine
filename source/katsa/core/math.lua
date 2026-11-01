@@ -88,7 +88,8 @@ function Generator:getState()
 end
 
 function Generator:setState(text)
-    local a, b = text:match('^(%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x)(%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x)$')
+    local half = ('%x'):rep(16)
+    local a, b = text:match('^(' .. half .. ')(' .. half .. ')$')
     assert(a, 'Invalid random generator state')
     self.s0 = ffi.cast('uint64_t',
         tonumber('0x' .. a:sub(1, 8))) * 4294967296ULL + tonumber('0x' .. a:sub(9))

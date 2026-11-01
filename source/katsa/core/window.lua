@@ -21,7 +21,8 @@ local function normalizeFlags(flags)
         normalized[key] = value
     end
     if normalized.fullscreen == true then
-        normalized.fullscreen = normalized.fullscreentype == 'exclusive' and 'exclusive' or 'desktop'
+        local exclusive = normalized.fullscreentype == 'exclusive'
+        normalized.fullscreen = exclusive and 'exclusive' or 'desktop'
     elseif normalized.fullscreen == false then
         normalized.fullscreen = nil
     end

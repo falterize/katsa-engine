@@ -1,4 +1,5 @@
--- Silent driver: keeps Source state only. Used on servers, in tests and when no audio device exists.
+-- Silent driver: keeps Source state only. Used on servers, in tests and when no audio device
+-- exists.
 local Driver = { name = 'null', effectsSupported = true, maxSourceEffects = 4 }
 
 local function noop() end

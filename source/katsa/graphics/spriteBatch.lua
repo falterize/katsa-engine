@@ -31,7 +31,8 @@ function SpriteBatch:set(id, ...)
     if type(args[1]) == 'table' and getmetatable(args[1]) == Quad.QuadMethods then
         quad = table.remove(args, 1)
     end
-    self._entries[id] = { quad = quad, args = args, color = self._color and { unpack(self._color) } }
+    local color = self._color and { unpack(self._color) }
+    self._entries[id] = { quad = quad, args = args, color = color }
 end
 
 function SpriteBatch:clear()

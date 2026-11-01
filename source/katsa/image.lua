@@ -55,13 +55,15 @@ local ImageData = {}
 ImageData.__index = ImageData
 ImageData.type = 'ImageData'
 
+local viewTypes = { u8 = 'uint8_t*', u16 = 'uint16_t*', f16 = 'uint16_t*', f32 = 'float*' }
+
 local function make(width, height, format, buffer)
     local info = formats[format]
     local pixelBytes = info[1] * info[2]
     return setmetatable({
         _w = width, _h = height, _format = format, _info = info, _pixel = pixelBytes,
         _bytes = width * height * pixelBytes, _buffer = buffer,
-        _view = ffi.cast(info[3] == 'u8' and 'uint8_t*' or info[3] == 'f32' and 'float*' or 'uint16_t*', buffer),
+        _view = ffi.cast(viewTypes[info[3]], buffer),
     }, ImageData)
 end
 
@@ -176,9 +178,12 @@ function ImageData:getPixel(x, y)
     for i = 1, channels do
         local raw = view[base + i - 1]
         local value
-        if kind == 'u8' then value = raw / 255
-        elseif kind == 'u16' then value = raw / 65535
-        elseif kind == 'f16' then value = halfToFloat(raw)
+        if kind == 'u8' then
+            value = raw / 255
+        elseif kind == 'u16' then
+            value = raw / 65535
+        elseif kind == 'f16' then
+            value = halfToFloat(raw)
         else value = raw end
         out[i] = value
     end
@@ -235,8 +240,12 @@ function ImageData:paste(source, dx, dy, sx, sy, sw, sh)
         if y >= 0 and y < self._h and sy + row < source._h then
             local from, to = sx, dx
             local count = sw
-            if to < 0 then from, count, to = from - to, count + to, 0 end
-            if to + count > self._w then count = self._w - to end
+            if to < 0 then
+                from, count, to = from - to, count + to, 0
+            end
+            if to + count > self._w then
+                count = self._w - to
+            end
             if count > 0 then
                 ffi.copy(self._buffer + (y * self._w + to) * rowBytes,
                     source._buffer + ((sy + row) * source._w + from) * rowBytes, count * rowBytes)

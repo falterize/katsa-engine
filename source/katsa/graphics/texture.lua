@@ -21,8 +21,12 @@ local function formatTable()
         depth16 = { E.DEPTH_COMPONENT16, E.DEPTH_COMPONENT, E.UNSIGNED_SHORT, depth = true },
         depth24 = { E.DEPTH_COMPONENT24, E.DEPTH_COMPONENT, E.UNSIGNED_INT, depth = true },
         depth32f = { E.DEPTH_COMPONENT32F, E.DEPTH_COMPONENT, float, depth = true },
-        depth24stencil8 = { E.DEPTH24_STENCIL8, E.DEPTH_STENCIL, E.UNSIGNED_INT_24_8, depth = true, stencil = true },
-        depth32fstencil8 = { E.DEPTH32F_STENCIL8, E.DEPTH_STENCIL, 0x8DAD, depth = true, stencil = true },
+        depth24stencil8 = {
+            E.DEPTH24_STENCIL8, E.DEPTH_STENCIL, E.UNSIGNED_INT_24_8, depth = true, stencil = true,
+        },
+        depth32fstencil8 = {
+            E.DEPTH32F_STENCIL8, E.DEPTH_STENCIL, 0x8DAD, depth = true, stencil = true,
+        },
         stencil8 = { E.STENCIL_INDEX8, 0x1901, ubyte, stencil = true, renderbufferOnly = true },
     }
 end
@@ -51,7 +55,8 @@ end
 local wrapModes
 local function glWrap(mode)
     local E = Core.enum
-    wrapModes = wrapModes or { clamp = E.CLAMP_TO_EDGE, repeat_ = E.REPEAT, mirroredrepeat = E.MIRRORED_REPEAT }
+    wrapModes = wrapModes
+        or { clamp = E.CLAMP_TO_EDGE, repeat_ = E.REPEAT, mirroredrepeat = E.MIRRORED_REPEAT }
     return wrapModes[mode == 'repeat' and 'repeat_' or mode] or E.CLAMP_TO_EDGE
 end
 
@@ -83,7 +88,8 @@ end
 local function newTextureObject(kind, width, height, dpiscale, formatName, msaa)
     local info = assert(lookup(formatName), 'Invalid texture format: ' .. tostring(formatName))
     local self = setmetatable({
-        _kind = kind, _pw = width, _ph = height, _dpi = dpiscale, _formatName = formatName, _info = info,
+        _kind = kind, _pw = width, _ph = height, _dpi = dpiscale, _formatName = formatName,
+        _info = info,
         _depth = info.depth or false, _msaa = msaa or 0, _mipmaps = 1,
         _filter = {
             min = Texture.defaultFilter.min, mag = Texture.defaultFilter.mag,
@@ -146,7 +152,9 @@ function Methods:replacePixels(data, slice, mip, x, y)
     local gl, E = Core.gl, Core.enum
     x, y = x or 0, y or 0
     assert(data:getFormat() == self._formatName, 'ImageData format must match the Image format')
-    assert(x >= 0 and y >= 0 and x + data:getWidth() <= self._pw and y + data:getHeight() <= self._ph, 'Region is outside the Image')
+    local inside = x >= 0 and y >= 0 and x + data:getWidth() <= self._pw
+        and y + data:getHeight() <= self._ph
+    assert(inside, 'Region is outside the Image')
     Core.bindForEdit(self._res.texture)
     gl.glPixelStorei(E.UNPACK_ALIGNMENT, 1)
     gl.glTexSubImage2D(E.TEXTURE_2D, 0, x, y, data:getWidth(), data:getHeight(), self._info[2],
@@ -255,7 +263,10 @@ function Methods:_resolve()
     end
     local gl, E = Core.gl, Core.enum
     local depth = self._depth
-    local point = depth and (self._info.stencil and E.DEPTH_STENCIL_ATTACHMENT or E.DEPTH_ATTACHMENT) or E.COLOR_ATTACHMENT0
+    local point = E.COLOR_ATTACHMENT0
+    if depth then
+        point = self._info.stencil and E.DEPTH_STENCIL_ATTACHMENT or E.DEPTH_ATTACHMENT
+    end
     if not res.msaaFbo then
         res.msaaFbo = makeFbo(self, function()
             gl.glFramebufferRenderbuffer(E.FRAMEBUFFER, point, E.RENDERBUFFER, res.msaaRenderbuffer)
@@ -303,7 +314,8 @@ function Methods:newImageData(slice, mip, x, y, w, h)
     end
     gl.glBindFramebuffer(E.READ_FRAMEBUFFER, res.readFbo)
     local name = self._formatName
-    local isFloat = name == 'rgba16f' or name == 'rgba32f' or name == 'r16f' or name == 'r32f' or name == 'rg16f'
+    local floatFormats = { rgba16f = true, rgba32f = true, r16f = true, r32f = true, rg16f = true }
+    local isFloat = floatFormats[name] == true
     local data
     gl.glPixelStorei(E.PACK_ALIGNMENT, 1)
     if isFloat then
@@ -395,8 +407,10 @@ function Methods:setDepthSampleMode(mode)
         Core.bindForEdit(self._res.texture)
         gl.glTexParameteri(E.TEXTURE_2D, E.TEXTURE_COMPARE_MODE, mode and 0x884E or 0)
         if mode then
-            local funcs = { less = E.LESS, lequal = E.LEQUAL, greater = E.GREATER, gequal = E.GEQUAL, equal = E.EQUAL,
-                notequal = E.NOTEQUAL, always = E.ALWAYS, never = E.NEVER }
+            local funcs = {
+                less = E.LESS, lequal = E.LEQUAL, greater = E.GREATER, gequal = E.GEQUAL,
+                equal = E.EQUAL, notequal = E.NOTEQUAL, always = E.ALWAYS, never = E.NEVER,
+            }
             gl.glTexParameteri(E.TEXTURE_2D, 0x884D, funcs[mode] or E.LEQUAL)
         end
     end
