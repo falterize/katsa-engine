@@ -58,7 +58,7 @@ def main():
     import restoreEmptyDirs
 
     restoreEmptyDirs.restore(root)
-    package(root, args.output / 'Katsa-v108.love')
+    package(root, args.output / 'Katsa-v108.1.love')
 
 
 if __name__ == '__main__':
