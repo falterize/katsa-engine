@@ -70,7 +70,6 @@ vec4 effect(vec4 color, Image tex, vec2 uv, vec2 screen) {
     return Texel(tex, uv) * color;
 }]])
     S.shader = nil
-    Core.onFramebufferDeleted = function() end
     gl.glEnable(E.BLEND)
     gl.glDisable(E.DEPTH_TEST)
     refreshBackbuffer()
