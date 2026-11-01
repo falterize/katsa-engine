@@ -92,7 +92,9 @@ function Fixture:getCategory()
     local c, _ = self:getFilterData()
     local list = {}
     for i = 1, 16 do
-        if bit.band(c, bit.lshift(1, i - 1)) ~= 0 then list[#list + 1] = i end
+        if bit.band(c, bit.lshift(1, i - 1)) ~= 0 then
+            list[#list + 1] = i
+        end
     end
     return unpack(list)
 end
@@ -121,8 +123,9 @@ function Fixture:testPoint(x, y)
 end
 
 function Fixture:rayCast(x1, y1, x2, y2, maxFraction, child)
-    local hit = B().kb2_fixture_raycast(self._h, down(x1), down(y1), down(x2), down(y2), maxFraction,
-        (child or 1) - 1, six)
+    local index = (child or 1) - 1
+    local hit = B().kb2_fixture_raycast(self._h, down(x1), down(y1), down(x2), down(y2),
+        maxFraction, index, six)
     if hit == 0 then
         return nil
     end
@@ -144,7 +147,9 @@ function Fixture:isDestroyed()
 end
 
 function Fixture:destroy()
-    if self._destroyed then return false end
+    if self._destroyed then
+        return false
+    end
     B().kb2_fixture_destroy(self._body._h, self._h)
     self._destroyed = true
     self._body._fixtures[self] = nil

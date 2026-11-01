@@ -6,7 +6,11 @@ local Texture = require('source.katsa.graphics.texture')
 local Shader = require('source.katsa.graphics.shader')
 local State = require('source.katsa.graphics.state')
 local RenderState = require('source.katsa.graphics.renderState')
-local S, batch, stats, counters, target = State.S, State.batch, State.stats, State.counters, State.target
+local S = State.S
+local batch = State.batch
+local stats = State.stats
+local counters = State.counters
+local target = State.target
 local G = State.G
 local gl, E
 State.onSetup(function(core)
@@ -127,7 +131,8 @@ function G.getSystemLimits()
     State.requireReady()
     local l = Core.limits
     return {
-        pointsize = 64, texturesize = l.texturesize, multicanvas = l.multicanvas, canvasmsaa = l.canvasmsaa,
+        pointsize = 64, texturesize = l.texturesize, multicanvas = l.multicanvas,
+        canvasmsaa = l.canvasmsaa,
         anisotropy = l.textureanisotropy, texturelayers = 256, volumetexturesize = 256,
     }
 end

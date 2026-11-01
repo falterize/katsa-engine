@@ -1,4 +1,5 @@
--- katsa.audio: sources, listener and effects. Playback state lives here; a driver (OpenAL, or the silent
+-- katsa.audio: sources, listener and effects. Playback state lives here; a driver (OpenAL, or the
+-- silent
 -- null driver used for servers and tests) turns it into sound.
 local Sound = require('source.katsa.sound')
 local timer = require('source.katsa.core.timer')
@@ -7,7 +8,12 @@ local Audio = {}
 local Methods = {}
 Methods.__index = Methods
 
-local listener = { position = { 0, 0, 0 }, orientation = { 0, 0, -1, 0, 1, 0 }, velocity = { 0, 0, 0 }, volume = 1 }
+local listener = {
+    position = { 0, 0, 0 },
+    orientation = { 0, 0, -1, 0, 1, 0 },
+    velocity = { 0, 0, 0 },
+    volume = 1,
+}
 local effects = {}
 local driver = require('source.katsa.audio.nullDriver')
 local sources = setmetatable({}, { __mode = 'k' })
@@ -29,9 +35,12 @@ function Audio.newSource(a, kind)
     end
     local self = setmetatable({
         _data = data, _type = kind or 'stream', _looping = false, _volume = 1, _pitch = 1,
-        _position = { 0, 0, 0 }, _velocity = { 0, 0, 0 }, _direction = { 0, 0, 0 }, _cone = { 6.2831855, 6.2831855, 0 },
-        _relative = false, _rolloff = 1, _refDistance = 1, _maxDistance = 3.4028235e38, _airAbsorption = 0,
-        _minVolume = 0, _maxVolume = 1, _offset = 0, _state = 'stopped', _effects = {}, _filter = nil,
+        _position = { 0, 0, 0 }, _velocity = { 0, 0, 0 }, _direction = { 0, 0, 0 },
+        _cone = { 6.2831855, 6.2831855, 0 },
+        _relative = false, _rolloff = 1, _refDistance = 1, _maxDistance = 3.4028235e38,
+        _airAbsorption = 0,
+        _minVolume = 0, _maxVolume = 1, _offset = 0, _state = 'stopped', _effects = {},
+        _filter = nil,
     }, Methods)
     sources[self] = true
     driver.createVoice(self)
@@ -303,8 +312,12 @@ end
 function Methods:clone()
     local copy = Audio.newSource(self._data, self._type)
     copy._looping, copy._volume, copy._pitch = self._looping, self._volume, self._pitch
-    copy._position, copy._velocity, copy._direction = { unpack(self._position) }, { unpack(self._velocity) }, { unpack(self._direction) }
-    copy._cone, copy._relative, copy._rolloff = { unpack(self._cone) }, self._relative, self._rolloff
+    copy._position = { unpack(self._position) }
+    copy._velocity = { unpack(self._velocity) }
+    copy._direction = { unpack(self._direction) }
+    copy._cone = { unpack(self._cone) }
+    copy._relative = self._relative
+    copy._rolloff = self._rolloff
     copy._refDistance, copy._maxDistance = self._refDistance, self._maxDistance
     for name, value in pairs(self._effects) do
         copy._effects[name] = value

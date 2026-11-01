@@ -93,7 +93,8 @@ local function resolve(mount, path)
     return nil
 end
 
--- A mount point such as 'a/b' makes 'a' and 'a/b' appear as directories even if no file exists there.
+-- A mount point such as 'a/b' makes 'a' and 'a/b' appear as directories even if no file exists
+-- there.
 local function intermediate(mount, path)
     if mount.point == '' then
         return nil
@@ -249,7 +250,10 @@ function FS.getInfo(path, filter, info)
         info = filter
     end
     if type(info) == 'table' then
-        info.type, info.size, info.modtime, info.readonly = result.type, result.size, result.modtime, result.readonly
+        info.type = result.type
+        info.size = result.size
+        info.modtime = result.modtime
+        info.readonly = result.readonly
         return info
     end
     return result
@@ -494,7 +498,8 @@ end
 function FS.getSearchPath()
     local list = {}
     for _, mount in ipairs(state.mounts) do
-        list[#list + 1] = (mount.point == '' and '/' or mount.point) .. ' <- ' .. tostring(mount.key or state.source)
+        local point = mount.point == '' and '/' or mount.point
+        list[#list + 1] = point .. ' <- ' .. tostring(mount.key or state.source)
     end
     return list
 end

@@ -67,11 +67,15 @@ local function decodeWav(data)
             return v >= 32768 and v - 65536 or v
         elseif format.bits == 24 then
             local v = data:byte(at + 1) + data:byte(at + 2) * 256 + data:byte(at + 3) * 65536
-            if v >= 8388608 then v = v - 16777216 end
+            if v >= 8388608 then
+                v = v - 16777216
+            end
             return v / 256
         elseif format.bits == 32 then
             local v = le32(data, at)
-            if v >= 2147483648 then v = v - 4294967296 end
+            if v >= 2147483648 then
+                v = v - 4294967296
+            end
             return v / 65536
         end
         error('Unsupported WAV bit depth: ' .. format.bits)
@@ -118,7 +122,7 @@ function Sound.newSoundData(a, b, c, d)
         decoded, message = decodeOgg(data)
     end
     if not decoded then
-        error(message or 'Could not decode sound data: unsupported audio format (Ogg Vorbis and WAV are supported)', 2)
+        error(message or 'Could not decode sound data: only Ogg Vorbis and WAV are supported', 2)
     end
     return decoded
 end

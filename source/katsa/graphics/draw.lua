@@ -39,8 +39,7 @@ function G.draw(drawable, ...)
     if type(args[1]) == 'table' and getmetatable(args[1]) == Quad.QuadMethods then
         quad = table.remove(args, 1)
     end
-    local matrix = Batch.composed(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
-        args[9])
+    local matrix = Batch.composed(unpack(args, 1, 9))
     if drawable._kind == 'image' or drawable._kind == 'canvas' then
         drawTexture(drawable, quad, matrix)
     elseif drawable.type and drawable:type() == 'Mesh' then
@@ -55,8 +54,7 @@ end
 function G.drawInstanced(mesh, count, ...)
     State.requireReady()
     local args = { ... }
-    local matrix = Batch.composed(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
-        args[9])
+    local matrix = Batch.composed(unpack(args, 1, 9))
     drawMesh(mesh, matrix, count)
 end
 

@@ -15,9 +15,19 @@ for c = 97, 122 do
 end
 set(4, letters)
 set(30, { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' })
-set(40, { 'return', 'escape', 'backspace', 'tab', 'space', '-', '=', '[', ']', '\\', 'nonusbackslash', ';', "'", '`', ',', '.', '/', 'capslock' })
-set(58, { 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'printscreen', 'scrolllock', 'pause', 'insert', 'home', 'pageup', 'delete', 'end', 'pagedown', 'right', 'left', 'down', 'up', 'numlock' })
-set(84, { 'kp/', 'kp*', 'kp-', 'kp+', 'kpenter', 'kp1', 'kp2', 'kp3', 'kp4', 'kp5', 'kp6', 'kp7', 'kp8', 'kp9', 'kp0', 'kp.', 'nonusbackslash', 'application', 'power', 'kp=' })
+set(40, {
+    'return', 'escape', 'backspace', 'tab', 'space', '-', '=', '[', ']', '\\', 'nonusbackslash',
+    ';', "'", '`', ',', '.', '/', 'capslock',
+})
+set(58, {
+    'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'printscreen',
+    'scrolllock', 'pause', 'insert', 'home', 'pageup', 'delete', 'end', 'pagedown', 'right', 'left',
+    'down', 'up', 'numlock',
+})
+set(84, {
+    'kp/', 'kp*', 'kp-', 'kp+', 'kpenter', 'kp1', 'kp2', 'kp3', 'kp4', 'kp5', 'kp6', 'kp7', 'kp8',
+    'kp9', 'kp0', 'kp.', 'nonusbackslash', 'application', 'power', 'kp=',
+})
 set(104, { 'f13', 'f14', 'f15', 'f16', 'f17', 'f18', 'f19', 'f20', 'f21', 'f22', 'f23', 'f24' })
 set(224, { 'lctrl', 'lshift', 'lalt', 'lgui', 'rctrl', 'rshift', 'ralt', 'rgui' })
 -- Android back/menu style keys arrive as SDL scancodes 270+ on some builds.

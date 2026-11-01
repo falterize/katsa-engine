@@ -188,7 +188,8 @@ function Lib.fontKern(font, a, b)
     return
     lib().katsa_font_kern(font, a, b)
 end
--- Returns an 8-bit coverage buffer (copied, owned by Lua), width, height, xoffset, yoffset; or nil for blank glyphs.
+-- Returns an 8-bit coverage buffer (copied, owned by Lua), width, height, xoffset, yoffset; or nil
+-- for blank glyphs.
 function Lib.fontBitmap(font, codepoint, scale)
     local pointer = lib().katsa_font_bitmap(font, codepoint, scale, ints, ints + 1, ints + 2,
         ints + 3)

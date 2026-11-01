@@ -168,7 +168,9 @@ return function(T)
     local lit = 0
     for y = 0, 24 do
         for x = 0, 50 do
-            if tx:getPixel(x, y) > 0.5 then lit = lit + 1 end
+            if tx:getPixel(x, y) > 0.5 then
+                lit = lit + 1
+            end
         end
     end
     T.check(lit > 80 and tx:getPixel(60, 60) == 0, 'print draws glyph coverage')

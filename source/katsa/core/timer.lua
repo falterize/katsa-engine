@@ -33,7 +33,8 @@ else
     ]])
     local spec = ffi.new('katsa_timespec')
     local request = ffi.new('katsa_timespec')
-    -- CLOCK_MONOTONIC is 1 on Linux and Android; macOS uses 6 (CLOCK_UPTIME_RAW) semantics via 1 as well.
+    -- CLOCK_MONOTONIC is 1 on Linux and Android; macOS uses 6 (CLOCK_UPTIME_RAW) semantics via 1 as
+    -- well.
     local clock = 1
     local origin
     now = function()

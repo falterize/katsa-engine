@@ -1,4 +1,5 @@
--- Mesh objects: interleaved vertex buffers with optional index map, attached attributes and instancing.
+-- Mesh objects: interleaved vertex buffers with optional index map, attached attributes and
+-- instancing.
 local ffi = require('ffi')
 local Core = require('source.katsa.graphics.core')
 
@@ -13,7 +14,12 @@ Mesh.defaultFormat = {
 }
 
 local builtinLocation = { VertexPosition = 0, VertexTexCoord = 1, VertexColor = 2 }
-local drawModes = { fan = 'TRIANGLE_FAN', strip = 'TRIANGLE_STRIP', triangles = 'TRIANGLES', points = 'POINTS' }
+local drawModes = {
+    fan = 'TRIANGLE_FAN',
+    strip = 'TRIANGLE_STRIP',
+    triangles = 'TRIANGLES',
+    points = 'POINTS',
+}
 local usages = { stream = 'STREAM_DRAW', dynamic = 'DYNAMIC_DRAW', static = 'STATIC_DRAW' }
 
 local function isFormat(value)
@@ -319,8 +325,9 @@ function Methods:_bindAttributes(shader)
     local function bind(location, owner, attribute, step)
         gl.glBindBuffer(E.ARRAY_BUFFER, owner._buffer)
         local normalized = attribute.kind ~= 'float' and 1 or 0
-        gl.glVertexAttribPointer(location, attribute.count, glTypes[attribute.kind], normalized, owner._stride,
-            ffi.cast('void*', attribute.offset))
+        local offset = ffi.cast('void*', attribute.offset)
+        gl.glVertexAttribPointer(location, attribute.count, glTypes[attribute.kind], normalized,
+            owner._stride, offset)
         gl.glEnableVertexAttribArray(location)
         gl.glVertexAttribDivisor(location, step == 'perinstance' and 1 or 0)
         wanted[location] = true

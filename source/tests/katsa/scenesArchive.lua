@@ -14,7 +14,9 @@ return function(T)
     io.open(dir .. '/game/main.lua', 'w'):close()
     local pack = 'python3 tools/build/packageKatsa.py --source ' .. dir .. '/game '
     os.execute(pack .. '--output ' .. dir .. '/g.katsa >/dev/null')
-    os.execute('echo prefix > ' .. dir .. '/host; ' .. pack .. '--host ' .. dir .. '/host --output ' .. dir .. '/fused >/dev/null')
+    local host, fused = dir .. '/host', dir .. '/fused'
+    local command = 'echo prefix > ' .. host .. '; ' .. pack .. '--host ' .. host
+    os.execute(command .. ' --output ' .. fused .. ' >/dev/null')
 
     local native = require('source.katsa.core.native')
     native.addDirectory('build/native/linux')

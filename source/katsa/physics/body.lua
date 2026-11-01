@@ -364,13 +364,17 @@ function Body:isDestroyed()
 end
 
 function Body:destroy()
-    if self._destroyed then return false end
+    if self._destroyed then
+        return false
+    end
     assert(not self._world:isLocked(), 'Cannot destroy a body while the world is locked')
     for joint in pairs(self._joints) do
         joint._destroyed = true
         Registry.unregister(joint._id)
         for _, other in ipairs({ joint._a, joint._b }) do
-            if other ~= self and other then other._joints[joint] = nil end
+            if other ~= self and other then
+                other._joints[joint] = nil
+            end
         end
         self._world._joints[joint] = nil
     end

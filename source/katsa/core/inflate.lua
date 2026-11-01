@@ -73,7 +73,8 @@ local function fixedTables()
     return fixedLiteral, fixedDistance
 end
 
--- Raw deflate stream starting at byte position `start` (1-based). Returns the data and the next position.
+-- Raw deflate stream starting at byte position `start` (1-based). Returns the data and the next
+-- position.
 function Inflate.raw(data, start)
     local position, bitBuffer, bitCount = start or 1, 0, 0
     local length = #data

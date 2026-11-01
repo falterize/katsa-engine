@@ -55,9 +55,8 @@ local function rewriteAttributes(source, report)
         end
         local builtin = Translator.attributeLocations[name]
         if builtin then
-            report.errors[#report.errors + 1] = ('attribute %s redeclares a built-in attribute'):format(
-                name
-            )
+            local message = 'attribute %s redeclares a built-in attribute'
+            report.errors[#report.errors + 1] = message:format(name)
             return line .. '\n'
         end
         local location = next_location
@@ -130,8 +129,12 @@ local pixelBuiltins = table.concat({
 
 local defaultPosition = 'vec4 position(mat4 transformProjection, vec4 vertexPosition) {\n'
     .. '    return transformProjection * vertexPosition;\n}'
-local defaultEffect = 'vec4 effect(vec4 color, Image tex, vec2 textureCoords, vec2 screenCoords) {\n'
+local defaultEffect = 'vec4 effect(vec4 color, Image tex, vec2 textureCoords, '
+    .. 'vec2 screenCoords) {\n'
     .. '    return Texel(tex, textureCoords) * color;\n}'
+
+local effectCall = 'effect(VaryingColor, MainTex, VaryingTexCoord.st, '
+    .. 'love_PixelCoord(gl_FragCoord.xy));'
 
 local vertexMain = table.concat({
     'out vec4 VaryingTexCoord;',
@@ -151,14 +154,13 @@ local function pixelMain(targets)
     else
         outputs = 'layout(location = 0) out vec4 love_PixelColor;'
     end
+    local target = targets > 1 and 'love_Canvases[0]' or 'love_PixelColor'
     return table.concat({
         'in vec4 VaryingTexCoord;',
         'in vec4 VaryingColor;',
         outputs,
         'void main() {',
-        targets > 1
-                and '    love_Canvases[0] = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord(gl_FragCoord.xy));'
-            or '    love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord(gl_FragCoord.xy));',
+        '    ' .. target .. ' = ' .. effectCall,
         '}',
     }, '\n')
 end

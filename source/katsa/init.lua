@@ -115,7 +115,8 @@ function katsa.run()
     end
 end
 
--- Last-resort error handler: reports to stderr and exits with status 1. The engine installs a richer one.
+-- Last-resort error handler: reports to stderr and exits with status 1. The engine installs a
+-- richer one.
 function katsa.errorhandler(message)
     io.stderr:write(tostring(message), '\n', debug.traceback(), '\n')
     return function()
