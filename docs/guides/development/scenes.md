@@ -99,7 +99,7 @@ local Settings = {
 return Settings
 ```
 
-`layoutVersion = 3` validates all category directories and all five lifecycle
+`layoutVersion = 3` does not require the category directories to exist (empty folders are lost by Git and GitHub ZIPs); it validates the five lifecycle
 hooks. Version 2 archives retain their original root ui folder; archives without
 a layout version retain the earlier compatibility loader. New scenes use version 3.
 

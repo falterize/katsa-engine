@@ -50,11 +50,8 @@ function Tests:layout()
         count == #require('source.game.sceneCatalog').entries + 2,
         'All gameplay and interface scenes use folders'
     )
-    local ok, message = pcall(Package.open, fixtures .. 'missingCategory.zip')
-    self:check(
-        not ok and tostring(message):find('category directory'),
-        'Modern archives reject missing category directories'
-    )
+    local ok = pcall(Package.open, fixtures .. 'missingCategory.zip')
+    self:check(ok, 'Archives without empty category folders still open')
 end
 
 function Tests:systems()

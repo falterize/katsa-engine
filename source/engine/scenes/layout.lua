@@ -23,16 +23,8 @@ function Layout.validate(root, settings)
         settings.layoutVersion == nil or settings.layoutVersion == 2 or settings.layoutVersion == 3,
         'Unsupported scene layout version'
     )
-    if settings.layoutVersion then
-        for _, name in ipairs(Layout.directories) do
-            -- Earlier packages keep UI at their root; new scenes group all code under scripts.
-            local directory = settings.layoutVersion == 2 and name == 'scripts/ui' and 'ui' or name
-            assert(
-                love.filesystem.getInfo(root .. '/' .. directory, 'directory'),
-                'Scene category directory is missing: ' .. directory
-            )
-        end
-    end
+    -- Category folders are a convention, not a requirement: Git, GitHub ZIPs and many
+    -- archivers drop empty folders, so a scene must load without them.
 end
 
 function Layout.lifecycle(package)
