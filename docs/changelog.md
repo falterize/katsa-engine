@@ -4,7 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
-- Engine/scene `version`: `Version.parse/compare/compatible` in `source/engine/core/version.lua`; `project.lua` and scene `settings.lua` may declare the engine version they target, the scene loader reports mismatches (`package.compatibility`) for the future launcher.
+- Engine/scene `version`: `Version.parse/compare/compatible` in `source/engine/core/version.lua`; `project.lua` and scene `settings.lua` may declare the engine version they target (format `1.0.0a`, `a` = alpha), the scene loader reports mismatches (`package.compatibility`) for the future launcher.
 - Folder nodes: a scene node can be `nodes/<name>/init.lua` with sibling modules loaded through `require('scene.nodes.<name>.<part>')`.
 - `source/engine/net`: authoritative Server and predicting Client (fixed tick, snapshots, reconciliation, interpolation, remote events/functions, relevance, client authority, LAN server list). See [multiplayer](guides/development/multiplayer.md).
 - Plugin loader (`source/engine/plugins`) and the `pathfinding` plugin (`source/plugins/pathfinding`): A* on grids and waypoint graphs, smoothing, weights, path following. See [plugins](guides/development/plugins.md).
