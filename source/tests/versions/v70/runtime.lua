@@ -192,7 +192,7 @@ function T:update()
             lowgain = 1,
             highgain = 0.15,
         }
-        require('source.engine.audio.nodeEffects').apply(
+        require('source.engine.audio.effects.routing').apply(
             scene.audio,
             { enabled = true },
             { sources = { source } },

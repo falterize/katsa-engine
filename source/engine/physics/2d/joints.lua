@@ -1,3 +1,4 @@
+local Builders = require('source.engine.physics.2d.constraints')
 local Joints = {}
 local settings = {
     'enabled',
@@ -44,105 +45,21 @@ local function endpoint(attachment, physics)
 end
 
 local function create(self, a, b, x0, y0, x1, y1, angle)
-    local f, p, collide = self.physics.factor, katsa.physics, self.allowCollision == true
-    local r0, r1 = a.raw, b.raw
-    local joint, kind = nil, self.kind
-    x0, y0, x1, y1 = x0 * f, y0 * f, x1 * f, y1 * f
-    local ax, ay = math.cos(math.rad(angle)), math.sin(math.rad(angle))
-    if kind == 'Hinge' then
-        joint = p.newRevoluteJoint(r0, r1, x0, y0, x1, y1, collide)
-        joint:setLimits(math.rad(self.lowerLimit), math.rad(self.upperLimit))
-        joint:setLimitsEnabled(self.limitsEnabled == true)
-        joint:setMotorSpeed(math.rad(self.motorSpeed))
-        joint:setMaxMotorTorque(self.motorForce * f * f)
-        joint:setMotorEnabled(self.motorEnabled == true)
-    elseif kind == 'Prismatic' then
-        joint = p.newPrismaticJoint(r0, r1, x0, y0, x1, y1, ax, ay, collide)
-        joint:setLimits(self.lowerLimit * f, self.upperLimit * f)
-        joint:setLimitsEnabled(self.limitsEnabled == true)
-        joint:setMotorSpeed(self.motorSpeed * f)
-        joint:setMaxMotorForce(self.motorForce * f)
-        joint:setMotorEnabled(self.motorEnabled == true)
-    elseif kind == 'Weld' then
-        joint = p.newWeldJoint(r0, r1, x0, y0, x1, y1, collide)
-        joint:setFrequency(self.frequency)
-        joint:setDampingRatio(self.dampingRatio)
-    elseif kind == 'Rope' then
-        joint = p.newRopeJoint(
-            r0,
-            r1,
-            x0,
-            y0,
-            x1,
-            y1,
-            (self.maxLength or self.length or math.sqrt((x1 - x0) ^ 2 + (y1 - y0) ^ 2) / f) * f,
-            collide
-        )
-    elseif kind == 'Distance' or kind == 'Spring' then
-        joint = p.newDistanceJoint(r0, r1, x0, y0, x1, y1, collide)
-        if self.length then
-            joint:setLength(self.length * f)
-        end
-        joint:setFrequency(kind == 'Spring' and self.frequency or 0)
-        joint:setDampingRatio(self.dampingRatio)
-    elseif kind == 'Wheel' then
-        joint = p.newWheelJoint(r0, r1, x0, y0, x1, y1, ax, ay, collide)
-        joint:setSpringFrequency(self.frequency)
-        joint:setSpringDampingRatio(self.dampingRatio)
-        joint:setMotorSpeed(math.rad(self.motorSpeed))
-        joint:setMaxMotorTorque(self.motorForce * f * f)
-        joint:setMotorEnabled(self.motorEnabled == true)
-    elseif kind == 'Friction' then
-        joint = p.newFrictionJoint(r0, r1, x0, y0, x1, y1, collide)
-        joint:setMaxForce(self.maxForce * f)
-        joint:setMaxTorque(self.maxTorque * f * f)
-    elseif kind == 'Motor' then
-        joint = p.newMotorJoint(r0, r1, self.correctionFactor or 0.3, collide)
-        if self.linearOffset then
-            joint:setLinearOffset(self.linearOffset[1] * f, self.linearOffset[2] * f)
-        end
-        if self.angularOffset then
-            joint:setAngularOffset(math.rad(self.angularOffset))
-        end
-        joint:setMaxForce(self.maxForce * f)
-        joint:setMaxTorque(self.maxTorque * f * f)
-    elseif kind == 'Pulley' then
-        local g0 = assert(self.groundAnchor0, 'PulleyConstraint2D requires groundAnchor0')
-        local g1 = assert(self.groundAnchor1, 'PulleyConstraint2D requires groundAnchor1')
-        joint = p.newPulleyJoint(
-            r0,
-            r1,
-            g0[1] * f,
-            g0[2] * f,
-            g1[1] * f,
-            g1[2] * f,
-            x0,
-            y0,
-            x1,
-            y1,
-            self.ratio,
-            collide
-        )
-    elseif kind == 'Gear' then
-        assert(
-            self.joint0
-                and self.joint1
-                and self.joint0.physics == self.physics
-                and self.joint1.physics == self.physics,
-            'GearConstraint2D requires two local constraints'
-        )
-        assert(self.joint0.joint and self.joint1.joint, 'Gear source joints must be active')
-        joint = p.newGearJoint(self.joint0.joint, self.joint1.joint, self.ratio, collide)
-    elseif kind == 'Mouse' then
-        local target = self.target or { x1 / f, y1 / f }
-        joint = p.newMouseJoint(r1, target[1] * f, target[2] * f)
-        joint:setMaxForce(self.maxForce * f)
-        joint:setFrequency(self.frequency)
-        joint:setDampingRatio(self.dampingRatio)
-    else
-        error('Unsupported Constraint2D kind: ' .. tostring(kind))
-    end
-    return joint
+    local f = self.physics.factor
+    local rad = math.rad(angle)
+    return Builders.build(self, {
+        f = f,
+        p = katsa.physics,
+        r0 = a.raw,
+        r1 = b.raw,
+        x0 = x0 * f,
+        y0 = y0 * f,
+        x1 = x1 * f,
+        y1 = y1 * f,
+        ax = math.cos(rad),
+        ay = math.sin(rad),
+        collide = self.allowCollision == true,
+    })
 end
 
 function Joints.step(self)
