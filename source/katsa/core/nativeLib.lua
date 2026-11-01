@@ -16,6 +16,14 @@ int katsa_exe_path(char* buffer, int capacity);
 uint8_t* katsa_image_decode(const uint8_t* data, int size, int* width, int* height);
 const char* katsa_image_error(void);
 uint8_t* katsa_image_encode_png(const uint8_t* rgba, int width, int height, int* size);
+void* katsa_font_load(const uint8_t* data, int size);
+void katsa_font_free(void* font);
+float katsa_font_scale(void* font, float em_pixels);
+void katsa_font_vmetrics(void* font, int* ascent, int* descent, int* line_gap);
+int katsa_font_glyph_index(void* font, int codepoint);
+void katsa_font_hmetrics(void* font, int codepoint, int* advance, int* lsb);
+int katsa_font_kern(void* font, int cp1, int cp2);
+uint8_t* katsa_font_bitmap(void* font, int codepoint, float scale, int* w, int* h, int* xoff, int* yoff);
 int16_t* katsa_vorbis_decode(const uint8_t* data, int size, int* channels, int* rate, int* frames);
 ]])
 
@@ -144,6 +152,43 @@ function Lib.decodeVorbis(data)
     ffi.copy(buffer, pointer, count * 2)
     lib().katsa_free(pointer)
     return buffer, channels[0], rate[0], frames[0]
+end
+
+-- Fonts -----------------------------------------------------------------------------------------
+
+-- Returns a handle (freed on garbage collection) or nil, message.
+function Lib.fontLoad(data)
+    local handle = lib().katsa_font_load(data, #data)
+    if handle == nil then
+        return nil, 'Could not parse font data (only TrueType outlines are supported)'
+    end
+    return ffi.gc(handle, lib().katsa_font_free)
+end
+
+local ints = ffi.new('int[6]')
+
+function Lib.fontScale(font, em) return lib().katsa_font_scale(font, em) end
+function Lib.fontVMetrics(font)
+    lib().katsa_font_vmetrics(font, ints, ints + 1, ints + 2)
+    return ints[0], ints[1], ints[2]
+end
+function Lib.fontHasGlyph(font, codepoint) return lib().katsa_font_glyph_index(font, codepoint) ~= 0 end
+function Lib.fontHMetrics(font, codepoint)
+    lib().katsa_font_hmetrics(font, codepoint, ints, ints + 1)
+    return ints[0], ints[1]
+end
+function Lib.fontKern(font, a, b) return lib().katsa_font_kern(font, a, b) end
+-- Returns an 8-bit coverage buffer (copied, owned by Lua), width, height, xoffset, yoffset; or nil for blank glyphs.
+function Lib.fontBitmap(font, codepoint, scale)
+    local pointer = lib().katsa_font_bitmap(font, codepoint, scale, ints, ints + 1, ints + 2, ints + 3)
+    if pointer == nil then
+        return nil
+    end
+    local w, h = ints[0], ints[1]
+    local copy = ffi.new('uint8_t[?]', w * h)
+    ffi.copy(copy, pointer, w * h)
+    lib().katsa_free(pointer)
+    return copy, w, h, ints[2], ints[3]
 end
 
 return Lib
