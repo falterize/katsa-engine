@@ -1,5 +1,5 @@
 -- Development launcher: run a game with the Lua sources in this repository, without building a host.
---   luajit tools/dev/katsa.lua <game folder | game.katsa | game.love | game.zip>
+--   luajit tools/dev/katsa.lua <game folder | game.katsa | game.zip>
 -- Run it from the repository root so `source.katsa.*` resolves.
 package.path = './?.lua;./?/init.lua;' .. package.path
 local args = {}

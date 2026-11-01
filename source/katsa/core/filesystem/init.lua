@@ -1,6 +1,6 @@
 -- katsa.filesystem: virtual file system over directories and ZIP-style archives
--- (.katsa, .love, .zip, or an archive appended to the executable) plus a writable save directory.
--- It follows love.filesystem: reads search the save directory first and then the mounted sources;
+-- (.katsa, .zip, or an archive appended to the executable) plus a writable save directory.
+-- Reads search the save directory first and then the mounted sources;
 -- writes go only to the save directory; paths use '/' and may not contain '..'.
 local Archive = require('source.katsa.core.archive')
 local Native = require('source.katsa.core.native')

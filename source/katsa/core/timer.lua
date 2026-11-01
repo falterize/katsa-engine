@@ -1,4 +1,4 @@
--- katsa.timer: monotonic clock, frame delta and FPS (same behaviour as love.timer).
+-- katsa.timer: monotonic clock, frame delta and FPS.
 local ffi = require('ffi')
 
 local Timer = {}

@@ -1,4 +1,4 @@
--- katsa.mouse: pointer state (love.mouse compatible subset).
+-- katsa.mouse: pointer state.
 local Mouse = {}
 local platform
 

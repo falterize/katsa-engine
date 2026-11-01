@@ -1,4 +1,4 @@
--- katsa.event: a FIFO of events plus the pump that moves OS events into it (love.event compatible).
+-- katsa.event: a FIFO of events plus the pump that moves OS events into it.
 local Event = {}
 
 local queue, head, tail = {}, 1, 0

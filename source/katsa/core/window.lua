@@ -1,4 +1,4 @@
--- katsa.window: window creation and queries (love.window compatible subset).
+-- katsa.window: window creation and queries.
 local Window = {}
 
 local platform

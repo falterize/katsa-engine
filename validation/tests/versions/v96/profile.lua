@@ -48,7 +48,7 @@ function T:draw()
         return
     end
     self.done = true
-    print('LOVE', katsa.getVersion())
+    print('katsa', katsa.getVersion())
     print('GPU', katsa.graphics.getRendererInfo())
     print('JIT', jit.version, jit.status(), jit.arch)
     print(

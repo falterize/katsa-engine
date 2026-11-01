@@ -1,4 +1,4 @@
--- katsa.data: hashing, encoding, compression and binary packing (love.data compatible subset).
+-- katsa.data: hashing, encoding, compression and binary packing.
 local Data = {}
 
 for _, name in ipairs({ 'hash', 'encoding', 'byteData', 'pack' }) do

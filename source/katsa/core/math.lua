@@ -1,4 +1,4 @@
--- katsa.math: seeded random generators and polygon triangulation (love.math compatible subset).
+-- katsa.math: seeded random generators and polygon triangulation.
 -- The generator is xorshift128+ seeded through SplitMix64, as in LÖVE; exact sequences differ.
 local ffi = require('ffi')
 

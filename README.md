@@ -1,6 +1,6 @@
-# Katsa / LÖVE 11.5
+# Katsa
 
-A Lua 2D and 3D framework and interactive example collection built on LÖVE: scene nodes, materials, lighting, shadows, animation, Box2D/Jolt/Oimo physics, particles, audio and 2D/world-space UI. Workspace provides runtime inspection and editing; scenes are authored in code.
+A Lua 2D and 3D engine and interactive example collection on its own LuaJIT + OpenGL runtime (earlier versions used LÖVE as a wrapper): scene nodes, materials, lighting, shadows, animation, Box2D/Jolt/Oimo physics, particles, audio and 2D/world-space UI. Workspace provides runtime inspection and editing; scenes are authored in code.
 
 ## Run
 

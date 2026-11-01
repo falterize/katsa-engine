@@ -18,8 +18,7 @@ metrics. Font-size fitting and retained Text buffers remain cached. Layout can
 wrap slightly differently from older releases because it now measures the actual
 physical glyphs rather than rounded logical metrics.
 
-This avoids fractional-DPI metric/quad rounding in the legacy path; see the
-[LÖVE 11.5 Font implementation](https://github.com/love2d/love/blob/11.5/src/modules/graphics/Font.cpp).
+This avoids fractional-DPI metric/quad rounding in the legacy path.
 `ui:font(size)` remains available with its legacy native Font/DPI semantics for
 existing callers. New custom text rendering should use `ui:rasterFont(size)` and
 its returned scale, or delegate to TextLabel.

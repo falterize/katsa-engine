@@ -52,14 +52,14 @@ turns a LÖVE-dialect shader into separate vertex and pixel GLSL:
 * `varying`, `attribute`, `extern`, `Image`, `ArrayImage`, `CubeImage`, `VolumeImage`, `Texel` and `number`
   are supported. `#pragma language glsl1` additionally maps `texture2D`/`texture3D`/`textureCube`.
 * Built-ins: `VertexPosition`, `VertexTexCoord`, `VertexColor` (locations 0..2), `TransformMatrix`,
-  `ProjectionMatrix`, `TransformProjectionMatrix`, `NormalMatrix`, `ConstantColor`, `love_ScreenSize`,
-  `love_PixelCoord`, `love_PointSize`, `love_VertexID`, `love_InstanceID`.
+  `ProjectionMatrix`, `TransformProjectionMatrix`, `NormalMatrix`, `ConstantColor`, `katsa_ScreenSize`,
+  `katsa_PixelCoord`, `katsa_PointSize`, `katsa_VertexID`, `katsa_InstanceID`.
 * Custom `attribute` declarations get explicit locations from 3 in declaration order; the result carries
   `attributes[name] = { location, type }` and `attributeOrder`, so the vertex layout never depends on driver
   queries.
 * On `es` every stage declares `highp` defaults, which avoids vertex/pixel precision mismatches on GLES drivers.
   This replaces the former Android shader fix.
-* `love_Canvases[]` (multiple render targets) declares `renderTargets` outputs (default 4).
+* `katsa_Canvases[]` (multiple render targets) declares `renderTargets` outputs (default 4).
 * Errors return `nil, message`; driver compile errors are reported by `glShaderCheck`.
 
 Not translated: gamma correction of vertex colors (the window backend will decide the colour space) and the

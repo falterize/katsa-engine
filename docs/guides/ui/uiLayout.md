@@ -97,7 +97,6 @@ world panel keeps local UI coordinates through release; focus loss cancels it.
 Primary conventions:
 https://create.roblox.com/docs/reference/engine/enums/SizeConstraint
 https://create.roblox.com/docs/ui/position-and-size
-https://love2d.org/wiki/Texture:getDPIScale
 
 ## Reference semantics
 

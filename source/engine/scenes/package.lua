@@ -46,7 +46,7 @@ local function mountArchive(source)
         local ok, message = katsa.filesystem.mount(data, archiveName, mount, true)
         assert(
             ok,
-            'Cannot mount scene archive; use ZIP/.love or a format supported by this LÖVE build: '
+            'Cannot mount scene archive; use ZIP/.katsa or a format supported by this katsa build: '
                 .. tostring(message)
         )
         local valid, root = pcall(sceneRoot, mount)
