@@ -102,6 +102,11 @@ function Shape:getVertexCount()
     return B().kb2_shape_points(self._h, buffer, 8)
 end
 
+-- Polygons are validated when created, so an existing shape is always valid.
+function Shape:validate()
+    return true
+end
+
 function Shape:getPoints2()
     return self:getPoints()
 end

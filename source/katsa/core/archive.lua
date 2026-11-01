@@ -103,15 +103,23 @@ function Archive:_register(name, isDirectory)
     end
 end
 
+local SEVEN_ZIP_SIGNATURE = '7z\188\175\39\28'
+
 function Archive.fromFile(path, nativeLib)
     local kind, size = nativeLib.stat(path)
     assert(kind == 'file', 'Archive not found: ' .. path)
+    if nativeLib.readRange(path, 0, 6) == SEVEN_ZIP_SIGNATURE then
+        return require('source.katsa.core.sevenZip').new(nativeLib.readRange(path, 0, size), path)
+    end
     return Archive.new(function(offset, length)
         return nativeLib.readRange(path, offset, length)
     end, size, path)
 end
 
 function Archive.fromString(data, label)
+    if sub(data, 1, 6) == SEVEN_ZIP_SIGNATURE then
+        return require('source.katsa.core.sevenZip').new(data, label)
+    end
     return Archive.new(function(offset, length)
         return sub(data, offset + 1, offset + length)
     end, #data, label or 'memory')

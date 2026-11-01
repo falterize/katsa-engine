@@ -1,6 +1,5 @@
 -- Shared helpers for physics classes: class creation with LÖVE-style type()/typeOf(), liveness
--- checks
--- and ordered access to object sets.
+-- checks and ordered access to object sets.
 local Object = {}
 
 function Object.class(name)
@@ -15,7 +14,7 @@ function Object.class(name)
     end
 
     function class:release()
-        return self:destroy()
+        return self.destroy and self:destroy() or true
     end
     return class
 end

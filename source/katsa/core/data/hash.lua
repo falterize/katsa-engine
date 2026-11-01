@@ -12,6 +12,8 @@ local lshift = bit.lshift
 local tobit = bit.tobit
 local char, byte, rep = string.char, string.byte, string.rep
 
+local Input = require('source.katsa.core.data.input')
+
 local M = {}
 
 local function bigEndian32(value)
@@ -197,6 +199,7 @@ local hashes = {
 
 -- Returns the binary digest. sha384/sha512 are not provided.
 function M.hash(algorithm, message)
+    message = Input.toString(message)
     local implementation = hashes[algorithm]
     assert(implementation, 'Unsupported hash algorithm: ' .. tostring(algorithm))
     assert(type(message) == 'string', 'hash expects a string')

@@ -44,7 +44,9 @@ local function decode(text, i)
     elseif lead < 0x80 then
         return lead, 1
     end
-    local length = (lead >= 0xF0 and lead <= 0xF4 and 4) or (lead >= 0xE0 and 3) or (lead >= 0xC2 and lead < 0xE0 and 2)
+    local length = (lead >= 0xF0 and lead <= 0xF4 and 4)
+        or (lead >= 0xE0 and 3)
+        or (lead >= 0xC2 and lead < 0xE0 and 2)
     if not length then
         return nil
     end
