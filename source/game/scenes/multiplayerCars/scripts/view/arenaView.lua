@@ -52,6 +52,51 @@ local function groundCollider()
     return { shape = 'Mesh', vertices = vertices, indices = indices }
 end
 
+-- The car park: boxes for the deck, curbs, columns and a ramp. `solid` builds Body3D colliders,
+-- otherwise the visible meshes. One list of boxes keeps both in step.
+local function garageBoxes()
+    local g = Arena.garage
+    local r = g.ramp
+    local boxes = {}
+    local function box(name, cx, cy, cz, sx, sy, sz, rotation, color)
+        boxes[#boxes + 1] = { name, { cx, cy, cz }, { sx, sy, sz }, rotation, color }
+    end
+    local width, depth = g.x1 - g.x0, g.z1 - g.z0
+    local centerX, centerZ = (g.x0 + g.x1) / 2, (g.z0 + g.z1) / 2
+    local grey, dark = { 0.5, 0.5, 0.52 }, { 0.38, 0.38, 0.4 }
+    box('GarageDeck', centerX, g.deckY - g.thickness / 2, centerZ, width, g.thickness, depth, nil, grey)
+    local c = g.curb
+    local top = g.deckY + c / 2
+    box('GarageCurbS', centerX, top, g.z0 + 0.25, width, c, 0.5, nil, dark)
+    box('GarageCurbN', centerX, top, g.z1 - 0.25, width, c, 0.5, nil, dark)
+    box('GarageCurbW', g.x0 + 0.25, top, centerZ, 0.5, c, depth, nil, dark)
+    -- The east curb has an opening where the ramp arrives.
+    local south = (r.z0 - g.z0)
+    local north = (g.z1 - r.z1)
+    box('GarageCurbES', g.x1 - 0.25, top, g.z0 + south / 2, 0.5, c, south, nil, dark)
+    box('GarageCurbEN', g.x1 - 0.25, top, g.z1 - north / 2, 0.5, c, north, nil, dark)
+    for index, column in ipairs(Arena.garageColumns()) do
+        box('GarageColumn' .. index, column[1], (g.deckY - g.thickness) / 2, column[2], 1, g.deckY - g.thickness, 1, nil, dark)
+    end
+    -- The ramp: a slab tilted so its top surface runs from the ground (x1) up to the deck (x0).
+    local length, rise = r.x1 - r.x0, g.deckY
+    local angle = math.atan2(rise, length)
+    local slab = math.sqrt(length * length + rise * rise)
+    local t = 0.4
+    box(
+        'GarageRamp',
+        (r.x0 + r.x1) / 2 - t / 2 * math.sin(angle),
+        rise / 2 - t / 2 * math.cos(angle),
+        (r.z0 + r.z1) / 2,
+        slab,
+        t,
+        r.z1 - r.z0,
+        { 0, 0, math.deg(angle) },
+        grey
+    )
+    return boxes
+end
+
 -- Static physics for the terrain and obstacles. Skipped when the scene has no Jolt world.
 function ArenaView.buildPhysics(scene)
     local world = scene.world
@@ -65,6 +110,15 @@ function ArenaView.buildPhysics(scene)
             size = { 1, 1, 1 },
             collider = groundCollider(),
         })
+        for _, box in ipairs(garageBoxes()) do
+            world:create('Body3D', {
+                name = box[1] .. 'Body',
+                bodyType = 'Static',
+                position = box[2],
+                size = box[3],
+                rotation = box[4],
+            })
+        end
         for index, obstacle in ipairs(Arena.obstacles) do
             local height = 3
             if obstacle.kind == 'box' then
@@ -133,6 +187,16 @@ function ArenaView.build(scene)
                 color = { 0.6, 0.35, 0.3 },
             })
         end
+    end
+    for _, box in ipairs(garageBoxes()) do
+        world:create('Mesh3D', {
+            name = box[1],
+            kind = 'cube',
+            position = box[2],
+            size = box[3],
+            rotation = box[4],
+            color = box[5],
+        })
     end
     ArenaView.buildPhysics(scene)
     world:create('DirectionalLight3D', {

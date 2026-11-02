@@ -93,13 +93,13 @@ return function(T)
     for _ = 1, 120 do
         crash:step({ throttle = 1 }, 1 / 60)
         local hits = Vehicle.Collision.resolveStatic(crash, {
-            { kind = 'box', x = 0, z = 30, halfX = 5, halfZ = 1 },
+            { kind = 'box', x = 0, z = 70, halfX = 5, halfZ = 1 },
         })
         for _, hit in ipairs(hits) do
             impacts[#impacts + 1] = hit
         end
     end
-    T.check(#impacts > 0 and crash.z < 30 - 1 + 0.01, 'vehicle: a wall stops the car')
+    T.check(#impacts > 0 and crash.z < 70 - 1 + 0.01, 'vehicle: a wall stops the car')
     T.check(impacts[1].z > 0, 'vehicle: front impact is at the front of the car')
 
     local dents = Vehicle.Deformation.new()

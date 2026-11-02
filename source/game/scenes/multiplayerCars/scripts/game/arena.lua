@@ -77,11 +77,50 @@ Arena.obstacles = {
     { kind = 'circle', x = 0, z = 0, radius = 3 },
 }
 
+-- A two-level car park in the south-west corner: a deck on columns and a ramp up from the east.
+-- Heights are absolute (the terrain there is almost flat). Everything below is pure data and
+-- functions, shared by the view, the physics, the bot's navigation and the tests.
+Arena.garage = {
+    deckY = 4.5, -- the deck surface
+    thickness = 0.4,
+    x0 = -58,
+    x1 = -26,
+    z0 = -58,
+    z1 = -38,
+    curb = 0.7,
+    -- The ramp climbs toward -x: ground level at x1 = -10, deck level at x0 = -26.
+    ramp = { x0 = -26, x1 = -10, z0 = -52, z1 = -46 },
+    columnSpacing = 8,
+}
+
+-- Height of the walkable surface above (x, z) when it is the ramp or the deck, else nil.
+function Arena.deckHeight(x, z)
+    local g = Arena.garage
+    local r = g.ramp
+    if x >= g.x0 and x <= g.x1 and z >= g.z0 and z <= g.z1 then
+        return g.deckY
+    end
+    if x > r.x0 and x <= r.x1 and z >= r.z0 and z <= r.z1 then
+        return g.deckY * math.max(0, math.min(1, (r.x1 - x) / (r.x1 - r.x0)))
+    end
+end
+
+-- Column centers under the deck.
+function Arena.garageColumns()
+    local g, columns = Arena.garage, {}
+    for x = g.x0 + 4, g.x1 - 4, g.columnSpacing do
+        for z = g.z0 + 4, g.z1 - 4, g.columnSpacing do
+            columns[#columns + 1] = { x, z }
+        end
+    end
+    return columns
+end
+
 -- Spawn points around the arena for players; the first is also used for the bot's home.
 Arena.spawns = {
     { -40, 40, 135 },
     { 40, -40, 315 },
-    { -40, -45, 45 },
+    { -12, -40, 0 },
     { 45, 45, 225 },
     { 0, -45, 0 },
     { 0, 45, 180 },
@@ -114,6 +153,74 @@ function Arena.buildGrid(Grid, margin)
         return false
     end)
     return grid
+end
+
+-- Two-floor navigation for the bot: floor 1 is the ground (under the deck too), floor 2 the deck
+-- and the ramp. `margin` keeps routes away from walls, curbs and ramp edges.
+function Arena.buildNav(Pathfinding, margin)
+    margin = margin or 2.4
+    local g = Arena.garage
+    local r = g.ramp
+    local cells = math.floor(Arena.size / Arena.cellSize)
+    local nav = Pathfinding.Layered.new(cells, cells, {
+        levels = 2,
+        cellSize = Arena.cellSize,
+        origin = { -half, -half },
+    })
+    local columns = Arena.garageColumns()
+    local function groundBlocked(x, z)
+        if Arena.slope(x, z) > Arena.maxDriveSlope then
+            return true
+        end
+        for _, obstacle in ipairs(Arena.obstacles) do
+            if obstacle.kind == 'circle' then
+                local dx, dz = x - obstacle.x, z - obstacle.z
+                local reach = obstacle.radius + margin
+                if dx * dx + dz * dz < reach * reach then
+                    return true
+                end
+            elseif
+                math.abs(x - obstacle.x) < obstacle.halfX + margin
+                and math.abs(z - obstacle.z) < obstacle.halfZ + margin
+            then
+                return true
+            end
+        end
+        -- The ramp is solid at ground level; the columns hold the deck up.
+        if x > r.x0 - margin and x < r.x1 + 0.5 and z > r.z0 - margin and z < r.z1 + margin then
+            return true
+        end
+        for _, column in ipairs(columns) do
+            if math.abs(x - column[1]) < 0.5 + margin and math.abs(z - column[2]) < 0.5 + margin then
+                return true
+            end
+        end
+        return false
+    end
+    local function deckBlocked(x, z)
+        local inside = x > g.x0 + margin
+            and x < g.x1 - margin
+            and z > g.z0 + margin
+            and z < g.z1 - margin
+        -- The ramp corridor, from its foot to the opening in the curb.
+        local corridor = x > g.x1 - margin - 1
+            and x < r.x1
+            and z > r.z0 + 1.2
+            and z < r.z1 - 1.2
+        return not (inside or corridor)
+    end
+    nav:bake(function(level, x, z)
+        return level == 1 and groundBlocked(x, z) or level == 2 and deckBlocked(x, z)
+    end, function(level, x, z)
+        if level == 1 then
+            return Arena.ground(x, z)
+        end
+        return Arena.deckHeight(x, z) or g.deckY
+    end)
+    local centerZ = (r.z0 + r.z1) / 2
+    -- Cell centers sit at odd coordinates; the foot of the ramp joins the ground beside it.
+    nav:link(1, r.x1 + 1, centerZ, 2, r.x1 - 1, centerZ)
+    return nav
 end
 
 return Arena
