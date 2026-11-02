@@ -145,7 +145,38 @@ local function graphChecks(T)
     T.check(between ~= nil and #between.points == 3, 'pathfinding: graph path between points')
 end
 
+local function layeredChecks(T)
+    -- Two floors of 20x10 cells; floor 2 is a deck at height 5, reached by one ramp at the east end.
+    local nav = P.Layered.new(20, 10, { levels = 2, cellSize = 1, origin = { 0, 0 } })
+    nav:bake(function(level, x, z)
+        if level == 1 then
+            return x > 13 and x < 19 and z > 4 and z < 7 -- the ramp footprint is not ground
+        end
+        return x < 4 or z > 8 -- the deck covers x 4..20, not the ground-level corner
+    end, function(level, x)
+        if level == 1 then
+            return 0
+        end
+        return x > 14 and 5 * math.min(1, (19 - x) / 5) or 5
+    end)
+    nav:link(1, 19.5, 5.5, 2, 18.5, 5.5)
+    local path = nav:findPath(1.5, 0, 5.5, 8.5, 5, 5.5)
+    T.check(path ~= nil, 'pathfinding: a route to the upper floor exists')
+    local climbs, y = 0, 0
+    for _, point in ipairs(path and path.points or {}) do
+        climbs = climbs + (point[2] > y + 0.5 and 1 or 0)
+        y = point[2]
+    end
+    T.check(path and path.points[#path.points][2] == 5, 'pathfinding: the route ends at deck height')
+    T.check(path and #path.levels >= 2 and path.levels[1] == 1 and path.levels[#path.levels] == 2,
+        'pathfinding: the route switches floors')
+    T.check(nav:levelAt(8.5, 5, 5.5) == 2 and nav:levelAt(8.5, 0, 5.5) == 1,
+        'pathfinding: the floor is chosen by height')
+    T.check(nav:findPath(1.5, 0, 5.5, 8.5, 5, 9.5) == nil, 'pathfinding: a blocked deck goal has no route')
+end
+
 return function(T)
+    layeredChecks(T)
     gridChecks(T)
     worldChecks(T)
     randomChecks(T)

@@ -438,6 +438,20 @@ function Tests:draw()
             ('the character rides a moving body (%.1f m of %.1f m)'):format(carried, platformMoved)
         )
         platform:destroy()
+        -- The car park: the deck and the ramp are solid, at the heights the navigation assumes.
+        local Arena = require('source.game.scenes.multiplayerCars.scripts.game.arena')
+        local g = Arena.garage
+        local out = {}
+        local deck = session.scene.physics:raycast({ -42, 20, -48 }, { -42, -5, -48 }, nil, out)
+        self:check(
+            deck and math.abs(deck.position[2] - g.deckY) < 0.05,
+            'the car park deck is solid at its height (' .. tostring(deck and deck.position[2]) .. ')'
+        )
+        local ramp = session.scene.physics:raycast({ -18, 20, -49 }, { -18, -5, -49 }, nil, {})
+        self:check(
+            ramp and math.abs(ramp.position[2] - Arena.deckHeight(-18, -49)) < 0.12,
+            'the ramp surface matches its height function (' .. tostring(ramp and ramp.position[2]) .. ' vs ' .. Arena.deckHeight(-18, -49) .. ')'
+        )
         -- A hard hit beside a wheel tears it off on the server...
         local hitId, hitCar
         for netId, candidate in pairs(session.server.cars) do
