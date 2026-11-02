@@ -53,7 +53,7 @@ function Tests:draw()
     self.frame = self.frame + 1
     local phase = math.floor((self.frame - 1) / PHASE) + 1
     local step = (self.frame - 1) % PHASE + 1
-    if phase > 2 then
+    if phase > 3 then
         print('PASSED ' .. self.count .. ' v108.4 render checks')
         return katsa.event.quit()
     end
@@ -61,7 +61,7 @@ function Tests:draw()
         if self.host then
             self.host:release()
         end
-        open(self, phase == 1 and 'graphicsLab' or 'particles')
+        open(self, phase == 1 and 'graphicsLab' or phase == 2 and 'particles' or 'objects')
         if phase == 2 then
             self.host.world.environment.shadows.enabled = true
             for _, emitter in ipairs(self.host.demo.emitters or {}) do
@@ -70,6 +70,15 @@ function Tests:draw()
         end
     end
     local host = self.host
+    if phase == 3 then
+        -- The depth prepass only runs without MSAA; it writes a depth-only target.
+        host.world.environment.render.msaa = 0
+        if step > 20 then
+            local p = host.camera.position
+            host.camera.position = { p[1] + 1.5, p[2], p[3] + 0.5 }
+            host.camera.rotation = { host.camera.rotation[1], host.camera.rotation[2] + 0.6, 0 }
+        end
+    end
     host:update(1 / 60, 1 / 60)
     host:draw()
     if phase == 1 then
@@ -90,6 +99,17 @@ function Tests:draw()
             self:check(
                 on > off * 0.8,
                 string.format('shadows do not darken the whole floor (%.1f vs %.1f lit)', on, off)
+            )
+        end
+    elseif phase == 3 then
+        if step == 50 then
+            self:measure('moving')
+        elseif step == 54 then
+            local r = host.world._activeRenderer
+            self:check(r.depthPrepassActive, 'objects scene runs the depth prepass without MSAA')
+            self:check(
+                (self.luma.moving or 255) < 125,
+                string.format('moving camera keeps the cubes and floor visible (luma %.1f)', self.luma.moving or -1)
             )
         end
     elseif step == 40 then
