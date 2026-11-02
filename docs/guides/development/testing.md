@@ -164,5 +164,7 @@ libEGL/Mesa; GL checks are skipped with a notice when no EGL driver exists. See
 `affects3D` rendering and Shader3D scope rules. Constraint families are exercised by `--test-v103` on both physics
 backends, including SliderConstraint3D.
 
+`--test-v108.5` covers the front-face winding state (applied even with culling off).
+
 `--test-v108.4.shadow` is a diagnostic, not a test: it captures 16 consecutive frames of a scene
 (`KATSA_SHOT=<dir>`, `KATSA_SCENE=<id>`, default `animationPhysicsLab`) so shadow stability can be compared frame to frame.

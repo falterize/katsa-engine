@@ -1,10 +1,10 @@
 -- Engine version. `release` is the version number scenes and projects compare against; `value`
--- stays the release tag used for builds and file names ("v108.4").
+-- stays the release tag used for builds and file names ("v108.5").
 -- Format: MAJOR.MINOR.PATCH with an optional stage letter: 1.0.0a (alpha), 1.0.0b (beta),
 -- 1.0.0rc (release candidate); no letter means a stable release.
 -- Projects and scenes may declare the engine they were made for (`version = '1.0.0a'`);
 -- compatible() tells a launcher or the loader whether that declaration matches this engine.
-local Version = { name = 'Katsa', value = 'v108.4', release = '1.0.0a' }
+local Version = { name = 'Katsa', value = 'v108.5', release = '1.0.0a' }
 
 local STAGES = { a = 1, b = 2, rc = 3, [''] = 4 }
 Version.stageNames = { a = 'alpha', b = 'beta', rc = 'release candidate', [''] = 'stable' }
