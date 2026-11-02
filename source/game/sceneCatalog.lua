@@ -29,6 +29,7 @@ local Catalog = {
         { id = 'collisionBox', path = 'source/game/scenes/collisionBox' },
         { id = 'surfaceGallery', path = 'source/game/scenes/surfaceGallery' },
         { id = 'uiGallery', path = 'source/game/scenes/uiGallery' },
+        { id = 'launcherShowcase', path = 'source/game/scenes/launcherShowcase' },
         { id = 'audioNodes', path = 'source/game/scenes/audioNodes' },
         { id = 'multiplayerCars', path = 'source/game/scenes/multiplayerCars' },
         { id = 'starterGame', path = 'source/game/scenes/starterGame', standalone = true },

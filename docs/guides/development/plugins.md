@@ -24,6 +24,13 @@ Plugins.manifest('pathfinding')                      -- manifest table, or nil
 The manifest `name` must equal the folder name. Plugins are ordinary Lua packages inside the
 project: they are packed into `.katsa` archives and fused executables with everything else.
 
+## Bundled plugins
+
+| Plugin | What it adds |
+| --- | --- |
+| `pathfinding` | A* on grids, graphs and multi-floor maps, the `NavMap` node, a debug view |
+| `uiStyler` | UI style sheets, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
+
 ## Enabling a plugin in a scene
 
 List the plugin in the scene's `settings.lua`:

@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- New plugin `uiStyler` (style sheets by class / tag / name with `$token` values, `corner` and `stroke` pseudo properties, themes switchable at runtime; see `docs/guides/ui/uiStyler.md`) and the scene `launcherShowcase` (a launcher window in dark and light themes with an icon toolbar, grouped list, action panel, status bar and a background picture).
 - Pathfinding debug view: per-map cell data (free flag, height) is cached by map revision, corners are projected without per-frame tables, and runs of neighbouring free cells are drawn as one segment (about 3x fewer line calls, identical picture; segments behind the camera fall back to per-cell lines).
 - multiplayerCars voice meters: a quieter packet after a loud one no longer left the meter fading to zero while the person kept talking (the old peak kept its timestamp), and speakers whose position is unknown (driving a car) now show their meter too.
 - Stats export without the panel: **F6** (also *Export Stats CSV* in the F4 menu, `statistics:export(seconds)`) saves the last 30 s of the background-recorded histories.
