@@ -15,7 +15,9 @@ Shader.propertySchema = {
 function Shader.initialize(self)
     self.enabled = self.enabled ~= false
     self.shaderPath = self.shaderPath or ''
-    self.shaderLayer = self.shaderLayer or 'Default'
+    if self.shaderLayer == nil or self.shaderLayer == 'Default' then
+        self.shaderLayer = 'Default3D'
+    end
     self.zIndex = self._zIndexAuthored and self.zIndex or self.order or self.zIndex or 0
     self.order = nil
     self.uniforms = self.uniforms or {}

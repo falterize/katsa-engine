@@ -54,7 +54,21 @@ function World3D.new(resources, lighting, options)
         layers = { default = 1, player = 2 },
     }, World3D)
     self.animations = require('source.engine.animation.scheduler').new()
-    self.shaderLayers = require('source.engine.shaders.layers').new()
+    self.shaderLayers = require('source.engine.shaders.layers').new(function(registry, info)
+        -- Renames and removals reach every shader node of this world, like layer groups.
+        if not info or not self.root then
+            return
+        end
+        for _, node in ipairs(self.root:getDescendants()) do
+            if node.shaderLayer and (node._world or node._sceneWorld) == self then
+                if info.renamed and node.shaderLayer == info.renamed[1] then
+                    node.shaderLayer = info.renamed[2]
+                elseif info.removed and node.shaderLayer == info.removed then
+                    node.shaderLayer = node:isA('Shader2D') and 'Default2D' or 'Default3D'
+                end
+            end
+        end
+    end)
     self:initializeLayerGroups()
     self.root._world = self
     self.root._sceneWorld = self

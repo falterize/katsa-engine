@@ -89,7 +89,7 @@ function Interface.create(self)
     local world = self.preview._world
     world.shaderLayers:add('Static', 10)
     world.shaderLayers:add('Pixel', 20)
-    world.shaderLayers:setSuppressed('Pixel', 'Default', true)
+    world.shaderLayers:setInteracts('Pixel', 'Default3D', false)
     self.default = world:create('Shader3D', {
         name = 'DefaultTint',
         shaderPath = 'assets/shaders/examples/tint3D.glsl',

@@ -3,13 +3,15 @@
 ```lua
 world.shaderLayers:add('Static', 10)
 world.shaderLayers:add('Pixel', 20)
-world.shaderLayers:setSuppressed('Pixel', 'Default', true)
+world.shaderLayers:setInteracts('Pixel', 'Default3D', false)
 ```
 
-Default has priority 0; custom priorities are positive. A higher enabled effect
-suppresses selected lower layers within its own scope/rectangle. Disabling the
-upper effect restores lower effects. Suppression is directed, not a collision matrix.
-Workspace's Shaders button creates layers, edits priority and toggles suppression.
+Shader layers work like layer groups: one symmetric interaction matrix. Every world starts with
+`Default2D` (Shader2D nodes) and `Default3D` (Shader3D nodes and the 3D render); they do not interact
+at first. New layers interact with every existing layer. Priority (Default layers 0, custom positive)
+orders effects. Two enabled effects whose layers do not interact cannot combine on the same object or
+region: the higher-priority one wins and the lower one is suppressed until it is disabled.
+The Workspace's Shaders button opens the matrix editor (add, rename, delete, priority, table or list).
 Camera/object visibility and physics collision groups remain separate systems.
 
 ## Shader2D
@@ -37,14 +39,13 @@ Descendants are included regardless of their local child ordering.
 
 ### Scope: 2D by default, 3D on request
 
-A Shader2D processes interface pixels only. The 3D render underneath (the world drawn behind the
-UI, or the UI background of a ViewportFrame owner) is left untouched, so a CRT frame over a menu does not
-filter the game behind it. Set `affects3D = true` to include the 3D render in the snapshot the effect
-reads; the processed result then replaces the region, 3D pixels included. Full-screen filters over the
-game view (the Stare Shooter retro screen, the platformer speed blur) enable it explicitly.
-`affects3D` is a per-node property shown in the inspector; it does not change the shader layer rules
-below. In v108 and earlier every Shader2D processed the 3D render; existing scenes that relied on it need
-`affects3D = true`.
+A Shader2D processes interface pixels only, unless its layer interacts with `Default3D`. Then the 3D
+render underneath (the world behind the UI, or the UI background of a ViewportFrame owner) is part of
+the snapshot the effect reads, and the processed result replaces the region, 3D pixels included.
+Give full-screen filters over the game view (the Stare Shooter retro screen, the platformer speed
+blur) their own layer, e.g. `Screen`, which interacts with Default3D by default, or turn on the
+`Default2D`/`Default3D` checkbox to let every Default2D effect process 3D. The old per-node
+`affects3D` property is gone.
 
 BackgroundTransparency controls only the background. ShaderTransparency=0 applies
 the effect fully; 1 bypasses it. Intermediate values mix original and processed
