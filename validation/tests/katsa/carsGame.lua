@@ -194,6 +194,21 @@ return function(T)
         one.client:remote('voice'):fireServer(string.rep('x', 5000))
         run(20)
         T.check(true, 'carsGame: oversized voice packets are dropped')
+        -- Meters: a loud packet shows up for the listener (in range), then decays to nothing.
+        listener.positionOf = function()
+            return 5, 0, 0
+        end
+        listener.listenerAt = function()
+            return 0, 0, 0
+        end
+        one.client:remote('voice'):fireServer(MuLaw.encode(pcm, #pcm))
+        run(30)
+        local meters = listener:getMeters()
+        T.check(#meters == 1 and meters[1].level > 0.1, 'carsGame: a speaker in range has a voice meter')
+        listener.positionOf = function()
+            return 500, 0, 0
+        end
+        T.check(#listener:getMeters() == 0, 'carsGame: speakers beyond the hearing range show no meter')
     end
 
     -- Nicknames are unique, ignoring case.

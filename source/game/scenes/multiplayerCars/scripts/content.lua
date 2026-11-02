@@ -88,6 +88,9 @@ function Session.new(scene)
         menu = function()
             self.scene.input:toggleMenu()
         end,
+        chat = function()
+            self.scene.input:openChat()
+        end,
         zoom = function(amount)
             self.orbit:zoom(amount)
         end,
@@ -275,6 +278,10 @@ function Session:startClient(address, port, name)
     end)
     self.client = client
     self.voice = Voice.new(client, {
+        listenerAt = function()
+            local position = self.camera.position
+            return position[1], position[2], position[3]
+        end,
         positionOf = function(id)
             for _, walker in pairs(client.walkers) do
                 if walker.playerId == id then
@@ -297,6 +304,7 @@ function Session:host(name, port)
             name = (name or 'Player') .. "'s game",
             world = self.scene.world,
             hostsPlayer = true,
+            profiler = self.scene.manager.profiler,
         })
         self.server:start()
     end)
@@ -479,6 +487,9 @@ end
 function Session:onMenuToggled(open)
     self.hud:setMenuOpen(open)
     self.social:setMenuOpen(open)
+    if open and self.voice then
+        self.social:setMicStatus(self.voice:getStatus())
+    end
     self:refreshPlayers()
 end
 
@@ -492,17 +503,25 @@ function Session:updateVoice(dt)
     local held = not input.touchDevice
         and input:playing()
         and katsa.keyboard.isDown(input.talkKey or 'v')
+    if held and not self.micWarned and voice:getStatus() ~= 'ready' then
+        self.micWarned = true -- once per session: the reason stays in the player list
+        self.hud:flash('Voice chat: ' .. voice:getStatus())
+    end
     voice:setTalking(held == true)
     voice:update(dt)
-    local names = {}
-    for _, id in ipairs(voice:getSpeaking()) do
-        for _, player in ipairs(self.client:getPlayers()) do
-            if player.id == id then
-                names[#names + 1] = player.name
+    local meters = {}
+    local players = self.client:getPlayers()
+    for _, meter in ipairs(voice:getMeters()) do
+        for _, player in ipairs(players) do
+            if player.id == meter.id then
+                meter.name = player.name
             end
         end
+        if meter.mine or meter.name then
+            meters[#meters + 1] = meter
+        end
     end
-    self.social:setSpeaking(names, voice:isTalking(), voice.capture ~= false)
+    self.social:setSpeaking(meters)
 end
 
 -- Rebuilds the player list (names, [HOST] tag, Kick buttons for the host).
@@ -515,19 +534,29 @@ end
 
 -- Physics of the hosted or driven cars and the network traffic of the server and client.
 function Session:updateNetwork(dt)
+    local profiler = self.scene.manager.profiler
+    local stamp = profiler:begin()
     if self.server then
         -- The hosted cars are rigid bodies: step the world, then let the server read them.
         self.scene.physics:update(dt)
+        profiler:finish('Cars: physics', stamp)
+        stamp = profiler:begin()
         self.server:update(dt)
+        profiler:finish('Cars: server', stamp)
     elseif self.client and self.client:simulates() then
         -- A joined player simulates the car it drives and keeps stand-ins for the others.
         self.scene.physics:update(dt)
         self.client:afterPhysics()
+        profiler:finish('Cars: physics', stamp)
     end
+    stamp = profiler:begin()
     if self.client then
         self.client:update(dt)
     end
+    profiler:finish('Cars: client', stamp)
+    stamp = profiler:begin()
     self:updateRenderPoses()
+    profiler:finish('Cars: render poses', stamp)
 end
 
 -- Bodies simulated by this process are drawn between their last two physics steps.

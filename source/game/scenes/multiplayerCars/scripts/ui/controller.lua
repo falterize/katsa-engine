@@ -23,7 +23,6 @@ function Social.create(scene, callbacks)
         position = { 0, 0, 0, 0 },
         size = { 1, 0, 1, 0 },
         backgroundTransparency = 1,
-        interactable = false, -- the root never blocks the game; its children opt in
     }, ui.content)
     self.chat = styled(ui, ui:container({
         name = 'ChatPanel',
@@ -31,7 +30,6 @@ function Social.create(scene, callbacks)
         size = { 0, 380, 0, 180 },
         backgroundColor = PANEL,
         backgroundTransparency = 0.25,
-        interactable = false,
     }, self.root))
     self.log = ui:text({
         position = { 0, 12, 0, 8 },
@@ -63,15 +61,6 @@ function Social.create(scene, callbacks)
     }, self.root)
     ui:create('UICorner', { radius = { 0, 8 } }, self.input)
 
-    self.speaking = ui:text({
-        position = { 0, 16, 0, 130 },
-        size = { 0, 360, 0, 28 },
-        text = '',
-        fontSize = 16,
-        align = 'left',
-        textColor = { 0.5, 1, 0.6 },
-        interactable = false,
-    }, self.root)
     self.players = styled(ui, ui:container({
         name = 'PlayersPanel',
         position = { 0.5, 0, 0.5, 0 },
@@ -88,9 +77,17 @@ function Social.create(scene, callbacks)
         fontSize = 22,
         align = 'left',
     }, self.players)
+    self.mic = ui:text({
+        position = { 0, 16, 1, -26 },
+        size = { 1, -32, 0, 20 },
+        text = '',
+        fontSize = 13,
+        align = 'left',
+        textColor = { 0.6, 0.75, 0.9 },
+    }, self.players)
     self.list = ui:scroll({
         position = { 0, 12, 0, 48 },
-        size = { 1, -24, 1, -60 },
+        size = { 1, -24, 1, -80 },
         length = 0,
     }, self.players)
     return self
@@ -128,21 +125,47 @@ function Social:update()
     self.chat.visible = shown ~= '' or self.open or self.typing == true
 end
 
--- Names currently speaking (and your own microphone state), shown top-left.
-function Social:setSpeaking(names, talking, available)
-    local parts = {}
-    if talking then
-        parts[#parts + 1] = 'You (mic on)'
-    end
-    for _, name in ipairs(names) do
-        parts[#parts + 1] = name
-    end
-    local text_ = #parts > 0 and ('Speaking: ' .. table.concat(parts, ', ')) or ''
-    if text_ == '' and available == false then
-        text_ = ''
-    end
-    if self.speaking.text ~= text_ then
-        self.speaking.text = text_
+-- Voice meters, top-left: one row per audible speaker (you included) with a loudness bar.
+-- meters: array of { name, level 0..1, mine }.
+function Social:setSpeaking(meters)
+    local ui = self.ui
+    self.meterRows = self.meterRows or {}
+    for index = 1, math.max(#meters, #self.meterRows) do
+        local row = self.meterRows[index]
+        local meter = meters[index]
+        if meter and not row then
+            row = { frame = ui:container({
+                position = { 0, 16, 0, 130 + (index - 1) * 26 },
+                size = { 0, 300, 0, 22 },
+                backgroundColor = PANEL,
+                backgroundTransparency = 0.3,
+            }, self.root) }
+            row.fill = ui:container({
+                position = { 0, 2, 0, 2 },
+                size = { 0, 0, 1, -4 },
+                backgroundColor = { 0.3, 0.9, 0.5 },
+            }, row.frame)
+            row.name = ui:text({
+                position = { 0, 6, 0, 0 },
+                size = { 1, -12, 1, 0 },
+                text = '',
+                fontSize = 14,
+                align = 'left',
+            }, row.frame)
+            ui:create('UICorner', { radius = { 0, 6 } }, row.frame)
+            self.meterRows[index] = row
+        end
+        if row then
+            row.frame.visible = meter ~= nil
+            if meter then
+                local text_ = meter.mine and 'You (mic)' or meter.name
+                if row.name.text ~= text_ then
+                    row.name.text = text_
+                end
+                row.fill.size = { 0, math.floor(296 * meter.level), 1, -4 }
+                row.fill.backgroundColor = meter.level > 0.8 and { 1, 0.45, 0.3 } or { 0.3, 0.9, 0.5 }
+            end
+        end
     end
 end
 
@@ -162,6 +185,12 @@ function Social:setTyping(typing)
     elseif self.onTypingDone then
         self.onTypingDone()
     end
+end
+
+-- Microphone line of the player list: 'ready', or why there is none.
+function Social:setMicStatus(text_)
+    self.mic.text = text_ == 'ready' and 'Microphone: ready (hold V to talk)'
+        or ('Microphone: ' .. tostring(text_))
 end
 
 function Social:isTyping()
