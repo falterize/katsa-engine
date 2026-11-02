@@ -8,7 +8,7 @@ local Cameras = {}
 
 function Cameras.install(World3D)
     function World3D:addCamera(settings, parent)
-        local camera = require('../cameras.camera').new(settings)
+        local camera = require('source.engine.cameras.camera').new(settings)
         camera._world = self
         camera.parent = parent or self.folders.Cameras
         self.cameras[#self.cameras + 1] = camera

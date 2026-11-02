@@ -38,14 +38,14 @@ function UINode.mount(ui, properties, parent)
 end
 
 function UINode:drawSelf(ui)
-    local style = require('../style')
+    local style = require('source.engine.ui.style')
     local c = style.color(self, 'background')
     -- Zero-alpha built-in backgrounds cannot contribute color. Custom materials
     -- may ignore vertex alpha, so preserve their draw and the paint component.
     local alpha = c and style.alpha(self, 'background', c)
     if c and (alpha > 0 or self.material or katsa.graphics.getShader()) then
         katsa.graphics.push('all')
-        require('../drawing.modifiers').bindGradient(ui, self, 'Background')
+        require('source.engine.ui.drawing.modifiers').bindGradient(ui, self, 'Background')
         katsa.graphics.setColor(c[1], c[2], c[3], alpha)
         katsa.graphics.rectangle('fill', self._x, self._y, self._width, self._height, self._radius)
         katsa.graphics.pop()

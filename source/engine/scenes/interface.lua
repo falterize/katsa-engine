@@ -35,7 +35,7 @@ function Interface.new(manager, source)
 end
 
 function Interface:load()
-    self.lifecycle = require('./layout').lifecycle(self.package)
+    self.lifecycle = require('source.engine.scenes.layout').lifecycle(self.package)
     self.state = self.lifecycle.create(self, self.package)
     for _, name in ipairs(events) do
         local method = self.state[name]
@@ -53,7 +53,7 @@ function Interface:updateInBackground(dt, realDt)
     if state and state.updateInBackground then
         local world = state.world
         if world and world.root then
-            dt = require('../world.clock').delta(world.root, dt)
+            dt = require('source.engine.world.clock').delta(world.root, dt)
         end
         return state:updateInBackground(dt, realDt)
     end

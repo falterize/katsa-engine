@@ -93,7 +93,7 @@ function Inspector.install(Workspace)
         self.propertyButtons = {}
         self.fields = Properties.list(node._editorTarget or node)
         self.schemaSignature =
-            require('./schema').signature(node._editorTarget or node)
+            require('source.engine.editor.inspectors.schema').signature(node._editorTarget or node)
         local groups = {}
         for _, field in ipairs(self.fields) do
             local name = category(field.key)
@@ -261,7 +261,7 @@ function Inspector.install(Workspace)
     function Workspace:value(field, component)
         local target = self.selected._editorTarget or self.selected
         local getter =
-            require('./schema').descriptor(target, field.key).get
+            require('source.engine.editor.inspectors.schema').descriptor(target, field.key).get
         if getter then
             return getter(target)
         end
@@ -332,7 +332,7 @@ function Inspector.install(Workspace)
             self.popup:close(false)
         end
         self:cancelEdit()
-        self.popup = require('../panels.popup').new(self, field)
+        self.popup = require('source.engine.editor.panels.popup').new(self, field)
         self.popup:hintEditor(field.hint or field.reason)
     end
 
@@ -341,13 +341,13 @@ function Inspector.install(Workspace)
             self.popup:close(false)
         end
         self:cancelEdit()
-        self.popup = require('../panels.popup').new(self, field)
+        self.popup = require('source.engine.editor.panels.popup').new(self, field)
         if field.kind == 'node' then
             self.popup:nodeEditor()
         elseif field.kind == 'sequence' then
-            require('../curves.sequenceEditor').open(self.popup)
+            require('source.engine.editor.curves.sequenceEditor').open(self.popup)
         elseif field.kind == 'bindings' then
-            require('../curves.sequenceEditor').bindings(self.popup)
+            require('source.engine.editor.curves.sequenceEditor').bindings(self.popup)
         elseif field.options then
             self.popup:enum()
         elseif field.colorMaximum then

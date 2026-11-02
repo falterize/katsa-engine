@@ -8,7 +8,7 @@ function PopupColor.install(Popup)
     function Popup:setRGB(rgb)
         local maximum = self.field.colorMaximum
         for i = 1, 3 do
-            local ok, err = require('../inspectors.properties').set(
+            local ok, err = require('source.engine.editor.inspectors.properties').set(
                 self.workspace.scene,
                 self.target,
                 self.field,

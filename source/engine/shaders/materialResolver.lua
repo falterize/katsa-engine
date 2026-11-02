@@ -73,7 +73,7 @@ function Resolver.resolve(world, object)
     end
     local active = world.shaderLayers:resolve(nodes, object._activeShaders)
     object._activeShaders = active
-    require('./systemLayers').resolve(world, object, active)
+    require('source.engine.shaders.systemLayers').resolve(world, object, active)
     if #active == 0 then
         object._resolvedMaterial = nil
         object._shaderBoundsPadding = 0

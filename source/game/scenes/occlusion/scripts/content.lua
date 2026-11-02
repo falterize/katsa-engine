@@ -9,7 +9,7 @@ function Lab.new(scene)
     local world, environment = scene.world, scene.world.environment
     scene.camera.position, scene.camera.rotation = { 0, 25, -90 }, { 0, 0, 0 }
     environment.debug.gizmos.enabled, environment.fog.enabled = false, false
-    require('./lighting.directional').create(world).enabled, environment.shadows.enabled =
+    require('scene.scripts.lighting.directional').create(world).enabled, environment.shadows.enabled =
         true, true
     environment.render.occlusionCulling = true
     scene.showStats = true

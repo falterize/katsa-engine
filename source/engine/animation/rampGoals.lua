@@ -32,7 +32,7 @@ function Goals.candidates(ramp)
             result[#result + 1] = { key = key, value = value }
         end
     else
-        for _, field in ipairs(require('../editor.inspectors.properties').list(target)) do
+        for _, field in ipairs(require('source.engine.editor.inspectors.properties').list(target)) do
             if not field.readOnly and numeric(field.value) then
                 result[#result + 1] =
                     { key = field.key, value = field.value, labels = field.labels }

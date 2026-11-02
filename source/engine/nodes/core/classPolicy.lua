@@ -61,6 +61,6 @@ local function inheritInitializers(class, instance)
     if rawget(class, 'initialize') then
         class.initialize(instance)
     end
-    require('./extensions').run(class.name, instance)
+    require('source.engine.nodes.core.extensions').run(class.name, instance)
 end
 return { propertyAliases = propertyAliases, initialize = inheritInitializers }

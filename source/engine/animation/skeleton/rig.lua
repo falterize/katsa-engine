@@ -108,7 +108,7 @@ function Rig.initialize(model)
         if self.objects then
             for _, o in ipairs(self.objects) do
                 if o.skin then
-                    require('./skinning').update(o)
+                    require('source.engine.animation.skeleton.skinning').update(o)
                 end
             end
         end

@@ -7,8 +7,13 @@
 -- write `return (require('./part'))`, not `return require('./part')`.
 local Relative = {}
 
+-- 46 is '.', 47 is '/': a relative name starts './' or '../'.
 function Relative.isRelative(name)
-    return type(name) == 'string' and (name:sub(1, 2) == './' or name:sub(1, 3) == '../')
+    if type(name) ~= 'string' or name:byte(1) ~= 46 then
+        return false
+    end
+    local second = name:byte(2)
+    return second == 47 or (second == 46 and name:byte(3) == 47)
 end
 
 -- Folder of a file path ('a/b/c.lua' -> 'a/b'; 'c.lua' -> '').
@@ -47,11 +52,24 @@ function Relative.callerPath(level)
     return source:sub(2)
 end
 
--- Returns a require that also understands relative names; other names go to `base`.
+-- Returns a require that also understands relative names; other names go to `base`. Results are
+-- cached per calling file, because modules often require inside functions that run every frame.
 function Relative.wrap(base)
+    local resolved = {}
     return function(name, ...)
         if Relative.isRelative(name) then
-            name = Relative.resolve(name, Relative.callerPath(2))
+            local path = Relative.callerPath(2)
+            local names = resolved[path]
+            if not names then
+                names = {}
+                resolved[path] = names
+            end
+            local module = names[name]
+            if not module then
+                module = Relative.resolve(name, path)
+                names[name] = module
+            end
+            name = module
         end
         return base(name, ...)
     end

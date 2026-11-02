@@ -97,7 +97,7 @@ function Support.halfExtents(node, reference, camera)
     local dimensions = node.supportSize or { 1, 1, 1 }
     local m = reference:getRenderWorldMatrix()
     if reference:isA('Mesh3D') then
-        require('../graphics.geometry.objectBounds').get(reference)
+        require('source.engine.graphics.geometry.objectBounds').get(reference)
         local b = reference.geometry.bounds
         dimensions = {
             (b[4] - b[1]) * reference.size[1],

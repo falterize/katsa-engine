@@ -1,8 +1,8 @@
 local hasValidation, validationRegistry = pcall(require, 'validation.tests.registry')
 
 local Startup = {
-    createScene = require('./application').new,
-    managerOptions = { manifest = require('../data.manifest') },
+    createScene = require('source.game.runtime.application').new,
+    managerOptions = { manifest = require('source.game.data.manifest') },
     -- validation/ is packaged only on request; without it the test registry is absent.
     registry = hasValidation and validationRegistry or nil,
 }

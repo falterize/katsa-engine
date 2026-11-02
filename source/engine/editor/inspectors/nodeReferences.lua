@@ -28,7 +28,7 @@ function References.accepts(target, key, node)
         local world = target._world or target._sceneWorld
         return world
                 and pcall(
-                    require('../../physics.3d.modelSource').path,
+                    require('source.engine.physics.3d.modelSource').path,
                     node,
                     world.resources
                 )

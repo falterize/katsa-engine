@@ -172,18 +172,15 @@ function Tests:draw()
         -- Full lock at speed for a second: the car must lean, not tip over.
         host.input.actions.keys.a = true
         self.maxTilt = 0
-        -- Dragging orbits the camera; the path debug button shows the bot's route on the client.
+        -- Dragging orbits the camera; the one pathfinding debug switch shows the bot's route.
         host.input.actions:look(30, 10)
-        session.hud.debugPath.onPress()
+        host.world.environment.debug.pathfinding.enabled = true
     elseif frame == 335 then
         self:check(math.abs(session.orbit.yaw) > 1, 'dragging orbits the chase camera')
-        self:check(
-            session.pathDebug and session.pathMarkers and #session.pathMarkers >= 1,
-            'path debug draws the bot route markers on the client'
-        )
-        self:check(session.hud.debugPath.text == 'Path debug: ON', 'the path debug button shows its state')
+        local route = host.world.navRoutes and host.world.navRoutes.bot
+        self:check(route and #route.points >= 1, 'the bot route reaches the pathfinding debug view')
         self:shot('pathDebug')
-        session.hud.debugPath.onPress()
+        host.world.environment.debug.pathfinding.enabled = false
     elseif frame == 340 then
         local _, car = session.client:getCar()
         car.dents:addImpact({ x = 0, z = 2.1, nx = 0, nz = -1, speed = 15 })

@@ -56,7 +56,7 @@ function V.relevant(emitter, camera, renderPose)
         if particle.space == 'Local' then
             x, y, z = M.transform(matrix, x, y, z)
         end
-        local size = require('../../animation.sequence').evaluate(
+        local size = require('source.engine.animation.sequence').evaluate(
             emitter.lifetimeRamp.bindings.size,
             particle.age / particle.life,
             emitter.lifetimeRamp.interpolation

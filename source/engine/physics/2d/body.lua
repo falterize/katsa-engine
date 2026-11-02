@@ -107,7 +107,7 @@ function Body:descriptors()
     for i = #result, count + 1, -1 do
         result[i] = nil
     end
-    return require('./geometry.transform').descriptors(self, result)
+    return require('source.engine.physics.2d.geometry.transform').descriptors(self, result)
 end
 
 function Body:rebuildFixtures(descriptors)

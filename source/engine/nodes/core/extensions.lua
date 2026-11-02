@@ -23,7 +23,7 @@ local function copy(value)
 end
 
 function Extensions.add(className, spec)
-    local Node = require('./baseNode')
+    local Node = require('source.engine.nodes.core.baseNode')
     local id = (spec.plugin or '?') .. ':' .. className
     if Extensions.applied[id] then
         return

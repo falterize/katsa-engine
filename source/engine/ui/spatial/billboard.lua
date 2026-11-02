@@ -62,7 +62,7 @@ function BillboardUI.new(world, settings)
     end
     if adornee then
         local ok, reason =
-            require('../../surfaces.support').valid({ _world = world }, adornee)
+            require('source.engine.surfaces.support').valid({ _world = world }, adornee)
         assert(ok, reason)
     end
     rawset(settings, 'adornee', nil)
@@ -154,8 +154,8 @@ function BillboardUI.new(world, settings)
             'extentsOffset',
             'extentsOffsetWorldSpace',
         }) do
-            vectors[key] = require('../../math.managedValue').bind(
-                require('../../math.vector3').fromArray(rawget(node, key)),
+            vectors[key] = require('source.engine.math.managedValue').bind(
+                require('source.engine.math.vector3').fromArray(rawget(node, key)),
                 node
             )
             rawset(node, key, nil)
@@ -169,7 +169,7 @@ function BillboardUI.new(world, settings)
     end)
 
     node.inheritScale = settings.inheritScale == true
-    require('../../surfaces.support').initialize(node, adornee)
+    require('source.engine.surfaces.support').initialize(node, adornee)
     node.parent = owner
     node.layers = node.layers or 1
     node.ui:bindBillboard(node)

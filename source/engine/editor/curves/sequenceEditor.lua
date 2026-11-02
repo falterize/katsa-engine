@@ -14,7 +14,7 @@ local function clear(popup)
 end
 
 function Editor.open(popup, property)
-    require('./curveEditor')
+    require('source.engine.editor.curves.curveEditor')
     clear(popup)
     popup.preferredWidth = 580
     popup.preferredHeight = 650
@@ -61,9 +61,9 @@ function Editor.open(popup, property)
     end)
     button(property and 'Back to Goals' or 'Reset 0 -> 1', 0.62, 0, 0.38, function()
         if property then
-            require('./goalEditor').open(popup, property)
+            require('source.engine.editor.curves.goalEditor').open(popup, property)
         else
-            target.points = require('../../animation.sequence').linear(0, 1)
+            target.points = require('source.engine.animation.sequence').linear(0, 1)
             Editor.open(popup)
         end
     end)
@@ -108,7 +108,7 @@ function Editor.open(popup, property)
         end
         if property then
             target.goals[property] =
-                require('../../animation.bindings').copy(points[#points].value)
+                require('source.engine.animation.bindings').copy(points[#points].value)
         end
         popup.ui:invalidate()
     end
@@ -267,10 +267,10 @@ end
 
 function Editor.bindings(popup)
     if popup.target:isA('AnimationTrack') and popup.field.key == 'boneMask' then
-        return require('../inspectors.boneMaskEditor').open(popup)
+        return require('source.engine.editor.inspectors.boneMaskEditor').open(popup)
     end
     if popup.target:isA('Ramp') then
-        return require('./goalEditor').open(popup)
+        return require('source.engine.editor.curves.goalEditor').open(popup)
     end
     local row = 0
     for key, value in pairs(popup.target[popup.field.key]) do

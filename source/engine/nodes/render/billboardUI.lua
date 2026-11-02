@@ -4,14 +4,14 @@ local Class = Node.define('BillboardUI', 'Node3D')
 Class.propertySchema = {
     pixelate = {
         get = function(node)
-            return require('../../components.image').pixelate(node, node._world.environment)
+            return require('source.engine.components.image').pixelate(node, node._world.environment)
         end,
     },
 }
 
 function Class.mount(world, properties, parent)
     properties.parent = parent or properties.parent
-    local node = require('../../ui.spatial.billboard').new(world, properties)
+    local node = require('source.engine.ui.spatial.billboard').new(world, properties)
     if parent then
         node.parent = parent
     end

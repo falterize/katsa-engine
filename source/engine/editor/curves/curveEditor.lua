@@ -125,7 +125,7 @@ function Curve:pointer(ui, phase, x, y, id)
                     return
                 end
             end
-            best = require('./sequenceModel').insert(
+            best = require('source.engine.editor.curves.sequenceModel').insert(
                 self.points,
                 t,
                 self.interpolation

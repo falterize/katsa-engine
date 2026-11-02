@@ -82,7 +82,7 @@ function Receivers.collect(objects, camera, distance, out, normalBias)
     if not objects then
         return nil, false
     end
-    local Bounds = require('../geometry.objectBounds')
+    local Bounds = require('source.engine.graphics.geometry.objectBounds')
     out = out or {}
     local count, changed = 0, false
     local p = camera.worldPosition or camera.position

@@ -27,7 +27,7 @@ function Orientation.draw(scene)
     end
     local g = katsa.graphics
     local w, h = g.getDimensions()
-    local scale = require('../../core.displayDpi').uiScale()
+    local scale = require('source.engine.core.displayDpi').uiScale()
     local length, gap = 42 * scale, 74 * scale
     g.push('all')
     g.origin()

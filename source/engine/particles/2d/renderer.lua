@@ -18,7 +18,7 @@ function Renderer.draw(system)
     for _, e in ipairs(system.emitters) do
         if Visibility.relevant(e, ui.currentCamera, true) then
             local image =
-                require('../../components.image').resolve(ui.resources, e, e.texture)
+                require('source.engine.components.image').resolve(ui.resources, e, e.texture)
             local count, capacity = #e.particles, e._batchCapacity or 0
             if count > capacity then
                 if e._spriteBatch then
@@ -91,7 +91,7 @@ function Renderer.draw(system)
                         if sx > 0.000001 then
                             local sy, shear = (a * d - b * c) / sx, (a * c + b * d) / (sx * sx)
                             local u, v, uw, vh =
-                                require('../image').uv(e, p, image, size)
+                                require('source.engine.particles.image').uv(e, p, image, size)
                             e._particleQuad:setViewport(u * iw, v * ih, uw * iw, vh * ih, iw, ih)
                             -- Keep geometry size independent of the UV repeat/atlas rectangle.
                             local repeatX, repeatY = uw, vh

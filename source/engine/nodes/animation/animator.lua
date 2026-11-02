@@ -302,8 +302,8 @@ function Animator:applyRootMotion(track)
                 parent = parent.parent
             end
             local matrix =
-                require('../../math.math3d').compose({ 0, 0, 0 }, root.rotation, root.scale)
-            local dx, dy, dz = require('../../math.math3d').transform(
+                require('source.engine.math.math3d').compose({ 0, 0, 0 }, root.rotation, root.scale)
+            local dx, dy, dz = require('source.engine.math.math3d').transform(
                 matrix,
                 delta[1],
                 delta[2],

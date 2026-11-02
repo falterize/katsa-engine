@@ -15,7 +15,7 @@ function Builder.collect(node, body)
         node._geometrySourceCache = source
     end
     if type(source) == 'string' then
-        return require('./modelSource').collect(node, source, body)
+        return require('source.engine.physics.3d.modelSource').collect(node, source, body)
     end
     assert(
         source and source.isA and source:isA('Node3D') and not source.destroyed,
@@ -97,7 +97,7 @@ function Builder.collect(node, body)
 end
 
 function Builder.build(node, body, parts)
-    local Physics = require('../../physics')
+    local Physics = require('source.engine.physics')
     assert(
         node.collisionLevel ~= 'Detailed' or body.bodyType == 'Static',
         'Detailed model collision requires a Static Body3D'

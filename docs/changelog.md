@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Fewer hitches and faster loads: glTF accessors are read with typed arrays instead of per-number string unpacking, the multiplayerCars character is imported while the scene loads (cached for every walker), relative requires inside functions were reverted to absolute names (they cost a stack inspection per call), and the load phases of multiplayerCars show in the profiler. Steps slower than 50 ms (car / character views) are logged.
+- multiplayerCars: the HUD *Path debug* button and the yellow marker spheres are gone. `Environment.debug.pathfinding` is the only switch; the bot route is fed to the plugin's debug view (`Pathfinding.Debug.setRoute`).
 - Mobile controls: the joystick relocates to a free spot when a scene's own UI covers its corner (hidden in full-screen tool scenes), with a test that touches it in every collection scene.
 - Pause menu is a module (`source/game/runtime/pauseMenu.lua`): an overlay inside the scene that sets the time scale to 0 while open and restores it. `attach(scene, true)` in a scene's `main.lua` keeps time running (multiplayerCars), so the host's server never freezes. The separate `pause` scene was removed.
 - multiplayerCars: host tools in the Tab panel (spawn car, spawn bot, clear bots, clear all cars; `remote('hostCommand')`, host-only), several bots, grass ground texture.

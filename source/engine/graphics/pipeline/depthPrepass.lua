@@ -86,7 +86,7 @@ function Prepass.draw(renderer)
     if not shader then
         shader = renderer.resources:own(
             g.newShader(
-                require('../shaderSource').read(
+                require('source.engine.graphics.shaderSource').read(
                     'assets/shaders/engine/depthPrepass.glsl'
                 )
             )

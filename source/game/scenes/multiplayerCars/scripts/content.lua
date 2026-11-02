@@ -31,6 +31,18 @@ local function pressedOnce(self, name, down)
     return down and not was
 end
 
+-- Runs `build`; a step slower than 50 ms is written to the log (and shows under the profiler's
+-- 'Cars: ...' scopes), so a hitch on first use can be traced from an exported log.
+local function timed(name, build, ...)
+    local started = katsa.timer.getTime()
+    local result = build(...)
+    local ms = (katsa.timer.getTime() - started) * 1000
+    if ms > 50 then
+        katsa.log.write('warn', ('multiplayerCars: %s took %.0f ms'):format(name, ms))
+    end
+    return result
+end
+
 function Session.new(scene)
     local self =
         setmetatable({
@@ -41,6 +53,7 @@ function Session.new(scene)
             mode = 'menu',
             lanTimer = 0,
         }, Session)
+    local profiler = scene.manager.profiler
     -- Meters, real gravity: the terrain and walls are static bodies the vehicles will drive on.
     scene:createPhysics({
         unitsPerMeter = 1,
@@ -49,7 +62,9 @@ function Session.new(scene)
         fixedDelta = 1 / 60,
         interpolate = true,
     })
+    profiler:markLoad('Cars: physics world (Jolt)')
     ArenaView.build(scene)
+    profiler:markLoad('Cars: arena meshes and colliders')
     -- The on-foot player steps with the physics world; the car server and client chain after it.
     scene.physics.beforeStep = function(_, dt)
         if self.walker then
@@ -97,18 +112,8 @@ function Session.new(scene)
         leave = function()
             self:leave()
         end,
-        pathDebug = function()
-            -- One switch for everything: Environment.debug.pathfinding (also in the editor and the
-            -- debug menu). It draws the NavMap and routes; the bot's route markers follow it.
-            local settings = self.scene.world.environment.debug.pathfinding
-            settings.enabled = not settings.enabled
-            self.pathDebug = settings.enabled
-            self.hud:setPathDebug(self.pathDebug)
-            if not self.pathDebug then
-                self:hidePathMarkers()
-            end
-        end,
     })
+    profiler:markLoad('Cars: menu and HUD')
     self.hud:setVisible(false)
     self.social = Social.create(scene, {
         send = function(text)
@@ -135,6 +140,11 @@ function Session.new(scene)
     self.social.onTypingDone = function()
         self.scene.input:chatClosed()
     end
+    profiler:markLoad('Cars: chat and player list')
+    -- The first import of the character decodes the GLB and writes its cache (nearly a second on a
+    -- first run); doing it while the scene loads keeps Host / Join from freezing.
+    require('source.engine.import.models').load('scene://models/character.glb', scene.resources)
+    profiler:markLoad('Cars: character model warm-up')
     local ok, browser = pcall(Net.browse)
     self.browser = ok and browser or nil
     if Plugins.has('ads') then
@@ -158,45 +168,23 @@ function Session.new(scene)
 end
 
 -- Debug markers for the bot's route: small spheres on the terrain, plus one on the bot.
-function Session:hidePathMarkers()
-    for _, marker in ipairs(self.pathMarkers or {}) do
-        marker.visible = false
-    end
-end
-
-function Session:updatePathMarkers()
+-- The bot's route (replicated by the server) goes to the pathfinding plugin's debug view, so it is
+-- drawn with the NavMap and follows the one switch Environment.debug.pathfinding.
+function Session:updateBotRoute()
     local route = self.client and self.client.botRoute
-    if not route then
+    if route == self.fedRoute then
         return
     end
-    local Arena = require('./game.arena')
-    self.pathMarkers = self.pathMarkers or {}
-    local count = #route.points / 3 + 1
-    for index = 1, math.max(count, #self.pathMarkers) do
-        local marker = self.pathMarkers[index]
-        if index <= count and not marker then
-            marker = self.scene.world:create('Mesh3D', {
-                name = 'PathMarker' .. index,
-                kind = 'sphere',
-                size = { 0.7, 0.7, 0.7 },
-                color = { 1, 0.9, 0.2 },
-                unlit = true,
-                castShadow = false,
-            })
-            self.pathMarkers[index] = marker
-        end
-        if marker then
-            marker.visible = index <= count
-            if index <= count then
-                local x, y, z = route.points[index * 3 - 2], route.points[index * 3 - 1], route.points[index * 3]
-                if index == count then
-                    x, y, z = route.x, (route.y or 0) - 0.6, route.z
-                    marker.color = route.mode == 'chase' and { 1, 0.2, 0.2 } or { 0.2, 1, 0.4 }
-                end
-                marker.position = { x, y + 0.9, z }
-            end
-        end
+    self.fedRoute = route
+    local points = {}
+    for index = 1, #route.points - 2, 3 do
+        points[#points + 1] = { route.points[index], route.points[index + 1], route.points[index + 2] }
     end
+    require('source.plugins.pathfinding').Debug.setRoute(self.scene.world, 'bot', {
+        points = points,
+        goal = { route.x, (route.y or 0) - 1.5, route.z },
+        goalColor = route.mode == 'chase' and { 1, 0.2, 0.2 } or { 0.2, 1, 0.4 },
+    })
 end
 
 -- --host [port], --connect address[:port], --name Name
@@ -246,7 +234,7 @@ function Session:startClient(address, port, name)
         end,
     })
     client.onCarAdded = function(netId, model)
-        self.views[netId] = CarView.new(self.scene, netId, model)
+        self.views[netId] = timed('car view', CarView.new, self.scene, netId, model)
     end
     client.onCarRemoved = function(netId)
         if self.views[netId] then
@@ -255,7 +243,7 @@ function Session:startClient(address, port, name)
         end
     end
     client.onWalkerAdded = function(netId, model, owned)
-        self.walkerViews[netId] = WalkerView.new(self.scene, netId, model)
+        self.walkerViews[netId] = timed('character view', WalkerView.new, self.scene, netId, model)
         if owned then
             self.walker = Walker.new(self.scene.world, model)
         end
@@ -657,13 +645,8 @@ function Session:update(dt)
     for _, view in pairs(self.walkerViews) do
         view:update(dt)
     end
-    local pathSettings = self.scene.world.environment.debug.pathfinding
-    self.pathDebug = pathSettings.enabled and pathSettings.drawPaths
-    self.hud:setPathDebug(pathSettings.enabled)
-    if self.pathDebug then
-        self:updatePathMarkers()
-    else
-        self:hidePathMarkers()
+    if self.client.botRoute then
+        self:updateBotRoute()
     end
     local walker = self.client.ownWalker
     if not car and walker then

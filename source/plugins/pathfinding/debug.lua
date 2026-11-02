@@ -113,9 +113,51 @@ function Debug.drawPaths(node, camera)
     end
 end
 
+-- Routes reported by games (a server's bot, for example) drawn with the NavMap routes:
+-- `route = { points = { {x, y, z}, ... }, goal = { x, y, z }, color = { r, g, b } }`, or nil to
+-- remove it. Only drawn while `Environment.debug.pathfinding` is enabled with `drawPaths`.
+function Debug.setRoute(world, key, route)
+    world.navRoutes = world.navRoutes or {}
+    world.navRoutes[key] = route
+end
+
+local function drawRoutes(world, camera)
+    for _, route in pairs(world.navRoutes or {}) do
+        local color = route.color or { 1, 0.9, 0.2 }
+        local previous
+        for _, point in ipairs(route.points) do
+            local here = { point[1], point[2] + 0.9, point[3] }
+            local sx, sy = camera:project(here)
+            if sx then
+                katsa.graphics.setColor(color[1], color[2], color[3], 1)
+                katsa.graphics.circle('fill', sx, sy, 4)
+            end
+            if previous then
+                line(camera, previous, here, color, 1)
+            end
+            previous = here
+        end
+        local goal, goalColor = route.goal, route.goalColor or color
+        if goal then
+            local here = { goal[1], goal[2] + 0.9, goal[3] }
+            local sx, sy = camera:project(here)
+            if sx then
+                katsa.graphics.setColor(goalColor[1], goalColor[2], goalColor[3], 1)
+                katsa.graphics.circle('fill', sx, sy, 7)
+            end
+            if previous then
+                line(camera, previous, here, goalColor, 1)
+            end
+        end
+    end
+end
+
 function Debug.draw(world, camera, settings)
     katsa.graphics.push('all')
     katsa.graphics.setShader()
+    if settings.drawPaths then
+        drawRoutes(world, camera)
+    end
     eachMap(world, function(node)
         if settings.drawCells or settings.drawLinks then
             Debug.drawMap(node.map, camera, settings)

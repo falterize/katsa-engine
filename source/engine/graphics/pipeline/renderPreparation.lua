@@ -29,7 +29,7 @@ local RenderPreparation = {}
 function RenderPreparation.install(Renderer)
     function Renderer:prepare(world, camera, time, dependencies)
         dependencies = dependencies
-            or require('./frameCache').inspect(
+            or require('source.engine.graphics.pipeline.frameCache').inspect(
                 self,
                 world,
                 camera,
@@ -82,7 +82,7 @@ function RenderPreparation.install(Renderer)
                 or o._appearancePending and world.environment.shadows.enabled
             then
                 if not wire then
-                    require('../../shaders.materialResolver').resolve(world, o)
+                    require('source.engine.shaders.materialResolver').resolve(world, o)
                 end
                 local deferAppearance = not wire and not world.environment.shadows.enabled
                 world:updateObject(o, true, wire or deferAppearance)
@@ -162,11 +162,11 @@ function RenderPreparation.install(Renderer)
         clear(self.surfaceReceivers)
         for _, d in ipairs(world.decals) do
             if not wire then
-                require('../../shaders.materialResolver').resolve(world, d)
+                require('source.engine.shaders.materialResolver').resolve(world, d)
             end
             world:resolveLayerGroup(d)
             if wire then
-                require('../../surfaces.faces').update(d, camera)
+                require('source.engine.surfaces.faces').update(d, camera)
             else
                 d:update(world, camera)
             end
@@ -191,7 +191,7 @@ function RenderPreparation.install(Renderer)
                 stats.meshBytes = stats.meshBytes + (emitter._meshCapacity or 0) * 6 * 9 * 4
                 if
                     #emitter.particles > 0
-                    and require('../../particles.visibility').relevant(
+                    and require('source.engine.particles.visibility').relevant(
                         emitter,
                         camera,
                         true
@@ -209,7 +209,7 @@ function RenderPreparation.install(Renderer)
         table.sort(self.top, farFirst)
         self.stats.cullingMilliseconds = (katsa.timer.getTime() - prepareStart) * 1000
         if not wire and world.particles then
-            self.shadowObjects = require('../../particles.shadows').prepare(
+            self.shadowObjects = require('source.engine.particles.shadows').prepare(
                 world,
                 camera,
                 self.shadowObjects
@@ -250,7 +250,7 @@ function RenderPreparation.install(Renderer)
             self.shadows:update(world, camera, self.lights, time, receivers)
         end
         if not wire and self.lightLoop == 'Masked' then
-            require('./lightMasks').update(self.visible, self.lights)
+            require('source.engine.graphics.pipeline.lightMasks').update(self.visible, self.lights)
         end
         self.worldDebugWire = wire
         self.world = world

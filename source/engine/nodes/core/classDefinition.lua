@@ -130,12 +130,12 @@ function ClassDefinition.install(Node)
                 end
                 local vectors = rawget(instance, '_billboardVectors')
                 if vectors and vectors[key] then
-                    require('../../core.validate').vector(value, 'BillboardUI.' .. key, 3)
+                    require('source.engine.core.validate').vector(value, 'BillboardUI.' .. key, 3)
                     assert(#value == 3, 'BillboardUI.' .. key .. ' requires three components')
-                    local Managed = require('../../math.managedValue')
+                    local Managed = require('source.engine.math.managedValue')
                     Managed.unbind(vectors[key], instance)
                     vectors[key] = Managed.bind(
-                        require('../../math.vector3').fromArray(value),
+                        require('source.engine.math.vector3').fromArray(value),
                         instance
                     )
                     rawset(

@@ -59,7 +59,7 @@ function PauseMenu:build()
         fontSize = 19,
         backgroundColor = { 0.085, 0.135, 0.19 },
         onPress = function()
-            self.scene.manager:switch(require('./menu').new)
+            self.scene.manager:switch(require('source.game.runtime.menu').new)
         end,
     }, panel)
 end

@@ -140,7 +140,7 @@ function Resources:loadImage(source, label)
         if not opacitySource and Objects.isObject(source) and source:typeOf('FileData') then
             opacitySource = source
         end
-        require('../materials.opacity').register(value, pixels, opacitySource)
+        require('source.engine.materials.opacity').register(value, pixels, opacitySource)
     end
     if encoded then
         encoded:release()
@@ -210,7 +210,7 @@ function Resources:preload(items)
         if item.kind == 'image' then
             result[i] = self:imageVariant(item.path, item.pixel)
         elseif item.kind == 'model' or item.kind == 'animation' then
-            result[i] = require('../import.models').load(item.path, self)
+            result[i] = require('source.engine.import.models').load(item.path, self)
         elseif item.kind == 'sound' then
             local path = self:canonical(item.path)
             result[i] = self:cached('sound', path .. '|flat', function(owner)

@@ -19,7 +19,7 @@ Renderer.__index = function(self, key)
         if rawget(self, '_released') or self.resources.released then
             return nil
         end
-        local source = key == 'shader' and require('../shaderSource').read(path)
+        local source = key == 'shader' and require('source.engine.graphics.shaderSource').read(path)
             or path
         local shader = self.resources:own(katsa.graphics.newShader(source))
         rawset(self, key, shader)
@@ -64,9 +64,9 @@ function Renderer.new(resources)
         occlusionTriangleBudget = 192,
         occlusionMinArea = 256,
         renderDensity = math.max(1, math.min(3, katsa.graphics.getDPIScale())),
-        msaa = require('../quality.renderQuality').defaultSamples(),
+        msaa = require('source.engine.graphics.quality.renderQuality').defaultSamples(),
         maxMeshDistance = 0, -- 0 keeps camera-frustum-only mesh culling.
-        maxRenderPixels = require('../quality.renderQuality').defaultPixels(),
+        maxRenderPixels = require('source.engine.graphics.quality.renderQuality').defaultPixels(),
         maxRenderBytes = 402653184,
     }, Renderer)
 end
@@ -80,14 +80,14 @@ end
 
 function Renderer:release()
     self._released = true
-    require('./depthPrepass').release(self)
-    require('../occlusion.triangles').release(self.occlusionState)
+    require('source.engine.graphics.pipeline.depthPrepass').release(self)
+    require('source.engine.graphics.occlusion.triangles').release(self.occlusionState)
     self.occlusionState, self.occlusionMeshes = nil, nil
     self._frameCache = nil
     if self.world and self.world._renderDependencyOwner == self then
         self.world._renderDependencyOwner, self.world._renderDependencyRevision = nil, nil
     end
-    require('../debug.wireframe').release(self)
+    require('source.engine.graphics.debug.wireframe').release(self)
     self.batches:release()
     self.shadows:release()
     if self.canvas then
