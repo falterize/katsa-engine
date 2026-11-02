@@ -170,16 +170,23 @@ function Manager:update(dt, realDt)
     self.frameDelta = frameDelta
     self.frameTime = self.frameTime + frameDelta
     local scene = self.stack[#self.stack]
-    -- An unfocused window freezes its scene, except one that must keep serving the network (a
-    -- hosted game would stop answering joining players while its window is in the background).
-    local running = self.focused or (scene and scene.keepsRunning and scene:keepsRunning())
-    if running and scene and scene.update then
+    if scene and self.focused and scene.update then
         self._busy = true
         local ok, err =
             pcall(scene.update, scene, self.time:update(dt, scene.simulation == false), dt)
         self._busy = false
         if not ok then
             self.journal:record('Scene update', err, nil, 'scene.update')
+            error(err, 0)
+        end
+    elseif scene and not self.focused and scene.updateInBackground then
+        -- An unfocused or minimised window freezes its scene. A scene that must keep serving
+        -- something (a hosted game answering the network) does that work here instead.
+        self._busy = true
+        local ok, err = pcall(scene.updateInBackground, scene, dt, realDt or dt)
+        self._busy = false
+        if not ok then
+            self.journal:record('Scene background update', err, nil, 'scene.updateInBackground')
             error(err, 0)
         end
     end

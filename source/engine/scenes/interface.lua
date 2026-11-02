@@ -47,10 +47,12 @@ function Interface:load()
     end
 end
 
--- True while the scene must keep updating in an unfocused window (e.g. a game server).
-function Interface:keepsRunning()
+-- Runs instead of update while the window is unfocused or minimised, if the scene defines it.
+function Interface:updateInBackground(dt, realDt)
     local state = self.state
-    return state ~= nil and state.keepsRunning ~= nil and state:keepsRunning() == true
+    if state and state.updateInBackground then
+        return state:updateInBackground(dt, realDt)
+    end
 end
 
 function Interface:update(dt, realDt)

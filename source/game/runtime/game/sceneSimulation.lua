@@ -2,10 +2,13 @@ local ipairs = require('source.engine.math.array').ipairs
 
 local Game = {}
 
--- True while the scene must keep updating in an unfocused window (e.g. a hosted game server).
-function Game:keepsRunning()
+-- Runs instead of update while the window is unfocused or minimised, if the scene defines it.
+-- Only the scene's own hook runs: no UI, animation, camera or rendering work.
+function Game:updateInBackground(dt, realDt)
     local demo = self.demo
-    return demo ~= nil and demo.keepsRunning ~= nil and demo:keepsRunning() == true
+    if demo and demo.updateInBackground then
+        return demo:updateInBackground(dt, realDt)
+    end
 end
 
 function Game:update(dt, realDt)

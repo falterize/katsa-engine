@@ -94,7 +94,9 @@ function CarView:update(dt)
     self.spin = (self.spin + car.speed * dt / 0.4 * 57.3) % 360
     for index, wheel in ipairs(self.wheels) do
         local steer = index <= 2 and car.steerAngle or 0
-        wheel.rotation = { self.spin, steer, 0 }
+        -- The car root turns by -heading (engine yaw opposes the model heading), so a wheel
+        -- steering toward positive heading needs the same sign flip.
+        wheel.rotation = { self.spin, -steer, 0 }
         local offset = car.wheels[index]
         wheel.position = { offset[1], 0.4 + car.spring[index], offset[2] }
     end

@@ -14,7 +14,10 @@ function Scene.update(state, dt)
     state:update(dt)
 end
 
-function Scene.update3D() end
+-- Advances the world's nodes: the character animators and everything else that animates.
+function Scene.update3D(state, dt)
+    state.scene.world:updateNodes(dt)
+end
 
 function Scene.update2D(state, dt, realDt)
     local scene = state.scene
