@@ -1,11 +1,15 @@
 -- Replicated definition of a car, shared by the server and every client so prediction and
 -- authority use one step function. The simulated object is the vehicle model itself.
 local Model = require('scene.nodes.vehicle.model')
-local Collision = require('scene.nodes.vehicle.collision')
 local Deformation = require('scene.nodes.vehicle.deformation')
 local Arena = require('scene.scripts.game.arena')
 
 local CarEntity = {}
+
+-- Where a flipped car is put back (shared by the server and driving clients).
+function CarEntity.spawnPoint(netId)
+    return Arena.spawns[(netId - 1) % #Arena.spawns + 1]
+end
 
 local MAX_IMPACTS = 8
 
@@ -26,17 +30,6 @@ function CarEntity.create(_, args)
         end
     end
     return car
-end
-
--- One input step plus static collisions. Impacts pile up for the server to turn into dents.
-function CarEntity.simulate(car, input, dt)
-    car:step(input, dt)
-    local hits = Collision.resolveStatic(car, Arena.obstacles)
-    for _, hit in ipairs(hits) do
-        if #car.impacts < MAX_IMPACTS then
-            car.impacts[#car.impacts + 1] = hit
-        end
-    end
 end
 
 local function springField(name)
@@ -72,6 +65,9 @@ CarEntity.definition = {
     get = get,
     set = set,
     despawnWithAuthority = false, -- a car outlives its driver
+    -- The driver's client owns the car's physics while someone is at the wheel; the server
+    -- takes it back (authority nil) when the seat is empty.
+    clientAuthoritative = true,
     fields = {
         'position:vec3',
         'heading:angle',
@@ -88,17 +84,13 @@ CarEntity.definition = {
     },
 }
 
--- Defines the car kind on a Net.Server or Net.Client. Cars are rigid bodies simulated by the
--- server's physics world: the server only stores each driver's input (applied every physics
--- step) and clients interpolate the replicated state, so the client definition has no simulate.
-function CarEntity.define(target, isServer)
+-- Defines the car kind on a Net.Server or Net.Client. The server keeps each driver's input only
+-- for cars it simulates itself; clients interpolate cars they do not own.
+function CarEntity.define(target)
     local copy = {}
     for key, value in pairs(CarEntity.definition) do
         copy[key] = value
     end
-    copy.simulate = isServer and function(car, input)
-        car.input = input
-    end or nil
     target:define('Car', copy)
 end
 

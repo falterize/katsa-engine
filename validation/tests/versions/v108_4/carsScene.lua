@@ -19,6 +19,27 @@ function Tests:shot(name)
     end
 end
 
+function Tests:startRemote()
+    local World3D = require('source.engine.world.world')
+    local world = World3D.new(self.host.world.resources, nil, {
+        physics = { unitsPerMeter = 1, gravity = { 0, -9.81, 0 }, backend = 'jolt' },
+    })
+    local Session = getmetatable(self.session).__index
+    Session.ArenaView.buildPhysics({ world = world })
+    local remote = { world = world, throttle = 0 }
+    remote.client = Session.GameClient.new({}, {
+        address = '127.0.0.1',
+        port = self.port,
+        name = 'Remote',
+        world = world,
+        input = function()
+            return { throttle = remote.throttle, steer = 0 }
+        end,
+    })
+    remote.client:connect()
+    self.remote = remote
+end
+
 function Tests:draw()
     self.frame = self.frame + 1
     local frame = self.frame
@@ -38,7 +59,8 @@ function Tests:draw()
             self.host.world.physics ~= nil and ground ~= nil and ground.body ~= nil,
             'the arena has a physical terrain mesh'
         )
-        self.session:host('Tester', 47990 + math.floor(os.clock() * 100) % 9)
+        self.port = 47990 + math.floor(os.clock() * 100) % 9
+        self.session:host('Tester', self.port)
     end
     local host, session = self.host, self.session
     if not host then
@@ -46,6 +68,11 @@ function Tests:draw()
     end
     host:update(1 / 60, 1 / 60)
     host:draw()
+    if self.remote then
+        self.remote.world.physics:update(1 / 60)
+        self.remote.client:afterPhysics()
+        self.remote.client:update(1 / 60)
+    end
     if frame == 200 then
         self:check(session.mode == 'playing', 'hosting connects the local client')
         local count = 0
@@ -150,6 +177,43 @@ function Tests:draw()
             math.abs(model.pitch) < 30 and math.abs(model.roll) < 30 and model.y > 0.3,
             'the car rests on its wheels after the crash'
         )
+        self:startRemote()
+    elseif frame == 700 then
+        local rc = self.remote.client
+        local netId, car = rc:getCar()
+        local server = session.server
+        self:check(netId ~= nil, 'a second player joined and got a car')
+        self.remoteId = netId
+        self:check(
+            rc.bodies[netId] and rc.bodies[netId].mode == 'dynamic',
+            'the driver client owns and simulates its car'
+        )
+        self:check(
+            server.bodies[netId].mode == 'follow' and server.server:getAuthority(netId) ~= nil,
+            'the server hands the car to the driver and follows its state'
+        )
+        self.remoteStart = { car.x, car.z }
+        self.remote.throttle = 1
+    elseif frame == 880 then
+        local _, car = self.remote.client:getCar()
+        local server = session.server
+        local moved = math.sqrt((car.x - self.remoteStart[1]) ^ 2 + (car.z - self.remoteStart[2]) ^ 2)
+        local mirror = server.cars[self.remoteId]
+        self:check(moved > 10, 'the driver drives its own car (moved ' .. ('%.1f'):format(moved) .. ')')
+        self:check(
+            math.abs(mirror.x - car.x) < 6 and math.abs(mirror.z - car.z) < 6,
+            'the server model follows the driver client'
+        )
+        self.remote.throttle = 0
+        self.remote.client:disconnect()
+    elseif frame == 1000 then
+        local server = session.server
+        self:check(
+            server.server:getAuthority(self.remoteId) == nil and server.bodies[self.remoteId].mode == 'dynamic',
+            'a car without a driver goes back to server authority'
+        )
+        self.remote.world.physics:release()
+        self.remote = nil
         session:leave()
         self:check(
             session.mode == 'menu' and next(session.views) == nil,
@@ -157,7 +221,7 @@ function Tests:draw()
         )
         host:update(1 / 60, 1 / 60)
         host:draw()
-    elseif frame == 590 then
+    elseif frame == 1010 then
         host:release()
         print('PASSED ' .. self.count .. ' v108.4 cars scene checks')
         katsa.event.quit()

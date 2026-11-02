@@ -2,11 +2,14 @@
 local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
 local CarEntity = require('scene.scripts.game.carEntity')
+local PhysicsCar = require('scene.scripts.game.physicsCar')
 
 local GameClient = {}
 GameClient.__index = GameClient
 
--- options: address, port, name, simulate, input = function() -> { throttle, steer, nitro }
+-- options: address, port, name, simulate, input = function() -> { throttle, steer, nitro },
+-- world (a World3D with physics: the client then simulates the cars it owns and keeps
+-- kinematic stand-ins for the others; leave nil when a server in this process owns the bodies).
 function GameClient.new(context, options)
     local client = Net.Client.new(context, {
         address = options.address,
@@ -18,6 +21,7 @@ function GameClient.new(context, options)
         client = client,
         options = options,
         cars = {}, -- netId -> car model
+        bodies = {}, -- netId -> PhysicsCar (owned dynamic, others follow)
         input = options.input or function()
             return {}
         end,
@@ -29,9 +33,10 @@ function GameClient.new(context, options)
     client.inputProvider = function()
         return self.input()
     end
-    client.entitySpawned:connect(function(object, kind, netId)
+    client.entitySpawned:connect(function(object, kind, netId, owned)
         if kind == 'Car' then
             self.cars[netId] = object
+            self:attachBody(netId, object, owned)
             if self.onCarAdded then
                 self.onCarAdded(netId, object)
             end
@@ -40,9 +45,26 @@ function GameClient.new(context, options)
     client.entityRemoved:connect(function(_, kind, netId)
         if kind == 'Car' then
             self.cars[netId] = nil
+            if self.bodies[netId] then
+                self.bodies[netId]:destroy()
+                self.bodies[netId] = nil
+            end
             if self.onCarRemoved then
                 self.onCarRemoved(netId)
             end
+        end
+    end)
+    client.authorityChanged:connect(function(object, _, owned)
+        for netId, car in pairs(self.cars) do
+            if car == object and self.bodies[netId] then
+                self.bodies[netId]:setMode(owned and 'dynamic' or 'follow')
+            end
+        end
+    end)
+    client:remote('refill'):onClient(function(netId)
+        local car = self.cars[netId]
+        if car then
+            car.nitro = 1 -- the server granted a refill to a car this client simulates
         end
     end)
     client:remote('seats'):onClient(function(netId, list)
@@ -71,6 +93,60 @@ function GameClient.new(context, options)
     return self
 end
 
+function GameClient:attachBody(netId, model, owned)
+    local world = self.options.world
+    if not (world and world.physics) then
+        return
+    end
+    self.bodies[netId] =
+        PhysicsCar.new(world, model, netId, { mode = owned and 'dynamic' or 'follow' })
+    if not self.hooked then
+        self.hooked = true
+        local physics = world.physics
+        self.previousBeforeStep = physics.beforeStep
+        physics.beforeStep = function(self_, dt)
+            if self.previousBeforeStep then
+                self.previousBeforeStep(self_, dt)
+            end
+            for _, body in pairs(self.bodies) do
+                if body.mode == 'dynamic' then
+                    body:setInput(self.input())
+                end
+                body:step(dt)
+            end
+        end
+    end
+end
+
+-- True when this client runs physics for cars (it needs the world stepped every frame).
+function GameClient:simulates()
+    return self.options.world ~= nil and self.options.world.physics ~= nil
+end
+
+-- After the physics step: read the cars this client owns and report what they hit.
+function GameClient:afterPhysics()
+    for netId, body in pairs(self.bodies) do
+        if body.mode == 'dynamic' then
+            body:readState()
+            if body:needsReset(1 / 60) then
+                local point = CarEntity.spawnPoint(netId)
+                body:respawn(point[1], point[2], point[3])
+            end
+            for _, impact in ipairs(body.impacts) do
+                self.client:remote('impact'):fireServer(
+                    netId,
+                    impact.x,
+                    impact.z,
+                    impact.nx,
+                    impact.nz,
+                    impact.speed
+                )
+            end
+            body.impacts = {}
+        end
+    end
+end
+
 function GameClient:connect()
     self.client:connect()
     return self
@@ -84,6 +160,14 @@ function GameClient:update(dt)
 end
 
 function GameClient:disconnect()
+    local world = self.options.world
+    if self.hooked and world and world.physics then
+        world.physics.beforeStep = self.previousBeforeStep
+    end
+    for netId, body in pairs(self.bodies) do
+        body:destroy()
+        self.bodies[netId] = nil
+    end
     self.client:disconnect()
 end
 
