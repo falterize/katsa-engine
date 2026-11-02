@@ -195,7 +195,7 @@ function Hud.create(scene, callbacks)
         align = 'right',
     }, self.root)
     ui:button({
-        position = { 1, -16, 0, 62 },
+        position = { 1, -16, 0, 112 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
         text = 'Change car (E)',
@@ -204,7 +204,7 @@ function Hud.create(scene, callbacks)
         onPress = callbacks.sit,
     }, self.root)
     self.adButton = ui:button({
-        position = { 1, -16, 0, 108 },
+        position = { 1, -16, 0, 158 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
         text = 'Nitro: watch ad (N)',
@@ -213,13 +213,22 @@ function Hud.create(scene, callbacks)
         onPress = callbacks.ad,
     }, self.root)
     ui:button({
-        position = { 1, -16, 0, 154 },
+        position = { 1, -16, 0, 204 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
         text = 'Leave game',
         fontSize = 15,
         backgroundColor = { 0.4, 0.15, 0.15 },
         onPress = callbacks.leave,
+    }, self.root)
+    self.debugPath = ui:button({
+        position = { 1, -16, 0, 250 },
+        size = { 0, 170, 0, 40 },
+        anchorPoint = { 1, 0 },
+        text = 'Path debug: OFF',
+        fontSize = 15,
+        backgroundColor = { 0.1, 0.25, 0.2 },
+        onPress = callbacks.pathDebug,
     }, self.root)
     self.message = ui:text({
         position = { 0.5, 0, 0, 120 },
@@ -230,6 +239,10 @@ function Hud.create(scene, callbacks)
         textColor = { 1, 0.85, 0.4 },
     }, self.root)
     return self
+end
+
+function Hud:setPathDebug(on)
+    self.debugPath.text = 'Path debug: ' .. (on and 'ON' or 'OFF')
 end
 
 function Hud:setVisible(visible)

@@ -246,6 +246,32 @@ function GameServer:addDent(netId, car, impact, now)
     end
 end
 
+-- Sends the bot's current route (flat x, z pairs plus its goal) a few times a second so clients
+-- can draw it for debugging.
+function GameServer:broadcastBotPath(now)
+    local bot = self.bot
+    if not bot or (self.lastPathSend or -1) + 0.4 > now then
+        return
+    end
+    self.lastPathSend = now
+    local flat = {}
+    local path = bot.path
+    if path then
+        -- Packets are small; the nearest points are the useful ones.
+        for index = path.index, math.min(#path.points, path.index + 39) do
+            local point = path.points[index]
+            flat[#flat + 1], flat[#flat + 2] = point[1], point[2]
+        end
+    end
+    local car = self.cars[self.botId]
+    self.server:remote('botPath'):fireAll(
+        bot.mode or 'patrol',
+        car and car.x or 0,
+        car and car.z or 0,
+        flat
+    )
+end
+
 function GameServer:onTick(dt)
     local now = self.server.time
     local models = {}
@@ -262,6 +288,7 @@ function GameServer:onTick(dt)
             end
         end
     end
+    self:broadcastBotPath(now)
     -- Car versus car, then dents from every impact this tick.
     for i = 1, #self.order do
         for j = i + 1, #self.order do

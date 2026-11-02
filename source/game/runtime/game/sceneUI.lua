@@ -204,6 +204,7 @@ function Methods:buildUI()
             backgroundTransparency = 1 - 0.8,
             text = label,
             visible = not self.character
+                and self.settings.cameraButtons ~= false
                 and self.zone ~= 'uiGallery'
                 and self.zone ~= 'audioNodes'
                 and self.zone ~= 'surfaceGallery',
