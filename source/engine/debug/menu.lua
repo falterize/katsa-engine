@@ -270,6 +270,11 @@ function Debug.new(scene)
     end, function()
         scene.world.lighting.debug.shadowView = not scene.world.lighting.debug.shadowView
     end)
+    toggle('Normal view (world normals as colour)', function()
+        return scene.world.lighting.debug.normalView == true
+    end, function()
+        scene.world.lighting.debug.normalView = not scene.world.lighting.debug.normalView
+    end)
     local profiles = require('source.engine.graphics.quality.profiles')
     row('Quality profile: tap to cycle (weak GPU: Low)', function(button)
         scene.qualityProfileName = profiles.next(scene.qualityProfileName)

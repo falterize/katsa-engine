@@ -72,6 +72,7 @@ uniform vec3 ambient;
 uniform float brightness;
 uniform bool toneMapping;
 uniform bool shadowDebug;
+uniform bool normalDebug;
 uniform float exposure;
 uniform highp vec3 cameraPosition;
 uniform vec4 fogColor;
@@ -230,8 +231,11 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
     }
     vec3 result=(texel.rgb*lighting*(surfaceEnabled && !unlit ? 1.0-metalness : 1.0)+specular)*(unlit ? 1.0 : max(brightness,0.0))+emission;
     if(!unlit && toneMapping && systemToneMappingEnabled) result = result * exposure / (vec3(1.0) + result * exposure);
-    // Shadow view (debug.shadowView): red = shadowed, green = lit, blue = shadow data not evaluated.
-    if(shadowDebug && !unlit) result=(debugVisibility>1.5 ? vec3(0.1,0.15,0.6) : mix(vec3(1.0,0.05,0.05),vec3(0.1,0.9,0.2),debugVisibility))+result*0.0001;
+    // Shadow view (debug.shadowView): red = shadowed, green = lit, blue = shadow data not evaluated;
+    // brightness shows the sun cascade (brightest = nearest, darkest = farthest).
+    if(shadowDebug && !unlit) result=(debugVisibility>1.5 ? vec3(0.1,0.15,0.6) : mix(vec3(1.0,0.05,0.05),vec3(0.1,0.9,0.2),debugVisibility))*(debugCascade>0 ? 1.15-0.3*float(debugCascade) : 1.0)+result*0.0001;
+    // Normal view (debug.normalView): world normal as colour, to spot flipped skinned normals.
+    if(normalDebug && !unlit) result=normal*0.5+0.5+result*0.0001;
     // MATERIAL_PIXEL
     if(unlit || !systemFogEnabled) return vec4(result,texel.a);
     highp float distanceToCamera=cameraDistance;

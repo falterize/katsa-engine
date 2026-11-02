@@ -39,6 +39,15 @@ function Tests:draw()
     if os.getenv('KATSA_TOGGLE') and scene and scene.world then
         scene.world.environment.shadows.enabled = not (self.frame >= 68)
     end
+    if self.frame >= 30 and os.getenv('KATSA_CAM') and scene and scene.camera then
+        local c = {}
+        for v in os.getenv('KATSA_CAM'):gmatch('[^,]+') do c[#c + 1] = tonumber(v) end
+        scene.camera.position = { c[1], c[2], c[3] }
+        if c[4] then scene.camera.rotation = { c[4], c[5], 0 } end
+    end
+    if self.frame == 30 and os.getenv('KATSA_NORMALVIEW') and scene and scene.world then
+        scene.world.lighting.debug.normalView = true
+    end
     if self.frame == 30 and os.getenv('KATSA_SHADOWVIEW') and scene and scene.world then
         scene.world.lighting.debug.shadowView = true
     end
