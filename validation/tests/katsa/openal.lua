@@ -38,6 +38,28 @@ return function(T)
     copy:play()
     T.check(driver.isPlaying(copy) and not driver.isPlaying(source), 'clones play independently')
     copy:release()
+
+    -- EFX: effects become auxiliary slots, filters attach to the dry path.
+    T.check(driver.effectsSupported and driver.maxSourceEffects >= 1, 'OpenAL reports EFX support')
+    local fx = Audio.newSource(data, 'static')
+    for name, settings in pairs({
+        reverb = { type = 'reverb', decaytime = 2.5, gain = 0.4, volume = 1 },
+        echo = { type = 'echo', delay = 0.1, feedback = 0.5, volume = 1 },
+        chorus = { type = 'chorus', waveform = 'triangle', rate = 2, volume = 1 },
+        distortion = { type = 'distortion', edge = 0.4, gain = 0.2, volume = 1 },
+    }) do
+        local ok, err = pcall(Audio.setEffect, name, settings)
+        T.check(ok, name .. ' effect is accepted by OpenAL ' .. tostring(err))
+        T.check(fx:setEffect(name, true), name .. ' attaches to a source')
+    end
+    T.check(fx:setFilter({ type = 'lowpass', volume = 1, highgain = 0.1 }), 'low-pass filter applies')
+    fx:setFilter(nil)
+    for _, name in ipairs({ 'reverb', 'echo', 'chorus', 'distortion' }) do
+        Audio.setEffect(name, false)
+    end
+    fx:play()
+    T.check(driver.isPlaying(fx), 'a source with effects plays')
+    fx:release()
     source:release()
     Audio.setDriver(require('source.katsa.audio.nullDriver'))
     driver.close()
