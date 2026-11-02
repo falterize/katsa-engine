@@ -86,21 +86,21 @@ function Tests:draw()
     if frame == 200 then
         self:check(session.mode == 'playing', 'hosting connects the local client')
         self:check(
-            host:keepsRunning() == true,
-            'a hosted game keeps updating when its window loses focus'
+            type(host.updateInBackground) == 'function',
+            'a hosted game has a background update for when its window loses focus'
         )
         local Manager = require('source.engine.core.sceneManager')
         local updated = 0
         local stub = setmetatable({
             focused = false,
-            stack = { { update = function() updated = updated + 1 end, keepsRunning = function() return true end } },
+            stack = { { update = function() end, updateInBackground = function() updated = updated + 1 end } },
             frameTime = 0,
             flushTransitions = function() end,
             time = { update = function(_, dt) return dt end },
             journal = {},
         }, Manager)
         stub.update(stub, 0.01)
-        self:check(updated == 1, 'the scene manager updates a keep-running scene without focus')
+        self:check(updated == 1, 'the scene manager runs updateInBackground for an unfocused scene')
         local count = 0
         for _ in pairs(session.views) do
             count = count + 1

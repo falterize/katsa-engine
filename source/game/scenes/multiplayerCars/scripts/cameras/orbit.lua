@@ -44,10 +44,11 @@ function Orbit.new(scene, camera)
     return self
 end
 
--- dx/dy are pointer drags in the scene's Look units (dragging right turns the view left).
+-- dx/dy are pointer movements in the scene's Look units: moving right turns the view right and
+-- moving up looks up, as in StareShooter.
 function Orbit:look(dx, dy)
     local s = self.settings
-    self.yaw = (self.yaw - dx * 0.4) % 360
+    self.yaw = (self.yaw + dx * 0.4) % 360
     self.pitch = math.max(s.minPitch, math.min(s.maxPitch, self.pitch - dy * 0.3))
     self.idle = 0
 end

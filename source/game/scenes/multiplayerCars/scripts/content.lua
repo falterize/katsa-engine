@@ -326,9 +326,11 @@ function Session:updateWalkerCamera(dt, walker)
     self.orbit:update(dt, walker.x, walker.y + 1.4, walker.z)
 end
 
--- A hosted game keeps running with its window in the background, so joining players get answers.
-function Session:keepsRunning()
-    return self.server ~= nil
+-- With the window unfocused only the network side runs, so a hosted game keeps answering players.
+function Session:updateInBackground(dt)
+    if self.server or self.client then
+        self:updateNetwork(dt)
+    end
 end
 
 function Session:wheelmoved(x, y)
@@ -365,8 +367,8 @@ function Session:updateWalker(dt, car, seat)
     end
 end
 
-function Session:update(dt)
-    local keys = self.scene.input.actions.keys
+-- Physics of the hosted or driven cars and the network traffic of the server and client.
+function Session:updateNetwork(dt)
     if self.server then
         -- The hosted cars are rigid bodies: step the world, then let the server read them.
         self.scene.physics:update(dt)
@@ -379,6 +381,11 @@ function Session:update(dt)
     if self.client then
         self.client:update(dt)
     end
+end
+
+function Session:update(dt)
+    local keys = self.scene.input.actions.keys
+    self:updateNetwork(dt)
     if self.mode == 'menu' then
         self.lanTimer = self.lanTimer - dt
         if self.browser then
