@@ -71,6 +71,7 @@ uniform bool objectLightMaskEnabled;
 uniform vec3 ambient;
 uniform float brightness;
 uniform bool toneMapping;
+uniform bool shadowDebug;
 uniform float exposure;
 uniform highp vec3 cameraPosition;
 uniform vec4 fogColor;
@@ -186,6 +187,7 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
     highp float fadeWidth=max(shadowFadeDistance,0.001);
     float shadowWeight=1.0-smoothstep(max(0.0,shadowDistance-fadeWidth),shadowDistance,cameraDistance);
     vec3 lighting=unlit ? vec3(1.0) : ambient*occlusion;
+    float debugVisibility=2.0;
     uint lightMask=uint(relevantLights.x) | (uint(relevantLights.y)<<16u);
     for(int i=0;i<32;i++) {
         if(unlit || i>=lightCount) break;
@@ -195,8 +197,10 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
             // Both diffuse and GGX contributions are zero on the unlit hemisphere.
             if(dot(normal,toward)<=0.0) continue;
             float visibility=1.0;
-            if(receiveShadow && shadowWeight>0.0 && lightShadowData[i].x>=0.0)
+            if(receiveShadow && shadowWeight>0.0 && lightShadowData[i].x>=0.0) {
                 visibility=mix(1.0,directionalVisibility(i,normal,toward),shadowWeight*shadowLightFade[i]);
+                debugVisibility=min(debugVisibility,visibility);
+            }
             if(surfaceEnabled)specular+=lightColor[i].rgb*lightColor[i].w*visibility*preparedMaterialSpecular(normal,toward,viewDirection,f0,specularTerms);
             lighting+=lightColor[i].rgb*lightColor[i].w*max(0.0,dot(normal,toward))*visibility;
             continue;
@@ -216,14 +220,18 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
         if(receiveShadow && shadowWeight>0.0 && lightShadowData[i].x >= 0.0) {
             int side = lightShadowData[i].y > 0.5 ? pointShadowFace(worldPosition-shadowLightPosition[i].xyz) : 0;
             int face = int(lightShadowData[i].x)+side;
-            if((int(lightShadowData[i].z) & (1 << side)) != 0)
+            if((int(lightShadowData[i].z) & (1 << side)) != 0) {
                 visibility = mix(1.0,shadowVisibility(face, localShadowProjection(i,side,normal), normal, toward, false, 0),shadowWeight*shadowLightFade[i]);
+                debugVisibility=min(debugVisibility,visibility);
+            }
         }
         if(surfaceEnabled)specular+=sampledLightColor*visibility*lightColor[i].w*cone*falloff*falloff*preparedMaterialSpecular(normal,toward,viewDirection,f0,specularTerms);
         lighting+=sampledLightColor*visibility*(lightColor[i].w*max(0.0,dot(normal,toward))*cone*falloff*falloff);
     }
     vec3 result=(texel.rgb*lighting*(surfaceEnabled && !unlit ? 1.0-metalness : 1.0)+specular)*(unlit ? 1.0 : max(brightness,0.0))+emission;
     if(!unlit && toneMapping && systemToneMappingEnabled) result = result * exposure / (vec3(1.0) + result * exposure);
+    // Shadow view (debug.shadowView): red = shadowed, green = lit, blue = shadow data not evaluated.
+    if(shadowDebug && !unlit) result=(debugVisibility>1.5 ? vec3(0.1,0.15,0.6) : mix(vec3(1.0,0.05,0.05),vec3(0.1,0.9,0.2),debugVisibility))+result*0.0001;
     // MATERIAL_PIXEL
     if(unlit || !systemFogEnabled) return vec4(result,texel.a);
     highp float distanceToCamera=cameraDistance;

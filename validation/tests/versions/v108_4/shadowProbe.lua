@@ -39,6 +39,9 @@ function Tests:draw()
     if os.getenv('KATSA_TOGGLE') and scene and scene.world then
         scene.world.environment.shadows.enabled = not (self.frame >= 68)
     end
+    if self.frame == 30 and os.getenv('KATSA_SHADOWVIEW') and scene and scene.world then
+        scene.world.lighting.debug.shadowView = true
+    end
     if self.frame == 30 and os.getenv('KATSA_PATHDBG') and scene and scene.world then
         local debug = scene.world.environment.debug
         if debug.pathfinding then
