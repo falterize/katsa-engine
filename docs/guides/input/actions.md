@@ -48,3 +48,11 @@ logical safe-area pixels. Authored values persist on resize and clamp to the vie
 unmodified defaults adapt proportionally. Free cameras use sensitivity in degrees
 per logical pixel; follow cameras use their own followSensitivity. Real device
 multitouch and suspension remain to be checked on Android.
+
+## On-screen joystick in every scene
+
+Collection scenes share the common input layer: a joystick at the bottom-left and a camera drag area.
+A scene's own widgets win a touch over the joystick, so after the second frame the scene runtime
+moves the joystick to the nearest spot no widget covers (`Game:clearJoystickSpot`). Scenes whose UI
+fills the whole bottom area (galleries, viewport demos) hide it instead. `validation/tests/versions/v108_4/mobileControls.lua`
+presses the joystick in every catalog scene.

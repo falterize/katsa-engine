@@ -166,7 +166,7 @@ function Game:resize(w, h)
     self.ui:fit(w, h)
     if self.controls then
         local vw, vh = self.ui.width, self.ui.height
-        if not self.controls.joystick.custom then
+        if not self.controls.joystick.custom and not self.controls.joystick.relocated then
             self.controls.joystick.x = vw * 125 / 1280
             self.controls.joystick.y = vh * 570 / 720
             self.controls.joystick.radius = math.min(vw / 1280, vh / 720) * 88

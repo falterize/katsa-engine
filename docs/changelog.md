@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Mobile controls: the joystick relocates to a free spot when a scene's own UI covers its corner (hidden in full-screen tool scenes), with a test that touches it in every collection scene.
 - Pause menu is a module (`source/game/runtime/pauseMenu.lua`): an overlay inside the scene that sets the time scale to 0 while open and restores it. `attach(scene, true)` in a scene's `main.lua` keeps time running (multiplayerCars), so the host's server never freezes. The separate `pause` scene was removed.
 - multiplayerCars: host tools in the Tab panel (spawn car, spawn bot, clear bots, clear all cars; `remote('hostCommand')`, host-only), several bots, grass ground texture.
 - Fixed the save directory nesting the identity twice (`Katsa/katsa-engine/katsa-engine`); it is now `Katsa/katsa-engine`. Files written by older builds stay in the nested folder.

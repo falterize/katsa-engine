@@ -31,7 +31,7 @@ function Pointers.install(Input)
         if self.layout then
             local ui, j = scene.ui, self.layout.joystick
             local lx, ly = (x - ui.offsetX) / ui.scale, (y - ui.offsetY) / ui.scale
-            if (lx - j.x) ^ 2 + (ly - j.y) ^ 2 <= j.radius ^ 2 then
+            if not j.blocked and (lx - j.x) ^ 2 + (ly - j.y) ^ 2 <= j.radius ^ 2 then
                 if not self.joystickId then
                     self.joystickId = id
                     self.captures[id] = { kind = 'joystick' }

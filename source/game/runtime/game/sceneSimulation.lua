@@ -14,7 +14,53 @@ function Game:updateInBackground(dt, realDt)
     end
 end
 
+-- Moves the on-screen joystick to the nearest spot no scene UI covers (a scene's own panels may sit
+-- over the default corner). Runs once, on the second frame, when the scene UI exists.
+function Game:clearJoystickSpot()
+    local joystick = self.controls and self.controls.joystick
+    local ui = self.ui
+    if not joystick or joystick.custom then
+        return
+    end
+    local function free(cx, cy)
+        for step = 0, 8 do
+            local angle, reach = step * math.pi / 4, step == 0 and 0 or joystick.radius
+            local x = (cx + math.cos(angle) * reach) * ui.scale + ui.offsetX
+            local y = (cy + math.sin(angle) * reach) * ui.scale + ui.offsetY
+            if ui:hit(x, y) then
+                return false
+            end
+        end
+        return true
+    end
+    if free(joystick.x, joystick.y) then
+        return
+    end
+    local best, bestDistance
+    local width, height = ui.width, ui.height
+    for _, row in ipairs({ 570 / 720, 630 / 720, 450 / 720, 330 / 720 }) do
+        for column = 1, 11 do
+            local x, y = width * column / 12, height * row
+            local distance = (x - joystick.x) ^ 2 + (y - joystick.y) ^ 2
+            if (not best or distance < bestDistance) and free(x, y) then
+                best, bestDistance = { x, y }, distance
+            end
+        end
+    end
+    if best then
+        joystick.x, joystick.y = best[1], best[2]
+        joystick.relocated = true
+    else
+        -- Full-screen tool UI (galleries, viewports): the scene's own widgets take every touch.
+        joystick.blocked = true
+    end
+end
+
 function Game:update(dt, realDt)
+    self.frames = (self.frames or 0) + 1
+    if self.frames == 2 then
+        self:clearJoystickSpot()
+    end
     if self.debugOverlay and self.debugOverlay.visible and self.debugOverlay._syncDebug then
         self.debugOverlay._syncDebug()
     end

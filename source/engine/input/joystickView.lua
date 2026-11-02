@@ -18,6 +18,7 @@ function View:update()
     local n = self.node
     n.position[2], n.position[4] = j.x - j.radius, j.y - j.radius
     n.size[2], n.size[4] = j.radius * 2, j.radius * 2
+    n.visible = not j.blocked
     n:setAxes(self.input.axisX, self.input.axisY)
 end
 
