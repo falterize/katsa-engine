@@ -107,6 +107,7 @@ function Game:load()
 
         zIndex = 200,
     })
+    self.console = require('source.engine.debug.consolePanel').new(self.ui, debugControls)
     self.debugButton = self.ui:button({
         position = { 1, -12, 0, 64 },
         size = { 0, 110, 0, 34 },
@@ -225,6 +226,8 @@ function Game:keypressed(key)
         self.showStats = not self.showStats
     elseif key == 'f4' then
         self.debugOverlay.visible = not self.debugOverlay.visible
+    elseif key == 'f1' then
+        self.console:toggle()
     elseif key == 'space' and self.character then
         -- Jump is dispatched through the named action in Input:update.
     elseif key == 'space' then
@@ -281,6 +284,10 @@ function Game:wheelmoved(x, y)
 end
 
 function Game:release()
+    if self.console then
+        self.console:release()
+        self.console = nil
+    end
     require('source.engine.core.cleanup').run({
         function()
             if self.systems then
