@@ -25,15 +25,36 @@ local function applyScissor()
         math.max(0, math.floor(h + 0.5)))
 end
 
+-- push('all')/pop() and nested UI drawing re-select the state that is already active thousands of
+-- times a frame; re-applying it would only break the batch and issue redundant GL calls. The
+-- scissor depends on the render target, so the target's geometry is part of what was applied.
+local scissorX, scissorY, scissorW, scissorH
+local scissorPW, scissorPH, scissorDPI, scissorCanvas
+
 function G.setScissor(x, y, w, h)
     State.requireReady()
-    State.flush()
     if x == nil then
+        if S.scissor == nil and scissorX == false and scissorPW == target.pw and scissorPH == target.ph
+            and scissorDPI == target.dpi and scissorCanvas == target.isCanvas then
+            return
+        end
+        State.flush()
         S.scissor = nil
+        scissorX = false
     else
         assert(w >= 0 and h >= 0, 'Scissor width and height must be non-negative')
+        if scissorX == x and scissorY == y and scissorW == w and scissorH == h
+            and scissorPW == target.pw and scissorPH == target.ph and scissorDPI == target.dpi
+            and scissorCanvas == target.isCanvas and S.scissor
+            and S.scissor[1] == x and S.scissor[2] == y and S.scissor[3] == w
+            and S.scissor[4] == h then
+            return
+        end
+        State.flush()
         S.scissor = { x, y, w, h }
+        scissorX, scissorY, scissorW, scissorH = x, y, w, h
     end
+    scissorPW, scissorPH, scissorDPI, scissorCanvas = target.pw, target.ph, target.dpi, target.isCanvas
     applyScissor()
 end
 
@@ -78,16 +99,25 @@ local function applyStencilTest()
     gl.glStencilMask(0)
 end
 
+local stencilCompare, stencilValue
+
 function G.setStencilTest(compare, value)
     State.requireReady()
-    State.flush()
     compareFunctions = compareFunctions or compareTable()
+    if compare ~= nil then
+        assert(compareFunctions[compare], 'Invalid compare mode: ' .. tostring(compare))
+        value = value or 0
+    end
+    if stencilCompare == (compare or false) and stencilValue == value and (compare ~= nil) == (S.stencilTest ~= nil) then
+        return
+    end
+    State.flush()
     if compare == nil then
         S.stencilTest = nil
     else
-        assert(compareFunctions[compare], 'Invalid compare mode: ' .. tostring(compare))
-        S.stencilTest = { compare, value or 0 }
+        S.stencilTest = { compare, value }
     end
+    stencilCompare, stencilValue = compare or false, value
     applyStencilTest()
 end
 
@@ -123,14 +153,22 @@ function G.stencil(fn, action, value, keepvalues)
     State.flush()
     Color.applyColorMask()
     applyStencilTest()
+    stencilCompare = nil
 end
+
+local depthCompareApplied, depthWriteApplied
 
 function G.setDepthMode(compare, write)
     State.requireReady()
-    State.flush()
     compareFunctions = compareFunctions or compareTable()
-    S.depthCompare, S.depthWrite = compare or 'always', write and true or false
-    assert(compareFunctions[S.depthCompare], 'Invalid compare mode: ' .. tostring(compare))
+    compare, write = compare or 'always', write and true or false
+    assert(compareFunctions[compare], 'Invalid compare mode: ' .. tostring(compare))
+    if depthCompareApplied == compare and depthWriteApplied == write then
+        return
+    end
+    State.flush()
+    S.depthCompare, S.depthWrite = compare, write
+    depthCompareApplied, depthWriteApplied = compare, write
     gl.glEnable(E.DEPTH_TEST)
     gl.glDepthFunc(compareFunctions[S.depthCompare])
     gl.glDepthMask(S.depthWrite)
@@ -140,7 +178,10 @@ function G.getDepthMode()
     return S.depthCompare, S.depthWrite
 end
 
+local cullApplied
+
 local function applyCull()
+    cullApplied = S.cull .. S.winding .. tostring(target.isCanvas)
     if S.cull == 'none' then
         gl.glDisable(E.CULL_FACE)
         return
@@ -154,9 +195,12 @@ end
 
 function G.setMeshCullMode(mode)
     State.requireReady()
-    State.flush()
     assert(mode == 'none' or mode == 'back' or mode == 'front',
         'Invalid cull mode: ' .. tostring(mode))
+    if S.cull == mode and cullApplied == mode .. S.winding .. tostring(target.isCanvas) then
+        return
+    end
+    State.flush()
     S.cull = mode
     applyCull()
 end
@@ -166,8 +210,11 @@ function G.getMeshCullMode()
 end
 
 function G.setFrontFaceWinding(winding)
-    State.flush()
     assert(winding == 'cw' or winding == 'ccw', 'Invalid winding: ' .. tostring(winding))
+    if S.winding == winding and cullApplied == S.cull .. winding .. tostring(target.isCanvas) then
+        return
+    end
+    State.flush()
     S.winding = winding
     applyCull()
 end
@@ -176,9 +223,16 @@ function G.getFrontFaceWinding()
     return S.winding
 end
 
+local wireframeApplied
+
 function G.setWireframe(enabled)
+    enabled = not not enabled
+    if wireframeApplied == enabled then
+        return
+    end
     State.flush()
-    S.wireframe = not not enabled
+    wireframeApplied = enabled
+    S.wireframe = enabled
     if gl and gl.glPolygonMode then
         gl.glPolygonMode(0x408, S.wireframe and 0x1B01 or 0x1B02)
     end

@@ -93,10 +93,22 @@ end
 
 function ArenaView.build(scene)
     local world = scene.world
-    world.environment.debug.gizmos.enabled = false
-    world.environment.fog.enabled = false
-    world.environment.ambient = { 120, 125, 140 }
-    scene.camera.drawDistance = 400
+    -- The StareShooter look: panorama sky, soft sun with cascaded shadows and light haze.
+    local environment = world.environment
+    environment.debug.gizmos.enabled = false
+    environment.ambient = { 130, 134, 144 }
+    environment.toneMapping = false
+    environment.sky.texture = 'scene://textures/sky.png'
+    environment.sky.layout = 'Panorama'
+    environment.fog.enabled = true
+    environment.fog.color = { 199.6, 205.1, 213.7 }
+    environment.fog.density = 0.006
+    environment.fog.offset = 20
+    environment.fog.maxOpacity = 0.85
+    local shadows = environment.shadows
+    shadows.enabled, shadows.resolution, shadows.distance = true, 2048, 60
+    shadows.fadeDistance, shadows.near = 12, 0.05
+    shadows.bias, shadows.normalBias = 0.001, 0.015
     world:create('Mesh3D', {
         name = 'Ground',
         geometry = groundGeometry(),
@@ -123,21 +135,12 @@ function ArenaView.build(scene)
         end
     end
     ArenaView.buildPhysics(scene)
-    world:addLight({
+    world:create('DirectionalLight3D', {
         name = 'Sun',
-        position = { 0, 90, -30 },
-        range = 400,
-        radius = 40,
-        brightness = 1.6,
-        color = { 255, 240, 215 },
-    })
-    world:addLight({
-        name = 'Fill',
-        position = { 0, 40, 40 },
-        range = 300,
-        radius = 30,
-        brightness = 0.6,
-        color = { 150, 175, 255 },
+        direction = { 0.5, -0.75, -0.43301266 },
+        color = { 255, 255, 255 },
+        brightness = 0.9,
+        castShadow = true,
     })
 end
 

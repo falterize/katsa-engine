@@ -1,7 +1,25 @@
 local Methods = {}
 
--- Units per second; the orbit itself needs about 100.
-local MAX_SPEED = 400
+-- The flight path: position at orbit time t (seconds of simulated physics).
+function Methods.orbit(t)
+    local angle = t * 0.65
+    return math.sin(angle) * 110, 65 + math.sin(angle * 2) * 25, 90 + math.cos(angle) * 65
+end
+
+-- Runs before every fixed physics step. The kinematic body is given the exact velocity that lands
+-- it on the next point of the path, independent of how many steps a frame runs (a per-frame
+-- velocity from a stale position made the cube stutter). The renderer interpolates between steps.
+function Methods:beforeStep(fixedDelta)
+    if not (self.flying and self.placed) then
+        return
+    end
+    local x0, y0, z0 = Methods.orbit(self.orbitTime)
+    self.orbitTime = self.orbitTime + fixedDelta
+    local x1, y1, z1 = Methods.orbit(self.orbitTime)
+    local v = self.velocity
+    v[1], v[2], v[3] = (x1 - x0) / fixedDelta, (y1 - y0) / fixedDelta, (z1 - z0) / fixedDelta
+    self.flying.body:setVelocity(v)
+end
 
 function Methods:update(dt)
     local scene = self.scene
@@ -13,33 +31,13 @@ function Methods:update(dt)
             math.min(self.toolbar.length, math.max(88, scene.ui.height * 0.45 - 24)),
         }
     end
-    if self.flying then
-        local angle = scene.time * 0.65
-        local x, y, z =
-            math.sin(angle) * 110, 65 + math.sin(angle * 2) * 25, 90 + math.cos(angle) * 65
-        local p = self.flying.position
-        if not self.placed then
-            -- The orbit starts away from the spawn point; teleport once instead of launching the
-            -- kinematic body across the map in a single tiny first step.
-            self.placed = true
-            self.flying.position = { x, y, z }
-            self.velocity[1], self.velocity[2], self.velocity[3] = 0, 0, 0
-            self.flying.body:setVelocity(self.velocity)
-        elseif dt > 0 then
-            -- A near-zero frame delta (the first frame after loading) must not turn a small
-            -- displacement into an enormous or non-finite velocity.
-            local step = math.max(dt, 1 / 120)
-            local vx, vy, vz = (x - p[1]) / step, (y - p[2]) / step, (z - p[3]) / step
-            local speed = math.sqrt(vx * vx + vy * vy + vz * vz)
-            if speed ~= speed or speed == math.huge then
-                vx, vy, vz = 0, 0, 0
-            elseif speed > MAX_SPEED then
-                local scale = MAX_SPEED / speed
-                vx, vy, vz = vx * scale, vy * scale, vz * scale
-            end
-            self.velocity[1], self.velocity[2], self.velocity[3] = vx, vy, vz
-            self.flying.body:setVelocity(self.velocity)
-        end
+    if self.flying and not self.placed then
+        -- Start on the orbit instead of launching the kinematic body across the map.
+        self.placed = true
+        local x, y, z = Methods.orbit(self.orbitTime)
+        self.flying.position = { x, y, z }
+        self.velocity[1], self.velocity[2], self.velocity[3] = 0, 0, 0
+        self.flying.body:setVelocity(self.velocity)
     end
     scene.physics:update(dt)
     scene.world:updateNodes(dt)

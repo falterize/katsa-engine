@@ -6,8 +6,12 @@ local bodies = setmetatable({}, { __mode = 'kv' })
 
 local function children(node)
     local result = {}
+    -- World-space UI keeps its internal settings Environment on the host; it is plumbing, not content.
+    local hostsUI = node.ui ~= nil and (node:isA('BillboardUI') or node:isA('SurfaceUI'))
     for _, child in ipairs(node.children or {}) do
-        result[#result + 1] = child
+        if not (hostsUI and child._environmentOwner and child:isA('Environment')) then
+            result[#result + 1] = child
+        end
     end
     if node.material and node.material.uniforms then
         local child = materials[node]

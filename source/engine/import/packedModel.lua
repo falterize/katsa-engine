@@ -18,6 +18,9 @@ function Packed.write(model, source, destination)
         sourceHash = katsa.data.hash('sha256', assert(katsa.filesystem.read(source))),
     }
     header.sourceHash = katsa.data.encode('string', 'hex', header.sourceHash)
+    header.sourceFingerprint = require('source.engine.core.fingerprint').of(
+        assert(katsa.filesystem.read(source))
+    )
     for i, n in ipairs(model.nodes) do
         header.nodes[i] = {
             name = n.name,
@@ -105,12 +108,15 @@ function Packed.try(path, resources)
     assert(raw:sub(1, 4) == 'KMC1', 'Invalid model sidecar magic')
     local length = katsa.data.unpack('<I4', raw, 5)
     local header = JSON.decode(raw:sub(9, 8 + length))
-    local hash = katsa.data.encode(
-        'string',
-        'hex',
-        katsa.data.hash('sha256', assert(katsa.filesystem.read(path)))
-    )
-    if hash ~= header.sourceHash then
+    -- Sidecars carry a fast fingerprint of the source; older ones fall back to the SHA-256.
+    local source = assert(katsa.filesystem.read(path))
+    if header.sourceFingerprint then
+        if require('source.engine.core.fingerprint').of(source) ~= header.sourceFingerprint then
+            return
+        end
+    elseif
+        katsa.data.encode('string', 'hex', katsa.data.hash('sha256', source)) ~= header.sourceHash
+    then
         return
     end
     local model = {

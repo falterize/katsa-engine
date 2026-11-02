@@ -43,6 +43,16 @@ end
 function Tests:draw()
     self.frame = self.frame + 1
     local frame = self.frame
+    if self.maxTilt and frame > 320 and frame < 384 then
+        local _, car = self.session.client:getCar()
+        if car then
+            -- Angles are replicated as 0..360.
+            for _, angle in ipairs({ car.roll or 0, car.pitch or 0 }) do
+                angle = angle % 360
+                self.maxTilt = math.max(self.maxTilt, math.min(angle, 360 - angle))
+            end
+        end
+    end
     if frame == 1 then
         self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
@@ -100,7 +110,9 @@ function Tests:draw()
         local _, car = session.client:getCar()
         self:check(car and car.speed > 8, 'holding W drives the car')
         self:shot('driving')
-        host.input.actions.keys.w = nil
+        -- Full lock at speed for a second: the car must lean, not tip over.
+        host.input.actions.keys.a = true
+        self.maxTilt = 0
         -- Dragging orbits the camera; the path debug button shows the bot's route on the client.
         host.input.actions:look(30, 10)
         session.hud.debugPath.onPress()
@@ -157,6 +169,11 @@ function Tests:draw()
     elseif frame == 380 then
         host.workspace:toggle(false)
     elseif frame == 384 then
+        host.input.actions.keys.a, host.input.actions.keys.w = nil, nil
+        self:check(
+            self.maxTilt < 25,
+            'a hard turn at speed does not roll the car (max tilt ' .. ('%.1f'):format(self.maxTilt) .. ')'
+        )
         self:check(session.hud.info.text:find('Driving'), 'the HUD shows the seat')
         -- The car is a real rigid body: drive it at the east wall and it must stay inside.
         local netId = session.client:getCar()
@@ -201,6 +218,19 @@ function Tests:draw()
         self:shot('exited')
         host.input.actions.keys.w = true
     elseif frame == 640 then
+        local view
+        for _, v in pairs(session.walkerViews) do
+            view = v
+        end
+        local tracks = view and view.tracks
+        self:check(
+            tracks and tracks.Walk and tracks.Idle,
+            'the character has its Idle/Walk/Crouch/Fall/Jump animation tracks'
+        )
+        self:check(
+            tracks and tracks.Walk.weight > 0.5 and tracks.Idle.weight < 0.5,
+            'walking blends the Walk animation in'
+        )
         self:shot('walking')
         host.input.actions.keys.w = nil
         self:startRemote()

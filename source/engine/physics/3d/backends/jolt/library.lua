@@ -11,7 +11,7 @@ local filename = platformName == 'Windows' and 'joltc.dll'
     or 'libjoltc.so'
 local relative = 'vendor/joltPhysics/native/' .. platform .. '-' .. architecture .. '/' .. filename
 local bytes = assert(katsa.filesystem.read(relative), 'Missing Jolt native library: ' .. relative)
-local hash = katsa.data.encode('string', 'hex', katsa.data.hash('sha256', bytes))
+local hash = require('source.engine.core.fingerprint').of(bytes)
 local folder = 'native-cache/joltc-' .. hash
 assert(katsa.filesystem.createDirectory(folder))
 local target = folder .. '/' .. filename

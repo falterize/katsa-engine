@@ -3,6 +3,7 @@ local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
 local ArenaView = require('scene.scripts.view.arenaView')
 local CarView = require('scene.scripts.view.carView')
+local Orbit = require('scene.scripts.cameras.orbit')
 local Walker = require('scene.scripts.walker.controller')
 local WalkerView = require('scene.scripts.walker.view')
 local GameServer = require('scene.scripts.game.gameServer')
@@ -90,12 +91,10 @@ function Session.new(scene)
         drawDistance = 400,
     })
     scene.camera = scene.world:setCamera(self.camera)
-    -- Dragging (mouse or touch) orbits the chase camera around the car.
-    self.orbit = { yaw = 0, pitch = 0 }
+    -- The StareShooter orbit camera: dragging (mouse or touch) orbits, the wheel zooms.
+    self.orbit = Orbit.new(scene, self.camera)
     scene.input.actions:on('Look', function(_, look)
-        self.orbit.yaw = self.orbit.yaw - look[1] * 0.4
-        self.orbit.pitch = math.max(-20, math.min(55, self.orbit.pitch + look[2] * 0.3))
-        self.orbitIdle = 0
+        self.orbit:look(look[1], look[2])
     end)
     self:applyLaunchArguments()
     return self
@@ -315,68 +314,24 @@ function Session:watchAd()
     end)
 end
 
+-- The camera follows the car's roof line and swings behind it while driving.
 function Session:updateCamera(dt, car)
-    local camera = self.camera
-    -- The orbit offset eases back behind the car when the player stops dragging.
-    local orbit = self.orbit
-    self.orbitIdle = (self.orbitIdle or 0) + dt
-    if self.orbitIdle > 3 then
-        local ease = math.min(1, dt * 2)
-        orbit.yaw, orbit.pitch = orbit.yaw * (1 - ease), orbit.pitch * (1 - ease)
-    end
-    local heading = math.rad(car.heading + orbit.yaw)
-    local fx, fz = math.sin(heading), math.cos(heading)
-    local rise = 5 + orbit.pitch * 0.25
-    local target = { car.x - fx * 11, car.y + rise, car.z - fz * 11 }
-    local p = camera.position
-    local k = math.min(1, dt * 6)
-    local x = p[1] + (target[1] - p[1]) * k
-    local y = p[2] + (target[2] - p[2]) * k
-    local z = p[3] + (target[3] - p[3]) * k
-    -- Keep the camera between 8 and 15 units behind however hard the car accelerates.
-    local ox, oz = x - car.x, z - car.z
-    local distance = math.sqrt(ox * ox + oz * oz)
-    local clamped = math.max(8, math.min(15, distance))
-    if distance > 1e-6 and clamped ~= distance then
-        x, z = car.x + ox / distance * clamped, car.z + oz / distance * clamped
-    end
-    camera.position = { x, y, z }
-    p = camera.position
-    local dx, dy, dz = car.x - p[1], car.y + 1.5 - p[2], car.z - p[3]
-    local yaw = math.deg(math.atan2(dx, dz))
-    local pitch = math.deg(math.atan2(dy, math.sqrt(dx * dx + dz * dz)))
-    camera.rotation = { pitch, yaw, 0 }
+    self.orbit:setMode('car', car.heading)
+    self.orbit:update(dt, car.x, car.y + 1.3, car.z, car.heading, math.abs(car.speed or 0))
 end
 
--- Third-person camera around the on-foot player; dragging orbits it (no ease-back).
+-- Third-person camera around the on-foot player (the StareShooter pivot at chest height).
 function Session:updateWalkerCamera(dt, walker)
-    local camera, orbit = self.camera, self.orbit
-    local yaw, pitch = math.rad(orbit.yaw), math.rad(orbit.pitch)
-    local distance = 6
-    local px, py, pz = walker.x, walker.y + 1.5, walker.z
-    local target = {
-        px - math.sin(yaw) * math.cos(pitch) * distance,
-        py + math.sin(pitch) * distance + 1,
-        pz - math.cos(yaw) * math.cos(pitch) * distance,
-    }
-    local p, k = camera.position, math.min(1, dt * 10)
-    -- After a respawn or exit the camera may be far away: jump instead of flying across the map.
-    if (target[1] - p[1]) ^ 2 + (target[3] - p[3]) ^ 2 > 400 then
-        k = 1
+    self.orbit:setMode('walk')
+    self.orbit:update(dt, walker.x, walker.y + 1.4, walker.z)
+end
+
+function Session:wheelmoved(x, y)
+    if self.client then
+        self.orbit:zoom(y)
+        return true
     end
-    camera.position = {
-        p[1] + (target[1] - p[1]) * k,
-        p[2] + (target[2] - p[2]) * k,
-        p[3] + (target[3] - p[3]) * k,
-    }
-    p = camera.position
-    local dx, dy, dz = px - p[1], py - p[2], pz - p[3]
-    camera.rotation = {
-        math.deg(math.atan2(dy, math.sqrt(dx * dx + dz * dz))),
-        math.deg(math.atan2(dx, dz)),
-        0,
-    }
-    self.orbitIdle = 0
+    self.scene.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 -- Feeds the keys to the walker, and keeps its riding state in step with the seat the server gave.
