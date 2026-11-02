@@ -51,6 +51,10 @@ end
 function Interface:updateInBackground(dt, realDt)
     local state = self.state
     if state and state.updateInBackground then
+        local world = state.world
+        if world and world.root then
+            dt = require('source.engine.world.clock').delta(world.root, dt)
+        end
         return state:updateInBackground(dt, realDt)
     end
 end

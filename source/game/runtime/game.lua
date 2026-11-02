@@ -192,14 +192,26 @@ function Game:resize(w, h)
 end
 
 function Game:pointerpressed(id, x, y)
+    local demo = self.demo
+    if demo and demo.pointerpressed then
+        demo:pointerpressed(id, x, y)
+    end
     self.input:press(id, x, y)
 end
 
 function Game:pointermoved(id, x, y, dx, dy)
+    local demo = self.demo
+    if demo and demo.pointermoved then
+        demo:pointermoved(id, x, y, dx, dy)
+    end
     self.input:move(id, x, y, dx, dy)
 end
 
 function Game:pointerreleased(id, x, y)
+    local demo = self.demo
+    if demo and demo.pointerreleased then
+        demo:pointerreleased(id, x, y)
+    end
     self.input:release(id, x, y)
 end
 
@@ -269,6 +281,11 @@ function Game:exit()
 end
 
 function Game:wheelmoved(x, y)
+    -- A scene with its own wheel handling (camera zoom) goes first.
+    local demo = self.demo
+    if demo and demo.wheelmoved and demo:wheelmoved(x, y) then
+        return
+    end
     if self.input.wheelmoved and self.input:wheelmoved(x, y) then
         return
     end

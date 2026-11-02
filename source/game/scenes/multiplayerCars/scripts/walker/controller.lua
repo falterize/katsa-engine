@@ -25,6 +25,7 @@ Walker.settings = {
     mass = 80,
     stickReach = 0.45, -- how far below the feet the ground still counts while walking
     stickSpeed = 12, -- fastest snap down onto the terrain (m/s)
+    jumpGrace = 0.2, -- after a jump starts, the ground cannot catch the player for this long (s)
     coyoteTime = 0.12, -- grace after the ground disappears (curbs, bumps, mesh seams)
 }
 
@@ -78,6 +79,7 @@ function Walker.new(world, model, settings)
         cameraYaw = 0,
         grounded = false,
         groundGap = 0,
+        jumpTimer = 0,
         airTime = 0,
         air = true,
         walkBlend = 0,
@@ -190,7 +192,10 @@ function Walker:step(dt)
         self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = p[1], foot - reach, p[3]
         local hit =
             self.body.physics:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
-        local onGround = self.velocity[2] <= 0.05
+        -- Climbing a slope the physics lifts the body (positive vertical speed), so rising is no
+        -- proof of leaving the ground: only the moments right after a jump are excluded.
+        self.jumpTimer = math.max(0, self.jumpTimer - dt)
+        local onGround = self.jumpTimer == 0
             and hit ~= nil
             and hit.normal[2] >= math.cos(math.rad(50))
         if onGround then
@@ -200,7 +205,7 @@ function Walker:step(dt)
         else
             self.airTime = self.airTime + dt
             -- A short grace period keeps the walking state through one-frame ground misses.
-            self.coyote = self.grounded and self.velocity[2] <= 0.05 and self.airTime < settings.coyoteTime
+            self.coyote = self.grounded and self.jumpTimer == 0 and self.airTime < settings.coyoteTime
         end
         self.grounded = onGround or self.coyote
         -- Forward is the camera's facing, right is its screen-right (the engine is left-handed).
