@@ -23,6 +23,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_4.mobileControls').run(self)
     require('validation.tests.versions.v108_4.fontProperty').run(self)
     require('validation.tests.versions.v108_4.qualityProfiles').run(self)
+    require('validation.tests.versions.v108_4.uiStyler').run(self)
     print('PASSED ' .. self.count .. ' v108.4 focused checks')
     katsa.event.quit()
 end

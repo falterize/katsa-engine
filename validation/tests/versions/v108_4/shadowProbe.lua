@@ -73,6 +73,23 @@ function Tests:draw()
             end
         end
     end
+    if self.frame == 62 and os.getenv('KATSA_THEME') and scene then
+        local function find(node)
+            if node.text == 'Theme: dark' then
+                return node
+            end
+            for _, child in ipairs(node.children) do
+                local found = find(child)
+                if found then
+                    return found
+                end
+            end
+        end
+        local button = find(scene.ui.content)
+        if button then
+            button.onPress(button)
+        end
+    end
     if self.frame == 70 and os.getenv('KATSA_EXPORT') and scene then
         scene:keypressed('f6')
         local files = katsa.filesystem.getDirectoryItems('stats-logs')
