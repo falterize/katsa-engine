@@ -25,6 +25,8 @@ end
 function Session.new(scene)
     local self =
         setmetatable({ scene = scene, views = {}, held = {}, mode = 'menu', lanTimer = 0 }, Session)
+    -- Meters, real gravity: the terrain and walls are static bodies the vehicles will drive on.
+    scene:createPhysics({ unitsPerMeter = 1, gravity = { 0, -9.81, 0 }, backend = 'jolt' })
     ArenaView.build(scene)
     self.menu = Menu.create(scene, {
         host = function(name)

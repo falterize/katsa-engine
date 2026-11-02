@@ -5,7 +5,7 @@ local Settings = {
     id = 'multiplayerCars',
     title = 'Multiplayer cars / LAN servers, bot and nitro ads',
     category = 'Multiplayer',
-    physics = { backend = 'auto' },
+    physics = { backend = 'jolt' },
 }
 
 return Settings

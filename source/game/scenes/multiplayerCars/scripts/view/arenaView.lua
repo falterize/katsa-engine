@@ -27,6 +27,70 @@ local function groundGeometry()
     return geometry
 end
 
+-- The same height field as a static triangle mesh (counter-clockwise from above) for physics.
+local function groundCollider()
+    local half, step = Arena.size / 2, 2
+    local count = Arena.size / step + 1
+    local vertices, indices = {}, {}
+    for i = 0, count - 1 do
+        for j = 0, count - 1 do
+            local x, z = -half + i * step, -half + j * step
+            vertices[#vertices + 1] = { x, Arena.ground(x, z), z }
+        end
+    end
+    local function at(i, j)
+        return i * count + j + 1
+    end
+    for i = 0, count - 2 do
+        for j = 0, count - 2 do
+            local a, b, c, d = at(i, j), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)
+            for _, index in ipairs({ a, d, c, a, c, b }) do
+                indices[#indices + 1] = index
+            end
+        end
+    end
+    return { shape = 'Mesh', vertices = vertices, indices = indices }
+end
+
+-- Static physics for the terrain and obstacles. Skipped when the scene has no Jolt world.
+function ArenaView.buildPhysics(scene)
+    local world = scene.world
+    if not world.physics then
+        return false
+    end
+    local ok, problem = pcall(function()
+        world:create('Body3D', {
+            name = 'GroundBody',
+            bodyType = 'Static',
+            size = { 1, 1, 1 },
+            collider = groundCollider(),
+        })
+        for index, obstacle in ipairs(Arena.obstacles) do
+            local height = 3
+            if obstacle.kind == 'box' then
+                world:create('Body3D', {
+                    name = 'WallBody' .. index,
+                    bodyType = 'Static',
+                    position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + height / 2, obstacle.z },
+                    size = { obstacle.halfX * 2, height, obstacle.halfZ * 2 },
+                })
+            else
+                world:create('Body3D', {
+                    name = 'PillarBody' .. index,
+                    bodyType = 'Static',
+                    position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + 1, obstacle.z },
+                    size = { obstacle.radius * 2, obstacle.radius * 2, obstacle.radius * 2 },
+                    collider = { shape = 'Sphere', radius = obstacle.radius },
+                })
+            end
+        end
+    end)
+    if not ok then
+        katsa.log.warn('multiplayerCars: terrain physics unavailable: ' .. tostring(problem))
+    end
+    return ok
+end
+
 function ArenaView.build(scene)
     local world = scene.world
     world.environment.debug.gizmos.enabled = false
@@ -44,7 +108,7 @@ function ArenaView.build(scene)
             world:create('Mesh3D', {
                 name = 'Wall' .. index,
                 kind = 'cube',
-                position = { obstacle.x, 1.5, obstacle.z },
+                position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + 1.5, obstacle.z },
                 size = { obstacle.halfX * 2, 3, obstacle.halfZ * 2 },
                 color = { 0.55, 0.5, 0.45 },
             })
@@ -52,12 +116,13 @@ function ArenaView.build(scene)
             world:create('Mesh3D', {
                 name = 'Pillar' .. index,
                 kind = 'sphere',
-                position = { obstacle.x, 1, obstacle.z },
+                position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + 1, obstacle.z },
                 size = { obstacle.radius * 2, obstacle.radius * 2, obstacle.radius * 2 },
                 color = { 0.6, 0.35, 0.3 },
             })
         end
     end
+    ArenaView.buildPhysics(scene)
     world:addLight({
         name = 'Sun',
         position = { 0, 90, -30 },
