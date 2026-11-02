@@ -26,10 +26,22 @@ local function loudness(pcm, count, from)
     return math.min(1, math.sqrt(sum / math.max(1, count)) * 4)
 end
 
+-- VU behaviour: a packet replaces the meter once it is at least as loud as what the meter
+-- currently shows (the old peak decays), so quieter speech after a loud word still counts.
+local DECAY_SECONDS = 0.35
+
+local function decayed(level, now)
+    return level and level.value * math.max(0, 1 - (now - level.time) / DECAY_SECONDS) or 0
+end
+
 function Voice:setLevel(id, value)
     local level = self.levels[id]
-    if not level or value >= level.value then
-        self.levels[id] = { value = value, time = self.now }
+    if value >= decayed(level, self.now) then
+        if level then
+            level.value, level.time = value, self.now
+        else
+            self.levels[id] = { value = value, time = self.now }
+        end
     end
 end
 
@@ -199,14 +211,14 @@ function Voice:getMeters()
         ex, ey, ez = self.listenerAt()
     end
     for id, level in pairs(self.levels) do
-        local age = self.now - level.time
-        local shown = level.value * math.max(0, 1 - age / 0.35)
+        local shown = decayed(level, self.now)
         if shown > 0.02 then
             local near = true
             if id ~= 0 and ex and self.positionOf then
                 local x, y, z = self.positionOf(id)
-                near = x ~= nil
-                    and (x - ex) ^ 2 + (y - ey) ^ 2 + (z - ez) ^ 2 <= self.hearingRange ^ 2
+                -- Unknown position (the speaker is driving): the voice plays unpositioned, so
+                -- its meter shows too.
+                near = x == nil or (x - ex) ^ 2 + (y - ey) ^ 2 + (z - ez) ^ 2 <= self.hearingRange ^ 2
             end
             if near then
                 list[#list + 1] = { id = id, level = shown, mine = id == 0 }

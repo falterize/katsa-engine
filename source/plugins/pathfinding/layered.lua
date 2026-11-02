@@ -65,6 +65,7 @@ end
 
 -- blocked(level, x, z) -> bool and heightAt(level, x, z) -> y, both in world coordinates.
 function Layered:bake(blocked, heightAt)
+    self.revision = (self.revision or 0) + 1
     for level, grid in ipairs(self.levels) do
         grid:bake(function(x, z)
             return blocked(level, x, z)

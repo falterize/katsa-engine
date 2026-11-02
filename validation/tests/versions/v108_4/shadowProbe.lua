@@ -39,6 +39,12 @@ function Tests:draw()
     if os.getenv('KATSA_TOGGLE') and scene and scene.world then
         scene.world.environment.shadows.enabled = not (self.frame >= 68)
     end
+    if self.frame == 30 and os.getenv('KATSA_PATHDBG') and scene and scene.world then
+        local debug = scene.world.environment.debug
+        if debug.pathfinding then
+            debug.pathfinding.enabled = true
+        end
+    end
     if self.frame == 40 and os.getenv('KATSA_NOCAST') and scene and scene.world then
         for _, o in ipairs(scene.world.objects) do
             if o.skin then o.castShadow = false end
@@ -51,6 +57,21 @@ function Tests:draw()
     end
     if self.frame == 40 and os.getenv('KATSA_FREEZE') and scene and scene.world then
         scene.world.timeScale = 0
+    end
+    if (self.frame == 66 or self.frame == 72) and os.getenv('KATSA_SURF') and scene then
+        for _, o in ipairs(scene.world.objects) do
+            if o.skin then
+                local sa = o._surfaceAppearance
+                local parts = {}
+                if sa then
+                    for k, v in pairs(sa) do
+                        parts[#parts + 1] = k .. '=' .. tostring(type(v) == 'table' and ('{' .. tostring(v[1]) .. ',' .. tostring(v[2]) .. '}') or v)
+                    end
+                    table.sort(parts)
+                end
+                print(('SURF f%d %s shadows=%s pending=%s color=%s | %s'):format(self.frame, tostring(o.name), tostring(scene.world.environment.shadows.enabled), tostring(o._appearancePending), tostring(o.color and (o.color[1] .. ',' .. o.color[2] .. ',' .. o.color[3])), table.concat(parts, ' ')))
+            end
+        end
     end
     if self.frame == 70 and os.getenv('KATSA_EXPORT') and scene then
         scene:keypressed('f6')

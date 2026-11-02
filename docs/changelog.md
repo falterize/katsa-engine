@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Pathfinding debug view: per-map cell data (free flag, height) is cached by map revision, corners are projected without per-frame tables, and runs of neighbouring free cells are drawn as one segment (about 3x fewer line calls, identical picture; segments behind the camera fall back to per-cell lines).
+- multiplayerCars voice meters: a quieter packet after a loud one no longer left the meter fading to zero while the person kept talking (the old peak kept its timestamp), and speakers whose position is unknown (driving a car) now show their meter too.
 - Stats export without the panel: **F6** (also *Export Stats CSV* in the F4 menu, `statistics:export(seconds)`) saves the last 30 s of the background-recorded histories.
 - Quality profiles `Low` / `Medium` / `High` (`Environment:applyQualityProfile`, F4 menu): render density, MSAA and shadow resolution cap, distance, update rate, filter samples and update budget; no feature is removed. `renderDensity` is the render-resolution scale.
 - `Environment.rendering.vsync` (boolean) drives the window's vertical sync from the scene (default: the current window setting).

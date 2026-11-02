@@ -39,6 +39,7 @@ end
 function Grid:setBlocked(x, y, blocked)
     assert(self:inside(x, y), 'Cell is outside the grid')
     self.blocked[index(self, x, y)] = blocked ~= false or nil
+    self.revision = (self.revision or 0) + 1
 end
 
 function Grid:isBlocked(x, y)
