@@ -29,6 +29,9 @@ function Tests:draw()
         print(('LOAD total %.1f ms'):format(l.total or 0))
     elseif self.frame == 75 and os.getenv('KATSA_PROF') then
         require('jit.p').stop()
+    elseif self.frame >= 60 and self.frame < 70 and os.getenv('KATSA_UIMS') then
+        local sc = self.scene
+        print(('UIMS stats=%s ui=%.2f'):format(tostring(sc.showStats), sc.uiMilliseconds or -1))
     elseif self.frame == 76 and COUNTS then
         local list = {}
         for k, v in pairs(COUNTS) do list[#list + 1] = { k, v } end
