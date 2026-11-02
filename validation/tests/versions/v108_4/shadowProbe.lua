@@ -21,7 +21,25 @@ end
 
 function Tests:draw()
     local dir = os.getenv('KATSA_SHOT')
-    if self.frame >= 60 and self.frame < 76 and dir then
+    local scene = self.scene
+    if self.frame >= 40 and os.getenv('KATSA_MOVE') and scene and scene.camera then
+        -- Sweep the camera sideways, like a player dragging the view.
+        local t = (self.frame - 40) * 0.05
+        scene.camera.position = { math.sin(t) * 12, 65, -105 }
+    end
+    if self.frame == 30 and scene and scene.world then
+        local sh = scene.world.environment.shadows
+        for env, key in pairs({ KATSA_BIAS = 'bias', KATSA_NBIAS = 'normalBias', KATSA_RES = 'resolution', KATSA_DIST = 'distance', KATSA_SAMPLES = 'filterSamples' }) do
+            if os.getenv(env) then sh[key] = tonumber(os.getenv(env)) end
+        end
+    end
+    if self.frame == 40 and os.getenv('KATSA_NOSHADOW') and scene and scene.world then
+        scene.world.environment.shadows.enabled = false
+    end
+    if self.frame == 40 and os.getenv('KATSA_FREEZE') and scene and scene.world then
+        scene.world.timeScale = 0
+    end
+    if self.frame >= 60 and self.frame < 76 + (tonumber(os.getenv('KATSA_FRAMES')) or 0) and dir then
         katsa.graphics.captureScreenshot(('%s/f%02d.png'):format(dir, self.frame - 60))
     elseif self.frame == 70 and os.getenv('KATSA_LOADS') then
         local l = self.manager.profiler.loading
@@ -37,7 +55,7 @@ function Tests:draw()
         for k, v in pairs(COUNTS) do list[#list + 1] = { k, v } end
         table.sort(list, function(a, b) return a[2] > b[2] end)
         for i = 1, 12 do if list[i] then print('COUNT', list[i][2], list[i][1]) end end
-    elseif self.frame >= 80 then
+    elseif self.frame >= 80 + (tonumber(os.getenv('KATSA_FRAMES')) or 0) then
         print('PASSED probe')
         katsa.event.quit()
     end
