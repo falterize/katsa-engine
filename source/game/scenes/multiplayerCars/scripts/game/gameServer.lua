@@ -9,7 +9,7 @@ local Plugins = require('source.engine.plugins')
 local CarEntity = require('scene.scripts.game.carEntity')
 local Arena = require('scene.scripts.game.arena')
 local Bot = require('scene.scripts.game.bot')
-local Collision = require('scene.nodes.vehicle.collision')
+local PhysicsCar = require('scene.scripts.game.physicsCar')
 
 local GameServer = {}
 GameServer.__index = GameServer
@@ -21,7 +21,7 @@ local SEATS = 4
 
 -- options: port, maxPlayers, name, simulate (link simulation), bot (default true),
 -- adCooldown (seconds between refills per player, default 20), verifyReward(player, token),
--- sightRadius.
+-- sightRadius, world (a World3D with physics: cars become Body3D rigid bodies stepped by it).
 function GameServer.new(context, options)
     options = options or {}
     local server = Net.Server.new(context, {
@@ -34,13 +34,14 @@ function GameServer.new(context, options)
         server = server,
         options = options,
         cars = {}, -- netId -> car model
+        bodies = {}, -- netId -> PhysicsCar
         order = {}, -- netIds in spawn order (stable iteration)
         playerCars = {}, -- player id -> netId
         refills = {}, -- player id -> server time of the last refill
         nextSpawn = 1,
         bot = nil,
     }, GameServer)
-    CarEntity.define(server)
+    CarEntity.define(server, true)
     self:bindRemotes()
     server.playerAdded:connect(function(player)
         self:onPlayerAdded(player)
@@ -53,6 +54,22 @@ function GameServer.new(context, options)
         self:onTick(dt)
     end)
     self.options.name = options.name or 'Katsa cars'
+    if options.world and options.world.physics then
+        local physics = options.world.physics
+        self.previousBeforeStep = physics.beforeStep
+        physics.beforeStep = function(world, dt)
+            if self.previousBeforeStep then
+                self.previousBeforeStep(world, dt)
+            end
+            for _, netId in ipairs(self.order) do
+                local body = self.bodies[netId]
+                if body then
+                    body:setInput(self.cars[netId].input)
+                    body:step(dt)
+                end
+            end
+        end
+    end
     return self
 end
 
@@ -74,6 +91,14 @@ end
 
 function GameServer:stop()
     self.server:stop()
+    local physics = self.options.world and self.options.world.physics
+    if physics and physics.beforeStep ~= nil then
+        physics.beforeStep = self.previousBeforeStep
+    end
+    for netId, body in pairs(self.bodies) do
+        body:destroy()
+        self.bodies[netId] = nil
+    end
 end
 
 function GameServer:update(dt)
@@ -96,6 +121,10 @@ end
 function GameServer:spawnCar(args, authority)
     local model, netId = self.server:spawn('Car', args, authority)
     self:register(model, netId)
+    local world = self.options.world
+    if world and world.physics then
+        self.bodies[netId] = PhysicsCar.new(world, model, netId)
+    end
     return model, netId
 end
 
@@ -282,29 +311,28 @@ function GameServer:onTick(dt)
         local car = self.cars[netId]
         if car then
             if netId == self.botId and self.bot then
-                CarEntity.simulate(car, self.bot:think(models, dt), dt)
+                car.input = self.bot:think(models, dt)
             elseif not car:getDriver() then
-                CarEntity.simulate(car, {}, dt) -- coast to a stop
+                car.input = {} -- coast to a stop
             end
         end
     end
     self:broadcastBotPath(now)
-    -- Car versus car, then dents from every impact this tick.
-    for i = 1, #self.order do
-        for j = i + 1, #self.order do
-            local a, b = self.cars[self.order[i]], self.cars[self.order[j]]
-            local ai, bi = Collision.resolvePair(a, b)
-            for _, impact in ipairs(ai) do
-                a.impacts[#a.impacts + 1] = impact
-            end
-            for _, impact in ipairs(bi) do
-                b.impacts[#b.impacts + 1] = impact
-            end
-        end
-    end
     local removed
     for _, netId in ipairs(self.order) do
         local car = self.cars[netId]
+        local body = self.bodies[netId]
+        if body then
+            body:readState()
+            if body:needsReset(dt) then
+                local point = Arena.spawns[(netId - 1) % #Arena.spawns + 1]
+                body:respawn(point[1], point[2], point[3])
+            end
+            for _, impact in ipairs(body.impacts) do
+                car.impacts[#car.impacts + 1] = impact
+            end
+            body.impacts = {}
+        end
         for _, impact in ipairs(car.impacts) do
             self:addDent(netId, car, impact, now)
         end
@@ -320,6 +348,10 @@ function GameServer:onTick(dt)
 end
 
 function GameServer:removeCar(netId)
+    if self.bodies[netId] then
+        self.bodies[netId]:destroy()
+        self.bodies[netId] = nil
+    end
     self.cars[netId] = nil
     for index, id in ipairs(self.order) do
         if id == netId then

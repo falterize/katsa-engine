@@ -14,6 +14,7 @@ function CarEntity.create(_, args)
     local car = Model.new(args.config, Arena.ground)
     car:setPose(args.x or 0, args.z or 0, args.heading or 0)
     car.nitro = args.nitro or 1
+    car.pitch, car.roll = 0, 0
     car.impacts = {}
     car.dents = Deformation.new()
     car.dents:load(args.dents)
@@ -68,7 +69,6 @@ end
 
 CarEntity.definition = {
     create = CarEntity.create,
-    simulate = CarEntity.simulate,
     get = get,
     set = set,
     despawnWithAuthority = false, -- a car outlives its driver
@@ -79,6 +79,8 @@ CarEntity.definition = {
         'slide:f32',
         'nitro:f32',
         'steerAngle:f32',
+        'pitch:angle',
+        'roll:angle',
         'spring1:f32',
         'spring2:f32',
         'spring3:f32',
@@ -86,12 +88,17 @@ CarEntity.definition = {
     },
 }
 
--- Defines the car kind on a Net.Server or Net.Client.
-function CarEntity.define(target)
+-- Defines the car kind on a Net.Server or Net.Client. Cars are rigid bodies simulated by the
+-- server's physics world: the server only stores each driver's input (applied every physics
+-- step) and clients interpolate the replicated state, so the client definition has no simulate.
+function CarEntity.define(target, isServer)
     local copy = {}
     for key, value in pairs(CarEntity.definition) do
         copy[key] = value
     end
+    copy.simulate = isServer and function(car, input)
+        car.input = input
+    end or nil
     target:define('Car', copy)
 end
 
