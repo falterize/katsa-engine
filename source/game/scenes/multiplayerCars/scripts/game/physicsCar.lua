@@ -5,6 +5,7 @@
 --
 -- Units are meters (the scene uses unitsPerMeter = 1). Heading 0 faces +z.
 local O = require('source.engine.physics.3d.valueTypes')
+local orientation = require('scene.scripts.game.orientation')
 
 local PhysicsCar = {}
 PhysicsCar.__index = PhysicsCar
@@ -47,7 +48,7 @@ function PhysicsCar.new(world, model, netId, options)
     local height = -t.mountY + t.restLength + t.wheelRadius
     local node = world:create('Body3D', {
         name = 'CarBody' .. netId,
-        bodyType = 'Dynamic',
+        bodyType = 'Dynamic', -- a custom mass needs a dynamic body; follow mode switches below
         size = { t.size[1], t.size[2], t.size[3] },
         mass = t.mass,
         friction = 0.15,
@@ -73,12 +74,51 @@ function PhysicsCar.new(world, model, netId, options)
         hit = {},
         input = {},
         impacts = {},
+        mode = options.mode or 'dynamic',
+        angles = {},
         axes = { right = {}, up = {}, forward = {} },
     }, PhysicsCar)
+    if self.mode == 'follow' then
+        node.bodyType = 'Kinematic'
+        node:update(0)
+    end
     self.filter = function(other)
         return other ~= node.body and other.canCollide
     end
     return self
+end
+
+-- 'dynamic': the car is driven by forces here. 'follow': a kinematic stand-in that copies the
+-- replicated model (a car simulated by its driver's client, or another player's car seen from a
+-- client that owns one), so the owning simulation still collides with it.
+function PhysicsCar:setMode(mode)
+    if mode == self.mode then
+        return
+    end
+    self.mode = mode
+    if mode == 'dynamic' then
+        local model = self.model
+        self.node.bodyType = 'Dynamic'
+        self.node:update(0)
+        local fx, fz = math.sin(math.rad(model.heading)), math.cos(math.rad(model.heading))
+        self.node.body:setVelocity({ fx * model.speed, 0, fz * model.speed })
+        self.hasPrevious = false
+        for i = 1, 4 do
+            self.compression[i] = 0
+        end
+    else
+        self.node.bodyType = 'Kinematic'
+        self.node:update(0)
+    end
+end
+
+-- Moves a follow-mode body to the replicated pose.
+function PhysicsCar:follow()
+    local model = self.model
+    local angles = orientation(model.heading, model.pitch or 0, model.roll or 0, self.angles)
+    self.node.position = { model.x, model.y, model.z }
+    self.node.rotation = { angles[1], angles[2], angles[3] }
+    self.node.body:sync()
 end
 
 function PhysicsCar:setInput(input)
@@ -103,6 +143,9 @@ end
 
 -- Applies all car forces for one physics step.
 function PhysicsCar:step(dt)
+    if self.mode == 'follow' then
+        return self:follow()
+    end
     local t, model, config = self.tuning, self.model, self.config
     local body = self.node.body
     local px, py, pz = self:pose()
@@ -202,6 +245,9 @@ end
 
 -- Refreshes the replicated model from the body and queues collision impacts.
 function PhysicsCar:readState()
+    if self.mode == 'follow' then
+        return
+    end
     local model = self.model
     local px, py, pz = self:pose()
     local a = self.axes
@@ -245,6 +291,9 @@ end
 
 -- True once the car has been upside down or far below the arena for a while.
 function PhysicsCar:needsReset(dt)
+    if self.mode == 'follow' then
+        return false
+    end
     local flipped = self.axes.up[2] < 0.25 and math.abs(self.model.speed) < 3
     self.flippedFor = flipped and (self.flippedFor or 0) + dt or 0
     return self.flippedFor > 3 or self.model.y < -30

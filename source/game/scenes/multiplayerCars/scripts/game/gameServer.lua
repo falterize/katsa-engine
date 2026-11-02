@@ -41,9 +41,12 @@ function GameServer.new(context, options)
         nextSpawn = 1,
         bot = nil,
     }, GameServer)
-    CarEntity.define(server, true)
+    CarEntity.define(server)
     self:bindRemotes()
     server.playerAdded:connect(function(player)
+        if options.hostsPlayer and not self.hostPlayer then
+            self.hostPlayer = player -- the first client is the hosting machine's own player
+        end
         self:onPlayerAdded(player)
     end)
     server.playerRemoved:connect(function(player)
@@ -154,9 +157,24 @@ function GameServer:onPlayerAdded(player)
         z = point[2],
         heading = point[3],
         seats = { player.id, 0, 0, 0 },
-    }, player)
+    })
     model.seats[1] = player.id
     self.playerCars[player.id] = netId
+    self:assignDriver(netId, player)
+end
+
+-- Gives the car's physics to its driver's client, or back to the server (nil, or the hosting
+-- machine's own player, whose input the server reads directly: it shares this physics world).
+function GameServer:assignDriver(netId, player)
+    local car, body = self.cars[netId], self.bodies[netId]
+    local remote = player ~= nil and player ~= self.hostPlayer and body ~= nil
+    self.server:setAuthority(netId, remote and player or nil)
+    if body then
+        body:setMode(remote and 'follow' or 'dynamic')
+    end
+    if not remote then
+        car.input = {}
+    end
 end
 
 function GameServer:publishSeats(netId)
@@ -193,7 +211,7 @@ function GameServer:leaveCar(player)
                 break
             end
         end
-        self.server:setAuthority(netId, car.seats[1] and self:findPlayer(car.seats[1]) or nil)
+        self:assignDriver(netId, car.seats[1] and self:findPlayer(car.seats[1]) or nil)
     end
     if car:getOccupants() == 0 then
         car.emptySince = self.server.time
@@ -222,7 +240,7 @@ function GameServer:seat(player, netId)
     self.playerCars[player.id] = netId
     target.emptySince = nil
     if seat == 1 then
-        self.server:setAuthority(netId, player)
+        self:assignDriver(netId, player)
     end
     self:publishSeats(netId)
     return seat
@@ -232,6 +250,14 @@ function GameServer:bindRemotes()
     local server = self.server
     server:remote('sit'):onRequest(function(player, netId)
         return self:seat(player, netId)
+    end)
+    -- A driver's client simulates its own car, so it reports the collisions it felt.
+    server:remote('impact'):onServer(function(player, netId, x, z, nx, nz, speed)
+        local car = self.cars[netId]
+        if car and self.server:getAuthority(netId) == player and #car.impacts < 8 then
+            car.impacts[#car.impacts + 1] =
+                { x = x, z = z, nx = nx, nz = nz, speed = math.min(speed, 40) }
+        end
     end)
     server:remote('nitroAd'):onRequest(function(player, token)
         return self:grantNitro(player, token)
@@ -257,6 +283,9 @@ function GameServer:grantNitro(player, token)
     end
     self.refills[player.id] = now
     car.nitro = 1
+    if self.server:getAuthority(netId) == player then
+        self.server:remote('refill'):fireClient(player, netId)
+    end
     return true
 end
 
@@ -314,6 +343,9 @@ function GameServer:onTick(dt)
                 car.input = self.bot:think(models, dt)
             elseif not car:getDriver() then
                 car.input = {} -- coast to a stop
+            elseif self.hostPlayer and car:getDriver() == self.hostPlayer.id then
+                -- The hosting player shares this physics world: drive from its input directly.
+                car.input = self.hostPlayer.lastInput or {}
             end
         end
     end
@@ -325,7 +357,7 @@ function GameServer:onTick(dt)
         if body then
             body:readState()
             if body:needsReset(dt) then
-                local point = Arena.spawns[(netId - 1) % #Arena.spawns + 1]
+                local point = CarEntity.spawnPoint(netId)
                 body:respawn(point[1], point[2], point[3])
             end
             for _, impact in ipairs(body.impacts) do

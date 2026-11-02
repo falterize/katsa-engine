@@ -11,6 +11,8 @@ local Menu = Interface.Menu
 local Hud = Interface.Hud
 
 local Session = {}
+-- Exposed so tests can build a second, independent client and physics world.
+Session.GameClient, Session.ArenaView = GameClient, ArenaView
 Session.__index = Session
 
 local DEFAULT_PORT = 7777
@@ -167,6 +169,7 @@ function Session:startClient(address, port, name)
         address = address,
         port = port,
         name = (name and name ~= '') and name or 'Player',
+        world = (not self.server) and self.scene.world or nil,
         input = function()
             return self:input()
         end,
@@ -204,6 +207,7 @@ function Session:host(name, port)
             port = port,
             name = (name or 'Player') .. "'s game",
             world = self.scene.world,
+            hostsPlayer = true,
         })
         self.server:start()
     end)
@@ -302,6 +306,10 @@ function Session:update(dt)
         -- The hosted cars are rigid bodies: step the world, then let the server read them.
         self.scene.physics:update(dt)
         self.server:update(dt)
+    elseif self.client and self.client:simulates() then
+        -- A joined player simulates the car it drives and keeps stand-ins for the others.
+        self.scene.physics:update(dt)
+        self.client:afterPhysics()
     end
     if self.client then
         self.client:update(dt)
