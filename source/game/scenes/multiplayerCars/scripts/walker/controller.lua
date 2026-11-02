@@ -81,6 +81,8 @@ function Walker.new(world, model, settings)
         cameraYaw = 0,
         grounded = false,
         groundGap = 0,
+        carry = { 0, 0, 0 }, -- horizontal velocity of the moving ground that is part of `velocity`
+        platform = { 0, 0, 0 },
         -- Gameplay state is authored per fixed tick; rendering samples it between ticks.
         smooth = {
             yaw = StepValue.new(math.rad(model.heading or 0), true),
@@ -229,6 +231,17 @@ function Walker:step(dt)
             self.coyote = self.grounded and self.jumpTimer == 0 and self.airTime < settings.coyoteTime
         end
         self.grounded = onGround or self.coyote
+        -- Standing on something that moves (a car roof): the character rides along. `velocity`
+        -- is kept relative to that ground while the states run, then the ground's is added back.
+        local platform, carry = self.platform, self.carry
+        platform[1], platform[2], platform[3] = 0, 0, 0
+        if onGround and hit.body and hit.body ~= self.body and hit.body.type ~= 'Static' then
+            hit.body:getPointVelocity(hit.position, platform)
+        end
+        if self.grounded then
+            self.velocity[1], self.velocity[3] = self.velocity[1] - carry[1], self.velocity[3] - carry[3]
+        end
+        carry[1], carry[3] = 0, 0
         -- Forward is the camera's facing, right is its screen-right (the engine is left-handed).
         local sin, cos = math.sin(self.cameraYaw), math.cos(self.cameraYaw)
         local f, r = self.input.forward, self.input.right
@@ -241,7 +254,13 @@ function Walker:step(dt)
     else
         self.direction[1], self.direction[3] = 0, 0
     end
+    local wasGrounded = self.grounded
     self.fsm:update(dt)
+    if wasGrounded and not self.riding then
+        self.velocity[1] = self.velocity[1] + self.platform[1]
+        self.velocity[3] = self.velocity[3] + self.platform[3]
+        self.carry[1], self.carry[3] = self.platform[1], self.platform[3]
+    end
     local height = Math.approach(self.height, self.targetHeight, settings.heightSpeed * dt)
     if height ~= self.height then
         self.height = height
