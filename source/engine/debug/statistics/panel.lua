@@ -203,7 +203,7 @@ function Panel:export(scope, seconds)
     if ok then
         self.lastExport = path
     end
-    return ok, path
+    return ok, path, rows
 end
 
 function Panel:ensureRows()

@@ -62,3 +62,19 @@ logical measurements and one inverse draw scale. The legacy `ui:font` API is
 retained for compatibility. Translucent groups and viewport overlays use native
 pixel targets to avoid a second resampling step. See [text rendering](../ui/textRendering.md)
 for the shared implementation and its transform limits.
+
+## Quality profiles
+
+`Environment:applyQualityProfile('Low' | 'Medium' | 'High')` (also in the F4 debug menu, which
+cycles them) changes only numeric settings; no feature is switched off:
+
+| Profile | renderDensity | msaa | shadow resolution cap | shadow distance | shadow updateHz | filterSamples | maxUpdateFaces |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Low (weak or integrated GPU) | 0.75 | 0 | 512 | 120 | 20 | 1 | 3 |
+| Medium | 1 | 0 | 1024 | 180 | 30 | 1 | 6 |
+| High | 1 | 2 | 4096 | 240 | 60 | 4 | 12 |
+
+The shadow resolution is capped, never raised, so a scene's authored map size is respected.
+`renderDensity` is the render-resolution scale (0.5-3): 0.75 renders the 3D view at 75% of the
+window size and stretches it. `require('source.engine.graphics.quality.profiles').recommended()`
+returns `'Low'` on Intel UHD graphics and `'High'` elsewhere; nothing applies it automatically.

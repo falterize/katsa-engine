@@ -52,6 +52,11 @@ function Tests:draw()
     if self.frame == 40 and os.getenv('KATSA_FREEZE') and scene and scene.world then
         scene.world.timeScale = 0
     end
+    if self.frame == 70 and os.getenv('KATSA_EXPORT') and scene then
+        scene:keypressed('f6')
+        local files = katsa.filesystem.getDirectoryItems('stats-logs')
+        print('EXPORT files', #files, files[#files], 'showStats', tostring(scene.showStats))
+    end
     if os.getenv('KATSA_DATA') and self.frame >= 60 and self.frame < 76 and scene and scene.world then
         local r = scene.world._activeRenderer
         local sh = r and r.shadows
