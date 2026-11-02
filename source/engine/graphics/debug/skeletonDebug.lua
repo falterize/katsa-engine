@@ -11,6 +11,11 @@ function D.draw(world, camera)
             active = true
             break
         end
+        for _, modifier in ipairs(animator.modifiers or {}) do
+            if modifier.debug then
+                active = true
+            end
+        end
     end
     if not active then
         return
@@ -56,6 +61,13 @@ function D.draw(world, camera)
                         end
                     end
                 end
+            end
+        end
+    end
+    for _, animator in ipairs(world.animators) do
+        for _, modifier in ipairs(animator.modifiers or {}) do
+            if modifier.debug and modifier.drawDebug then
+                modifier:drawDebug(camera, g)
             end
         end
     end

@@ -11,6 +11,7 @@ Animator.propertySchema =
 function Animator.initialize(self)
     self.poseRate = self.poseRate or 60
     self.tracks = {}
+    self.modifiers = {}
     self.debugEnabled = self.debugEnabled == true
     self.rootMotionEnabled = self.rootMotionEnabled == true
 end
@@ -114,6 +115,37 @@ local posePaths = { 'translation', 'rotation', 'scale' }
 local function higher(a, b)
     return a.order > b.order
         or a.order == b.order and (a._creationOrder or 0) < (b._creationOrder or 0)
+end
+
+-- Skeleton modifiers (see the `ik` plugin) run after animation sampling and before the pose
+-- matrices are rebuilt, ordered by `priority` (lower first), and edit the freshly sampled pose.
+function Animator:addModifier(modifier)
+    assert(type(modifier.process) == 'function', 'A modifier needs a process(animator, dt) method')
+    if modifier.animator and modifier.animator ~= self then
+        modifier.animator:removeModifier(modifier)
+    end
+    for _, existing in ipairs(self.modifiers) do
+        if existing == modifier then
+            return modifier
+        end
+    end
+    modifier.animator = self
+    self.modifiers[#self.modifiers + 1] = modifier
+    table.sort(self.modifiers, function(a, b)
+        return (a.priority or 0) < (b.priority or 0)
+    end)
+    return modifier
+end
+
+function Animator:removeModifier(modifier)
+    for i, existing in ipairs(self.modifiers) do
+        if existing == modifier then
+            table.remove(self.modifiers, i)
+            modifier.animator = nil
+            return true
+        end
+    end
+    return false
 end
 
 function Animator:update(dt)
@@ -260,6 +292,9 @@ function Animator:update(dt)
             end
         end
         self:applyRootMotion(motionTrack)
+    end
+    for _, modifier in ipairs(self.modifiers) do
+        modifier:process(self, self._poseStep)
     end
     model:update(0)
 end

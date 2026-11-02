@@ -25,6 +25,7 @@ local Catalog = {
         { id = 'nightPlayer', path = 'source/game/scenes/nightPlayer' },
         { id = 'shadows', path = 'source/game/scenes/shadows' },
         { id = 'modelLab', path = 'source/game/scenes/modelLab' },
+        { id = 'ikLab', path = 'source/game/scenes/ikLab' },
         { id = 'nodes', path = 'source/game/scenes/nodes' },
         { id = 'collisionBox', path = 'source/game/scenes/collisionBox' },
         { id = 'surfaceGallery', path = 'source/game/scenes/surfaceGallery' },

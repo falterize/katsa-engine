@@ -30,6 +30,7 @@ project: they are packed into `.katsa` archives and fused executables with every
 | --- | --- |
 | `pathfinding` | A* on grids, graphs and multi-floor maps, the `NavMap` node, a debug view |
 | `uiStyler` | UI style sheets, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
+| `ik` | Skeleton modifiers: TwoBone, LookAt, FABRIK and CCD solvers (`docs/guides/animation/ik.md`) |
 
 ## Enabling a plugin in a scene
 
