@@ -170,7 +170,10 @@ function Manager:update(dt, realDt)
     self.frameDelta = frameDelta
     self.frameTime = self.frameTime + frameDelta
     local scene = self.stack[#self.stack]
-    if self.focused and scene and scene.update then
+    -- An unfocused window freezes its scene, except one that must keep serving the network (a
+    -- hosted game would stop answering joining players while its window is in the background).
+    local running = self.focused or (scene and scene.keepsRunning and scene:keepsRunning())
+    if running and scene and scene.update then
         self._busy = true
         local ok, err =
             pcall(scene.update, scene, self.time:update(dt, scene.simulation == false), dt)
