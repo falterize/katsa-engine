@@ -28,6 +28,16 @@ function Tests:draw()
         self.session = self.host.demo
         self.manager.profiler:startRecording({ scene = 'multiplayerCars' })
         self:check(self.session.mode == 'menu', 'cars scene starts at the menu')
+        local ground
+        for _, node in ipairs(self.host.world.root:getDescendants()) do
+            if node.name == 'GroundBody' then
+                ground = node
+            end
+        end
+        self:check(
+            self.host.world.physics ~= nil and ground ~= nil and ground.body ~= nil,
+            'the arena has a physical terrain mesh'
+        )
         self.session:host('Tester', 47990 + math.floor(os.clock() * 100) % 9)
     end
     local host, session = self.host, self.session

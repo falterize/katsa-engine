@@ -7,15 +7,61 @@ local Arena = {
 
 local half = Arena.size / 2
 
--- Gentle rolling ground so the springs have something to do.
+-- Terrain features: smooth cosine hills { x, z, radius, height } and rectangular ramps.
+-- A test track for the suspension and for slope-aware pathfinding.
+local hills = {
+    { -30, -10, 15, 4 }, -- broad hill, drivable
+    { 42, -12, 6, 5 }, -- steep rock: too steep for the bot's route planner
+    { 38, 38, 10, 2.5 },
+    { -10, 38, 9, -1.5 }, -- shallow bowl
+}
+
+local function smooth(t)
+    t = math.max(0, math.min(1, t))
+    return t * t * (3 - 2 * t)
+end
+
+-- Ground height at (x, z): rolling noise, hills, a ramp with a plateau and speed bumps.
 function Arena.ground(x, z)
     local base = 0.35 * math.sin(x * 0.12) * math.cos(z * 0.1)
-    -- A small ramp strip along x = 20..26
-    if x > 20 and x < 26 and z > -30 and z < -10 then
-        base = base + (x - 20) / 6 * 0.9
+    for _, hill in ipairs(hills) do
+        local dx, dz = x - hill[1], z - hill[2]
+        local d = math.sqrt(dx * dx + dz * dz)
+        if d < hill[3] then
+            base = base + hill[4] * 0.5 * (1 + math.cos(math.pi * d / hill[3]))
+        end
+    end
+    -- Ramp up along +x (x = 20..30), a plateau to x = 34 and a drop back to ground by x = 40.
+    local lane = smooth((z + 34) / 3) * smooth((-20 - z) / 3)
+    if lane > 0 then
+        local height = 0
+        if x > 20 and x <= 30 then
+            height = (x - 20) / 10 * 3
+        elseif x > 30 and x <= 34 then
+            height = 3
+        elseif x > 34 and x < 40 then
+            height = 3 * (1 - (x - 34) / 6)
+        end
+        base = base + height * lane
+    end
+    -- Three speed bumps across the south lane.
+    for _, bump in ipairs({ 6, 12, 18 }) do
+        if math.abs(z - (-bump * 2 - 24)) < 1.2 and x > -25 and x < 5 then
+            base = base + 0.45 * math.cos((z + bump * 2 + 24) / 1.2 * math.pi * 0.5)
+        end
     end
     return base
 end
+
+-- Steepness (rise over run) at (x, z).
+function Arena.slope(x, z)
+    local e = 0.5
+    local dx = (Arena.ground(x + e, z) - Arena.ground(x - e, z)) / (2 * e)
+    local dz = (Arena.ground(x, z + e) - Arena.ground(x, z - e)) / (2 * e)
+    return math.sqrt(dx * dx + dz * dz)
+end
+
+Arena.maxDriveSlope = 0.6
 
 -- Circle: { kind = 'circle', x, z, radius }. Box: { kind = 'box', x, z, halfX, halfZ }.
 Arena.obstacles = {
@@ -48,6 +94,9 @@ function Arena.buildGrid(Grid, margin)
     local cells = math.floor(Arena.size / Arena.cellSize)
     local grid = Grid.new(cells, cells, { cellSize = Arena.cellSize, origin = { -half, -half } })
     grid:bake(function(x, z)
+        if Arena.slope(x, z) > Arena.maxDriveSlope then
+            return true
+        end
         for _, obstacle in ipairs(Arena.obstacles) do
             if obstacle.kind == 'circle' then
                 local dx, dz = x - obstacle.x, z - obstacle.z
