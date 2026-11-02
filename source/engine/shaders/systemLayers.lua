@@ -9,6 +9,9 @@ function System.resolve(world, object, nodes)
     for _, name in ipairs(names) do
         effects[name] = true
         local layer = world.environment.systemLayers[name]
+        if layer == 'Default' or not world.shaderLayers.priorities[layer] then
+            layer = 'Default3D'
+        end
         for _, upper in ipairs(nodes) do
             if world.shaderLayers:suppresses(upper.shaderLayer, layer) then
                 effects[name] = false

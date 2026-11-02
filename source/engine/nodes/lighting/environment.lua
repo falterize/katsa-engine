@@ -38,7 +38,12 @@ function C.initialize(self)
     -- Keep the previous API as a shared-table compatibility alias.
     self.gizmos = self.debug.gizmos
     self.systemLayers = self.systemLayers
-        or { lighting = 'Default', shadows = 'Default', fog = 'Default', toneMapping = 'Default' }
+        or {
+            lighting = 'Default3D',
+            shadows = 'Default3D',
+            fog = 'Default3D',
+            toneMapping = 'Default3D',
+        }
     -- Global texture filtering is intentionally unsupported.
     self.pixelate = nil
     self.render = self.render

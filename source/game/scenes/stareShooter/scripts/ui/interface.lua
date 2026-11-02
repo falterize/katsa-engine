@@ -2,12 +2,16 @@ local Interface = {}
 
 function Interface.create(state)
     local scene, ui = state.scene, state.scene.ui
+    -- A layer that interacts with Default3D, so the filter also processes the 3D render.
+    if not scene.world.shaderLayers.priorities.Screen then
+        scene.world.shaderLayers:add('Screen')
+    end
     state.retro = ui:create('Shader2D', {
         _viewportAuthored = true,
         name = 'RetroScreen',
         size = { 1, 0, 1, 0 },
         shaderPath = 'scene://shaders/retro.glsl',
-        affects3D = true,
+        shaderLayer = 'Screen',
         enabled = scene.settings.retro.enabled,
         backgroundTransparency = 1,
         zIndex = 1,

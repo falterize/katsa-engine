@@ -125,6 +125,9 @@ function Lab.new(scene)
             self.abilities:slide()
         end
     end)
+    if not scene.world.shaderLayers.priorities.Screen then
+        scene.world.shaderLayers:add('Screen')
+    end
     self.blur = scene.ui:create('Shader2D', {
         name = 'SpeedBlur',
         position = { 0, 0, 0, 0 },
@@ -133,7 +136,7 @@ function Lab.new(scene)
         backgroundTransparency = 1,
         shaderTransparency = 1,
         shaderPath = 'assets/shaders/examples/speedBlur.glsl',
-        affects3D = true,
+        shaderLayer = 'Screen',
         uniforms = { strength = 0 },
     }, scene.ui.content)
     return self

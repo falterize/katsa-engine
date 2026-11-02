@@ -95,7 +95,7 @@ function Compositor.draw(ui, draw)
     reset()
     g.clear(0, 0, 0, 0, 0)
     -- The scene canvas holds interface pixels only. The 3D render underneath (the target, or the
-    -- UI background) is mixed in per effect, and only for Shader2D nodes with affects3D = true.
+    -- UI background) is mixed in per effect, and only for Shader2D nodes whose shader layer interacts with Default3D.
     local background = target or ui.backgroundCanvas
     g.setBlendMode('alpha', 'alphamultiply')
     ui._compositing = true
@@ -181,9 +181,10 @@ function Compositor.apply(ui, node)
     reset()
     g.clear(0, 0, 0, 0)
     local layerWorld = ui._sceneWorld or ui.owner and ui.owner._world
-    local allowed = not (layerWorld and layerWorld.shaderLayers)
-        or layerWorld.shaderLayers:affects3D(node.shaderLayer)
-    local background = node.affects3D and allowed and ui._sceneBackground
+    local allowed = layerWorld
+        and layerWorld.shaderLayers
+        and layerWorld.shaderLayers:affects3D(node.shaderLayer)
+    local background = allowed and ui._sceneBackground
     if background then
         g.draw(background, 0, 0, 0, w / background:getWidth(), h / background:getHeight())
         g.setBlendMode('alpha', 'alphamultiply')

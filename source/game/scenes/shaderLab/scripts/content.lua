@@ -19,7 +19,10 @@ function Lab.new(scene)
     local layers = scene.world.shaderLayers
     layers:add('Static', 10)
     layers:add('Pixel', 20)
-    layers:setSuppressed('Pixel', 'Default', true)
+    -- Pixel replaces the default 2D effects; neither CRT nor Pixel processes this scene's 3D render.
+    layers:setInteracts('Pixel', 'Default2D', false)
+    layers:setInteracts('Static', 'Default3D', false)
+    layers:setInteracts('Pixel', 'Default3D', false)
     return self
 end
 
