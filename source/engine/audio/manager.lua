@@ -1,8 +1,8 @@
 -- SoundManager: the scene-level control surface for audio. It owns no state of its own; volumes and
 -- mute flags live in the Audio scope's group table, so every consumer (Sound nodes, AudioSource
 -- nodes, direct Audio:play calls and the UI layer) sees one consistent mix.
-local ipairs = require('source.engine.math.array').ipairs
-local Validation = require('source.engine.audio.validation')
+local ipairs = require('../math.array').ipairs
+local Validation = require('./validation')
 
 local Manager = {}
 Manager.__index = Manager

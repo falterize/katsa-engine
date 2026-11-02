@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Two exact 16-bit halves avoid per-fragment palette decoding and indirect light loads.
 local Masks = {}
 

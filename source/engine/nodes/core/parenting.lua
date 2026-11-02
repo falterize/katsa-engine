@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Validate the proposed tree before unlinking anything. Traversal occurs only
 -- during parenting, never in the render or simulation frame loop.
 local Parenting = {}

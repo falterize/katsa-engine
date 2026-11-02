@@ -1,4 +1,4 @@
-local Library = require('source.engine.physics.3d.backends.jolt.library')
+local Library = require('../library')
 local ffi, C = Library.ffi, Library.C
 
 local Jobs = {}

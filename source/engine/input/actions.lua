@@ -1,4 +1,4 @@
-local pairs = require('source.engine.math.array').pairs
+local pairs = require('../math.array').pairs
 -- Named actions with scene-owned bindings; no polling of stale OS-held keys.
 local Actions = {}
 Actions.__index = Actions

@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Math = require('source.engine.math.math3d')
-local Affine = require('source.engine.math.affine')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Math = require('../../math.math3d')
+local Affine = require('../../math.affine')
 local BodyExtensions = {}
 
 function BodyExtensions.install(Body3D, Physics, O)

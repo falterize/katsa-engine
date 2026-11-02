@@ -1,11 +1,11 @@
-local Loader = require('source.engine.scenes.loader')
-local Systems = require('source.engine.scenes.systems')
-local Cleanup = require('source.engine.core.cleanup')
-local World = require('source.engine.world.world')
-local Renderer = require('source.engine.graphics.pipeline.renderer')
-local UI = require('source.engine.ui')
-local Input = require('source.engine.input.input')
-local Statistics = require('source.engine.debug.statistics.definitions')
+local Loader = require('./loader')
+local Systems = require('./systems')
+local Cleanup = require('../core.cleanup')
+local World = require('../world.world')
+local Renderer = require('../graphics.pipeline.renderer')
+local UI = require('../ui')
+local Input = require('../input.input')
+local Statistics = require('../debug.statistics.definitions')
 
 -- A game scene host without the demonstration menu, tools or example behavior.
 -- Scene scripts own content, systems and gameplay; the host owns engine resources.
@@ -34,7 +34,7 @@ function Host:load()
     self.audio = self.manager.audio:scope(self.resources:scope())
     profiler:markLoad('Resources and audio')
     local lighting =
-        Loader.configure(require('source.engine.lighting.defaults').create(), self.settings.world)
+        Loader.configure(require('../lighting.defaults').create(), self.settings.world)
     self.world = World.new(self.resources, lighting)
     self.world.audio = self.audio
     self.audio.worldRoot = self.world.root
@@ -47,20 +47,20 @@ function Host:load()
     self.systems = Systems.new(self)
     profiler:markLoad('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
-    require('source.engine.plugins').activate(self.world, self.settings.plugins)
+    require('../plugins').activate(self.world, self.settings.plugins)
     profiler:markLoad('Node types and plugins')
-    self.lifecycle = require('source.engine.scenes.layout').lifecycle(self.package)
+    self.lifecycle = require('./layout').lifecycle(self.package)
     self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
     profiler:markLoad('Scene create script')
     local layer = self.ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self.ui.content)
     self.statistics = Statistics.new(self, layer)
-    self.console = require('source.engine.debug.consolePanel').new(self.ui, layer)
+    self.console = require('../debug.consolePanel').new(self.ui, layer)
     self:resize(katsa.graphics.getDimensions())
     profiler:markLoad('Overlays and layout')
 end
 
 function Host:createPhysics2D(options, ui)
-    return require('source.engine.scenes.physics2D').create(self, options, ui)
+    return require('./physics2D').create(self, options, ui)
 end
 
 function Host:createPhysics(options)
@@ -79,7 +79,7 @@ function Host:update(dt, realDt)
     local started = katsa.timer.getTime()
     local sceneDt = dt
     self.world.frameRealDelta = realDt or sceneDt
-    dt = require('source.engine.world.clock').delta(self.world.root, dt)
+    dt = require('../world.clock').delta(self.world.root, dt)
     self.time = self.time + dt
     self.lifecycle.update2D(self.state, sceneDt, realDt or sceneDt)
     self.input:update(dt)
@@ -105,7 +105,7 @@ function Host:draw()
     self.statistics:sample()
     local started = katsa.timer.getTime()
     self.ui:draw()
-    require('source.engine.graphics.debug.orientation').draw(self)
+    require('../graphics.debug.orientation').draw(self)
     self.uiMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 

@@ -1,8 +1,8 @@
-local unpack = require('source.engine.math.array').unpack
+local unpack = require('../math.array').unpack
 -- Quad normals face local -Z. Front is the parent's local -Z bounding-box face.
-local Math = require('source.engine.math.math3d')
-local Affine = require('source.engine.math.affine')
-local Bounds = require('source.engine.graphics.geometry.objectBounds')
+local Math = require('../math.math3d')
+local Affine = require('../math.affine')
+local Bounds = require('../graphics.geometry.objectBounds')
 
 local Faces = {}
 local definitions = {
@@ -20,7 +20,7 @@ end
 
 function Faces.referenceSize(node)
     local face = assert(definitions[node.face], 'Invalid surface face')
-    local parent = require('source.engine.surfaces.support').resolve(node)
+    local parent = require('./support').resolve(node)
     if parent and parent:isA('Mesh3D') then
         Bounds.get(parent)
         local b = parent.geometry.bounds
@@ -32,7 +32,7 @@ function Faces.referenceSize(node)
 end
 
 function Faces.update(node, camera)
-    local parent = require('source.engine.surfaces.support').resolve(node)
+    local parent = require('./support').resolve(node)
     if not parent or not parent.getWorldMatrix then
         node.drawable = false
         return
@@ -58,7 +58,7 @@ function Faces.update(node, camera)
         + math.max(-32, math.min(32, node.zIndex or 0)) * ns * 0.0001
     local width, height
     if node.size and #node.size == 4 then
-        width, height = require('source.engine.ui.layout.metrics').resolve(
+        width, height = require('../ui.layout.metrics').resolve(
             node.size,
             dimensions[u],
             dimensions[v],
@@ -82,7 +82,7 @@ function Faces.update(node, camera)
         faceMatrix[(i - 1) * 4 + 4] = center[i]
     end
     if node.position and #node.position == 4 then
-        local x, y = require('source.engine.ui.layout.metrics').resolve(
+        local x, y = require('../ui.layout.metrics').resolve(
             node.position,
             dimensions[u],
             dimensions[v],
@@ -96,7 +96,7 @@ function Faces.update(node, camera)
     end
     node._surfaceLocal = Math.multiply(faceMatrix, node:getLocalMatrix(), node._surfaceLocal)
     node.matrix = Math.multiply(
-        require('source.engine.surfaces.support').frame(node, parent, true),
+        require('./support').frame(node, parent, true),
         node._surfaceLocal,
         node.matrix
     )

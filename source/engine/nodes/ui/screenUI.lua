@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
+local ipairs = require('../../math.array').ipairs
+local Node = require('../core.baseNode')
 
 local C = Node.define('World2D', 'Node')
 C.propertySchema = {
@@ -15,7 +15,7 @@ C.propertySchema = {
 }
 
 function C.initialize(self)
-    require('source.engine.world.gravity').initialize(self, 2)
+    require('../../world.gravity').initialize(self, 2)
     self.layerGroup = self.layerGroup or 'Default'
     self.timeScale = self.timeScale or 1
     self.transparency = self.transparency or 0
@@ -23,7 +23,7 @@ end
 
 function C.mount(world, properties, parent)
     assert(parent == world.root, 'World2D belongs directly to its World3D')
-    local ui = require('source.engine.ui')
+    local ui = require('../../ui')
         .new(properties.width or 640, properties.height or 360, world.resources)
         :bindWorld(world)
     ui.transparency = properties.transparency or properties.Transparency or 0

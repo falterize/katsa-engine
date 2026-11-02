@@ -16,7 +16,7 @@ function Demo.new(scene)
     world.environment.debug.gizmos.enabled = false
     world.environment.fog.enabled = false
     world.environment.shadows.enabled = true
-    require('scene.scripts.lighting.directional').create(world).enabled = true
+    require('./lighting.directional').create(world).enabled = true
     Mesh.create(world, {
         name = 'Floor',
         position = { 0, -4, 70 },

@@ -1,9 +1,9 @@
 -- Lua body/shape representation shared by the two adapters. This module does
 -- not create or step a simulation world. It keeps the historical raw/math API,
 -- debug geometry and exact sensor narrow phase compatible with v101.
-local Bodies = require('source.engine.physics.3d.backends.oimo.bodies')
-local Colliders = require('source.engine.physics.3d.backends.oimo.colliders')
-local Contacts = require('source.engine.physics.3d.backends.oimo.contacts')
+local Bodies = require('./bodies')
+local Colliders = require('./colliders')
+local Contacts = require('./contacts')
 
 local Compatibility = {}
 

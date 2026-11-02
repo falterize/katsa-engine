@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Reuse selected coverage geometry only while its actual inputs remain unchanged.
 local Cache = {}
 

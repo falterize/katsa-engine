@@ -1,9 +1,9 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Math = require('source.engine.math.math3d')
-local Receivers = require('source.engine.graphics.shadows.shadowReceivers')
-local Types = require('source.engine.graphics.shadows.sourceTypes')
+local ipairs = require('../../math.array').ipairs
+local Math = require('../../math.math3d')
+local Receivers = require('./shadowReceivers')
+local Types = require('./sourceTypes')
 local kind, faces, pointDirections = Types.kind, Types.faces, Types.pointDirections
-local viewProjection = require('source.engine.graphics.shadows.shadowProjection')
+local viewProjection = require('./shadowProjection')
 
 local Eligibility = {}
 

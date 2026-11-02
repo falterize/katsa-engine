@@ -1,4 +1,4 @@
-local Application = require('source.game.runtime.application')
+local Application = require('./application')
 
 local Factory = {}
 

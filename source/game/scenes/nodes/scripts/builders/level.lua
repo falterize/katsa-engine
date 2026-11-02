@@ -1,6 +1,6 @@
 local Mesh = require('source.engine.composition.mesh')
 local UI = require('source.engine.ui')
-local object = require('scene.scripts.builders.object')
+local object = require('./object')
 
 local Nodes = {}
 

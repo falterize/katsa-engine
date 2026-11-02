@@ -1,5 +1,5 @@
 -- Uses the node dispatch contract: safe disconnects and nested dispatch.
-local Dispatch = require('source.engine.nodes.core.signals')
+local Dispatch = require('../nodes.core.signals')
 
 local Signal = {}
 Signal.__index = Signal

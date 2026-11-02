@@ -1,5 +1,5 @@
-local Models = require('source.engine.import.models')
-local M = require('source.engine.math.math3d')
+local Models = require('../../import.models')
+local M = require('../../math.math3d')
 
 local Source = {}
 local unitScale = { 1, 1, 1 }

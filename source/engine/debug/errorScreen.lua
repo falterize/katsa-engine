@@ -4,7 +4,7 @@ function Screen.create(traceback, api)
     api = api or katsa
     if api.filesystem then
         pcall(
-            require('source.engine.debug.crashHistory').write,
+            require('./crashHistory').write,
             api.filesystem,
             traceback,
             api.log and api.log.tail(50)

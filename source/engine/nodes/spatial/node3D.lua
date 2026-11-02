@@ -1,8 +1,8 @@
-local readValue = require('source.engine.math.managedValue').read
-local Node = require('source.engine.nodes.core.baseNode')
-local Math = require('source.engine.math.math3d')
-local Affine = require('source.engine.math.affine')
-local Validate = require('source.engine.core.validate')
+local readValue = require('../../math.managedValue').read
+local Node = require('../core.baseNode')
+local Math = require('../../math.math3d')
+local Affine = require('../../math.affine')
+local Validate = require('../../core.validate')
 
 local Node3D = Node.define('Node3D', 'Node')
 
@@ -274,7 +274,7 @@ function Node3D:getWorldPosition(out)
 end
 
 function Node3D:getWorldCFrame()
-    local CFrame = require('source.engine.math.cframe')
+    local CFrame = require('../../math.cframe')
     local m = Affine.withoutScale(self:getWorldMatrix())
     return CFrame.fromMatrix({ m[4], m[8], m[12] }, { m[1], m[5], m[9] }, { m[2], m[6], m[10] })
 end
@@ -286,5 +286,5 @@ function Node3D:setCFrame(frame)
     end
     return self:setLocalTransform({ position = p, rotation = r })
 end
-require('source.engine.nodes.spatial.transformApi').install(Node3D)
+require('./transformApi').install(Node3D)
 return Node3D

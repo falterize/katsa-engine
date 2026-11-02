@@ -17,7 +17,7 @@ function RenderTargets.install(Renderer)
         self._requestedWidth, self._requestedHeight = w, h
         self._requestedDensity, self._requestedMSAA = self.renderDensity, self.msaa
         self._requestedPixels, self._requestedBytes = self.maxRenderPixels, self.maxRenderBytes
-        local density, samples = require('source.engine.graphics.quality.renderQuality').resolve(
+        local density, samples = require('../quality.renderQuality').resolve(
             w,
             h,
             self.renderDensity,
@@ -66,7 +66,7 @@ function RenderTargets.install(Renderer)
         if not ok then
             color, depth = allocate(0)
         end
-        require('source.engine.graphics.pipeline.depthPrepass').release(self)
+        require('./depthPrepass').release(self)
         if self.canvas then
             self.canvas:release()
             self.depth:release()

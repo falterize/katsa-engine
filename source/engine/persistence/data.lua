@@ -1,9 +1,9 @@
-local Objects = require('source.engine.core.objects')
-local Store = require('source.engine.persistence.store')
-local Files = require('source.engine.persistence.files')
-local Settings = require('source.engine.persistence.settings')
-local Paths = require('source.engine.persistence.paths')
-local Formats = require('source.engine.persistence.formats')
+local Objects = require('../core.objects')
+local Store = require('./store')
+local Files = require('./files')
+local Settings = require('./settings')
+local Paths = require('./paths')
+local Formats = require('./formats')
 
 local Data = {}
 Data.__index = Data

@@ -6,12 +6,12 @@
 --   client.inputProvider = function() return { moveX = 1 } end
 --   client:connect()
 --   -- every frame: client:update(dt)
-local Codec = require('source.engine.net.codec')
-local Link = require('source.engine.net.link')
-local P = require('source.engine.net.protocol')
-local Registry = require('source.engine.net.registry')
-local Remote = require('source.engine.net.remote')
-local Signal = require('source.engine.net.signal')
+local Codec = require('./codec')
+local Link = require('./link')
+local P = require('./protocol')
+local Registry = require('./registry')
+local Remote = require('./remote')
+local Signal = require('./signal')
 
 local Client = {}
 Client.__index = Client

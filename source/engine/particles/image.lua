@@ -1,4 +1,4 @@
-local Image = require('source.engine.components.image')
+local Image = require('../components.image')
 local Policy = {}
 function Policy.initialize(node)
     node.imageMode = node.imageMode or (node.atlasEnabled and 'Atlas' or 'Decal')

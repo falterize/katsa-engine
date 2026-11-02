@@ -1,5 +1,5 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
+local Array = require('../math.array')
+local ipairs = require('../math.array').ipairs
 -- Serializable piecewise numeric/vector sequences; no callbacks in authored data.
 local Sequence = {}
 

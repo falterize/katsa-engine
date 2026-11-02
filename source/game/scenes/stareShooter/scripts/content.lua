@@ -1,8 +1,8 @@
-local Level = require('scene.scripts.builders.level')
-local Builder = require('scene.scripts.builders.player')
-local Orbit = require('scene.scripts.cameras.orbit')
-local Input = require('scene.scripts.controller.input')
-local Animation = require('scene.scripts.animation.controller')
+local Level = require('./builders.level')
+local Builder = require('./builders.player')
+local Orbit = require('./cameras.orbit')
+local Input = require('./controller.input')
+local Animation = require('./animation.controller')
 
 local Content = {}
 Content.__index = Content

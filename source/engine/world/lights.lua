@@ -1,7 +1,7 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local M = require('source.engine.math.math3d')
+local unpack = require('../math.array').unpack
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local M = require('../math.math3d')
 local bit = require('bit')
 
 local Lights = {}
@@ -20,7 +20,7 @@ local function nearer(a, b)
     end
     return a._selectionOrder < b._selectionOrder
 end
-local readValue = require('source.engine.math.managedValue').read
+local readValue = require('../math.managedValue').read
 
 local function inputsChanged(self, light, save)
     local p, d, c =

@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes')
+local Node = require('../../nodes')
 
 local Class = Node.define('Slider', 'Frame')
 local trackColor = { 0.18, 0.25, 0.34, 1 }

@@ -1,4 +1,4 @@
-local Package = require('source.engine.scenes.package')
+local Package = require('./package')
 
 local Loader = {}
 
@@ -36,7 +36,7 @@ function Loader.manifest(shared, localAssets)
 end
 
 function Loader.create(scene)
-    local main = require('source.engine.scenes.layout').lifecycle(scene.package)
+    local main = require('./layout').lifecycle(scene.package)
     if type(main.create) == 'function' then
         scene.lifecycle = main
         return assert(main.create(scene, scene.package), 'Scene create must return its state')

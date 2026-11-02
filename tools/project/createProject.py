@@ -38,8 +38,10 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
         ):
             shutil.copytree(source / directory, stage / directory,
                             ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
-        for name_on_disk in ('LICENSE', 'AGENTS.md', 'stylua.toml', '.styluaignore', '.editorconfig'):
+        for name_on_disk in ('LICENSE', 'stylua.toml', '.styluaignore', '.editorconfig'):
             shutil.copy2(source / name_on_disk, stage / name_on_disk)
+        (stage / 'docs').mkdir(exist_ok=True)
+        shutil.copy2(source / 'docs/AGENTS.md', stage / 'docs/AGENTS.md')
         for category in ('models', 'textures', 'audio', 'shaders', 'fonts'):
             (stage / 'assets' / category).mkdir(exist_ok=True)
         project = stage / 'source/game/data/project.lua'

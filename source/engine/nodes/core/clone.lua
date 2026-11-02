@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Array = require('source.engine.math.array')
-local Managed = require('source.engine.math.managedValue')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Array = require('../../math.array')
+local Managed = require('../../math.managedValue')
 
 -- Node:clone(properties, parent): a deep copy of the node and its descendants, like Roblox's
 -- Instance:Clone(). The copy is built from the same public property list the Workspace
@@ -35,8 +35,8 @@ local function copyValue(value, seen)
 end
 
 function Clone.collect(node)
-    local Schema = require('source.engine.editor.inspectors.schema')
-    local fields = require('source.engine.editor.inspectors.propertyPolicy').fields
+    local Schema = require('../../editor.inspectors.schema')
+    local fields = require('../../editor.inspectors.propertyPolicy').fields
     local result = { name = node.name }
     for _, key in ipairs(Schema.keys(node, fields)) do
         if not SKIPPED[key] then
@@ -84,7 +84,7 @@ local function build(node, overrides, parent)
         copy = world:create(node.className, properties, parent)
     else
         copy =
-            require('source.engine.nodes.core.baseNode').create(node.className, properties, parent)
+            require('./baseNode').create(node.className, properties, parent)
     end
     return copy
 end

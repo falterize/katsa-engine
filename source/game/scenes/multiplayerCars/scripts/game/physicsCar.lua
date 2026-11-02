@@ -5,7 +5,7 @@
 --
 -- Units are meters (the scene uses unitsPerMeter = 1). Heading 0 faces +z.
 local O = require('source.engine.physics.3d.valueTypes')
-local orientation = require('scene.scripts.game.orientation')
+local orientation = require('./orientation')
 
 local PhysicsCar = {}
 PhysicsCar.__index = PhysicsCar

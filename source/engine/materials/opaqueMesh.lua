@@ -1,5 +1,5 @@
 -- Shared conservative proof for geometry-only depth and discard-free material paths.
-local Opacity = require('source.engine.materials.opacity')
+local Opacity = require('./opacity')
 
 local formats = setmetatable({}, { __mode = 'k' })
 local Opaque = {}

@@ -1,8 +1,8 @@
 -- Lua geometry is also the compatibility representation for Jolt debug/sensors.
-local O = require('source.engine.physics.3d.backends.oimo.types')
+local O = require('./types')
 local Math = require('source.engine.math.math3d')
-local Policy = require('source.engine.physics.3d.internal.bodyPolicy')
-local Contacts = require('source.engine.physics.3d.backends.oimo.contacts')
+local Policy = require('../../internal.bodyPolicy')
+local Contacts = require('./contacts')
 local ipairs = require('source.engine.math.array').ipairs
 local vec, valid = Policy.vec, Policy.valid
 local Colliders = {}

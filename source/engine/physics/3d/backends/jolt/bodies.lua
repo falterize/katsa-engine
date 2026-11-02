@@ -1,7 +1,7 @@
-local Jobs = require('source.engine.physics.3d.backends.jolt.native.jobs')
-local State = require('source.engine.physics.3d.backends.jolt.bodyState')
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
+local Jobs = require('./native.jobs')
+local State = require('./bodyState')
+local Library = require('./library')
+local NativeMath = require('./nativeMath')
 
 local C = Library.C
 

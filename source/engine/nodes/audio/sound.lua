@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
-local Routing = require('source.engine.audio.effects.routing')
+local ipairs = require('../../math.array').ipairs
+local Node = require('../core.baseNode')
+local Routing = require('../../audio.effects.routing')
 
 local Sound = Node.define('Sound', 'Node')
 Sound.propertySchema = { playing = {}, enabled = {} }

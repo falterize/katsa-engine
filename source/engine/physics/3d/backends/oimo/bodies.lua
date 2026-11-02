@@ -1,5 +1,5 @@
-local O = require('source.engine.physics.3d.backends.oimo.types')
-local Policy = require('source.engine.physics.3d.internal.bodyPolicy')
+local O = require('./types')
+local Policy = require('../../internal.bodyPolicy')
 local vec, valid, types = Policy.vec, Policy.valid, Policy.types
 local Bodies = {}
 

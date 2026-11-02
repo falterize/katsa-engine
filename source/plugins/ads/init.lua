@@ -26,9 +26,9 @@ function Ads.registerProvider(name, provider)
     providers[name] = provider
 end
 
-Ads.registerProvider('mock', require('source.plugins.ads.mock'))
-Ads.registerProvider('admob', require('source.plugins.ads.admob'))
-Ads.registerProvider('unity', require('source.plugins.ads.unity'))
+Ads.registerProvider('mock', require('./mock'))
+Ads.registerProvider('admob', require('./admob'))
+Ads.registerProvider('unity', require('./unity'))
 
 -- config.provider: 'mock' (default), 'admob', 'unity', or any registered name.
 -- Network keys live in the config you pass here; nothing is stored in the engine.

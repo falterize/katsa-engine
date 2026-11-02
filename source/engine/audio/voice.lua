@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../math.array').ipairs
 
 local Voice = {}
 Voice.__index = Voice

@@ -4,7 +4,7 @@ local scalarFields = { 'shape', 'enabled', 'radius', 'height' }
 local vectorFields = { 'size', 'position', 'rotation' }
 local readValue = require('source.engine.math.managedValue').read
 local unpack = require('source.engine.math.array').unpack
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../../core.baseNode')
 
 local Class = Node.define('Collider3D', 'Node')
 Class.propertySchema = {

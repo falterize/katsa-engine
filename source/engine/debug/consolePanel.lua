@@ -1,6 +1,6 @@
 -- On-screen console: level filter (All / Warn / Error), text filter-free tail of katsa.log,
 -- JSON/CSV export and Clear. Refreshes only while visible and only when entries arrive.
-local Export = require('source.engine.debug.logExport')
+local Export = require('./logExport')
 
 local Panel = {}
 Panel.__index = Panel

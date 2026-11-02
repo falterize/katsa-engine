@@ -1,5 +1,5 @@
 -- Selection is per Physics instance. Explicit requests never silently fall back.
-local Oimo = require('source.engine.physics.3d.backends.oimo.driver')
+local Oimo = require('./oimo.driver')
 
 local Registry = { default = os.getenv('KATSA_PHYSICS_BACKEND') or 'auto' }
 local names = { auto = true, oimo = true, jolt = true }

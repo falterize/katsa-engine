@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../math.array').ipairs
 -- Install one cohesive responsibility on the public class.
-local Validation = require('source.engine.audio.validation')
+local Validation = require('./validation')
 local modes, unit = Validation.modes, Validation.unit
 local Spatial = {}
 

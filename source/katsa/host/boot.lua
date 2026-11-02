@@ -25,6 +25,7 @@ local function installSearcher(FS)
         return "\n\tno file '" .. path .. ".lua' in the game source"
     end
     table.insert(package.loaders or package.searchers, 2, searcher)
+    _G.require = require('source.katsa.core.relativeRequire').wrap(require)
 end
 
 -- Game source choice: first non-option argument, else the fused archive, else the working

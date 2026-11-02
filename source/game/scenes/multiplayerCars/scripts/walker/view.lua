@@ -1,8 +1,8 @@
 -- The visible side of a walker: the StareShooter character, animated from the replicated pose,
 -- blends and jump counter (the same weighting as the source scene's animation controller).
 local Models = require('source.engine.import.models')
-local Math = require('scene.scripts.walker.math')
-local WalkerEntity = require('scene.scripts.game.walkerEntity')
+local Math = require('./math')
+local WalkerEntity = require('../game.walkerEntity')
 
 local WalkerView = {}
 WalkerView.__index = WalkerView

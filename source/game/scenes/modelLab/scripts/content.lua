@@ -11,7 +11,7 @@ function Lab.new(scene)
     scene.world.environment.fog.enabled = false
     scene.world.environment.sky.enabled = false
     scene.world.environment.ambient = { 160, 175, 190 }
-    require('scene.scripts.lighting.directional').create(scene.world).enabled = true
+    require('./lighting.directional').create(scene.world).enabled = true
     scene.world.environment.shadows.enabled = true
     scene:createPhysics({ unitsPerMeter = 20 })
     scene.world.physics = scene.physics
@@ -37,7 +37,7 @@ function Lab.new(scene)
     )
     self.animator = self.model.animator
     self.animator.debugEnabled = true
-    require('scene.scripts.animation.proceduralClips').add(self.model)
+    require('./animation.proceduralClips').add(self.model)
     self.track = self.animator:transition('Demo Walk', 0)
     self.markerCount = 0
     self._markerTracks = { [self.track] = true }

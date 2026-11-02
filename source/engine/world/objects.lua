@@ -1,8 +1,8 @@
-local readValue = require('source.engine.math.managedValue').read
-local M = require('source.engine.math.math3d')
-local Geometry = require('source.engine.graphics.geometry.primitives')
-local Validate = require('source.engine.core.validate')
-local Node = require('source.engine.nodes')
+local readValue = require('../math.managedValue').read
+local M = require('../math.math3d')
+local Geometry = require('../graphics.geometry.primitives')
+local Validate = require('../core.validate')
+local Node = require('../nodes')
 local Objects = {}
 
 function Objects.install(World3D)
@@ -66,14 +66,14 @@ function Objects.install(World3D)
 
     function World3D:updateAppearance(o)
         o._batchRevision = (o._batchRevision or 0) + 1
-        local surface = require('source.engine.materials.surface').resolve(
+        local surface = require('../materials.surface').resolve(
             self,
             o,
             o._renderVisible,
             o._renderOpacity
         )
         local image = surface
-            and require('source.engine.materials.surface').image(
+            and require('../materials.surface').image(
                 self.resources,
                 surface,
                 'colorMap',

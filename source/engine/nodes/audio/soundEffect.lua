@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../core.baseNode')
 
 local Effect = Node.define('SoundEffect', 'Node')
 local serial = 0

@@ -1,10 +1,10 @@
 local readValue = require('source.engine.math.managedValue').read
-local PoseSpace = require('source.engine.physics.3d.internal.poseSpace')
+local PoseSpace = require('./poseSpace')
 local unpack = require('source.engine.math.array').unpack
-local O = require('source.engine.physics.3d.valueTypes')
+local O = require('../valueTypes')
 local Math = require('source.engine.math.math3d')
 local Affine = require('source.engine.math.affine')
-local Policy = require('source.engine.physics.3d.internal.bodyPolicy')
+local Policy = require('./bodyPolicy')
 
 local vec = Policy.vec
 local BodyMotion = {}

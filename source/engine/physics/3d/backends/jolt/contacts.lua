@@ -3,13 +3,13 @@ if jit then
     jit.off(true, true)
 end
 
-local Compatibility = require('source.engine.physics.3d.backends.oimo.compatibility')
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
-local O = require('source.engine.physics.3d.backends.oimo.types')
-local ShapeLookup = require('source.engine.physics.3d.backends.jolt.shapeLookup')
-local Runtime = require('source.engine.physics.3d.backends.jolt.runtime')
-local Jobs = require('source.engine.physics.3d.backends.jolt.native.jobs')
+local Compatibility = require('../oimo.compatibility')
+local Library = require('./library')
+local NativeMath = require('./nativeMath')
+local O = require('../oimo.types')
+local ShapeLookup = require('./shapeLookup')
+local Runtime = require('./runtime')
+local Jobs = require('./native.jobs')
 
 local C, ffi = Library.C, Library.ffi
 local cast = NativeMath.cast

@@ -1,5 +1,5 @@
 -- Capture immutable-for-this-pass camera inputs once, rather than per mesh.
-local M = require('source.engine.math.math3d')
+local M = require('../math.math3d')
 
 local Frustum = {}
 

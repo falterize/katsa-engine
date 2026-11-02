@@ -1,5 +1,5 @@
 local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../../core.baseNode')
 local Snapshot = require('source.engine.core.valueSnapshot')
 
 local Class = Node.define('Body3D', 'Node3D')

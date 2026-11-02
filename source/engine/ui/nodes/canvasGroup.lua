@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes')
+local Node = require('../../nodes')
 
 local CanvasGroup = Node.define('CanvasGroup', 'Frame')
 

@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Per-voice filter: one active SoundFilter becomes a Source filter.
 local Filter = {}
 

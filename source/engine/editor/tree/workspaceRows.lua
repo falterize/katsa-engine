@@ -1,7 +1,7 @@
 -- Explorer rows for the Workspace tree. Each row has a fold chevron, a class color chip, the node
 -- name and its class. Depth indents without limit; the list scrolls on both axes, so deep nodes
 -- keep their full width and stay offset from their parents.
-local Tree = require('source.engine.editor.tree.traversal')
+local Tree = require('./traversal')
 
 local WorkspaceRows = {}
 

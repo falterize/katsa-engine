@@ -1,4 +1,4 @@
-local Paths = require('source.engine.persistence.paths')
+local Paths = require('./paths')
 
 local Formats = {}
 

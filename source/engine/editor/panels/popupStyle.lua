@@ -1,5 +1,5 @@
-local Array = require('source.engine.math.array')
-local pairs = require('source.engine.math.array').pairs
+local Array = require('../../math.array')
+local pairs = require('../../math.array').pairs
 
 local palette = {
     { 1, 1, 1 },
@@ -23,7 +23,7 @@ local palette = {
 }
 
 local function copy(value)
-    if require('source.engine.math.managedValue').is(value) then
+    if require('../../math.managedValue').is(value) then
         return value:clone()
     end
     if not Array.is(value) or value._node then

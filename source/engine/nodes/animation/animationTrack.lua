@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
+local ipairs = require('../../math.array').ipairs
+local Node = require('../core.baseNode')
 
 local Track = Node.define('AnimationTrack', 'Node')
 Track.propertySchema = {

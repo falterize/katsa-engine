@@ -1,6 +1,6 @@
 -- Internal array adapters; public callers can explicitly request value:toArray().
-local Objects = require('source.engine.core.objects')
-local Managed = require('source.engine.math.managedValue')
+local Objects = require('../core.objects')
+local Managed = require('./managedValue')
 
 local Array = {}
 

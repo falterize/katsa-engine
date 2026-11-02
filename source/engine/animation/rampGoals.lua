@@ -1,8 +1,8 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Sequence = require('source.engine.animation.sequence')
-local Copy = require('source.engine.animation.bindings').copy
+local Array = require('../math.array')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local Sequence = require('./sequence')
+local Copy = require('./bindings').copy
 
 local Goals = {}
 
@@ -32,7 +32,7 @@ function Goals.candidates(ramp)
             result[#result + 1] = { key = key, value = value }
         end
     else
-        for _, field in ipairs(require('source.engine.editor.inspectors.properties').list(target)) do
+        for _, field in ipairs(require('../editor.inspectors.properties').list(target)) do
             if not field.readOnly and numeric(field.value) then
                 result[#result + 1] =
                     { key = field.key, value = field.value, labels = field.labels }

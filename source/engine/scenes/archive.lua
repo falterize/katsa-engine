@@ -1,4 +1,4 @@
-local Paths = require('source.engine.scenes.paths')
+local Paths = require('./paths')
 local bit = require('bit')
 
 local Archive = {}

@@ -1,9 +1,9 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Bake immutable render geometry into the local frame of a physical body.
-local M = require('source.engine.math.math3d')
-local A = require('source.engine.math.affine')
+local M = require('../../math.math3d')
+local A = require('../../math.affine')
 
 local Builder = {}
 
@@ -15,7 +15,7 @@ function Builder.collect(node, body)
         node._geometrySourceCache = source
     end
     if type(source) == 'string' then
-        return require('source.engine.physics.3d.modelSource').collect(node, source, body)
+        return require('./modelSource').collect(node, source, body)
     end
     assert(
         source and source.isA and source:isA('Node3D') and not source.destroyed,
@@ -97,7 +97,7 @@ function Builder.collect(node, body)
 end
 
 function Builder.build(node, body, parts)
-    local Physics = require('source.engine.physics')
+    local Physics = require('../../physics')
     assert(
         node.collisionLevel ~= 'Detailed' or body.bodyType == 'Static',
         'Detailed model collision requires a Static Body3D'

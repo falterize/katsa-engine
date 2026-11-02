@@ -1,4 +1,4 @@
-local Locomotion = require('scene.scripts.walker.locomotion')
+local Locomotion = require('../locomotion')
 
 local Jump = {}
 

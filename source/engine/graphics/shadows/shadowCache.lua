@@ -1,10 +1,10 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- CPU change tracking reuses records. Changed caster/projection revisions bypass
 -- the maintenance clock so cached depth matches the current rendered pose.
 local bit = require('bit')
-local Frusta = require('source.engine.graphics.shadows.shadowFrusta')
+local Frusta = require('./shadowFrusta')
 
 local empty = {}
 local objectFields = {

@@ -1,6 +1,6 @@
 -- Builds the visible arena: a ground mesh that follows Arena.ground, walls, pillars and lights.
 local Geometry = require('source.engine.graphics.geometry.primitives')
-local Arena = require('scene.scripts.game.arena')
+local Arena = require('../game.arena')
 
 local ArenaView = {}
 

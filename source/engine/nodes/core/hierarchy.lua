@@ -1,6 +1,6 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Queries return snapshots: callers can safely modify the live tree afterward.
 local Hierarchy = {}
 

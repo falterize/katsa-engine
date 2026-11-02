@@ -1,4 +1,4 @@
-local M = require('source.engine.math.math3d')
+local M = require('../../math.math3d')
 local Visibility = {}
 function Visibility.point(e, camera, x, y, z, radius)
     local ui = e._plane

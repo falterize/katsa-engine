@@ -1,4 +1,4 @@
-local Managed = require('source.engine.math.managedValue')
+local Managed = require('./managedValue')
 -- Array-compatible value; Scale/Offset aliases are useful for scalar UI lengths.
 local V = {}
 local fields = { X = 1, Y = 2, x = 1, y = 2, Scale = 1, Offset = 2, scale = 1, offset = 2 }

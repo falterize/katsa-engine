@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Hierarchy = require('source.engine.nodes.core.hierarchy')
-local Signals = require('source.engine.nodes.core.signals')
+local ipairs = require('../../math.array').ipairs
+local Hierarchy = require('./hierarchy')
+local Signals = require('./signals')
 
 local Lifecycle = {}
 

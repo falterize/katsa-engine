@@ -1,7 +1,7 @@
 -- Uniform grid navigation. Cells are 1-based (x = 1..width); world space is
 -- origin + (cell - 0.5) * cellSize, so paths pass through cell centers.
-local AStar = require('source.plugins.pathfinding.astar')
-local Path = require('source.plugins.pathfinding.path')
+local AStar = require('./astar')
+local Path = require('./path')
 
 local Grid = {}
 Grid.__index = Grid

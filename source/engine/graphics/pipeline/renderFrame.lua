@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Install one cohesive responsibility on the public class.
 local RenderFrame = {}
 
@@ -7,8 +7,8 @@ function RenderFrame.install(Renderer)
         if not camera then
             return nil
         end
-        require('source.engine.animation.skeleton.skinLimits').prepare(world)
-        local cacheModule = require('source.engine.graphics.pipeline.frameCache')
+        require('../../animation.skeleton.skinLimits').prepare(world)
+        local cacheModule = require('./frameCache')
         local start = katsa.timer.getTime()
         local dependencies = cacheModule.inspect(self, world, camera, time, offscreen)
         self.stats.cacheCheckPhases = dependencies.timings
@@ -84,7 +84,7 @@ function RenderFrame.install(Renderer)
         g.setShader(s)
         self.world, self.camera, self.time = world, camera, time
         self.frame = self.frame + 1
-        require('source.engine.graphics.pipeline.depthPrepass').draw(self)
+        require('./depthPrepass').draw(self)
         g.setBlendMode('alpha')
         g.setDepthMode('less', true)
         g.setWireframe(false)
@@ -109,13 +109,13 @@ function RenderFrame.install(Renderer)
             world.physics:drawDebug(camera)
         end
         if world.plugins then
-            require('source.engine.plugins').drawDebug(world, camera)
+            require('../../plugins').drawDebug(world, camera)
         end
         if world.animators then
-            require('source.engine.graphics.debug.skeletonDebug').draw(world, camera)
+            require('../debug.skeletonDebug').draw(world, camera)
         end
         if self.billboardDebugActive then
-            require('source.engine.graphics.debug.billboardDebug').draw(world, camera)
+            require('../debug.billboardDebug').draw(world, camera)
         end
         g.setShader(s)
         for _, o in ipairs(self.top) do

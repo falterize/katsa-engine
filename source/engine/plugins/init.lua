@@ -81,6 +81,14 @@ end
 --       after the 3D scene each frame.
 
 -- Activates plugins for one world. Safe to call twice with the same names.
+-- A manifest names its modules relative to the plugin folder ('./nodes.navMap') or absolutely.
+local function load(name, path)
+    if path:sub(1, 2) == './' then
+        path = 'source.plugins.' .. name .. '.' .. path:sub(3)
+    end
+    return require(path)
+end
+
 function Plugins.activate(world, names)
     world.plugins = world.plugins or { names = {}, debug = {} }
     local state = world.plugins
@@ -91,12 +99,12 @@ function Plugins.activate(world, names)
             local info = assert(manifest(name), 'Unknown plugin: ' .. tostring(name))
             Plugins.require(name)
             for typeName, modulePath in pairs(info.nodes or {}) do
-                world:registerNodeType(typeName, require(modulePath))
+                world:registerNodeType(typeName, load(name, modulePath))
             end
             for className, modulePath in pairs(info.extend or {}) do
-                local spec = require(modulePath)
+                local spec = load(name, modulePath)
                 spec.plugin = name
-                require('source.engine.nodes.core.extensions').add(className, spec)
+                require('../nodes.core.extensions').add(className, spec)
             end
             local debug = info.debug
             if debug then
@@ -111,7 +119,7 @@ function Plugins.activate(world, names)
                     key = debug.key,
                     title = debug.title or debug.key,
                     settings = settings,
-                    drawer = debug.draw and require(debug.draw) or nil,
+                    drawer = debug.draw and load(name, debug.draw) or nil,
                 }
             end
         end

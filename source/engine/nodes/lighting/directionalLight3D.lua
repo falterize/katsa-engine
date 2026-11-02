@@ -1,11 +1,11 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../core.baseNode')
 
 local Class = Node.define('DirectionalLight3D', 'Node3D')
 
 function Class.initialize(self)
     -- Rotation is the single orientation control. Convert old creation input once.
     if self.direction then
-        self.rotation = require('source.engine.lighting.orientation').rotation(self.direction)
+        self.rotation = require('../../lighting.orientation').rotation(self.direction)
         self.direction = nil
     end
     self.color = self.color or { 255, 245, 220 }

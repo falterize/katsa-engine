@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Hierarchy = require('source.engine.nodes.core.hierarchy')
+local ipairs = require('../../math.array').ipairs
+local Hierarchy = require('./hierarchy')
 
 local function process(record, dt, tree)
     local node = record.node
@@ -65,7 +65,7 @@ function NodeTree:setProcess(node, enabled)
     record.update, record.enabled = node._class.scriptUpdate or node.update, true
     record.engineUpdate = node._class.scriptUpdate
             and node:isA('Body3D')
-            and require('source.engine.nodes').getClass('Body3D').update
+            and require('../../nodes').getClass('Body3D').update
         or nil
 end
 
@@ -83,7 +83,7 @@ function NodeTree:update(dt)
         if record and record.plane then
             recordDt = record.plane._simulationDelta
             if recordDt == nil then
-                recordDt = require('source.engine.world.clock').delta(record.plane, dt)
+                recordDt = require('../../world.clock').delta(record.plane, dt)
             end
         end
         if

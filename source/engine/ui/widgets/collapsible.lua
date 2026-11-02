@@ -16,7 +16,7 @@ function Collapsible.create(scene, panel, title, position)
         maxTextSize = 15,
         zIndex = (panel.zIndex or 0) + 1,
         backgroundColor = { 0.09, 0.2, 0.29 },
-        radius = require('source.engine.ui.theme').corner,
+        radius = require('../theme').corner,
         onPress = function()
             expanded = not expanded
             panel.visible = expanded

@@ -1,6 +1,6 @@
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
-local Base = require('scene.scripts.builders.rig')
+local Base = require('./builders.rig')
 local Mesh = require('source.engine.composition.mesh')
 
 local Lab = {}

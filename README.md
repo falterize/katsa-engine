@@ -18,7 +18,7 @@ Build the katsa runtime (see [building](docs/guides/katsa/building.md)) and run 
 | `vendor/` | Pinned third-party dependencies and licenses (Box2D, stb, Jolt, Oimo, json) |
 | `tools/project/templates/game/` | Generator-only entry/configuration resources; scene code has one canonical source |
 | `tools/` | Asset generation, importing, building and dependency verification |
-| `docs/` | Current guides, architecture, changelog and reference images |
+| `docs/` | Current guides, architecture, project conventions (`docs/AGENTS.md`), changelog and reference images |
 
 Select your game's first scene in `source/game/data/project.lua`. Each scene owns its settings, lifecycle-only `main.lua`, assets, nodes, systems and scripts, including `scripts/ui` for its interface code. `scripts/content.lua` composes content; other scripts and UI helpers are grouped by responsibility. Empty directories are preserved by the packers without marker files. The default menu is an example selector; it can be bypassed. System discovery/order/enabling is visible directly in each scene's `main.lua`.
 

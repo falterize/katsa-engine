@@ -1,10 +1,10 @@
 -- Oimo solver adapter. The compatibility helpers are reused by Jolt; this
 -- world is only constructed when Oimo itself is selected for simulation.
-local O = require('source.engine.physics.3d.backends.oimo.types')
+local O = require('./types')
 local Extensions = require('source.engine.core.extensions')
-local Bodies = require('source.engine.physics.3d.backends.oimo.bodies')
-local vec = require('source.engine.physics.3d.internal.bodyPolicy').vec
-local Compatibility = require('source.engine.physics.3d.backends.oimo.compatibility')
+local Bodies = require('./bodies')
+local vec = require('../../internal.bodyPolicy').vec
+local Compatibility = require('./compatibility')
 
 local Adapter = setmetatable({}, { __index = Compatibility })
 Adapter.__index = Adapter
@@ -32,5 +32,5 @@ function Adapter:applySettings(body, values) end
 
 function Adapter:release() end
 
-Extensions.apply(Adapter, require('source.engine.physics.3d.backends.oimo.constraints'))
+Extensions.apply(Adapter, require('./constraints'))
 return Adapter

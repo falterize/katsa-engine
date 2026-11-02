@@ -1,6 +1,6 @@
-local pairs = require('source.engine.math.array').pairs
-local Tree = require('source.engine.editor.tree.traversal')
-local Properties = require('source.engine.editor.inspectors.properties')
+local pairs = require('../math.array').pairs
+local Tree = require('./tree.traversal')
+local Properties = require('./inspectors.properties')
 local utf8 = require('utf8')
 
 local Workspace = {}
@@ -61,7 +61,7 @@ function Workspace.new(scene)
         fontSize = 13,
         backgroundColor = buttonColor,
         onPress = function()
-            require('source.engine.editor.panels.groupEditor').open(self)
+            require('./panels.groupEditor').open(self)
         end,
     }, self.panel)
     self.shaderLayersButton = ui:button({
@@ -72,7 +72,7 @@ function Workspace.new(scene)
         fontSize = 12,
         backgroundColor = buttonColor,
         onPress = function()
-            require('source.engine.editor.panels.shaderLayers').open(self)
+            require('./panels.shaderLayers').open(self)
         end,
     }, self.panel)
     self.close = ui:button({
@@ -266,8 +266,8 @@ function Workspace:toggle(value)
         self:cancelEdit()
     end
 end
-require('source.engine.editor.tree.workspaceRows').install(Workspace)
-require('source.engine.editor.panels.workspaceEditing').install(Workspace)
+require('./tree.workspaceRows').install(Workspace)
+require('./panels.workspaceEditing').install(Workspace)
 
 function Workspace:update(dt)
     self.progress = self.opened and math.min(1, self.progress + dt / 0.25)
@@ -298,7 +298,7 @@ function Workspace:update(dt)
         if
             not self.popup
             and self.schemaSignature
-                ~= require('source.engine.editor.inspectors.schema').signature(
+                ~= require('./inspectors.schema').signature(
                     self.selected._editorTarget or self.selected
                 )
         then
@@ -317,5 +317,5 @@ function Workspace:update(dt)
         self.buffer = (self.popup and self.popup.focusNode or self.entry).text
     end
 end
-require('source.engine.editor.inspectors.inspector').install(Workspace)
+require('./inspectors.inspector').install(Workspace)
 return Workspace

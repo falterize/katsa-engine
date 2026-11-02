@@ -1,5 +1,5 @@
-local Runtime = require('source.engine.core.runtime')
-local Deadline = require('source.engine.core.timing.deadline')
+local Runtime = require('./runtime')
+local Deadline = require('./timing.deadline')
 
 local FrameLoop = {}
 

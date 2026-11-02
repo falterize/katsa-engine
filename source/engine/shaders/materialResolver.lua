@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Material = require('source.engine.graphics.material')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local Material = require('../graphics.material')
 
 local Resolver = {}
 local sections = {
@@ -73,7 +73,7 @@ function Resolver.resolve(world, object)
     end
     local active = world.shaderLayers:resolve(nodes, object._activeShaders)
     object._activeShaders = active
-    require('source.engine.shaders.systemLayers').resolve(world, object, active)
+    require('./systemLayers').resolve(world, object, active)
     if #active == 0 then
         object._resolvedMaterial = nil
         object._shaderBoundsPadding = 0

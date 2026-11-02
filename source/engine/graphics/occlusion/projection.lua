@@ -1,8 +1,8 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Current-frame convex coverage. No previous-frame visibility or depth readback.
-local Math = require('source.engine.math.math3d')
-local Bounds = require('source.engine.graphics.geometry.objectBounds')
-local Coverage = require('source.engine.graphics.occlusion.coverage')
+local Math = require('../../math.math3d')
+local Bounds = require('../geometry.objectBounds')
+local Coverage = require('./coverage')
 
 local Projection = {}
 local cameraFields = { 'width', 'height', 'focal', 'near', 'far' }

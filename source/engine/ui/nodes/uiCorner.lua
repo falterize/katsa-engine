@@ -1,5 +1,5 @@
-local readValue = require('source.engine.math.managedValue').read
-local Node = require('source.engine.nodes')
+local readValue = require('../../math.managedValue').read
+local Node = require('../../nodes')
 
 local Class = Node.define('UICorner', 'UINode')
 Class.modifier = true

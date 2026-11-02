@@ -1,9 +1,9 @@
-local ValueTypes = require('source.engine.math.valueTypes')
-local PropertyChanges = require('source.engine.nodes.core.propertyChanges')
+local ValueTypes = require('../../math.valueTypes')
+local PropertyChanges = require('./propertyChanges')
 
 local spatialKeys =
     { position = true, rotation = true, scale = true, size = true, spatialPosition = true }
-local propertyAliases = require('source.engine.nodes.core.classPolicy').propertyAliases
+local propertyAliases = require('./classPolicy').propertyAliases
 local ClassDefinition = {}
 
 function ClassDefinition.install(Node)
@@ -130,12 +130,12 @@ function ClassDefinition.install(Node)
                 end
                 local vectors = rawget(instance, '_billboardVectors')
                 if vectors and vectors[key] then
-                    require('source.engine.core.validate').vector(value, 'BillboardUI.' .. key, 3)
+                    require('../../core.validate').vector(value, 'BillboardUI.' .. key, 3)
                     assert(#value == 3, 'BillboardUI.' .. key .. ' requires three components')
-                    local Managed = require('source.engine.math.managedValue')
+                    local Managed = require('../../math.managedValue')
                     Managed.unbind(vectors[key], instance)
                     vectors[key] = Managed.bind(
-                        require('source.engine.math.vector3').fromArray(value),
+                        require('../../math.vector3').fromArray(value),
                         instance
                     )
                     rawset(

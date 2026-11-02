@@ -1,7 +1,7 @@
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
 local Theme = require('source.engine.ui.theme')
-local Preview = require('scene.scripts.ui.previews.shader')
+local Preview = require('./previews.shader')
 
 local Interface = {}
 

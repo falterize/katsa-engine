@@ -1,5 +1,5 @@
-local Policy = require('source.engine.nodes.core.propertyPolicy')
-local Snapshot = require('source.engine.core.valueSnapshot')
+local Policy = require('../../nodes.core.propertyPolicy')
+local Snapshot = require('../../core.valueSnapshot')
 return {
     nodeKeys = Policy.nodeKeys,
     nodeVectors = Policy.nodeVectors,

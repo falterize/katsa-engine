@@ -1,5 +1,5 @@
 -- Install one cohesive responsibility on the public class.
-local ContentBounds = require('source.engine.ui.spatial.contentBounds')
+local ContentBounds = require('./contentBounds')
 local BillboardCanvas = {}
 
 function BillboardCanvas.install(BillboardUI)
@@ -9,7 +9,7 @@ function BillboardCanvas.install(BillboardUI)
         if self.sizeMode == 'World3D' then
             w, h = w * self.canvasPixelsPerUnit, h * self.canvasPixelsPerUnit
         end
-        local cw, ch = require('source.engine.ui.layout.metrics').resolve(self.canvasSize, w, h)
+        local cw, ch = require('../layout.metrics').resolve(self.canvasSize, w, h)
         assert(
             cw > 0 and ch > 0 and cw < math.huge and ch < math.huge,
             'CanvasSize must resolve positive finite dimensions'
@@ -26,12 +26,12 @@ function BillboardCanvas.install(BillboardUI)
         local rw, rh = camera and camera.width or 1280, camera and camera.height or 720
         if self.sizeMode == 'World3D' then
             if self:isA('SurfaceUI') then
-                rw, rh = require('source.engine.surfaces.faces').referenceSize(self)
+                rw, rh = require('../../surfaces.faces').referenceSize(self)
             else
                 rw, rh = self:extentDimensions()
             end
         end
-        return require('source.engine.ui.layout.metrics').resolve(
+        return require('../layout.metrics').resolve(
             self.size,
             rw,
             rh,
@@ -40,10 +40,10 @@ function BillboardCanvas.install(BillboardUI)
     end
 
     function BillboardUI:extentDimensions()
-        local support = require('source.engine.surfaces.support').resolve(self)
+        local support = require('../../surfaces.support').resolve(self)
         local d = self.supportSize
         if support and support:isA('Mesh3D') then
-            require('source.engine.graphics.geometry.objectBounds').get(support)
+            require('../../graphics.geometry.objectBounds').get(support)
             local b = support.geometry.bounds
             return (b[4] - b[1]) * support.size[1],
                 (b[5] - b[2]) * support.size[2],
@@ -53,7 +53,7 @@ function BillboardCanvas.install(BillboardUI)
     end
 
     function BillboardUI:refresh()
-        local filter = require('source.engine.components.image').pixelate(
+        local filter = require('../../components.image').pixelate(
             self,
             self._world.environment
         ) and 'nearest' or 'linear'

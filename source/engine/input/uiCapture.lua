@@ -1,4 +1,4 @@
-local Canvas = require('source.engine.ui.layout.scrollCanvas')
+local Canvas = require('../ui.layout.scrollCanvas')
 local Capture = {}
 
 -- Gesture origins use host-local UI coordinates. lastX/Y retain raw pointer positions

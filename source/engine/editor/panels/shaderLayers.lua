@@ -1,10 +1,10 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 
 -- Shader layers dialog: the same matrix editor as Layers groups, without the 2D/3D tabs.
 local Editor = {}
 
 function Editor.open(workspace)
-    local Popup = require('source.engine.editor.panels.popup')
+    local Popup = require('./popup')
     if workspace.popup then
         workspace.popup:close(true)
     end

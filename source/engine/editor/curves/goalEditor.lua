@@ -1,8 +1,8 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Goals = require('source.engine.animation.rampGoals')
-local Copy = require('source.engine.animation.bindings').copy
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Goals = require('../../animation.rampGoals')
+local Copy = require('../../animation.bindings').copy
 
 local Editor = {}
 
@@ -151,12 +151,12 @@ function Editor.open(popup, selected)
     end
     button(popup, 'Edit ' .. selected .. ' points', 0, y, 1, function()
         if not popup.target.bindings[selected] then
-            popup.target.bindings[selected] = require('source.engine.animation.sequence').linear(
+            popup.target.bindings[selected] = require('../../animation.sequence').linear(
                 Goals.value(popup.target, selected),
                 Copy(popup.target.goals[selected])
             )
         end
-        require('source.engine.editor.curves.sequenceEditor').open(popup, selected)
+        require('./sequenceEditor').open(popup, selected)
     end)
     popup.body.length = y + 44
 end

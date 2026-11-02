@@ -1,6 +1,6 @@
 -- One module per SoundEffect class: { name, effectType, category, defaults }.
 -- Only real katsa effect types are exposed. Pitch uses Source:setPitch.
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../../core.baseNode')
 
 local modules = {
     'reverb',

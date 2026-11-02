@@ -1,7 +1,7 @@
 -- Esc pause menu as a module a scene attaches in its main.lua:
 --
---     require('source.game.runtime.pauseMenu').attach(scene)        -- freezes game time while open
---     require('source.game.runtime.pauseMenu').attach(scene, true)  -- keeps time running (hosted multiplayer)
+--     require('./pauseMenu').attach(scene)        -- freezes game time while open
+--     require('./pauseMenu').attach(scene, true)  -- keeps time running (hosted multiplayer)
 --
 -- It is an overlay inside the scene, not a scene of its own, so the scene keeps updating under it.
 -- Opening sets the time scale to 0 and closing restores the previous value; with `keepTime`
@@ -59,7 +59,7 @@ function PauseMenu:build()
         fontSize = 19,
         backgroundColor = { 0.085, 0.135, 0.19 },
         onPress = function()
-            self.scene.manager:switch(require('source.game.runtime.menu').new)
+            self.scene.manager:switch(require('./menu').new)
         end,
     }, panel)
 end

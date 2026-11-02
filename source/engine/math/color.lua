@@ -1,4 +1,4 @@
-local Managed = require('source.engine.math.managedValue')
+local Managed = require('./managedValue')
 
 local Color = {}
 local names = {

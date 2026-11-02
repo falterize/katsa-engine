@@ -5,7 +5,7 @@ function Methods:setTimeOfDay(hour)
     if self.daySlider then
         self.daySlider.value = self.dayHour
     end
-    local sun = require('scene.scripts.lighting.directional').create(self.scene.world, 'DaySun')
+    local sun = require('./directional').create(self.scene.world, 'DaySun')
     local elevation = math.sin((self.dayHour - 6) / 24 * math.pi * 2)
     local daylight = math.max(0, elevation)
     sun.enabled = daylight > 0.01

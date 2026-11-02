@@ -1,4 +1,4 @@
-local M = require('source.engine.math.math3d')
+local M = require('../../math.math3d')
 
 local function rotate(v, c, t, out)
     out[1], out[2], out[3] = v[1] * c + v[3] * t, v[2], v[3] * c - v[1] * t
@@ -13,7 +13,7 @@ function RenderBindings.install(Renderer)
             return
         end
         local g = katsa.graphics
-        local image = require('source.engine.components.image').resolve(
+        local image = require('../../components.image').resolve(
             world.resources,
             s,
             s.texture,
@@ -109,7 +109,7 @@ function RenderBindings.install(Renderer)
         assert(not material or material.kind == 'world', '3D objects require a world material')
         local shader = wire and self.wireShader
             or material and material.shader
-            or require('source.engine.graphics.pipeline.shaderVariants').get(self, object)
+            or require('./shaderVariants').get(self, object)
         katsa.graphics.setShader(shader)
         if self.shaderFrames[shader] ~= self.frame then
             self:sendFrame(shader)

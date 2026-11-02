@@ -1,5 +1,5 @@
-local Types = require('source.engine.nodes.audio.effectTypes')
-require('source.engine.nodes.audio.soundEffect')
+local Types = require('./effectTypes')
+require('./soundEffect')
 
 Types.register()
 

@@ -1,8 +1,8 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local walk = require('source.engine.ui.traversal').each
-local Snapshot = require('source.engine.core.valueSnapshot')
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local walk = require('../traversal').each
+local Snapshot = require('../../core.valueSnapshot')
 local ChangeTracking = {}
 
 function ChangeTracking.install(UI)

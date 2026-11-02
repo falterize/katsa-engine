@@ -1,5 +1,5 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
+local unpack = require('../math.array').unpack
+local ipairs = require('../math.array').ipairs
 -- Optional first/third-person follow rig; gameplay and debug cameras remain independent.
 local Controller = {}
 Controller.__index = Controller
@@ -106,7 +106,7 @@ function Controller:update(dt, snap)
     camera:update(camera.width or 640, camera.height or 360)
     local m = target:getRenderWorldMatrix()
     local o = self.offset
-    local x, y, z = require('source.engine.math.math3d').transform(m, o[1], o[2], o[3])
+    local x, y, z = require('../math.math3d').transform(m, o[1], o[2], o[3])
     local distance = self.mode == 'ThirdPerson' and self.distance or 0
     local desired = {
         x - camera.forward[1] * distance,
@@ -196,7 +196,7 @@ function Controller:updateTransition(dt)
     end
     if self.mode == 'ThirdPerson' and self.target and not self.target.destroyed then
         local origin = {
-            require('source.engine.math.math3d').transform(
+            require('../math.math3d').transform(
                 self.target:getRenderWorldMatrix(),
                 unpack(self.offset)
             ),

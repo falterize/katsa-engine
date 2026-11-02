@@ -1,4 +1,4 @@
-local Builders = require('source.engine.physics.2d.constraints')
+local Builders = require('./constraints')
 local Joints = {}
 local settings = {
     'enabled',

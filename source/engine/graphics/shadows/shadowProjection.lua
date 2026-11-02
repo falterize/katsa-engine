@@ -1,5 +1,5 @@
-local unpack = require('source.engine.math.array').unpack
-local Math = require('source.engine.math.math3d')
+local unpack = require('../../math.array').unpack
+local Math = require('../../math.math3d')
 local ShadowProjection = {}
 
 function ShadowProjection.install(

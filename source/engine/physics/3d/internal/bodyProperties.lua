@@ -1,6 +1,6 @@
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
-local Policy = require('source.engine.physics.3d.internal.bodyPolicy')
+local Policy = require('./bodyPolicy')
 local vec, valid, types, observedProperties =
     Policy.vec, Policy.valid, Policy.types, Policy.observedProperties
 local BodyProperties = {}

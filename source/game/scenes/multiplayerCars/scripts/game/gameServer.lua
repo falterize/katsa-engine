@@ -7,11 +7,11 @@
 -- server-side verification, and refills are rate limited either way.
 local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
-local CarEntity = require('scene.scripts.game.carEntity')
-local Arena = require('scene.scripts.game.arena')
-local Bot = require('scene.scripts.game.bot')
-local PhysicsCar = require('scene.scripts.game.physicsCar')
-local WalkerEntity = require('scene.scripts.game.walkerEntity')
+local CarEntity = require('./carEntity')
+local Arena = require('./arena')
+local Bot = require('./bot')
+local PhysicsCar = require('./physicsCar')
+local WalkerEntity = require('./walkerEntity')
 
 local GameServer = {}
 GameServer.__index = GameServer
@@ -367,7 +367,7 @@ function GameServer:bindRemotes()
                 { x = x, y = y, z = z, nx = nx, ny = ny, nz = nz, speed = math.min(speed, 40) }
         end
     end)
-    require('scene.scripts.game.voice').bindServer(self)
+    require('./voice').bindServer(self)
     server:remote('chat'):onServer(function(player, text)
         self:chat(player, text)
     end)

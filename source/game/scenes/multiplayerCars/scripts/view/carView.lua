@@ -1,7 +1,7 @@
 -- The visible side of one car: a dent-able body and four wheels, driven by the model state.
-local Body = require('scene.scripts.view.carMesh')
+local Body = require('./carMesh')
 
-local orientation = require('scene.scripts.game.orientation')
+local orientation = require('../game.orientation')
 
 local CarView = {}
 CarView.__index = CarView

@@ -1,16 +1,16 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Math = require('source.engine.math.math3d')
-local Validate = require('source.engine.core.validate')
-local ShadowCache = require('source.engine.graphics.shadows.shadowCache')
-local Schedule = require('source.engine.graphics.shadows.shadowSchedule')
-local Receivers = require('source.engine.graphics.shadows.shadowReceivers')
-local Types = require('source.engine.graphics.shadows.sourceTypes')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Math = require('../../math.math3d')
+local Validate = require('../../core.validate')
+local ShadowCache = require('./shadowCache')
+local Schedule = require('./shadowSchedule')
+local Receivers = require('./shadowReceivers')
+local Types = require('./sourceTypes')
 local kind, faces, pointDirections = Types.kind, Types.faces, Types.pointDirections
-local Directional = require('source.engine.graphics.shadows.directionalShadows')
-local Residency = require('source.engine.graphics.shadows.shadowResidency')
-local Eligibility = require('source.engine.graphics.shadows.shadowEligibility')
-local Task = require('source.engine.graphics.shadows.shadowTask')
+local Directional = require('./directionalShadows')
+local Residency = require('./shadowResidency')
+local Eligibility = require('./shadowEligibility')
+local Task = require('./shadowTask')
 local ShadowUpdate = {}
 
 function ShadowUpdate.install(Shadows)

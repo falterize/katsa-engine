@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Canvas = require('source.engine.ui.layout.scrollCanvas')
+local ipairs = require('../../math.array').ipairs
+local Canvas = require('./scrollCanvas')
 
 local Length = {}
 

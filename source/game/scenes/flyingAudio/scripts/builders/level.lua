@@ -1,5 +1,5 @@
 local UI = require('source.engine.ui')
-local object = require('scene.scripts.builders.object')
+local object = require('./object')
 
 local FlyingAudio = {}
 

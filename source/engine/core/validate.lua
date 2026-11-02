@@ -1,4 +1,4 @@
-local Array = require('source.engine.math.array')
+local Array = require('../math.array')
 
 local Validate = {}
 

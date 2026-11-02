@@ -1,11 +1,11 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local PropertyChanges = require('source.engine.nodes.core.propertyChanges')
-local Parenting = require('source.engine.nodes.core.parenting')
-local Hierarchy = require('source.engine.nodes.core.hierarchy')
-local Signals = require('source.engine.nodes.core.signals')
-local Lifecycle = require('source.engine.nodes.core.lifecycle')
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local PropertyChanges = require('./propertyChanges')
+local Parenting = require('./parenting')
+local Hierarchy = require('./hierarchy')
+local Signals = require('./signals')
+local Lifecycle = require('./lifecycle')
 
 local Node = {
     classes = {},
@@ -31,9 +31,9 @@ local Node = {
         ['Decal'] = 'Decal3D',
     },
 }
-local ClassPolicy = require('source.engine.nodes.core.classPolicy')
+local ClassPolicy = require('./classPolicy')
 local inheritInitializers, propertyAliases = ClassPolicy.initialize, ClassPolicy.propertyAliases
-require('source.engine.nodes.core.classDefinition').install(Node)
+require('./classDefinition').install(Node)
 
 function Node.getClass(name, context)
     name = Node.aliases[name] or name
@@ -108,7 +108,7 @@ function Node.adopt(node, className)
     setmetatable(node, class.instanceMetatable)
     local ok, message = pcall(function()
         inheritInitializers(class, node)
-        require('source.engine.math.valueTypes').initialize(node)
+        require('../../math.valueTypes').initialize(node)
         PropertyChanges.initialize(node)
     end)
     if not ok then
@@ -200,7 +200,7 @@ end
 -- Deep copy of this node and its descendants; `properties` overrides the copy's fields
 -- (for example { Name = 'Copy' }) and `parent` defaults to this node's parent.
 function Node:clone(properties, parent)
-    return require('source.engine.nodes.core.clone').node(self, properties, parent)
+    return require('./clone').node(self, properties, parent)
 end
 
 function Node:attachment(properties)

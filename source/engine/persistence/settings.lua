@@ -1,4 +1,4 @@
-local Store = require('source.engine.persistence.store')
+local Store = require('./store')
 
 local Settings = {}
 Settings.__index = Settings

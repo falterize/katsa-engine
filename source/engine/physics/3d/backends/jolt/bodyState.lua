@@ -1,5 +1,5 @@
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local Jobs = require('source.engine.physics.3d.backends.jolt.native.jobs')
+local Library = require('./library')
+local Jobs = require('./native.jobs')
 
 local State = {}
 

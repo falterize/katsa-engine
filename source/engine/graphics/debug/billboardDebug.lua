@@ -1,7 +1,7 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local Math = require('source.engine.math.math3d')
-local Support = require('source.engine.surfaces.support')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local Math = require('../../math.math3d')
+local Support = require('../../surfaces.support')
 
 local Debug = {}
 

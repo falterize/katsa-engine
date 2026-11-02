@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Batches = require('source.engine.graphics.pipeline.batches')
-local Types = require('source.engine.graphics.shadows.sourceTypes')
+local ipairs = require('../../math.array').ipairs
+local Batches = require('../pipeline.batches')
+local Types = require('./sourceTypes')
 local kind, faces, pointDirections = Types.kind, Types.faces, Types.pointDirections
 local ShadowDepthPass = {}
 
@@ -39,7 +39,7 @@ function ShadowDepthPass.install(Shadows)
     end
 
     function Shadows:bind(object)
-        local opaque = require('source.engine.materials.opaqueMesh').eligible(
+        local opaque = require('../../materials.opaqueMesh').eligible(
             object,
             object._world and object._world._activeRenderer
         )
@@ -57,7 +57,7 @@ function ShadowDepthPass.install(Shadows)
             or self.shader
         assert(shader, 'A world material must provide a shadow vertex shader')
         katsa.graphics.setShader(shader)
-        require('source.engine.animation.skeleton.skinning').bind(shader, object)
+        require('../../animation.skeleton.skinning').bind(shader, object)
         shader:send('viewProjection', 'row', self.currentMatrix)
         shader:send('atlasTile', self.tile)
         if not opaque then
@@ -67,7 +67,7 @@ function ShadowDepthPass.install(Shadows)
                     or false
             )
             shader:send('alphaCutoff', object._effectiveCutoff or object.alphaCutoff or 0)
-            require('source.engine.components.image').bindUV(
+            require('../../components.image').bindUV(
                 shader,
                 object._surfaceAppearance or object,
                 object.image
@@ -103,7 +103,7 @@ function ShadowDepthPass.install(Shadows)
         self.batchUploadedRows = self.batchUploadedRows + (group.uploadedRows or 0)
         mesh:setTexture(object.image)
         self.triangles = self.triangles
-            + require('source.engine.graphics.debug.triangles').mesh(mesh) * count
+            + require('../debug.triangles').mesh(mesh) * count
         if object.geometry.eightWeights then
             g.draw(mesh)
         else

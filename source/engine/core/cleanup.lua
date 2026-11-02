@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../math.array').ipairs
 -- Finish every shutdown action before propagating the first failure.
 local Cleanup = {}
 

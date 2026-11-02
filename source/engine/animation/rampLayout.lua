@@ -1,7 +1,7 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Sequence = require('source.engine.animation.sequence')
+local Array = require('../math.array')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local Sequence = require('./sequence')
 local RampLayout = {}
 
 function RampLayout.install(Ramp)
@@ -44,7 +44,7 @@ function RampLayout.install(Ramp)
     end
 
     function Ramp:addGoal(key, value)
-        return require('source.engine.animation.rampGoals').add(self, key, value)
+        return require('./rampGoals').add(self, key, value)
     end
 
     function Ramp:removeGoal(key)
@@ -107,7 +107,7 @@ function RampLayout.install(Ramp)
             points = self.points
         end
         if not points then
-            local current = require('source.engine.animation.rampGoals').value(self, key)
+            local current = require('./rampGoals').value(self, key)
             points = Sequence.linear(current, self.goals[key] or current)
         end
         local alphaKey = key == 'color' and 'transparency'

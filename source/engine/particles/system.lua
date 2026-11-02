@@ -1,10 +1,10 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Sim = require('source.engine.particles.simulation')
-local V = require('source.engine.core.validate')
+local Array = require('../math.array')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local Sim = require('./simulation')
+local V = require('../core.validate')
 
-local Settings = require('source.engine.particles.settings')
+local Settings = require('./settings')
 
 local S = {}
 S.__index = function(self, key)
@@ -72,8 +72,8 @@ function S:physics()
 end
 
 function S:visibility()
-    return self.dimension == 2 and require('source.engine.particles.2d.visibility')
-        or require('source.engine.particles.3d.visibility')
+    return self.dimension == 2 and require('./2d.visibility')
+        or require('./3d.visibility')
 end
 
 function S:validate(e)
@@ -83,7 +83,7 @@ function S:validate(e)
             e.collisionGroup = 'Default'
         end
     end
-    local defaults = require('source.engine.nodes.core.baseNode').getClass(
+    local defaults = require('../nodes.core.baseNode').getClass(
         self.dimension == 2 and 'ParticleEmitter2D' or 'ParticleEmitter3D'
     ).defaults
     local snapshot = e._configSnapshot
@@ -287,9 +287,9 @@ end
 
 function S:draw(camera, emitter)
     if self.dimension == 2 then
-        return require('source.engine.particles.2d.renderer').draw(self)
+        return require('./2d.renderer').draw(self)
     end
-    return require('source.engine.particles.3d.renderer').draw(self, camera, emitter)
+    return require('./3d.renderer').draw(self, camera, emitter)
 end
 
 return S

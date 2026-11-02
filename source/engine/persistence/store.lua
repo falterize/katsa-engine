@@ -1,6 +1,6 @@
 local Json = require('vendor.json')
-local Paths = require('source.engine.persistence.paths')
-local FileIO = require('source.engine.persistence.fileIO')
+local Paths = require('./paths')
+local FileIO = require('./fileIO')
 
 local Store = {}
 Store.__index = Store

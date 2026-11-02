@@ -1,6 +1,6 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Array = require('../math.array')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
 
 local Models = {}
 local formats = {
@@ -19,7 +19,7 @@ function Models.supports(path)
 end
 
 function Models.decode(path, resources)
-    local packed = require('source.engine.import.packedModel').try(path, resources)
+    local packed = require('./packedModel').try(path, resources)
     if packed then
         return packed
     end
@@ -36,7 +36,7 @@ function Models.decode(path, resources)
 end
 -- Model instances own mutable node poses and animation state, while GPU assets are shared.
 local function copy(value, seen)
-    if require('source.engine.math.managedValue').is(value) then
+    if require('../math.managedValue').is(value) then
         return value:clone()
     end
     if not Array.is(value) or value._assetGeometry or value.mesh and rawget(value, 'vertices') then
@@ -60,7 +60,7 @@ function Models.load(path, resources)
         if not katsa.filesystem.getInfo(path, 'file') then
             -- Keep missing model instances visible and independently editable;
             -- share only the immutable placeholder geometry and texture.
-            local geometry = require('source.engine.graphics.geometry.primitives').cube()
+            local geometry = require('../graphics.geometry.primitives').cube()
             geometry._assetGeometry = true
             owner:own(geometry.mesh)
             if owner.store.journal then
@@ -145,7 +145,7 @@ function Models.instantiate(world, model, settings)
                 matrices = {},
                 node = part.node,
             }
-            require('source.engine.animation.skeleton.skinning').initialize(object)
+            require('../animation.skeleton.skinning').initialize(object)
         end
         return object
     end
@@ -214,7 +214,7 @@ function Models.instantiate(world, model, settings)
         if hasSkin then
             model.animator = world:create('Animator', { model = model, name = 'Animator' }, root)
         elseif #model.animations > 0 then
-            local Class = require('source.engine.nodes').getClass('Animator')
+            local Class = require('../nodes').getClass('Animator')
             local controller = setmetatable(
                 { model = model, _world = world, _trackParent = root },
                 { __index = Class }

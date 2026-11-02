@@ -1,6 +1,6 @@
 local ipairs = require('source.engine.math.array').ipairs
 local Input = require('source.engine.input.input')
-local Samples = require('scene.scripts.catalog.samples')
+local Samples = require('../catalog.samples')
 
 local Scene = {}
 Scene.__index = Scene

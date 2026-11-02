@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../../core.baseNode')
 local Joints = require('source.engine.physics.2d.joints')
 
 local Constraint2D = Node.define('Constraint2D', 'Node')
@@ -89,6 +89,6 @@ function Constraint2D:repair()
     self:releaseJoint()
 end
 
-require('source.engine.nodes.physics.2d.constraintTypes').register(Constraint2D)
+require('./constraintTypes').register(Constraint2D)
 
 return Constraint2D

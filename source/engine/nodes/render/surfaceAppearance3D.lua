@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
+local ipairs = require('../../math.array').ipairs
+local Node = require('../core.baseNode')
 
 local C = Node.define('SurfaceAppearance3D', 'Node')
 C.propertySchema = {
@@ -27,10 +27,10 @@ C.propertySchema = {
     alphaMode = { options = { 'Inherit', 'Opaque', 'Mask', 'Blend' } },
     alphaCutoff = { min = 0, max = 1, visibleWhen = { key = 'alphaMode', equals = 'Mask' } },
 }
-require('source.engine.components.image').describe(C)
+require('../../components.image').describe(C)
 
 function C.initialize(self)
-    require('source.engine.components.image').initialize(self)
+    require('../../components.image').initialize(self)
     for _, key in ipairs({
         'colorMap',
         'normalMap',

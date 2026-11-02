@@ -1,5 +1,5 @@
-local Locomotion = require('scene.scripts.fsm.locomotion')
-local Math = require('scene.scripts.controller.math')
+local Locomotion = require('../locomotion')
+local Math = require('../../controller.math')
 
 local Fall = {}
 

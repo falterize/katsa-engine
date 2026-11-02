@@ -2,9 +2,9 @@
 -- machine, crouch, walk/crouch blends) plus the `drive` and `passenger` states used while riding a
 -- car. The replicated model (pose, state and animation blends) is refreshed every step.
 local StateMachine = require('source.engine.core.stateMachine')
-local Math = require('scene.scripts.walker.math')
-local WalkerEntity = require('scene.scripts.game.walkerEntity')
-local Arena = require('scene.scripts.game.arena')
+local Math = require('./math')
+local WalkerEntity = require('../game.walkerEntity')
+local Arena = require('../game.arena')
 local StepValue = require('source.engine.animation.stepValue')
 
 local Walker = {}

@@ -1,6 +1,6 @@
-local Node = require('source.engine.nodes')
-local Editor = require('source.engine.ui.widgets.textEditor')
-local Focus = require('source.engine.ui.widgets.textFocus')
+local Node = require('../../nodes')
+local Editor = require('../widgets.textEditor')
+local Focus = require('../widgets.textFocus')
 local utf8 = require('utf8')
 local Class = Node.define('TextBox', 'TextLabel')
 Class.interactive, Class.dragCapture = true, true
@@ -222,7 +222,7 @@ function Class:drawSelf(ui)
         end
         local color = self.textColor or { 1, 1, 1 }
         g.setColor(color[1], color[2], color[3], 1 - (self.textTransparency or 0))
-        local tx, ty = require('source.engine.ui.drawing.pixelGrid').snap(g, x, top)
+        local tx, ty = require('../drawing.pixelGrid').snap(g, x, top)
         g.print(line.text, tx, ty, 0, scale, scale)
     end
     if self.text == '' and not active then
@@ -234,7 +234,7 @@ function Class:drawSelf(ui)
         g.rectangle('fill', x + caret, y + (row - 1) * height, 1 / ui.density, height)
     end
     g.pop()
-    require('source.engine.graphics.state').reapplyScissor()
+    require('../../graphics.state').reapplyScissor()
 end
 
 return Class

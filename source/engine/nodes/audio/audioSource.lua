@@ -1,8 +1,8 @@
 -- AudioSource: a Node3D that emits sound from its own transform. It has the full Sound API
 -- (play/pause/stop/seek, effects as children, groups) and is spatial by default. Sound remains
 -- available for emitters that follow an Attachment3D parent.
-local Node = require('source.engine.nodes.core.baseNode')
-local Sound = require('source.engine.nodes.audio.sound')
+local Node = require('../core.baseNode')
+local Sound = require('./sound')
 
 local Source = Node.define('AudioSource', 'Node3D')
 -- Effects, groups and the inspector treat an AudioSource as a Sound.

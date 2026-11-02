@@ -1,5 +1,5 @@
-local Locomotion = require('scene.scripts.walker.locomotion')
-local Math = require('scene.scripts.walker.math')
+local Locomotion = require('../locomotion')
+local Math = require('../math')
 
 local Fall = {}
 

@@ -1,7 +1,7 @@
-local readValue = require('source.engine.math.managedValue').read
-local Array = require('source.engine.math.array')
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
+local readValue = require('../../math.managedValue').read
+local Array = require('../../math.array')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
 -- Shared by ScreenUI and BillboardUI canvases; no separate surface UI renderer.
 local Modifiers = {}
 
@@ -92,7 +92,7 @@ function Modifiers.drawBorders(node)
         if
             stroke:isA('UIStroke')
             and stroke.target == 'Border'
-            and require('source.engine.ui').isWorking(stroke)
+            and require('../../ui').isWorking(stroke)
         then
             local thickness = Modifiers.thickness(stroke, node, 64)
             if thickness > 0 then
@@ -132,7 +132,7 @@ function Modifiers.textStrokes(node, draw)
         if
             stroke:isA('UIStroke')
             and stroke.target == 'Text'
-            and require('source.engine.ui').isWorking(stroke)
+            and require('../../ui').isWorking(stroke)
         then
             active = true
             break
@@ -162,7 +162,7 @@ function Modifiers.textStrokes(node, draw)
         if
             stroke:isA('UIStroke')
             and stroke.target == 'Text'
-            and require('source.engine.ui').isWorking(stroke)
+            and require('../../ui').isWorking(stroke)
         then
             local thickness = Modifiers.thickness(stroke, node, 8)
             g.push('all')

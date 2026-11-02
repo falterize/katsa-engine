@@ -1,6 +1,6 @@
-local History = require('source.engine.debug.statistics.history')
-local Chart = require('source.engine.debug.statistics.chart')
-local Export = require('source.engine.debug.statistics.export')
+local History = require('./history')
+local Chart = require('./chart')
+local Export = require('./export')
 
 local Panel = {}
 Panel.__index = Panel

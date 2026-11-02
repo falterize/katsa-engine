@@ -6,7 +6,7 @@ local Scene = {}
 Scene.__index = Scene
 
 function Scene.new(scene)
-    local data = require('scene.scripts.data.layout')
+    local data = require('./data.layout')
     for _, entry in ipairs(data.objects) do
         local a = entry.args
         Mesh.create(scene.world, {
@@ -34,7 +34,7 @@ function Scene.new(scene)
     end
     scene.rainbowMotion =
         { enabled = true, center = { 0, 15, -100 }, amplitude = 25, arc = 55, period = 5, hz = 15 }
-    scene.boards = require('scene.scripts.ui.world.billboards').build(scene)
+    scene.boards = require('./ui.world.billboards').build(scene)
     return setmetatable({ scene = scene }, Scene)
 end
 

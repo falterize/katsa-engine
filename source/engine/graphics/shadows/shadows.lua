@@ -1,13 +1,13 @@
-local pairs = require('source.engine.math.array').pairs
-local Math = require('source.engine.math.math3d')
-local Validate = require('source.engine.core.validate')
-local Casters = require('source.engine.graphics.shadows.shadowCasters')
-local Batches = require('source.engine.graphics.pipeline.batches')
-local Cascades = require('source.engine.graphics.shadows.directionalCascades')
-local ShadowCache = require('source.engine.graphics.shadows.shadowCache')
-local Schedule = require('source.engine.graphics.shadows.shadowSchedule')
-local Receivers = require('source.engine.graphics.shadows.shadowReceivers')
-local Frusta = require('source.engine.graphics.shadows.shadowFrusta')
+local pairs = require('../../math.array').pairs
+local Math = require('../../math.math3d')
+local Validate = require('../../core.validate')
+local Casters = require('./shadowCasters')
+local Batches = require('../pipeline.batches')
+local Cascades = require('./directionalCascades')
+local ShadowCache = require('./shadowCache')
+local Schedule = require('./shadowSchedule')
+local Receivers = require('./shadowReceivers')
+local Frusta = require('./shadowFrusta')
 
 local Shadows = {}
 Shadows.__index = function(self, key)
@@ -70,10 +70,10 @@ function Shadows.new(resources)
     self.matrixTexture:setFilter('nearest', 'nearest')
     return self
 end
-require('source.engine.graphics.shadows.shadowAtlas').install(Shadows)
-require('source.engine.graphics.shadows.shadowDepthPass').install(Shadows)
-require('source.engine.graphics.shadows.shadowUpdate').install(Shadows)
-require('source.engine.graphics.shadows.shadowBindings').install(Shadows)
+require('./shadowAtlas').install(Shadows)
+require('./shadowDepthPass').install(Shadows)
+require('./shadowUpdate').install(Shadows)
+require('./shadowBindings').install(Shadows)
 
 function Shadows:release()
     self._released = true

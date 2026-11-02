@@ -1,7 +1,7 @@
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
 -- Attachment-owned constraint endpoints; backend joints never own scene lifetime.
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../../core.baseNode')
 local M = require('source.engine.math.math3d')
 local A = require('source.engine.math.affine')
 local Inputs = require('source.engine.physics.3d.constraints.inputs')
@@ -181,6 +181,6 @@ function C:step(dt)
     self._jointKey = key
     self.status = 'Active'
 end
-require('source.engine.nodes.physics.3d.constraintTypes').register(C)
+require('./constraintTypes').register(C)
 
 return C

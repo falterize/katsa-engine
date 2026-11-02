@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Scalar property writes carry a revision; mutable arrays retain component observation.
-local Policy = require('source.engine.nodes.core.propertyPolicy')
+local Policy = require('./propertyPolicy')
 
 local Changes = {}
 local masks = setmetatable({}, { __mode = 'k' })

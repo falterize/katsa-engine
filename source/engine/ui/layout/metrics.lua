@@ -1,4 +1,4 @@
-local readValue = require('source.engine.math.managedValue').read
+local readValue = require('../../math.managedValue').read
 
 local zeroAnchor = { 0, 0 }
 local Layout = {}

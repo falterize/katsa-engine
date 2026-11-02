@@ -1,8 +1,8 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Rich = require('source.engine.ui.drawing.richText')
-local Style = require('source.engine.ui.style')
+local ipairs = require('../../math.array').ipairs
+local Rich = require('./richText')
+local Style = require('../style')
 local utf8 = require('utf8')
-local pixelOrigin = require('source.engine.ui.drawing.pixelGrid').snap
+local pixelOrigin = require('./pixelGrid').snap
 
 local Text = {}
 
@@ -306,12 +306,12 @@ function Text.drawLabel(ui, node)
         g.push('all')
         g.setShader()
         if exactOffsets then
-            require('source.engine.ui.drawing.modifiers').textStrokes(node, function(dx, dy)
+            require('./modifiers').textStrokes(node, function(dx, dy)
                 drawPlain(node, font, glyphs, y, width, true, dx, dy)
             end)
         end
         g.setShader(shader)
-        require('source.engine.ui.drawing.modifiers').bindGradient(ui, node, 'Text')
+        require('./modifiers').bindGradient(ui, node, 'Text')
         local c = Style.color(node, 'text')
         g.setColor(c[1], c[2], c[3], Style.alpha(node, 'text', c))
         drawPlain(node, font, glyphs, y, width, exactOffsets, 0, 0)
@@ -321,12 +321,12 @@ function Text.drawLabel(ui, node)
         g.push('all')
         g.setShader()
         if exactOffsets then
-            require('source.engine.ui.drawing.modifiers').textStrokes(node, function(dx, dy)
+            require('./modifiers').textStrokes(node, function(dx, dy)
                 Text.draw(ui, node, dx, dy, true, true)
             end)
         end
         g.setShader(shader)
-        require('source.engine.ui.drawing.modifiers').bindGradient(ui, node, 'Text')
+        require('./modifiers').bindGradient(ui, node, 'Text')
         Text.draw(ui, node, nil, nil, false, exactOffsets)
         g.pop()
     end

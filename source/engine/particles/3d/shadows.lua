@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Bounded alpha-tested sprite geometry shares the ordinary shadow atlas.
-local M = require('source.engine.math.math3d')
-local Sequence = require('source.engine.animation.sequence')
+local M = require('../../math.math3d')
+local Sequence = require('../../animation.sequence')
 
 local S = {}
 local corners = {
@@ -76,7 +76,7 @@ function S.prepare(world, camera, output)
                 end)
             end
             proxy._resolvedMaterial =
-                require('source.engine.shaders.materialResolver').resolve(world, emitter)
+                require('../../shaders.materialResolver').resolve(world, emitter)
             proxy._shaderBoundsUnknown = emitter._shaderBoundsUnknown
             proxy._shaderBoundsPadding = emitter._shaderBoundsPadding
             local matrix = emitter:getRenderWorldMatrix()
@@ -105,15 +105,15 @@ function S.prepare(world, camera, output)
                     x, y, z = M.transform(matrix, x, y, z)
                 end
                 if half > 0 and alpha > emitter.shadowAlphaCutoff then
-                    local image = require('source.engine.components.image').resolve(
+                    local image = require('../../components.image').resolve(
                         world.resources,
                         emitter,
                         emitter.texture
                     )
                     local u0, v0, uw, vh =
-                        require('source.engine.particles.image').uv(emitter, p, image, half * 2)
+                        require('../image').uv(emitter, p, image, half * 2)
                     local bx, by, bz, upx, upy, upz =
-                        require('source.engine.particles.basis').resolve(emitter, p, camera, matrix)
+                        require('../basis').resolve(emitter, p, camera, matrix)
                     local rotation = p.rotation
                         + math.rad(
                             Sequence.evaluate(
@@ -164,7 +164,7 @@ function S.prepare(world, camera, output)
                 proxy.layers = emitter.layers
                 proxy.shadowLayers = emitter.shadowLayers
                 proxy.shadowGroup = emitter.shadowGroup
-                proxy.image = require('source.engine.components.image').resolve(
+                proxy.image = require('../../components.image').resolve(
                     world.resources,
                     emitter,
                     emitter.texture,

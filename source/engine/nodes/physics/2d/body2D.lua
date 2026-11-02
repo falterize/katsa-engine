@@ -1,5 +1,5 @@
-local Node = require('source.engine.nodes.core.baseNode')
-local Spatial = require('source.engine.nodes.spatial.node2D')
+local Node = require('../../core.baseNode')
+local Spatial = require('../../spatial.node2D')
 
 local Body2D = Node.define('Body2D', 'Node2D')
 Body2D.propertySchema = {

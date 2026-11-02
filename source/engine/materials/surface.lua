@@ -1,7 +1,7 @@
-local readValue = require('source.engine.math.managedValue').read
-local ipairs = require('source.engine.math.array').ipairs
-local Image = require('source.engine.components.image')
-local Bounds = require('source.engine.graphics.geometry.objectBounds')
+local readValue = require('../math.managedValue').read
+local ipairs = require('../math.array').ipairs
+local Image = require('../components.image')
+local Bounds = require('../graphics.geometry.objectBounds')
 
 local Surface = {}
 local scalarKeys = {
@@ -74,7 +74,7 @@ function Surface.resolve(world, object, visible, opacity)
         visible, opacity = object:getVisibilityState()
     end
     if not visible or opacity <= 0 then
-        require('source.engine.materials.blend').releaseBuffers(object)
+        require('./blend').releaseBuffers(object)
         object._surfaceAppearance = nil
         return nil
     end
@@ -82,7 +82,7 @@ function Surface.resolve(world, object, visible, opacity)
         if
             node:isA('SurfaceAppearance3D')
             and node.enabled ~= false
-            and require('source.engine.world.visibilityLayers').visible(
+            and require('../world.visibilityLayers').visible(
                 world,
                 node,
                 world._materialCamera or world.activeCamera
@@ -114,9 +114,9 @@ function Surface.resolve(world, object, visible, opacity)
     )
     local selected = active[1]
     if #active > 1 or selected and selected.transparency > 0 then
-        selected = require('source.engine.materials.blend').resolve(world, object, active)
+        selected = require('./blend').resolve(world, object, active)
     else
-        require('source.engine.materials.blend').releaseBuffers(object)
+        require('./blend').releaseBuffers(object)
     end
     object._surfaceAppearance = selected
     return selected
@@ -127,7 +127,7 @@ function Surface.image(resources, node, key, environment)
         if key == 'colorMap' then
             return Image.resolve(resources, node, node.colorMap, environment)
         end
-        require('source.engine.animation.formats.flipbookXml').bind(resources, node, node.colorMap)
+        require('../animation.formats.flipbookXml').bind(resources, node, node.colorMap)
     end
     local source = node[key]
     if source == '' or source == nil then

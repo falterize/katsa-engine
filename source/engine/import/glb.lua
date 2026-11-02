@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../math.array').ipairs
 local JSON = require('vendor.json')
-local Geometry = require('source.engine.graphics.geometry.primitives')
-local M = require('source.engine.math.math3d')
+local Geometry = require('../graphics.geometry.primitives')
+local M = require('../math.math3d')
 
 local GLB = {}
 
@@ -42,9 +42,9 @@ function GLB.decode(document, binary, path, resources)
         not document.extensionsRequired or #document.extensionsRequired == 0,
         'Required glTF extensions are unsupported; export core glTF 2.0'
     )
-    local accessor = require('source.engine.import.gltf.accessors').create(document, binary)
+    local accessor = require('./gltf.accessors').create(document, binary)
     local texture =
-        require('source.engine.import.gltf.textures').create(document, binary, path, resources)
+        require('./gltf.textures').create(document, binary, path, resources)
     local meshes = {}
     for meshIndex, mesh in ipairs(document.meshes or {}) do
         local parts = {}
@@ -123,7 +123,7 @@ function GLB.decode(document, binary, path, resources)
                 'GLB texture transform extensions require baking'
             )
             local batches = joints
-                    and require('source.engine.import.gltf.skinGeometry').build(vertices, resources)
+                    and require('./gltf.skinGeometry').build(vertices, resources)
                 or { { geometry = Geometry.mesh(Geometry.normals(vertices)) } }
             for _, batch in ipairs(batches) do
                 if not joints then
@@ -274,7 +274,7 @@ function GLB.decode(document, binary, path, resources)
         end
         model.skins[#model.skins + 1] = definition
     end
-    require('source.engine.animation.skeleton.rig').initialize(model)
+    require('../animation.skeleton.rig').initialize(model)
     model:update(0)
     return model
 end

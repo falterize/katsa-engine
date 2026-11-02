@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Instances with identical visible indices share a draw mesh and remain batchable.
 local Masks = {}
 

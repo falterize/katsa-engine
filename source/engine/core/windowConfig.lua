@@ -1,4 +1,4 @@
-local Display = require('source.engine.core.displayDpi')
+local Display = require('./displayDpi')
 
 local Config = {}
 

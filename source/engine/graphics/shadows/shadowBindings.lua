@@ -1,6 +1,6 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local Types = require('source.engine.graphics.shadows.sourceTypes')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local Types = require('./sourceTypes')
 local kind, faces, pointDirections = Types.kind, Types.faces, Types.pointDirections
 local ShadowBindings = {}
 

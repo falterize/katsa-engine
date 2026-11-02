@@ -1,5 +1,5 @@
-local pairs = require('source.engine.math.array').pairs
-local Sequence = require('source.engine.animation.sequence')
+local pairs = require('../math.array').pairs
+local Sequence = require('../animation.sequence')
 
 local Lifetime = {}
 

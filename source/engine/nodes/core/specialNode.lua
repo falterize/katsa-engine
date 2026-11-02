@@ -1,8 +1,8 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Definitions are reusable game modules; registrations belong to one World3D.
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('./baseNode')
 
 local Registry = {}
 

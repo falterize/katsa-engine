@@ -1,4 +1,4 @@
-local Schema = require('source.engine.editor.inspectors.schema')
+local Schema = require('./schema')
 
 local References = {}
 
@@ -28,7 +28,7 @@ function References.accepts(target, key, node)
         local world = target._world or target._sceneWorld
         return world
                 and pcall(
-                    require('source.engine.physics.3d.modelSource').path,
+                    require('../../physics.3d.modelSource').path,
                     node,
                     world.resources
                 )

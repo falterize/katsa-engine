@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Keep directional invalidation aligned with depth volumes, not main-camera visibility.
 local Frusta = {}
 
