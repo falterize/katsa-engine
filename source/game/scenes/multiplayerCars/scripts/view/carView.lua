@@ -1,6 +1,11 @@
 -- The visible side of one car: a dent-able body and four wheels, driven by the model state.
 local Body = require('scene.scripts.view.carMesh')
 
+local Math = require('source.engine.math.math3d')
+local Affine = require('source.engine.math.affine')
+local ZERO, ONE = { 0, 0, 0 }, { 1, 1, 1 }
+local matrices = { {}, {}, {}, {}, {}, {} }
+
 local CarView = {}
 CarView.__index = CarView
 
@@ -12,6 +17,17 @@ local PALETTE = {
     { 0.7, 0.35, 0.8 },
     { 0.9, 0.5, 0.2 },
 }
+
+-- Engine Euler angles for a car with the model's heading (forward = sin, cos), nose-up pitch and
+-- right-side-up roll. Engine yaw runs opposite to the heading and pitch is nose-down positive;
+-- the three rotations are applied heading first, then pitch, then roll in the car's own frame.
+local function orientation(heading, pitch, roll, out)
+    local yaw = Math.compose(ZERO, { 0, -heading, 0 }, ONE, matrices[1])
+    local tilt = Math.compose(ZERO, { -pitch, 0, 0 }, ONE, matrices[2])
+    local lean = Math.compose(ZERO, { 0, 0, roll }, ONE, matrices[3])
+    local m = Math.multiply(Math.multiply(yaw, tilt, matrices[4]), lean, matrices[5])
+    return Affine.euler(Affine.rotation(m, matrices[6]), out or {})
+end
 
 function CarView.new(scene, netId, model)
     local world = scene.world
@@ -25,6 +41,7 @@ function CarView.new(scene, netId, model)
         dentCount = -1,
         wheels = {},
         spin = 0,
+        angles = {},
     }, CarView)
     self.root = world:create('Node3D', { name = 'Car' .. netId })
     self.body = world:create('Mesh3D', {
@@ -87,8 +104,7 @@ end
 function CarView:update(dt)
     local car = self.model
     self.root.position = { car.x, car.y - car.config.rideHeight, car.z }
-    local pitch, roll = car:tilt()
-    self.root.rotation = { -pitch, car.heading, -roll }
+    self.root.rotation = orientation(car.heading, car.pitch or 0, car.roll or 0, self.angles)
     self.spin = (self.spin + car.speed * dt / 0.4 * 57.3) % 360
     for index, wheel in ipairs(self.wheels) do
         local steer = index <= 2 and car.steerAngle or 0

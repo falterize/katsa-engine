@@ -54,6 +54,8 @@ function Tests:draw()
         end
         self:check(count == 2, 'the player car and the bot are drawn')
         self:shot('start')
+        -- The bot only patrols here, so it cannot ram the test drive.
+        session.server.bot.sightRadius = 0
     elseif frame == 201 then
         host.input.actions.keys.w = true
     elseif frame == 320 then
@@ -118,6 +120,36 @@ function Tests:draw()
         host.workspace:toggle(false)
     elseif frame == 384 then
         self:check(session.hud.info.text:find('Driving'), 'the HUD shows the seat')
+        -- The car is a real rigid body: drive it at the east wall and it must stay inside.
+        local netId = session.client:getCar()
+        local body = session.server.bodies[netId]
+        self:check(
+            body and body.node.bodyType == 'Dynamic' and body.node.body:getMass() > 500,
+            'the player car is a dynamic Body3D with real mass'
+        )
+        body:respawn(40, 0, 90)
+        self.wall = netId
+        host.input.actions.keys.w = true
+    elseif frame == 392 then
+        local model = session.server.cars[self.wall]
+        self:check(
+            math.abs(model.heading - 90) < 3,
+            'a car spawned with heading 90 faces +x (heading ' .. ('%.0f'):format(model.heading) .. ')'
+        )
+    elseif frame == 560 then
+        local model = session.server.cars[self.wall]
+        self:check(
+            model.x > 45 and model.x < 61.5 and math.abs(model.z) < 61,
+            'the wall stops the car inside the arena (x=' .. ('%.1f'):format(model.x) .. ')'
+        )
+        self:shot('wall')
+        host.input.actions.keys.w = nil
+    elseif frame == 580 then
+        local model = session.server.cars[self.wall]
+        self:check(
+            math.abs(model.pitch) < 30 and math.abs(model.roll) < 30 and model.y > 0.3,
+            'the car rests on its wheels after the crash'
+        )
         session:leave()
         self:check(
             session.mode == 'menu' and next(session.views) == nil,
@@ -125,7 +157,7 @@ function Tests:draw()
         )
         host:update(1 / 60, 1 / 60)
         host:draw()
-    elseif frame == 390 then
+    elseif frame == 590 then
         host:release()
         print('PASSED ' .. self.count .. ' v108.4 cars scene checks')
         katsa.event.quit()

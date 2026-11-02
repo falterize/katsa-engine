@@ -200,7 +200,11 @@ end
 
 function Session:host(name, port)
     local ok, problem = pcall(function()
-        self.server = GameServer.new({}, { port = port, name = (name or 'Player') .. "'s game" })
+        self.server = GameServer.new({}, {
+            port = port,
+            name = (name or 'Player') .. "'s game",
+            world = self.scene.world,
+        })
         self.server:start()
     end)
     if not ok then
@@ -295,6 +299,8 @@ end
 function Session:update(dt)
     local keys = self.scene.input.actions.keys
     if self.server then
+        -- The hosted cars are rigid bodies: step the world, then let the server read them.
+        self.scene.physics:update(dt)
         self.server:update(dt)
     end
     if self.client then
