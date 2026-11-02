@@ -12,7 +12,7 @@
 -- `navFloor` setting the plugin adds to Body3D (0/1 = the first floor). A floor only sees colliders
 -- of its own number, while every collider blocks headroom. Floors are joined wherever their
 -- surfaces meet, such as the foot of a ramp.
-local Pathfinding = require('source.plugins.pathfinding')
+local Pathfinding = require('../../pathfinding')
 
 local NavMap = {
     base = 'Node3D',

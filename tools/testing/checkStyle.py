@@ -1,4 +1,4 @@
-"""Check Lua sources against the project style (see AGENTS.md and stylua.toml).
+"""Check Lua sources against the project style (see docs/AGENTS.md and stylua.toml).
 
 Defaults to the katsa runtime and its tests; the engine and game follow stylua output (see
 stylua.toml), which may leave unbreakable lines longer than the limit.

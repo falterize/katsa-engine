@@ -1,10 +1,10 @@
-local Objects = require('source.engine.core.objects')
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Objects = require('../../core.objects')
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Install one cohesive responsibility on the public class.
-local Schema = require('source.engine.editor.inspectors.schema')
-local fields = require('source.engine.editor.inspectors.propertyPolicy').fields
+local Schema = require('./schema')
+local fields = require('./propertyPolicy').fields
 local PropertyRead = {}
 
 function PropertyRead.install(Properties)
@@ -67,7 +67,7 @@ function PropertyRead.install(Properties)
             }
         end
         for _, key in ipairs(Schema.keys(target, fields)) do
-            local reference = require('source.engine.editor.inspectors.nodeReferences').expected(
+            local reference = require('./nodeReferences').expected(
                 target,
                 key
             ) ~= nil
@@ -103,7 +103,7 @@ function PropertyRead.install(Properties)
                     or key:match('^(image)Color$')
                     or key:match('^(text)Color$')
                 if channel then
-                    local color = require('source.engine.ui.style').color(target, channel)
+                    local color = require('../../ui.style').color(target, channel)
                     if color then
                         value = { color[1], color[2], color[3] }
                     end
@@ -112,7 +112,7 @@ function PropertyRead.install(Properties)
                     or key:match('^(image)Transparency$')
                     or key:match('^(text)Transparency$')
                 if alphaChannel and value == nil then
-                    local color = require('source.engine.ui.style').color(target, alphaChannel)
+                    local color = require('../../ui.style').color(target, alphaChannel)
                     value = 1 - (color and color[4] or 1)
                 end
                 if key == 'position' and not value then

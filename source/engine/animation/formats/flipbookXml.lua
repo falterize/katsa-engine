@@ -1,4 +1,4 @@
-local Flipbook = require('source.engine.animation.flipbook')
+local Flipbook = require('../flipbook')
 local FlipbookXml = {}
 local entities = { amp = '&', lt = '<', gt = '>', quot = '"', apos = "'" }
 local rootKeys = {

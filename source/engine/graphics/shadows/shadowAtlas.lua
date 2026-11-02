@@ -1,4 +1,4 @@
-local Types = require('source.engine.graphics.shadows.sourceTypes')
+local Types = require('./sourceTypes')
 local kind, faces, pointDirections = Types.kind, Types.faces, Types.pointDirections
 local ShadowAtlas = {}
 

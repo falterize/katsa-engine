@@ -1,6 +1,6 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Explicit edge ribbons avoid derivative-dependent triangle-interior discard.
 local Wireframe = {}
 local format = {
@@ -155,12 +155,12 @@ function Wireframe.draw(renderer, object)
         (object.color and object.color[4] or 1)
             * (object._renderOpacity or object:getEffectiveOpacity())
     )
-    require('source.engine.animation.skeleton.skinning').bind(shader, object)
+    require('../../animation.skeleton.skinning').bind(shader, object)
     local mesh = Wireframe.mesh(renderer, object.geometry or renderer.quad)
     g.setMeshCullMode('none')
     g.setColor(1, 1, 1, 1)
     renderer.stats.mainTriangles = renderer.stats.mainTriangles
-        + require('source.engine.graphics.debug.triangles').mesh(mesh)
+        + require('./triangles').mesh(mesh)
     g.draw(mesh)
 end
 

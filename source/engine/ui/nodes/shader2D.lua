@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes')
+local Node = require('../../nodes')
 
 local Shader = Node.define('Shader2D', 'Frame')
 Shader.propertySchema = {

@@ -1,8 +1,8 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local Time = require('source.engine.core.time')
-local Audio = require('source.engine.audio')
-local Data = require('source.engine.persistence.data')
+local unpack = require('../math.array').unpack
+local ipairs = require('../math.array').ipairs
+local Time = require('./time')
+local Audio = require('../audio')
+local Data = require('../persistence.data')
 
 local Manager = {}
 Manager.__index = Manager
@@ -10,8 +10,8 @@ Manager.__index = Manager
 function Manager.new(options)
     options = options or {}
     local clock = Time.new()
-    local resources = require('source.engine.core.resources').new(options.manifest)
-    local journal = require('source.engine.debug.journal').new()
+    local resources = require('./resources').new(options.manifest)
+    local journal = require('../debug.journal').new()
     resources.store.journal = journal
     return setmetatable({
         stack = {},
@@ -20,7 +20,7 @@ function Manager.new(options)
         frameTime = 0,
         time = clock,
         journal = journal,
-        profiler = require('source.engine.debug.profiler').new(),
+        profiler = require('../debug.profiler').new(),
         resources = resources,
         data = Data.new(),
         audio = Audio.new({ clock = clock, resources = resources:scope() }),
@@ -28,7 +28,7 @@ function Manager.new(options)
 end
 
 local function dispose(scene)
-    require('source.engine.core.cleanup').run({
+    require('./cleanup').run({
         function()
             if scene.input then
                 scene.input:reset()
@@ -135,7 +135,7 @@ function Manager:switch(factory, ...)
             dispose(previous)
         end
     end
-    local released, err = pcall(require('source.engine.core.cleanup').run, actions)
+    local released, err = pcall(require('./cleanup').run, actions)
     if not released then
         self:reportError(err)
     end
@@ -319,7 +319,7 @@ function Manager:release()
     actions[#actions + 1] = function()
         self.resources:release()
     end
-    require('source.engine.core.cleanup').run(actions)
+    require('./cleanup').run(actions)
 end
 
 return Manager

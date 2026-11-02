@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Conservative overlap of a light face and the camera's shadow-receiver frustum.
 -- Off-screen blockers remain in drawFace: they can shadow visible receivers.
 local Receivers = {}
@@ -82,7 +82,7 @@ function Receivers.collect(objects, camera, distance, out, normalBias)
     if not objects then
         return nil, false
     end
-    local Bounds = require('source.engine.graphics.geometry.objectBounds')
+    local Bounds = require('../geometry.objectBounds')
     out = out or {}
     local count, changed = 0, false
     local p = camera.worldPosition or camera.position

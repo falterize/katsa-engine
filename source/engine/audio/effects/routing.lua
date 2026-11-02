@@ -1,8 +1,8 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Per-voice effect routing. OpenAL effects are parallel sends.
-local Definition = require('source.engine.audio.effects.definition')
-local Filter = require('source.engine.audio.effects.filter')
+local Definition = require('./definition')
+local Filter = require('./filter')
 local Routing = {}
 
 Routing.define = Definition.define

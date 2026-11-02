@@ -1,7 +1,7 @@
-local Math = require('source.engine.math.math3d')
-local Cascades = require('source.engine.graphics.shadows.directionalCascades')
-local Projection = require('source.engine.graphics.shadows.shadowProjection')
-local Frusta = require('source.engine.graphics.shadows.shadowFrusta')
+local Math = require('../../math.math3d')
+local Cascades = require('./directionalCascades')
+local Projection = require('./shadowProjection')
+local Frusta = require('./shadowFrusta')
 
 local Directional = {}
 

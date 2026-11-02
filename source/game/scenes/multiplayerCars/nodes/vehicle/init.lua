@@ -2,10 +2,10 @@
 --   model.lua       deterministic driving, suspension, nitro, seats
 --   collision.lua   obstacle and car-versus-car response
 --   deformation.lua replicable body dents
--- Other scene code can load a part with require('scene.nodes.vehicle.model').
-local Model = require('scene.nodes.vehicle.model')
-local Collision = require('scene.nodes.vehicle.collision')
-local Deformation = require('scene.nodes.vehicle.deformation')
+-- Other scene code can load a part with require('./model').
+local Model = require('./model')
+local Collision = require('./collision')
+local Deformation = require('./deformation')
 
 local Car = {
     base = 'Mesh3D',

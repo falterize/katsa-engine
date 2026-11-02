@@ -2,7 +2,7 @@ local ipairs = require('source.engine.math.array').ipairs
 local Mesh = require('source.engine.composition.mesh')
 local Character = require('source.engine.physics.3d.character')
 local UI = require('source.engine.ui')
-local object = require('scene.scripts.builders.object')
+local object = require('./object')
 
 local NightPlayer = {}
 

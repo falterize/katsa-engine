@@ -9,8 +9,8 @@
 -- HISTORY frames (frame time plus every stage's milliseconds in that frame) for percentiles and
 -- the panel, and a session recording can capture every frame for export (JSON or CSV in logs/).
 local Json = require('vendor.json')
-local Csv = require('source.engine.debug.csv')
-local Version = require('source.engine.core.version')
+local Csv = require('./csv')
+local Version = require('../core.version')
 
 local Profiler = {}
 Profiler.__index = Profiler

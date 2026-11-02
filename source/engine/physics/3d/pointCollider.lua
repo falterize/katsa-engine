@@ -1,6 +1,6 @@
-local Array = require('source.engine.math.array')
-local M = require('source.engine.math.math3d')
-local Geometry = require('source.engine.physics.3d.modelCollider')
+local Array = require('../../math.array')
+local M = require('../../math.math3d')
+local Geometry = require('./modelCollider')
 
 local PointCollider = {}
 

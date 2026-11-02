@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../core.baseNode')
 
 local Class = Node.define('Mesh3D', 'Node3D')
 
@@ -37,7 +37,7 @@ function Class.mount(world, properties, parent)
 end
 
 function Class:getCollisionPoints(body, options)
-    return require('source.engine.physics.3d.pointCollider').extract(self, body, options)
+    return require('../../physics.3d.pointCollider').extract(self, body, options)
 end
 
 return Class

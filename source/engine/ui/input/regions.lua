@@ -1,5 +1,5 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
 -- Rectangular exclusion avoids modifying an ancestor's rounded stencil mask.
 local Regions = {}
 

@@ -1,7 +1,7 @@
 -- AudioListener: places the "ears" of a scene. While at least one enabled AudioListener exists,
 -- the first one in creation order replaces the camera as the listener position and orientation.
-local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
+local ipairs = require('../../math.array').ipairs
+local Node = require('../core.baseNode')
 
 local Listener = Node.define('AudioListener', 'Node3D')
 Listener.propertySchema = { enabled = {}, status = { readOnly = true } }

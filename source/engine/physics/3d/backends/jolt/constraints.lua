@@ -1,7 +1,7 @@
-local Jobs = require('source.engine.physics.3d.backends.jolt.native.jobs')
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
-local O = require('source.engine.physics.3d.backends.oimo.types')
+local Jobs = require('./native.jobs')
+local Library = require('./library')
+local NativeMath = require('./nativeMath')
+local O = require('../oimo.types')
 
 local C, ffi = Library.C, Library.ffi
 local vector, cast = NativeMath.vector, NativeMath.cast

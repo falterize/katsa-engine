@@ -1,11 +1,11 @@
-local Array = require('source.engine.math.array')
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local Math = require('source.engine.math.math3d')
-local Affine = require('source.engine.math.affine')
-local Validate = require('source.engine.core.validate')
-local Parenting = require('source.engine.nodes.core.parenting')
-local Base = require('source.engine.nodes.core.baseNode')
+local Array = require('../../math.array')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local Math = require('../../math.math3d')
+local Affine = require('../../math.affine')
+local Validate = require('../../core.validate')
+local Parenting = require('../core.parenting')
+local Base = require('../core.baseNode')
 
 local function pose(node, matrix)
     local p, r, s = Affine.decompose(matrix)

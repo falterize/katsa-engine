@@ -1,8 +1,8 @@
-local Compatibility = require('source.engine.physics.3d.backends.oimo.compatibility')
-local State = require('source.engine.physics.3d.backends.jolt.bodyState')
-local Jobs = require('source.engine.physics.3d.backends.jolt.native.jobs')
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
+local Compatibility = require('../oimo.compatibility')
+local State = require('./bodyState')
+local Jobs = require('./native.jobs')
+local Library = require('./library')
+local NativeMath = require('./nativeMath')
 
 local C, ffi = Library.C, Library.ffi
 local vector, cast = NativeMath.vector, NativeMath.cast

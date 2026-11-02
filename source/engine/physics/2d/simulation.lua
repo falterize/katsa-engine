@@ -1,4 +1,4 @@
-local Contacts = require('source.engine.physics.2d.contacts')
+local Contacts = require('./contacts')
 
 local Simulation = {}
 
@@ -17,7 +17,7 @@ function Simulation.update(self, dt)
     end
     assert(not self._updating, 'Physics2D:update is not reentrant')
     assert(type(dt) == 'number' and dt >= 0 and dt < math.huge, 'Invalid Physics2D delta')
-    require('source.engine.world.gravity').apply(self)
+    require('../../world.gravity').apply(self)
     self.stats.steps, self.stats.solverMilliseconds = 0, 0
     if self.paused then
         return

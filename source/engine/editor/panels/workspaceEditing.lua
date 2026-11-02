@@ -1,5 +1,5 @@
 -- Install one cohesive responsibility on the public class.
-local Properties = require('source.engine.editor.inspectors.properties')
+local Properties = require('../inspectors.properties')
 local utf8 = require('utf8')
 
 local panelColor = { 0.035, 0.055, 0.085 }

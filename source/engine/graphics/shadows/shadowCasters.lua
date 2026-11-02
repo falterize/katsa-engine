@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Source-level rejection is independent of the main camera and its visible list.
-local Math = require('source.engine.math.math3d')
+local Math = require('../../math.math3d')
 local bit = require('bit')
 
 local Casters = {}

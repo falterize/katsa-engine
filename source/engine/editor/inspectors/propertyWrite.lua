@@ -1,9 +1,9 @@
-local Objects = require('source.engine.core.objects')
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
+local Objects = require('../../core.objects')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
 -- Install one cohesive responsibility on the public class.
-local Schema = require('source.engine.editor.inspectors.schema')
-local limits = require('source.engine.editor.inspectors.propertyPolicy').limits
+local Schema = require('./schema')
+local limits = require('./propertyPolicy').limits
 local PropertyWrite = {}
 
 function PropertyWrite.install(Properties)
@@ -13,7 +13,7 @@ function PropertyWrite.install(Properties)
         end
         if field.kind == 'node' then
             local ok, err = pcall(function()
-                local references = require('source.engine.editor.inspectors.nodeReferences')
+                local references = require('./nodeReferences')
                 local expected = references.expected(target, field.key)
                 if expected then
                     assert(
@@ -237,7 +237,7 @@ function PropertyWrite.install(Properties)
             and (key == 'text' and target.richText or key == 'richText' and value == true)
         then
             local ok, err = pcall(
-                require('source.engine.ui.drawing.richText').parse,
+                require('../../ui.drawing.richText').parse,
                 key == 'text' and value or target.text or '',
                 true
             )
@@ -278,7 +278,7 @@ function PropertyWrite.install(Properties)
                     pw = parent._width or target.ui.width
                     ph = parent._height or target.ui.height
                 elseif target:isA('SurfaceUI') or target:isA('Decal3D') then
-                    pw, ph = require('source.engine.surfaces.faces').referenceSize(target)
+                    pw, ph = require('../../surfaces.faces').referenceSize(target)
                     positive = true
                 elseif target:isA('BillboardUI') then
                     if target.sizeMode == 'World3D' then
@@ -288,7 +288,7 @@ function PropertyWrite.install(Properties)
                     end
                 end
                 if pw then
-                    local w, h = require('source.engine.ui.layout.metrics').resolve(
+                    local w, h = require('../../ui.layout.metrics').resolve(
                         copy,
                         pw,
                         ph,

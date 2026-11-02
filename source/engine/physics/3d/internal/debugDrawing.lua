@@ -1,5 +1,5 @@
 local pairs = require('source.engine.math.array').pairs
-local O = require('source.engine.physics.3d.valueTypes')
+local O = require('../valueTypes')
 local DebugDrawing = {}
 
 function DebugDrawing.install(Physics, Body3D)

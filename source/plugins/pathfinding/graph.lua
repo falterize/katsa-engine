@@ -1,7 +1,7 @@
 -- Waypoint graph for 3D levels, roads or any map where nodes are authored or generated.
 -- Node ids are strings or numbers; positions are { x, y [, z] }.
-local AStar = require('source.plugins.pathfinding.astar')
-local Path = require('source.plugins.pathfinding.path')
+local AStar = require('./astar')
+local Path = require('./path')
 
 local Graph = {}
 Graph.__index = Graph

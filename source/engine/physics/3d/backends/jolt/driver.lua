@@ -3,14 +3,14 @@
 if jit then
     jit.off(true, true)
 end
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local Compatibility = require('source.engine.physics.3d.backends.oimo.compatibility')
-local O = require('source.engine.physics.3d.backends.oimo.types')
+local Library = require('./library')
+local Compatibility = require('../oimo.compatibility')
+local O = require('../oimo.types')
 local Extensions = require('source.engine.core.extensions')
-local Runtime = require('source.engine.physics.3d.backends.jolt.runtime')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
-local Contacts = require('source.engine.physics.3d.backends.jolt.contacts')
-local Jobs = require('source.engine.physics.3d.backends.jolt.native.jobs')
+local Runtime = require('./runtime')
+local NativeMath = require('./nativeMath')
+local Contacts = require('./contacts')
+local Jobs = require('./native.jobs')
 
 local ffi, C = Library.ffi, Library.C
 
@@ -22,12 +22,12 @@ local vector = NativeMath.vector
 local callbacks = Contacts.callbacks
 World._contactProcs, World._callbacks = Contacts.procs, callbacks
 Extensions.apply(World, Contacts)
-Extensions.apply(World, require('source.engine.physics.3d.backends.jolt.queries'))
-Extensions.apply(World, require('source.engine.physics.3d.backends.jolt.filters'))
-Extensions.apply(World, require('source.engine.physics.3d.backends.jolt.colliders'))
-Extensions.apply(World, require('source.engine.physics.3d.backends.jolt.bodyBridge'))
-Extensions.apply(World, require('source.engine.physics.3d.backends.jolt.bodies'))
-Extensions.apply(World, require('source.engine.physics.3d.backends.jolt.constraints'))
+Extensions.apply(World, require('./queries'))
+Extensions.apply(World, require('./filters'))
+Extensions.apply(World, require('./colliders'))
+Extensions.apply(World, require('./bodyBridge'))
+Extensions.apply(World, require('./bodies'))
+Extensions.apply(World, require('./constraints'))
 
 function World.liveWorldCount()
     local count = 0

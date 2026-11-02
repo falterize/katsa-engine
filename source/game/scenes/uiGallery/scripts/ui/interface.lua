@@ -157,8 +157,8 @@ function Interface.create(self)
         backgroundColor = { 0.06, 0.11, 0.19 },
     }, root)
     self.left, self.right = left, right
-    require('scene.scripts.ui.examples.textBoxes').create(self, left)
-    require('scene.scripts.ui.examples.scrolling').create(ui, right)
+    require('./examples.textBoxes').create(self, left)
+    require('./examples.scrolling').create(ui, right)
     ui:text({
         position = { 0, 10, 0, 10 },
         size = { 1, -20, 0, 45 },

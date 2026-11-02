@@ -1,9 +1,9 @@
-local Array = require('source.engine.math.array')
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Node = require('source.engine.nodes.core.baseNode')
-local Pose = require('source.engine.animation.skeleton.pose')
+local Array = require('../../math.array')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Node = require('../core.baseNode')
+local Pose = require('../../animation.skeleton.pose')
 
 local Animator = Node.define('Animator', 'Node')
 Animator.propertySchema =
@@ -302,8 +302,8 @@ function Animator:applyRootMotion(track)
                 parent = parent.parent
             end
             local matrix =
-                require('source.engine.math.math3d').compose({ 0, 0, 0 }, root.rotation, root.scale)
-            local dx, dy, dz = require('source.engine.math.math3d').transform(
+                require('../../math.math3d').compose({ 0, 0, 0 }, root.rotation, root.scale)
+            local dx, dy, dz = require('../../math.math3d').transform(
                 matrix,
                 delta[1],
                 delta[2],

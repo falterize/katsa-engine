@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Node = require('source.engine.nodes.core.baseNode')
+local ipairs = require('../../math.array').ipairs
+local Node = require('../core.baseNode')
 
 local C = Node.define('World3D', 'Node3D')
 C.propertySchema = {
@@ -11,7 +11,7 @@ C.propertySchema = {
 }
 
 function C.initialize(self)
-    require('source.engine.world.gravity').initialize(self, 3)
+    require('../../world.gravity').initialize(self, 3)
     self.timeScale = self.timeScale or 1
 end
 
@@ -22,9 +22,9 @@ function C.mount(context, properties, parent)
     )
     assert(not parent:getWorld(), 'ViewportFrame owns at most one World3D')
     local scope = context.resources:scope()
-    local world = require('source.engine.world.world').new(
+    local world = require('../../world.world').new(
         scope,
-        require('source.engine.lighting.defaults').create()
+        require('../../lighting.defaults').create()
     )
     world.hostWorld = context._world or context._sceneWorld
     world.root.name = properties.name or 'ViewportWorld'
@@ -72,7 +72,7 @@ function C:update(dt)
     local world = self._world
     local realDt = dt
     world.frameRealDelta = realDt
-    dt = require('source.engine.world.clock').delta(self, dt)
+    dt = require('../../world.clock').delta(self, dt)
     if world.physics then
         world.physics:update(dt)
     end

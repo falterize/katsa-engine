@@ -1,9 +1,9 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 
 local Editor = {}
 
 function Editor.open(workspace)
-    local Popup = require('source.engine.editor.panels.popup')
+    local Popup = require('./popup')
     if workspace.popup then
         workspace.popup:close(true)
     end

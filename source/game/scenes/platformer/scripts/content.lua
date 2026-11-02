@@ -12,8 +12,8 @@ function Lab.new(scene)
     world.physics = scene.physics
     world.environment.debug.gizmos.enabled = false
     world.environment.fog.enabled = false
-    require('scene.scripts.lighting.directional').create(world).enabled = true
-    require('scene.scripts.lighting.directional').create(world).brightness = 1.2
+    require('./lighting.directional').create(world).enabled = true
+    require('./lighting.directional').create(world).brightness = 1.2
     world.environment.ambient = { 85, 100, 130 }
     world.environment.shadows.enabled = true
     world.environment.shadows.mode = 'Realistic'
@@ -55,7 +55,7 @@ function Lab.new(scene)
         position = { 0, -16, 0 },
         scale = { 0.16, 0.16, 0.16 },
     })
-    require('scene.scripts.animation.proceduralClips').add(self.rig)
+    require('./animation.proceduralClips').add(self.rig)
     local sourceClips = {}
     for _, clip in ipairs(self.rig.animations) do
         sourceClips[clip.name] = clip

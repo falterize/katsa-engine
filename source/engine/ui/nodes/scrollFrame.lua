@@ -1,5 +1,5 @@
-local Node = require('source.engine.nodes')
-local ScrollBar = require('source.engine.ui.scrolling.scrollBar')
+local Node = require('../../nodes')
+local ScrollBar = require('../scrolling.scrollBar')
 
 local Class = Node.define('ScrollFrame', 'Frame')
 Class.scrollable = true

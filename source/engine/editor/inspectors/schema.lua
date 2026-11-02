@@ -1,8 +1,8 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Inherited class descriptions keep public properties independent of cache layout.
 local Schema = {}
-local Fields = require('source.engine.editor.inspectors.schemaFields')
+local Fields = require('./schemaFields')
 local groups, enum = Fields.groups, Fields.enum
 
 function Schema.keys(target, fallback)
@@ -252,7 +252,7 @@ function Schema.reason(target, key)
     end
 end
 -- Generic descriptors: a conditional property is hidden, never erased.
-local descriptions = require('source.engine.editor.inspectors.schemaDescriptors')
+local descriptions = require('./schemaDescriptors')
 
 function Schema.descriptor(target, key)
     if target._settingsKind == 'Shadows' then
@@ -388,7 +388,7 @@ end
 function Schema.signature(target)
     return table.concat(Schema.keys(target, {}) or {}, '|')
 end
-local hints = require('source.engine.editor.inspectors.schemaHints')
+local hints = require('./schemaHints')
 
 function Schema.hint(target, key)
     if target.isA and target:isA('ScrollFrame') and key == 'canvasSize' then

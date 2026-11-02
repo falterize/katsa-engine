@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local PixelGrid = require('source.engine.ui.drawing.pixelGrid')
+local ipairs = require('../../math.array').ipairs
+local PixelGrid = require('./pixelGrid')
 local Drawing = {}
 
 function Drawing.install(UI)
@@ -28,7 +28,7 @@ function Drawing.install(UI)
             g.push('all')
             g.intersectScissor(x, y, math.max(0, x2 - x), math.max(0, y2 - y))
         end
-        require('source.engine.ui.drawing.text').drawLabel(self, n)
+        require('./text').drawLabel(self, n)
         if n.textScaled or n.richText then
             g.pop()
         end
@@ -193,7 +193,7 @@ function Drawing.install(UI)
             local x2, y2 = g.transformPoint(c[3], c[4])
             g.intersectScissor(x1, y1, math.max(0, x2 - x1), math.max(0, y2 - y1))
         end
-        for _, child in ipairs(require('source.engine.ui.layout.order').get(n.children)) do
+        for _, child in ipairs(require('../layout.order').get(n.children)) do
             self:drawNode(child, x, y)
         end
         if clipped and n.scrollable then
@@ -202,9 +202,9 @@ function Drawing.install(UI)
         if n.drawScrollBar then
             n:drawScrollBar(self)
         end
-        require('source.engine.ui.drawing.modifiers').drawBorders(n)
+        require('./modifiers').drawBorders(n)
         if n:isA('Shader2D') then
-            require('source.engine.ui.drawing.compositor').apply(self, n)
+            require('./compositor').apply(self, n)
         end
         if n.material then
             g.pop()
@@ -242,7 +242,7 @@ function Drawing.install(UI)
                 g.translate(0, self.height)
                 g.scale(1, -1)
             end
-            require('source.engine.ui.spatial.plane').draw(self, self.children)
+            require('../spatial.plane').draw(self, self.children)
             if self.particles then
                 self.particles:draw(self.currentCamera)
             end
@@ -251,7 +251,7 @@ function Drawing.install(UI)
             end
             g.pop()
         end
-        for _, node in ipairs(require('source.engine.ui.layout.order').get(self.children)) do
+        for _, node in ipairs(require('../layout.order').get(self.children)) do
             self:drawNode(node, 0, 0)
         end
         g.pop()
@@ -263,7 +263,7 @@ function Drawing.install(UI)
             'Screen UI must belong to World3D -> World2D'
         )
         self:layout()
-        return require('source.engine.ui.drawing.compositor').draw(self, drawLaidOut)
+        return require('./compositor').draw(self, drawLaidOut)
     end
 end
 

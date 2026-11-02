@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes')
+local Node = require('../../nodes')
 
 local Stroke = Node.define('UIStroke', 'UINode')
 Stroke.modifier = true

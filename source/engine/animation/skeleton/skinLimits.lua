@@ -1,7 +1,7 @@
-local Array = require('source.engine.math.array')
-local SkinGeometry = require('source.engine.import.gltf.skinGeometry')
-local Skinning = require('source.engine.animation.skeleton.skinning')
-local Policy = require('source.engine.nodes.core.propertyPolicy')
+local Array = require('../../math.array')
+local SkinGeometry = require('../../import.gltf.skinGeometry')
+local Skinning = require('./skinning')
+local Policy = require('../../nodes.core.propertyPolicy')
 
 local Limits = {}
 local drawKeys = { 'layerGroup', 'shadowGroup', 'layers', 'shadowLayers', 'zIndex' }

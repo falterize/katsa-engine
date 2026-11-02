@@ -2,6 +2,8 @@ local Paths = require('source.engine.scenes.paths')
 local Archive = require('source.engine.scenes.archive')
 local Layout = require('source.engine.scenes.layout')
 
+local Relative = require('source.katsa.core.relativeRequire')
+
 local Package = {}
 Package.__index = Package
 local mounts = {}
@@ -122,6 +124,13 @@ function Package:require(name)
         local import = require
         self.environment = setmetatable({
             require = function(module)
+                -- './part' and '../part' are relative to the calling file inside the scene.
+                if Relative.isRelative(module) then
+                    local path = Relative.callerPath(2)
+                    local prefix = self.root .. '/'
+                    assert(path:sub(1, #prefix) == prefix, 'Relative require outside the scene')
+                    return self:require(Relative.resolve(module, path:sub(#prefix + 1)))
+                end
                 if module:sub(1, 6) == 'scene.' then
                     return self:require(module:sub(7))
                 end

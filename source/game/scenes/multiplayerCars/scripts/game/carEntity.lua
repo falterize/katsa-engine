@@ -3,7 +3,7 @@
 local Model = require('scene.nodes.vehicle.model')
 local Deformation = require('scene.nodes.vehicle.deformation')
 local Damage = require('scene.nodes.vehicle.damage')
-local Arena = require('scene.scripts.game.arena')
+local Arena = require('./arena')
 
 local CarEntity = {}
 

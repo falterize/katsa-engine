@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Cached conservative world AABBs; geometric bounds stay independent of scale.
 local Bounds = {}
 

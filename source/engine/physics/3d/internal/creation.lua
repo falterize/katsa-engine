@@ -1,9 +1,9 @@
 local unpack = require('source.engine.math.array').unpack
 local ipairs = require('source.engine.math.array').ipairs
-local O = require('source.engine.physics.3d.valueTypes')
+local O = require('../valueTypes')
 local Affine = require('source.engine.math.affine')
-local Policy = require('source.engine.physics.3d.internal.bodyPolicy')
-local QueryPolicy = require('source.engine.physics.3d.internal.queryPolicy')
+local Policy = require('./bodyPolicy')
+local QueryPolicy = require('./queryPolicy')
 local vec, valid = Policy.vec, Policy.valid
 local Creation = {}
 

@@ -1,10 +1,10 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Only actual opaque triangles form occluders; an object's AABB never fills holes.
-local Math = require('source.engine.math.math3d')
-local Projection = require('source.engine.graphics.occlusion.projection')
-local Coverage = require('source.engine.graphics.occlusion.coverage')
-local Opacity = require('source.engine.materials.opacity')
-local GeometryCache = require('source.engine.graphics.occlusion.geometryCache')
+local Math = require('../../math.math3d')
+local Projection = require('./projection')
+local Coverage = require('./coverage')
+local Opacity = require('../../materials.opacity')
+local GeometryCache = require('./geometryCache')
 
 local Occluders = {}
 

@@ -1,4 +1,4 @@
-local Order = require('source.engine.ui.layout.order')
+local Order = require('../layout.order')
 local Plane = {}
 
 -- Rendered affine transforms and pointer inversion share body interpolation.

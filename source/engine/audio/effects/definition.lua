@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Cached EFX definitions: collects node properties and (re)defines the driver effect.
 local Definition = {}
 local keys = {

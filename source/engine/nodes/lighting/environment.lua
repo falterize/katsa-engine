@@ -1,6 +1,6 @@
-local Node = require('source.engine.nodes.core.baseNode')
-local ParticleSettings = require('source.engine.particles.settings')
-local Debug2DSettings = require('source.engine.physics.2d.debugSettings')
+local Node = require('../core.baseNode')
+local ParticleSettings = require('../../particles.settings')
+local Debug2DSettings = require('../../physics.2d.debugSettings')
 
 local C = Node.define('Environment', 'Node')
 C.propertySchema = { systemLayers = { kind = 'bindings' } }
@@ -50,9 +50,9 @@ function C.initialize(self)
         or {
             surfaceBlendResolution = 256,
             renderDensity = math.max(1, math.min(3, katsa.graphics.getDPIScale())),
-            msaa = require('source.engine.graphics.quality.renderQuality').defaultSamples(),
+            msaa = require('../../graphics.quality.renderQuality').defaultSamples(),
             maxMeshDistance = 0,
-            maxRenderPixels = require('source.engine.graphics.quality.renderQuality').defaultPixels(),
+            maxRenderPixels = require('../../graphics.quality.renderQuality').defaultPixels(),
             maxRenderBytes = 402653184,
         }
     if self.render.depthPrepass == nil then

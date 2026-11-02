@@ -1,5 +1,5 @@
 local Models = require('source.engine.import.models')
-local Player = require('scene.scripts.controller.player')
+local Player = require('../controller.player')
 
 local Builder = {}
 

@@ -1,4 +1,4 @@
-local pairs = require('source.engine.math.array').pairs
+local pairs = require('../../math.array').pairs
 -- Deliberately bounded markup subset; never evaluates code or external fonts.
 local Rich = {}
 

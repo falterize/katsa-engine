@@ -1,10 +1,10 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local M = require('source.engine.math.math3d')
-local Geometry = require('source.engine.graphics.geometry.primitives')
-local Validate = require('source.engine.core.validate')
-local Node = require('source.engine.nodes')
-local NodeTree = require('source.engine.nodes.core.nodeTree')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local M = require('../math.math3d')
+local Geometry = require('../graphics.geometry.primitives')
+local Validate = require('../core.validate')
+local Node = require('../nodes')
+local NodeTree = require('../nodes.core.nodeTree')
 
 local World3D = {}
 World3D.__index = function(world, key)
@@ -15,7 +15,7 @@ World3D.__index = function(world, key)
 end
 World3D.__newindex = function(world, key, value)
     if key == 'physics' and value and value.bindDebug then
-        require('source.engine.world.gravity').bind(world.root, value)
+        require('./gravity').bind(world.root, value)
         value:bindDebug(world.environment.debug.physics)
         rawset(world, key, value)
         world.root:onDestroy(function()
@@ -36,7 +36,7 @@ World3D.__newindex = function(world, key, value)
 end
 
 function World3D.new(resources, lighting, options)
-    lighting = lighting or require('source.engine.lighting.defaults').create()
+    lighting = lighting or require('../lighting.defaults').create()
     local self = setmetatable({
         resources = resources,
         lighting = lighting,
@@ -53,8 +53,8 @@ function World3D.new(resources, lighting, options)
         cameras = {},
         layers = { default = 1, player = 2 },
     }, World3D)
-    self.animations = require('source.engine.animation.scheduler').new()
-    self.shaderLayers = require('source.engine.shaders.layers').new(function(registry, info)
+    self.animations = require('../animation.scheduler').new()
+    self.shaderLayers = require('../shaders.layers').new(function(registry, info)
         -- Renames and removals reach every shader node of this world, like layer groups.
         if not info or not self.root then
             return
@@ -73,7 +73,7 @@ function World3D.new(resources, lighting, options)
     self.root._world = self
     self.root._sceneWorld = self
     Node.create('Environment', lighting, self.root, self)
-    self.prefabs = require('source.engine.core.prefabs').new(self)
+    self.prefabs = require('../core.prefabs').new(self)
     self.decals = {}
     self.directionalLights = {}
     self.surfaceQuad = Geometry.quad()
@@ -106,7 +106,7 @@ end
 
 function World3D:createPhysics(settings)
     assert(not self.physics, 'World physics is already configured')
-    self.physics = require('source.engine.physics').new(settings)
+    self.physics = require('../physics').new(settings)
     return self.physics
 end
 
@@ -134,7 +134,7 @@ function World3D:updateCameras(dt)
                 break
             end
         end
-        require('source.engine.cameras.controller').new(camera, {
+        require('../cameras.controller').new(camera, {
             target = target,
             mode = camera.followMode,
             physics = self.physics,
@@ -206,14 +206,14 @@ function World3D:create(className, properties, parent)
 end
 
 function World3D:loadModel(path, settings)
-    local Models = require('source.engine.import.models')
+    local Models = require('../import.models')
     local model = Models.load(path, self.resources)
     local objects, root = Models.instantiate(self, model, settings)
     return root, model, objects
 end
 
 function World3D:registerNodeType(name, definition)
-    return require('source.engine.nodes.core.specialNode').register(self, name, definition)
+    return require('../nodes.core.specialNode').register(self, name, definition)
 end
 
 function World3D:setInteractionSource(node)
@@ -230,7 +230,7 @@ end
 
 function World3D:setQualityProfile(name)
     local profile = assert(
-        require('source.engine.graphics.quality.qualityProfiles')[name],
+        require('../graphics.quality.qualityProfiles')[name],
         'Unknown quality profile'
     )
     for key, value in pairs(profile.shadows) do
@@ -381,7 +381,7 @@ function World3D:removeBillboard(billboard)
     end
     self.resources:releaseOwned(billboard.canvas)
 end
-require('source.engine.world.objects').install(World3D)
-require('source.engine.world.cameras').install(World3D)
-require('source.engine.world.layerGroups').install(World3D)
+require('./objects').install(World3D)
+require('./cameras').install(World3D)
+require('./layerGroups').install(World3D)
 return World3D

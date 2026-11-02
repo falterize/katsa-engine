@@ -1,9 +1,9 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Sequence = require('source.engine.animation.sequence')
-local Bindings = require('source.engine.animation.bindings')
-local Signal = require('source.engine.animation.signal')
+local Array = require('../math.array')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local Sequence = require('./sequence')
+local Bindings = require('./bindings')
+local Signal = require('./signal')
 
 local Tween = {}
 Tween.__index = Tween

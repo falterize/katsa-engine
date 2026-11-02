@@ -1,6 +1,6 @@
-local Objects = require('source.engine.core.objects')
-local Paths = require('source.engine.persistence.paths')
-local FileIO = require('source.engine.persistence.fileIO')
+local Objects = require('../core.objects')
+local Paths = require('./paths')
+local FileIO = require('./fileIO')
 
 local Files = {}
 Files.__index = Files

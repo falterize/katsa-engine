@@ -7,7 +7,7 @@
 --
 -- Returns the node list from start to goal and its total cost, or nil, 'no path'. `limit` bounds
 -- the number of expanded nodes so a bad query cannot stall a frame.
-local Heap = require('source.plugins.pathfinding.heap')
+local Heap = require('./heap')
 
 local AStar = {}
 

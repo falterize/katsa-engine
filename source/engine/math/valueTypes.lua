@@ -1,6 +1,6 @@
-local Managed = require('source.engine.math.managedValue')
-local Array = require('source.engine.math.array')
-local pairs = require('source.engine.math.array').pairs
+local Managed = require('./managedValue')
+local Array = require('./array')
+local pairs = require('./array').pairs
 
 local Types = {}
 local candidates = {

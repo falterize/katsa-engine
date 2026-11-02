@@ -1,4 +1,4 @@
-local Array = require('source.engine.math.array')
+local Array = require('./array')
 -- Row-major affine matrices with column vectors; positive scales only.
 local Affine = {}
 

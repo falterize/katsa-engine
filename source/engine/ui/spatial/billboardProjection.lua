@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Install one cohesive responsibility on the public class.
-local M = require('source.engine.math.math3d')
-local Validate = require('source.engine.core.validate')
+local M = require('../../math.math3d')
+local Validate = require('../../core.validate')
 local BillboardProjection = {}
 
 function BillboardProjection.install(BillboardUI)
@@ -16,7 +16,7 @@ function BillboardProjection.install(BillboardUI)
         }) do
             Validate.vector(self[key], 'BillboardUI.' .. key, 3)
         end
-        local support = require('source.engine.surfaces.support')
+        local support = require('../../surfaces.support')
         local reference = support.resolve(self)
         if not reference then
             self.drawable = false
@@ -91,7 +91,7 @@ function BillboardProjection.install(BillboardUI)
         w = w * (bounds[3] - bounds[1]) / self.resolvedCanvasSize[1]
         h = h * (bounds[4] - bounds[2]) / self.resolvedCanvasSize[2]
         if self.screenPosition then
-            local sx, sy = require('source.engine.ui.layout.metrics').resolve(
+            local sx, sy = require('../layout.metrics').resolve(
                 self.screenPosition,
                 camera.width,
                 camera.height,
@@ -124,7 +124,7 @@ function BillboardProjection.install(BillboardUI)
             m[row + 2] = m[row + 2] * h
         end
         M.normalMatrix(m, self.normal)
-        self._surfaceInverse = require('source.engine.math.affine').inverse(m, self._surfaceInverse)
+        self._surfaceInverse = require('../../math.affine').inverse(m, self._surfaceInverse)
     end
 end
 

@@ -1,8 +1,8 @@
-local Casters = require('source.engine.graphics.shadows.shadowCasters')
-local Types = require('source.engine.graphics.shadows.sourceTypes')
+local Casters = require('./shadowCasters')
+local Types = require('./sourceTypes')
 local kind, faces, pointDirections = Types.kind, Types.faces, Types.pointDirections
-local viewProjection = require('source.engine.graphics.shadows.shadowProjection')
-local Directional = require('source.engine.graphics.shadows.directionalShadows')
+local viewProjection = require('./shadowProjection')
+local Directional = require('./directionalShadows')
 
 local Task = {}
 

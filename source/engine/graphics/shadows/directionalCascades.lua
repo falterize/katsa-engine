@@ -1,5 +1,5 @@
-local unpack = require('source.engine.math.array').unpack
-local Math = require('source.engine.math.math3d')
+local unpack = require('../../math.array').unpack
+local Math = require('../../math.math3d')
 
 local Cascades = {}
 -- Each directional source uses three nested, camera-centred snapped maps.

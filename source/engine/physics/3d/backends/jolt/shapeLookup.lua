@@ -1,5 +1,5 @@
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
+local Library = require('./library')
+local NativeMath = require('./nativeMath')
 local C, cast = Library.C, NativeMath.cast
 
 local ShapeLookup = {}

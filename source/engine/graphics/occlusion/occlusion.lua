@@ -1,11 +1,11 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Projection = require('source.engine.graphics.occlusion.projection')
-local Occluders = require('source.engine.graphics.occlusion.occluders')
-local Triangles = require('source.engine.graphics.occlusion.triangles')
-local Validate = require('source.engine.core.validate')
-local Coverage = require('source.engine.graphics.occlusion.coverage')
-local Visibility = require('source.engine.graphics.occlusion.visibilityCache')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Projection = require('./projection')
+local Occluders = require('./occluders')
+local Triangles = require('./triangles')
+local Validate = require('../../core.validate')
+local Coverage = require('./coverage')
+local Visibility = require('./visibilityCache')
 
 local Occlusion = {}
 

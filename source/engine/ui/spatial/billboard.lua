@@ -1,8 +1,8 @@
-local ipairs = require('source.engine.math.array').ipairs
-local M = require('source.engine.math.math3d')
-local UI = require('source.engine.ui')
-local Node = require('source.engine.nodes')
-local Validate = require('source.engine.core.validate')
+local ipairs = require('../../math.array').ipairs
+local M = require('../../math.math3d')
+local UI = require('../../ui')
+local Node = require('../../nodes')
+local Validate = require('../../core.validate')
 
 local BillboardUI = Node.getClass('BillboardUI')
 BillboardUI.__index = BillboardUI
@@ -62,7 +62,7 @@ function BillboardUI.new(world, settings)
     end
     if adornee then
         local ok, reason =
-            require('source.engine.surfaces.support').valid({ _world = world }, adornee)
+            require('../../surfaces.support').valid({ _world = world }, adornee)
         assert(ok, reason)
     end
     rawset(settings, 'adornee', nil)
@@ -154,8 +154,8 @@ function BillboardUI.new(world, settings)
             'extentsOffset',
             'extentsOffsetWorldSpace',
         }) do
-            vectors[key] = require('source.engine.math.managedValue').bind(
-                require('source.engine.math.vector3').fromArray(rawget(node, key)),
+            vectors[key] = require('../../math.managedValue').bind(
+                require('../../math.vector3').fromArray(rawget(node, key)),
                 node
             )
             rawset(node, key, nil)
@@ -169,14 +169,14 @@ function BillboardUI.new(world, settings)
     end)
 
     node.inheritScale = settings.inheritScale == true
-    require('source.engine.surfaces.support').initialize(node, adornee)
+    require('../../surfaces.support').initialize(node, adornee)
     node.parent = owner
     node.layers = node.layers or 1
     node.ui:bindBillboard(node)
     world.billboards[#world.billboards + 1] = node
     return node
 end
-require('source.engine.ui.spatial.billboardCanvas').install(BillboardUI)
-require('source.engine.ui.spatial.billboardProjection').install(BillboardUI)
-require('source.engine.ui.spatial.billboardPicking').install(BillboardUI)
+require('./billboardCanvas').install(BillboardUI)
+require('./billboardProjection').install(BillboardUI)
+require('./billboardPicking').install(BillboardUI)
 return BillboardUI

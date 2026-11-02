@@ -4,7 +4,7 @@ local RenderItems = {}
 function RenderItems.install(Renderer)
     function Renderer:drawItem(o)
         if self.world.debug and self.world.debug.wireframe then
-            return require('source.engine.graphics.debug.wireframe').draw(self, o)
+            return require('../debug.wireframe').draw(self, o)
         end
         local wire = false
         if o:isA('ParticleEmitter3D') then
@@ -20,7 +20,7 @@ function RenderItems.install(Renderer)
         end
         if s:hasUniform('objectLights1') then
             local palette = o._lightPalette
-                or require('source.engine.graphics.pipeline.lightMasks').all
+                or require('./lightMasks').all
             s:send('objectLights1', palette)
         end
         local billboard = o.canvas ~= nil
@@ -50,12 +50,12 @@ function RenderItems.install(Renderer)
         if s:hasUniform('canvasTexture') then
             s:send('canvasTexture', billboard)
         end
-        require('source.engine.components.image').bindUV(
+        require('../../components.image').bindUV(
             s,
             o._surfaceAppearance or o,
             o.textureImage or o.image or o.canvas
         )
-        require('source.engine.shaders.systemLayers').bind(s, o)
+        require('../../shaders.systemLayers').bind(s, o)
         self:sendDecal(s, o)
         local c = o.color or white
         local t = self.tint
@@ -77,19 +77,19 @@ function RenderItems.install(Renderer)
         if s:hasUniform('alphaCutoff') then
             s:send('alphaCutoff', o._effectiveCutoff or o.alphaCutoff or 0)
         end
-        require('source.engine.animation.skeleton.skinning').bind(s, o)
-        require('source.engine.materials.surface').bind(s, self.world, o)
+        require('../../animation.skeleton.skinning').bind(s, o)
+        require('../../materials.surface').bind(s, self.world, o)
         local mesh = billboard and self.quad.mesh
             or self.occlusionMeshes and self.occlusionMeshes[o]
             or o.geometry.mesh
         if wire then
-            mesh = require('source.engine.graphics.debug.wireframe').mesh(self, o.geometry)
+            mesh = require('../debug.wireframe').mesh(self, o.geometry)
         end
         mesh:setTexture(billboard and o.canvas or o.textureImage or o.image)
         g.setMeshCullMode(o.doubleSided == false and 'back' or 'none')
         g.setColor(1, 1, 1, 1)
         self.stats.mainTriangles = self.stats.mainTriangles
-            + require('source.engine.graphics.debug.triangles').mesh(mesh)
+            + require('../debug.triangles').mesh(mesh)
         g.draw(mesh)
     end
 
@@ -109,7 +109,7 @@ function RenderItems.install(Renderer)
             end
             local iw, ih = node.textureImage:getDimensions()
             ox, oy, sx, sy =
-                require('source.engine.components.image').uv(node, iw, ih, width, height)
+                require('../../components.image').uv(node, iw, ih, width, height)
             if node.mode == 'Decal' then
                 ox, oy = node.imageOffset[1], node.imageOffset[2]
             end
@@ -130,11 +130,11 @@ function RenderItems.install(Renderer)
         if s:hasUniform('debugWireframe') then
             s:send('debugWireframe', false)
         end
-        require('source.engine.components.image').bindUV(s, o._surfaceAppearance or o, o.image)
-        require('source.engine.shaders.systemLayers').bind(s, o)
+        require('../../components.image').bindUV(s, o._surfaceAppearance or o, o.image)
+        require('../../shaders.systemLayers').bind(s, o)
         self:sendDecal(s)
-        require('source.engine.animation.skeleton.skinning').bind(s, o)
-        require('source.engine.materials.surface').bind(s, self.world, o)
+        require('../../animation.skeleton.skinning').bind(s, o)
+        require('../../materials.surface').bind(s, self.world, o)
         local mesh = self.batches:upload(group)
         if s:hasUniform('instanced') then
             s:send('instanced', true)
@@ -166,7 +166,7 @@ function RenderItems.install(Renderer)
         g.setColor(1, 1, 1, 1)
         mesh:setTexture(o.image)
         self.stats.mainTriangles = self.stats.mainTriangles
-            + require('source.engine.graphics.debug.triangles').mesh(mesh) * count
+            + require('../debug.triangles').mesh(mesh) * count
         g.drawInstanced(mesh, count)
         self.batches:detach(mesh)
     end

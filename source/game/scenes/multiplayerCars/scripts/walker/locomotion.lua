@@ -1,4 +1,4 @@
-local Math = require('scene.scripts.walker.math')
+local Math = require('./math')
 
 local Locomotion = {}
 

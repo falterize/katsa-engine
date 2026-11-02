@@ -1,5 +1,5 @@
-local Compatibility = require('source.engine.physics.3d.backends.oimo.compatibility')
-local Library = require('source.engine.physics.3d.backends.jolt.library')
+local Compatibility = require('../oimo.compatibility')
+local Library = require('./library')
 local bit = require('bit')
 
 local C = Library.C

@@ -1,8 +1,8 @@
 -- Console export: JSON or CSV snapshots of katsa.log entries, written to `logs/` in the save
 -- directory. Serialization is manual and never runs while idle.
 local Json = require('vendor.json')
-local Csv = require('source.engine.debug.csv')
-local Version = require('source.engine.core.version')
+local Csv = require('./csv')
+local Version = require('../core.version')
 
 local Export = {}
 local columns = { 'id', 'utc', 'time', 'level', 'source', 'message' }

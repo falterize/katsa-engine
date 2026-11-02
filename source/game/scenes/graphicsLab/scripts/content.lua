@@ -14,8 +14,8 @@ function Lab.new(scene)
     local e = w.environment
     e.debug.gizmos.enabled = false
     e.sky.enabled = true
-    require('scene.scripts.lighting.directional').create(scene.world).enabled = true
-    require('scene.scripts.lighting.directional').create(scene.world).brightness = 1.6
+    require('./lighting.directional').create(scene.world).enabled = true
+    require('./lighting.directional').create(scene.world).brightness = 1.6
     e.ambient = { 30, 36, 50 }
     e.exposure = 1.2
     e.fog.enabled = true

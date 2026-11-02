@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local M = require('source.engine.math.math3d')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local M = require('../../math.math3d')
 
 local D = {}
 

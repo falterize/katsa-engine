@@ -14,7 +14,7 @@ function Debug.toggle(scene)
         return false
     end
     local previous = scene.world.activeCamera
-    local p, r = require('source.engine.math.affine').decompose(previous:getWorldMatrix())
+    local p, r = require('../math.affine').decompose(previous:getWorldMatrix())
     r[1], r[2] = -r[1], -r[2]
     local camera = scene.world:addCamera({
         name = 'FreeDebugCamera',

@@ -1,4 +1,4 @@
-local Locomotion = require('scene.scripts.fsm.locomotion')
+local Locomotion = require('../locomotion')
 
 local Crouch = {}
 

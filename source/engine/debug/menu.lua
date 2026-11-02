@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../math.array').ipairs
 
 local Debug = {}
 
@@ -152,7 +152,7 @@ function Debug.new(scene)
         end
     end)
     row('CPU profiler / error journal', function()
-        require('source.engine.editor.debug.diagnostics').open(scene.workspace)
+        require('../editor.debug.diagnostics').open(scene.workspace)
     end)
     section = 'Rendering'
     scene.world.debug = scene.world.debug or { bones = false, wireframe = false }
@@ -172,9 +172,9 @@ function Debug.new(scene)
     toggle('Free debug camera', function()
         return scene.freeDebugCamera ~= nil
     end, function()
-        require('source.engine.cameras.debugCamera').toggle(scene)
+        require('../cameras.debugCamera').toggle(scene)
     end)
-    for _, section in ipairs(require('source.engine.plugins').debugSections(scene.world)) do
+    for _, section in ipairs(require('../plugins').debugSections(scene.world)) do
         toggle(section.title .. ' debug', function()
             return section.settings.enabled == true
         end, function()

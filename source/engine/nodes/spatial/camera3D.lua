@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../core.baseNode')
 
 local Class = Node.define('Camera3D', 'Node3D')
 

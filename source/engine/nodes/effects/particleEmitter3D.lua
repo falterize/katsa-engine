@@ -1,18 +1,18 @@
-local Array = require('source.engine.math.array')
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Node = require('source.engine.nodes.core.baseNode')
+local Array = require('../../math.array')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
+local Node = require('../core.baseNode')
 
 local C = Node.define('ParticleEmitter3D', 'Node3D')
-local Definition = require('source.engine.particles.emitterDefinition')
+local Definition = require('../../particles.emitterDefinition')
 local defaults, enums = Definition.defaults, Definition.enums
 C.defaults = defaults
 
 C.propertySchema = {
     pixelate = {
         get = function(node)
-            return require('source.engine.components.image').pixelate(node, node._world.environment)
+            return require('../../components.image').pixelate(node, node._world.environment)
         end,
     },
     adornee = {
@@ -52,7 +52,7 @@ C.propertySchema.gravity.visibleWhen = { key = 'useWorldGravity', equals = false
 C.propertySchema.useWorldGravity.hint =
     'Use Physics.gravity when present; otherwise use the emitter gravity vector. Disable to '
         .. 'author an independent field.'
-require('source.engine.components.image').describe(C)
+require('../../components.image').describe(C)
 C.propertySchema.atlasAnimation = { visibleWhen = { key = 'imageMode', equals = 'XML' } }
 C.propertySchema.atlasGrid.visibleWhen = function(node)
     return node.imageMode == 'Atlas' or node.atlasEnabled and node.imageMode == 'Decal'
@@ -116,7 +116,7 @@ function C.initialize(self)
             self[key] = Array.is(value) and { unpack(value) } or value
         end
     end
-    require('source.engine.particles.image').initialize(self)
+    require('../../particles.image').initialize(self)
     self._requestedAdornee = rawget(self, 'adornee')
     rawset(self, 'adornee', nil)
     self.particles, self.pool = {}, {}
@@ -128,13 +128,13 @@ function C.mount(world, properties, parent)
     local node = Node.new('ParticleEmitter3D', properties, parent)
     node._world = world
     if not world.particles then
-        world.particles = require('source.engine.particles.system').new(world)
+        world.particles = require('../../particles.system').new(world)
     end
-    require('source.engine.surfaces.support').initialize(node, node._requestedAdornee)
+    require('../../surfaces.support').initialize(node, node._requestedAdornee)
     node._requestedAdornee = nil
     world.particles:add(node)
     node.lifetimeRamp = world:create('Ramp', { name = 'LifetimeRamp', bindings = {} }, node)
-    require('source.engine.particles.lifetime').configure(node, properties.lifetimeBindings)
+    require('../../particles.lifetime').configure(node, properties.lifetimeBindings)
     node.lifetimeBindings = nil
     node:onDestroy(function()
         world.particles:remove(node)
@@ -143,16 +143,16 @@ function C.mount(world, properties, parent)
 end
 
 function C:setAdornee(node)
-    return require('source.engine.surfaces.support').set(self, node)
+    return require('../../surfaces.support').set(self, node)
 end
 
 function C:emissionMatrix(render)
-    local Support = require('source.engine.surfaces.support')
+    local Support = require('../../surfaces.support')
     local reference = Support.resolve(self)
     if not reference then
-        return self._emissionMatrix or require('source.engine.math.math3d').identity()
+        return self._emissionMatrix or require('../../math.math3d').identity()
     end
-    local M = require('source.engine.math.math3d')
+    local M = require('../../math.math3d')
     self._emissionLocal = M.compose(self.position, self.rotation, self.scale, self._emissionLocal)
     self._emissionMatrix = M.multiply(
         Support.frame(self, reference, render),

@@ -10,7 +10,7 @@
 --     clientAuthoritative = false,   -- the authority client sends the state instead of input
 --     get = function(object, name) / set = function(object, name, value)   -- optional accessors
 --   }
-local Types = require('source.engine.net.types')
+local Types = require('./types')
 
 local Registry = {}
 Registry.__index = Registry

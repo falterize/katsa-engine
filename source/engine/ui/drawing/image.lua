@@ -14,7 +14,7 @@ end
 
 function Image.draw(ui, node)
     local g = katsa.graphics
-    local component = require('source.engine.components.image')
+    local component = require('../../components.image')
     local world = ui._sceneWorld or ui.owner and ui.owner._world
     local image = component.resolve(ui.resources, node, node.image, world and world.environment)
     local iw, ih = image:getDimensions()
@@ -23,8 +23,8 @@ function Image.draw(ui, node)
         return
     end
     g.push('all')
-    require('source.engine.ui.drawing.modifiers').bindGradient(ui, node, 'Image')
-    local style = require('source.engine.ui.style')
+    require('./modifiers').bindGradient(ui, node, 'Image')
+    local style = require('../style')
     local c = style.color(node, 'image')
     g.setColor(c[1], c[2], c[3], style.alpha(node, 'image', c))
     local mode = node.fitMode or 'Stretch'

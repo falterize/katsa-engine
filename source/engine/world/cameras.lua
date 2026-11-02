@@ -1,14 +1,14 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local M = require('source.engine.math.math3d')
-local Geometry = require('source.engine.graphics.geometry.primitives')
-local Validate = require('source.engine.core.validate')
-local Node = require('source.engine.nodes')
+local unpack = require('../math.array').unpack
+local ipairs = require('../math.array').ipairs
+local M = require('../math.math3d')
+local Geometry = require('../graphics.geometry.primitives')
+local Validate = require('../core.validate')
+local Node = require('../nodes')
 local Cameras = {}
 
 function Cameras.install(World3D)
     function World3D:addCamera(settings, parent)
-        local camera = require('source.engine.cameras.camera').new(settings)
+        local camera = require('../cameras.camera').new(settings)
         camera._world = self
         camera.parent = parent or self.folders.Cameras
         self.cameras[#self.cameras + 1] = camera

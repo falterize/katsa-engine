@@ -1,5 +1,5 @@
 local ipairs = require('source.engine.math.array').ipairs
-local Triggers = require('source.engine.physics.3d.triggers')
+local Triggers = require('../triggers')
 local Simulation = {}
 
 local function step(physics, dt)

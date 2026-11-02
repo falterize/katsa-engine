@@ -1,9 +1,9 @@
-local Array = require('source.engine.math.array')
-local pairs = require('source.engine.math.array').pairs
+local Array = require('../../math.array')
+local pairs = require('../../math.array').pairs
 -- Modal root is a sibling of the drawer: scrolling and clipping cannot hide it.
 local Popup = {}
 Popup.__index = Popup
-local Style = require('source.engine.editor.panels.popupStyle')
+local Style = require('./popupStyle')
 
 local copy = Style.copy
 
@@ -121,7 +121,7 @@ function Popup:close(confirm)
             if old and old.destroyed then
                 old = nil
             end
-            require('source.engine.editor.inspectors.properties').set(
+            require('../inspectors.properties').set(
                 self.workspace.scene,
                 self.target,
                 self.originalField,
@@ -129,7 +129,7 @@ function Popup:close(confirm)
             )
         elseif Array.is(self.original) then
             for i = 1, #self.original do
-                require('source.engine.editor.inspectors.properties').set(
+                require('../inspectors.properties').set(
                     self.workspace.scene,
                     self.target,
                     self.originalField,
@@ -138,7 +138,7 @@ function Popup:close(confirm)
                 )
             end
         else
-            require('source.engine.editor.inspectors.properties').set(
+            require('../inspectors.properties').set(
                 self.workspace.scene,
                 self.target,
                 self.originalField,
@@ -207,6 +207,6 @@ function Popup:commitInput()
     self.focusNode, self.inputCallback = nil, nil
     return true
 end
-require('source.engine.editor.panels.popupValues').install(Popup)
-require('source.engine.editor.panels.popupColor').install(Popup)
+require('./popupValues').install(Popup)
+require('./popupColor').install(Popup)
 return Popup

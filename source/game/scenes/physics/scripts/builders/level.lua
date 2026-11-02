@@ -1,5 +1,5 @@
 local Mesh = require('source.engine.composition.mesh')
-local object = require('scene.scripts.builders.object')
+local object = require('./object')
 
 local PhysicsExample = {}
 

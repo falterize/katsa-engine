@@ -20,7 +20,7 @@ function Interaction.install(UI)
     end
 
     local function hit(list, x, y, px, py)
-        list = require('source.engine.ui.layout.order').get(list)
+        list = require('../layout.order').get(list)
         for i = #list, 1, -1 do
             local n = list[i]
             if
@@ -66,7 +66,7 @@ function Interaction.install(UI)
         self:layout()
         x, y = (x - self.offsetX) / self.scale, (y - self.offsetY) / self.scale
         local screenX, screenY = x * self.scale + self.offsetX, y * self.scale + self.offsetY
-        local Style = require('source.engine.ui.style')
+        local Style = require('../style')
 
         local function visit(list, x, y)
             for i = #list, 1, -1 do
@@ -108,7 +108,7 @@ function Interaction.install(UI)
             return false
         end
         return visit(self.children, x, y)
-            or require('source.engine.ui.spatial.plane').hit(
+            or require('../spatial.plane').hit(
                 self,
                 self.children,
                 screenX,
@@ -130,7 +130,7 @@ function Interaction.install(UI)
             (y - self.offsetY) / self.scale,
             0,
             0
-        ) or require('source.engine.ui.spatial.plane').hit(self, self.children, x, y, hit)
+        ) or require('../spatial.plane').hit(self, self.children, x, y, hit)
     end
 
     function UI:position(node)
@@ -163,10 +163,10 @@ function Interaction.install(UI)
                 ancestor = ancestor.parent
             end
         end
-        local owner = require('source.engine.ui.spatial.plane').owner(node)
+        local owner = require('../spatial.plane').owner(node)
         local px, py = x, y
         if owner then
-            px, py = require('source.engine.ui.spatial.plane').localPoint(self, owner, x, y)
+            px, py = require('../spatial.plane').localPoint(self, owner, x, y)
             px, py = px * self.scale + self.offsetX, py * self.scale + self.offsetY
         end
         node:pointer(self, phase, px, py, id)

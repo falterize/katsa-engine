@@ -1,5 +1,5 @@
-local Polygon = require('source.engine.physics.2d.geometry.polygon')
-local Image = require('source.engine.physics.2d.geometry.image')
+local Polygon = require('./geometry.polygon')
+local Image = require('./geometry.image')
 
 local Shapes = {}
 

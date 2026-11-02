@@ -1,4 +1,4 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Conservative convex coverage, shared by object and triangle rejection.
 local Coverage = {}
 

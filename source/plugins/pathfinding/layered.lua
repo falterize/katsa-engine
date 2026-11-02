@@ -10,9 +10,9 @@
 --   nav:link(1, rampFootX, rampFootZ, 2, rampTopX, rampTopZ)   -- both directions
 --   local path = nav:findPath(x, y, z, targetX, targetY, targetZ)
 --   for _, point in ipairs(path.points) do ... end             -- { x, y, z }, path.levels[i]
-local AStar = require('source.plugins.pathfinding.astar')
-local Path = require('source.plugins.pathfinding.path')
-local Grid = require('source.plugins.pathfinding.grid')
+local AStar = require('./astar')
+local Path = require('./path')
+local Grid = require('./grid')
 
 local Layered = {}
 Layered.__index = Layered

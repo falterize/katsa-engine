@@ -1,8 +1,8 @@
-local Body = require('source.engine.physics.2d.body')
-local Contacts = require('source.engine.physics.2d.contacts')
-local Simulation = require('source.engine.physics.2d.simulation')
-local Queries = require('source.engine.physics.2d.queries')
-local Drawing = require('source.engine.physics.2d.drawing')
+local Body = require('./body')
+local Contacts = require('./contacts')
+local Simulation = require('./simulation')
+local Queries = require('./queries')
+local Drawing = require('./drawing')
 
 local Physics2D = {}
 Physics2D.__index = Physics2D
@@ -11,7 +11,7 @@ function Physics2D.new(options)
     options = options or {}
     local units = options.unitsPerMeter or options.units or 64
     assert(type(units) == 'number' and units > 0 and units < math.huge, 'Invalid 2D units')
-    local gravity = require('source.engine.world.gravity').options(options, 2, { 0, -9.81 * units })
+    local gravity = require('../../world.gravity').options(options, 2, { 0, -9.81 * units })
     -- Do not change katsa.physics.setMeter: that global also affects other worlds.
     local factor = katsa.physics.getMeter() / units
     local self = setmetatable({
@@ -32,13 +32,13 @@ function Physics2D.new(options)
         events = {},
         commands = {},
         debug = options.debugSettings
-            or require('source.engine.physics.2d.debugSettings').create(options.debug),
+            or require('./debugSettings').create(options.debug),
         stats = { steps = 0, droppedTime = 0, updateMilliseconds = 0, solverMilliseconds = 0 },
         world = katsa.physics.newWorld(gravity[1] * factor, gravity[2] * factor, true),
     }, Physics2D)
     assert(self.fixedDelta > 0 and self.fixedDelta < math.huge, 'Invalid 2D fixedDelta')
     assert(self.maxSteps >= 1 and self.maxSteps % 1 == 0, 'Invalid 2D maxSteps')
-    self.collisionGroups = require('source.engine.core.groups').new(function(registry)
+    self.collisionGroups = require('../../core.groups').new(function(registry)
         for _, body in ipairs(self.bodies) do
             if registry.renamed and body.object.collisionGroup == registry.renamed[1] then
                 body.object.collisionGroup = registry.renamed[2]
@@ -124,7 +124,7 @@ function Physics2D:setGravity(x, y)
         end
     end
     self.gravity[1], self.gravity[2] = x, y
-    require('source.engine.world.gravity').read(self, x, y)
+    require('../../world.gravity').read(self, x, y)
 end
 
 function Physics2D:getGravity()

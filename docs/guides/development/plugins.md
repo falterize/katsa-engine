@@ -47,16 +47,16 @@ return {
     description = '...', requires = {},
 
     -- 1. New node types, registered like world:registerNodeType (module returns the definition).
-    nodes = { NavMap = 'source.plugins.pathfinding.nodes.navMap' },
+    nodes = { NavMap = './nodes.navMap' },
 
     -- 2. Settings and methods added to EXISTING node classes.
-    extend = { Body3D = 'source.plugins.pathfinding.extensions.body3D' },
+    extend = { Body3D = './extensions.body3D' },
 
     -- 3. A debug section: Environment.debug.<key>, drawn after the 3D scene when enabled.
     debug = {
         key = 'pathfinding', title = 'Pathfinding',
         defaults = { enabled = false, drawCells = true, drawLinks = true, drawPaths = true, drawDistance = 80 },
-        draw = 'source.plugins.pathfinding.debug',
+        draw = './debug',
     },
 }
 ```

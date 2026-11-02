@@ -1,9 +1,9 @@
 -- Client side of the car game: connection, replicated cars, seats, dents and the nitro ad flow.
 local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
-local CarEntity = require('scene.scripts.game.carEntity')
-local PhysicsCar = require('scene.scripts.game.physicsCar')
-local WalkerEntity = require('scene.scripts.game.walkerEntity')
+local CarEntity = require('./carEntity')
+local PhysicsCar = require('./physicsCar')
+local WalkerEntity = require('./walkerEntity')
 
 local GameClient = {}
 GameClient.__index = GameClient

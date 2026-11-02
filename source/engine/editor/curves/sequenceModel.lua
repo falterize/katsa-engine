@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Sequence = require('source.engine.animation.sequence')
-local Copy = require('source.engine.animation.bindings').copy
+local ipairs = require('../../math.array').ipairs
+local Sequence = require('../../animation.sequence')
+local Copy = require('../../animation.bindings').copy
 
 local Model = {}
 

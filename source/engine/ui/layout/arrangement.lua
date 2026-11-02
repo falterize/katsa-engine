@@ -1,13 +1,13 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Metrics = require('source.engine.ui.layout.metrics')
-local Length = require('source.engine.ui.layout.scrollLength')
-local Canvas = require('source.engine.ui.layout.scrollCanvas')
-local Display = require('source.engine.core.displayDpi')
+local ipairs = require('../../math.array').ipairs
+local Metrics = require('./metrics')
+local Length = require('./scrollLength')
+local Canvas = require('./scrollCanvas')
+local Display = require('../../core.displayDpi')
 local Arrangement = {}
 
 function Arrangement.install(UI)
     local function arrange(list, px, py, pw, ph, clip)
-        list = require('source.engine.ui.layout.order').refresh(list)
+        list = require('./order').refresh(list)
         for _, n in ipairs(list) do
             if n:isA('Folder') then
                 arrange(n.children, px, py, pw, ph, clip)

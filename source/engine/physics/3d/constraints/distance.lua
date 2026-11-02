@@ -1,6 +1,6 @@
 -- Rope/spring impulses are engine policy shared by both simulation adapters.
 local M = require('source.engine.math.math3d')
-local Inputs = require('source.engine.physics.3d.constraints.inputs')
+local Inputs = require('./inputs')
 
 local Distance = {}
 

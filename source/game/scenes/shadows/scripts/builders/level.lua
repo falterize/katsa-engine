@@ -1,4 +1,4 @@
-local object = require('scene.scripts.builders.object')
+local object = require('./object')
 
 local Shadows = {}
 

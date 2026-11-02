@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Render-only snapshots; authoritative node transforms and solver queries stay exact.
-local Math = require('source.engine.math.math3d')
+local Math = require('../../math.math3d')
 local Interpolation = {}
 
 function Interpolation.install(Body3D, O, Physics)

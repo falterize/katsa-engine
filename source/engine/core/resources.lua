@@ -1,8 +1,8 @@
-local Objects = require('source.engine.core.objects')
-local Array = require('source.engine.math.array')
-local Paths = require('source.engine.scenes.paths')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Objects = require('./objects')
+local Array = require('../math.array')
+local Paths = require('../scenes.paths')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
 -- Reference-counted immutable assets shared by explicit scene scopes.
 local missingImage = 'assets/textures/internal/missing.png'
 local Resources = {}
@@ -140,7 +140,7 @@ function Resources:loadImage(source, label)
         if not opacitySource and Objects.isObject(source) and source:typeOf('FileData') then
             opacitySource = source
         end
-        require('source.engine.materials.opacity').register(value, pixels, opacitySource)
+        require('../materials.opacity').register(value, pixels, opacitySource)
     end
     if encoded then
         encoded:release()
@@ -210,7 +210,7 @@ function Resources:preload(items)
         if item.kind == 'image' then
             result[i] = self:imageVariant(item.path, item.pixel)
         elseif item.kind == 'model' or item.kind == 'animation' then
-            result[i] = require('source.engine.import.models').load(item.path, self)
+            result[i] = require('../import.models').load(item.path, self)
         elseif item.kind == 'sound' then
             local path = self:canonical(item.path)
             result[i] = self:cached('sound', path .. '|flat', function(owner)

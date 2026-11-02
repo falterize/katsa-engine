@@ -62,17 +62,17 @@ function Game:load()
     self.package = self.options._package
         or Loader.open(
             self.options.package or self.zone,
-            require('source.game.sceneCatalog'),
-            require('source.game.data.assetRoots').shared
+            require('../sceneCatalog'),
+            require('../data.assetRoots').shared
         )
     self.settings = self.package.settings
     self.zone = self.settings.id
-    local manifest = Loader.manifest(require('source.game.data.manifest'), self.settings.assets)
+    local manifest = Loader.manifest(require('../data.manifest'), self.settings.assets)
     self.resources = self.manager.resources:scope(manifest, self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
     profiler:markLoad('Open package, resources and audio')
     local environment =
-        Loader.configure(require('source.game.data.settings').create(), self.settings.world)
+        Loader.configure(require('../data.settings').create(), self.settings.world)
     self.world = World3D.new(self.resources, environment)
     self.systems = Systems.new(self)
     self.world.audio = self.audio
@@ -101,7 +101,7 @@ function Game:load()
     })
     self.input = Input.new(self, self.controls)
     -- Default Esc menu; a scene's main.lua calls attach(scene, true) to keep time running.
-    require('source.game.runtime.pauseMenu').attach(self)
+    require('./pauseMenu').attach(self)
     profiler:markLoad('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
     require('source.engine.plugins').activate(self.world, self.settings.plugins)
@@ -142,7 +142,7 @@ function Game:load()
     end
     self:resize(katsa.graphics.getDimensions())
     if self.sampleType then
-        require('source.game.scenes.nodeCatalog.scripts.catalog.samples').prepare(
+        require('../scenes.nodeCatalog.scripts.catalog.samples').prepare(
             self,
             self.sampleType
         )

@@ -1,4 +1,4 @@
-local O = require('source.engine.physics.3d.valueTypes')
+local O = require('../valueTypes')
 local WorldGravity = require('source.engine.world.gravity')
 local Gravity = {}
 

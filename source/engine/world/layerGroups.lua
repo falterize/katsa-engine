@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Groups = require('source.engine.core.groups')
+local ipairs = require('../math.array').ipairs
+local Groups = require('../core.groups')
 local LayerGroups = {}
 
 function LayerGroups.install(World3D)

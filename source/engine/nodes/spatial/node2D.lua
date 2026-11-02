@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../core.baseNode')
 
 local Node2D = Node.define('Node2D', 'Node')
 Node2D.propertySchema = {

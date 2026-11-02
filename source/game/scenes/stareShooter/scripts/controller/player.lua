@@ -1,5 +1,5 @@
-local Machine = require('scene.scripts.fsm.machine')
-local Math = require('scene.scripts.controller.math')
+local Machine = require('../fsm.machine')
+local Math = require('./math')
 local StepValue = require('source.engine.animation.stepValue')
 
 local Player = {}

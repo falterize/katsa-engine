@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('./baseNode')
 
 local Class = Node.define('Folder', 'Node')
 return Class

@@ -1,9 +1,9 @@
-local Objects = require('source.engine.core.objects')
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local Objects = require('../../core.objects')
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Property revisions skip stable nodes; mutable geometry/matrices retain conservative checks.
 local Cache = {}
-local State = require('source.engine.graphics.pipeline.renderState')
+local State = require('./renderState')
 
 local nodeKeys = State.nodeKeys
 local nodeVectors = State.nodeVectors
@@ -24,7 +24,7 @@ local environmentVectors = { 'ambient' }
 local empty = State.empty
 local scalar = State.scalar
 local vector = State.vector
-local Properties = require('source.engine.graphics.pipeline.propertySnapshot')
+local Properties = require('./propertySnapshot')
 
 local fields = State.fields
 local settings = State.settings
@@ -418,7 +418,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
     sceneChanged = scalar(
         c.options,
         'maskForceAll',
-        require('source.engine.graphics.pipeline.lightMasks').forceAll
+        require('./lightMasks').forceAll
     ) or sceneChanged
     cameraChanged = scalar(c.options, 'width', renderer.targetWidth or katsa.graphics.getWidth())
         or cameraChanged
@@ -475,9 +475,7 @@ function Cache.reusable(renderer, world, c)
     return c.valid
         and not c.volatile
         and world.environment.render.frameCache ~= false
-        and (not world.environment.shadows.enabled or require(
-            'source.engine.graphics.shadows.shadowCache'
-        ).reusable(renderer.shadows, renderer, c))
+        and (not world.environment.shadows.enabled or require('../shadows.shadowCache').reusable(renderer.shadows, renderer, c))
         and not world.environment.debug.gizmos.enabled
         and not (world.debug and world.debug.bones)
         and not selectionDue

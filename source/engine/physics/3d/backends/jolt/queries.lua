@@ -3,10 +3,10 @@ if jit then
     jit.off(true, true)
 end
 
-local QueryPolicy = require('source.engine.physics.3d.internal.queryPolicy')
-local Library = require('source.engine.physics.3d.backends.jolt.library')
-local NativeMath = require('source.engine.physics.3d.backends.jolt.nativeMath')
-local ShapeLookup = require('source.engine.physics.3d.backends.jolt.shapeLookup')
+local QueryPolicy = require('../../internal.queryPolicy')
+local Library = require('./library')
+local NativeMath = require('./nativeMath')
+local ShapeLookup = require('./shapeLookup')
 
 local C, ffi = Library.C, Library.ffi
 local vector, cast = NativeMath.vector, NativeMath.cast

@@ -1,6 +1,6 @@
-local unpack = require('source.engine.math.array').unpack
-local M = require('source.engine.math.math3d')
-local Shapes = require('source.engine.particles.3d.shapes')
+local unpack = require('../math.array').unpack
+local M = require('../math.math3d')
+local Shapes = require('./3d.shapes')
 
 local Sim = {}
 
@@ -11,7 +11,7 @@ end
 function Sim.spawn(e)
     local p = table.remove(e.pool) or {}
     if e._plane then
-        require('source.engine.particles.2d.shapes').sample(e, p)
+        require('./2d.shapes').sample(e, p)
     else
         Shapes.sample(e, p)
     end
@@ -111,7 +111,7 @@ function Sim.step(system, e, dt)
             local px, py, pz = p.x, p.y, p.z
             local vx, vy, vz = p.vx, p.vy, p.vz
             if p.space == 'Local' then
-                inverse = inverse or require('source.engine.math.affine').inverse(m)
+                inverse = inverse or require('../math.affine').inverse(m)
                 px, py, pz = M.transform(m, px, py, pz)
                 vx, vy, vz = M.transform(m, vx, vy, vz, 0)
             end
@@ -141,7 +141,7 @@ function Sim.step(system, e, dt)
             if e.offscreenBehavior == 'Pause' then
                 local visibility = system:visibility()
                 local size = p.size
-                    * require('source.engine.animation.sequence').evaluate(
+                    * require('../animation.sequence').evaluate(
                         e.lifetimeRamp.bindings.size,
                         p.age / p.life,
                         e.lifetimeRamp.interpolation

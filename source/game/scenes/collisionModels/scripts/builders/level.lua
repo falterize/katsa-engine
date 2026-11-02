@@ -2,7 +2,7 @@ local ipairs = require('source.engine.math.array').ipairs
 local Physics = require('source.engine.physics')
 local UI = require('source.engine.ui')
 local Models = require('source.engine.import.models')
-local object = require('scene.scripts.builders.object')
+local object = require('./object')
 
 local CollisionModels = {}
 

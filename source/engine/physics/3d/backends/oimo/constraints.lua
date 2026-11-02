@@ -1,5 +1,5 @@
-local O = require('source.engine.physics.3d.backends.oimo.types')
-local vec = require('source.engine.physics.3d.internal.bodyPolicy').vec
+local O = require('./types')
+local vec = require('../../internal.bodyPolicy').vec
 local pairs = require('source.engine.math.array').pairs
 
 local Constraints = {}

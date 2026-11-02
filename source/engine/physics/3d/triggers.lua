@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Query the backend BVH, then perform exact narrow phase outside traversal callbacks.
-local O = require('source.engine.physics.3d.valueTypes')
+local O = require('./valueTypes')
 local bit = require('bit')
 
 local Triggers = {}

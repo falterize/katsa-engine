@@ -1,6 +1,6 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local M = require('source.engine.math.math3d')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local M = require('../../math.math3d')
 
 local L = {}
 

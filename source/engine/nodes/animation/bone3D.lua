@@ -1,4 +1,4 @@
-local Node = require('source.engine.nodes.core.baseNode')
+local Node = require('../core.baseNode')
 
 local Bone = Node.define('Bone3D', 'Node3D')
 Bone.propertySchema = {

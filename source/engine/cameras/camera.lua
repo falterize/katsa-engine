@@ -1,9 +1,9 @@
-local Frustum = require('source.engine.cameras.frustum')
-local unpack = require('source.engine.math.array').unpack
-local pairs = require('source.engine.math.array').pairs
-local M = require('source.engine.math.math3d')
-local Node = require('source.engine.nodes')
-local Affine = require('source.engine.math.affine')
+local Frustum = require('./frustum')
+local unpack = require('../math.array').unpack
+local pairs = require('../math.array').pairs
+local M = require('../math.math3d')
+local Node = require('../nodes')
+local Affine = require('../math.affine')
 
 local Camera3D = Node.getClass('Camera3D')
 Camera3D.__index = Camera3D

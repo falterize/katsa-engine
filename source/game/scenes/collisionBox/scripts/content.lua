@@ -1,5 +1,5 @@
 local ipairs = require('source.engine.math.array').ipairs
-local add = require('scene.scripts.builders.object')
+local add = require('./builders.object')
 
 local Demo = {}
 Demo.__index = Demo

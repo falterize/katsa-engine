@@ -1,6 +1,6 @@
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
-local object = require('scene.scripts.builders.object')
+local object = require('./builders.object')
 
 local Demo = {}
 Demo.__index = Demo
@@ -37,7 +37,7 @@ function Demo.new(scene)
         brightness = 2,
         color = { 255, 225, 190 },
     })
-    require('scene.scripts.builders.level').build(self, scene)
+    require('./builders.level').build(self, scene)
     scene.physics.beforeStep = function(_, fixedDelta)
         self:beforeStep(fixedDelta)
     end

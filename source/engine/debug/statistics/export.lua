@@ -1,6 +1,6 @@
 -- Manual CSV snapshots. Serialization is independent of the UI and never runs while idle.
-local Version = require('source.engine.core.version')
-local Csv = require('source.engine.debug.csv')
+local Version = require('../../core.version')
+local Csv = require('../csv')
 local Export = {}
 local columns = {
     'schema',

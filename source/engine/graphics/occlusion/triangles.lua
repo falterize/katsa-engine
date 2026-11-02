@@ -1,10 +1,10 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Per-camera index masks share the original vertex buffers, never its index state.
-local Math = require('source.engine.math.math3d')
-local Coverage = require('source.engine.graphics.occlusion.coverage')
-local Masks = require('source.engine.graphics.occlusion.indexMasks')
-local Counts = require('source.engine.graphics.debug.triangles')
+local Math = require('../../math.math3d')
+local Coverage = require('./coverage')
+local Masks = require('./indexMasks')
+local Counts = require('../debug.triangles')
 
 local Triangles = {}
 

@@ -1,4 +1,4 @@
-local Managed = require('source.engine.math.managedValue')
+local Managed = require('./managedValue')
 
 local Vector3 = {}
 local components = { X = 1, Y = 2, Z = 3, x = 1, y = 2, z = 3 }

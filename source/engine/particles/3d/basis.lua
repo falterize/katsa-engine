@@ -1,5 +1,5 @@
 -- One orientation basis is used by visible sprites and their shadow geometry.
-local M = require('source.engine.math.math3d')
+local M = require('../../math.math3d')
 
 local B = {}
 

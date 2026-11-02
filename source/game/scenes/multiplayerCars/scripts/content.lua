@@ -1,21 +1,21 @@
 -- Scene controller: menu, hosting/joining, the per-frame input, cars on screen and the camera.
 local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
-local ArenaView = require('scene.scripts.view.arenaView')
-local CarView = require('scene.scripts.view.carView')
-local RenderPose = require('scene.scripts.game.renderPose')
-local Orbit = require('scene.scripts.cameras.orbit')
-local Input = require('scene.scripts.controller.input')
-local Walker = require('scene.scripts.walker.controller')
-local WalkerView = require('scene.scripts.walker.view')
-local GameServer = require('scene.scripts.game.gameServer')
-local GameClient = require('scene.scripts.game.gameClient')
-local AdsConfig = require('scene.scripts.game.adsConfig')
-local Interface = require('scene.scripts.ui.interface')
+local ArenaView = require('./view.arenaView')
+local CarView = require('./view.carView')
+local RenderPose = require('./game.renderPose')
+local Orbit = require('./cameras.orbit')
+local Input = require('./controller.input')
+local Walker = require('./walker.controller')
+local WalkerView = require('./walker.view')
+local GameServer = require('./game.gameServer')
+local GameClient = require('./game.gameClient')
+local AdsConfig = require('./game.adsConfig')
+local Interface = require('./ui.interface')
 local Menu = Interface.Menu
 local Hud = Interface.Hud
-local Social = require('scene.scripts.ui.controller')
-local Voice = require('scene.scripts.game.voice')
+local Social = require('./ui.controller')
+local Voice = require('./game.voice')
 
 local Session = {}
 -- Exposed so tests can build a second, independent client and physics world.
@@ -169,7 +169,7 @@ function Session:updatePathMarkers()
     if not route then
         return
     end
-    local Arena = require('scene.scripts.game.arena')
+    local Arena = require('./game.arena')
     self.pathMarkers = self.pathMarkers or {}
     local count = #route.points / 3 + 1
     for index = 1, math.max(count, #self.pathMarkers) do

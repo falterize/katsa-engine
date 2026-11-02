@@ -1,4 +1,4 @@
-local Math = require('scene.scripts.controller.math')
+local Math = require('../controller.math')
 
 local Animation = {}
 Animation.__index = Animation

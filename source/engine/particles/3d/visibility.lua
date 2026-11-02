@@ -1,7 +1,7 @@
-local ipairs = require('source.engine.math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Test existing particles as well as the source: world-space trails can outlive an offscreen
 -- emitter.
-local M = require('source.engine.math.math3d')
+local M = require('../../math.math3d')
 local bit = require('bit')
 
 local V = {}
@@ -56,7 +56,7 @@ function V.relevant(emitter, camera, renderPose)
         if particle.space == 'Local' then
             x, y, z = M.transform(matrix, x, y, z)
         end
-        local size = require('source.engine.animation.sequence').evaluate(
+        local size = require('../../animation.sequence').evaluate(
             emitter.lifetimeRamp.bindings.size,
             particle.age / particle.life,
             emitter.lifetimeRamp.interpolation

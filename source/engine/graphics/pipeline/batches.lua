@@ -1,9 +1,9 @@
-local readValue = require('source.engine.math.managedValue').read
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local readValue = require('../../math.managedValue').read
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Opaque instancing keeps individual culling while sharing mesh/texture draw calls.
-local Surface = require('source.engine.materials.surface')
-local allLights = require('source.engine.graphics.pipeline.lightMasks').all
+local Surface = require('../../materials.surface')
+local allLights = require('./lightMasks').all
 
 local effectKeys = { 'lighting', 'shadows', 'fog', 'toneMapping' }
 local vectorKeys = { 'atlasGrid', 'textureSize', 'textureOffset', 'tileSize', 'tileOffset' }

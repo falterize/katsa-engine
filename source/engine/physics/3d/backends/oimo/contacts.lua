@@ -1,4 +1,4 @@
-local O = require('source.engine.physics.3d.backends.oimo.types')
+local O = require('./types')
 
 local Contacts = {}
 

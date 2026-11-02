@@ -1,6 +1,6 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
-local Geometry = require('source.engine.graphics.geometry.primitives')
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
+local Geometry = require('../graphics.geometry.primitives')
 
 local OBJ = {}
 

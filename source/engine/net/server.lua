@@ -6,12 +6,12 @@
 --   server.playerAdded:connect(function(player) server:spawn('Avatar', {}, player) end)
 --   server:start()
 --   -- every frame: server:update(dt)
-local Codec = require('source.engine.net.codec')
-local Link = require('source.engine.net.link')
-local P = require('source.engine.net.protocol')
-local Registry = require('source.engine.net.registry')
-local Remote = require('source.engine.net.remote')
-local Signal = require('source.engine.net.signal')
+local Codec = require('./codec')
+local Link = require('./link')
+local P = require('./protocol')
+local Registry = require('./registry')
+local Remote = require('./remote')
+local Signal = require('./signal')
 
 local Server = {}
 Server.__index = Server

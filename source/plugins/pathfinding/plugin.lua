@@ -6,8 +6,8 @@ return {
         .. 'following, the NavMap node and a navigation debug view.',
     requires = {},
     -- Enabled per scene with `plugins = { 'pathfinding' }` in the scene settings.
-    nodes = { NavMap = 'source.plugins.pathfinding.nodes.navMap' },
-    extend = { Body3D = 'source.plugins.pathfinding.extensions.body3D' },
+    nodes = { NavMap = './nodes.navMap' },
+    extend = { Body3D = './extensions.body3D' },
     debug = {
         key = 'pathfinding',
         title = 'Pathfinding',
@@ -18,6 +18,6 @@ return {
             drawPaths = true,
             drawDistance = 40,
         },
-        draw = 'source.plugins.pathfinding.debug',
+        draw = './debug',
     },
 }

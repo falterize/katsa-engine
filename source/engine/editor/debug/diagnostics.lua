@@ -1,5 +1,5 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 
 local D = {}
 
@@ -8,7 +8,7 @@ function D.open(workspace)
         workspace.popup:close(true)
     end
     workspace.selected = workspace.selected or workspace.scene.world.root
-    local popup = require('source.engine.editor.panels.popup').new(
+    local popup = require('../panels.popup').new(
         workspace,
         { key = 'Diagnostics', kind = 'string', value = '', readOnly = true }
     )

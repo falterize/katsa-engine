@@ -1,7 +1,7 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local M = require('source.engine.math.math3d')
-local Pose = require('source.engine.animation.skeleton.pose')
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local M = require('../../math.math3d')
+local Pose = require('./pose')
 
 local Rig = {}
 
@@ -108,7 +108,7 @@ function Rig.initialize(model)
         if self.objects then
             for _, o in ipairs(self.objects) do
                 if o.skin then
-                    require('source.engine.animation.skeleton.skinning').update(o)
+                    require('./skinning').update(o)
                 end
             end
         end

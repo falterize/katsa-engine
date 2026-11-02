@@ -1,9 +1,9 @@
-local ipairs = require('source.engine.math.array').ipairs
-local Voice = require('source.engine.audio.voice')
+local ipairs = require('../math.array').ipairs
+local Voice = require('./voice')
 
 local Audio = {}
 Audio.__index = Audio
-local Validation = require('source.engine.audio.validation')
+local Validation = require('./validation')
 local modes, unit = Validation.modes, Validation.unit
 
 function Audio.new(options)
@@ -23,9 +23,9 @@ function Audio.new(options)
         paused = false,
         listener = { 0, 0, 0 },
         listeners = {},
-        resources = options.resources or require('source.engine.core.resources').new(),
+        resources = options.resources or require('../core.resources').new(),
     }, Audio)
-    self.manager = require('source.engine.audio.manager').new(self)
+    self.manager = require('./manager').new(self)
     return self
 end
 
@@ -75,8 +75,8 @@ function Audio:groupGain(name)
     end
     return gain
 end
-require('source.engine.audio.playback').install(Audio)
-require('source.engine.audio.spatial').install(Audio)
+require('./playback').install(Audio)
+require('./spatial').install(Audio)
 
 function Audio:update(camera)
     local node = self.manager:getActiveListener()
@@ -106,7 +106,7 @@ function Audio:update(camera)
             node:sync(true)
         end
     end
-    local routing = require('source.engine.audio.effects.routing')
+    local routing = require('./effects.routing')
     for _, effect in ipairs(self.effects) do
         if effect._defined then
             if not effect.enabled then
@@ -131,7 +131,7 @@ function Audio:update(camera)
 end
 
 function Audio:refreshEffects()
-    local routing = require('source.engine.audio.effects.routing')
+    local routing = require('./effects.routing')
     for _, effect in ipairs(self.effects) do
         if effect._defined then
             routing.define(self, effect)
@@ -184,7 +184,7 @@ function Audio:stop()
 end
 
 function Audio:removeEffect(node)
-    require('source.engine.audio.effects.routing').remove(self, node)
+    require('./effects.routing').remove(self, node)
 end
 
 function Audio:release()

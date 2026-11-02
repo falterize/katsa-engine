@@ -315,3 +315,25 @@ default; a scene's `main.lua` can call `require('source.game.runtime.pauseMenu')
 to override it. Opening sets the time scale to 0 and closing restores the previous value; with
 `keepTime = true` the time scale is never touched (hosted multiplayer keeps simulating). The menu is an
 overlay inside the scene, not a separate scene, so the scene keeps updating underneath.
+
+## Relative requires
+
+A module can name files next to it instead of spelling the whole path, so folders can move without
+editing the requires inside them:
+
+```lua
+local Heap = require('./heap')              -- same folder: heap.lua (or heap/init.lua)
+local Path = require('../path')             -- one folder up
+local Grid = require('../../grid.cells')    -- two folders up, then grid/cells.lua
+local Nav = require('./nodes.navMap')       -- subfolder: nodes/navMap.lua
+```
+
+- `./` is the folder of the calling file, each `../` goes one folder up; the remainder is an
+  ordinary dotted name. Use absolute `source.*` names for modules more than two folders away.
+- Inside a scene the base is the scene root (the same tree `require('scene.…')` addresses), so a
+  scene stays valid wherever it is packed. Engine modules are still required absolutely.
+- The caller is found from its file, so never tail-call it: write `return (require('./part'))`.
+- Plugin manifests use the same form for their modules (`nodes = { NavMap = './nodes.navMap' }`),
+  relative to the plugin folder.
+- Implementation: `source/katsa/core/relativeRequire.lua`, installed over `require` by the host
+  boot and by the standalone katsa test runner.

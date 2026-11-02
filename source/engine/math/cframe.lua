@@ -1,8 +1,8 @@
-local Array = require('source.engine.math.array')
+local Array = require('./array')
 -- Rigid transforms: row-major matrices, column vectors, positive Z forward.
 -- Scale belongs to Node3D.scale, never to a CFrame. Angles in this API are radians.
-local Math = require('source.engine.math.math3d')
-local V = require('source.engine.math.vector3')
+local Math = require('./math3d')
+local V = require('./vector3')
 
 local CFrame = {}
 CFrame.__index = CFrame

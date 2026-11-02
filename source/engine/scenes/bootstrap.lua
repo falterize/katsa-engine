@@ -1,13 +1,13 @@
-local Runtime = require('source.engine.core.runtime')
-local Manager = require('source.engine.core.sceneManager')
-local Display = require('source.engine.core.displayDpi')
+local Runtime = require('../core.runtime')
+local Manager = require('../core.sceneManager')
+local Display = require('../core.displayDpi')
 
 local Bootstrap = {}
 
 function Bootstrap.install(project, options)
     options = options or {}
     katsa.errorhandler = function(message)
-        return require('source.engine.debug.errorScreen').create(
+        return require('../debug.errorScreen').create(
             debug.traceback(tostring(message), 2)
         )
     end
@@ -15,8 +15,8 @@ function Bootstrap.install(project, options)
     Runtime.frameRateLimit = Runtime.validateFrameRateLimit(project.frameRateLimit or 0)
     local createScene = options.createScene
         or function(owner, source)
-            local Loader = require('source.engine.scenes.loader')
-            return require('source.engine.scenes.host').new(
+            local Loader = require('./loader')
+            return require('./host').new(
                 owner,
                 Loader.open(source, nil, project.sharedAssets or 'assets')
             )
@@ -26,7 +26,7 @@ function Bootstrap.install(project, options)
     local testing = false
     local smoke, frames = false, 0
     local windowFocused, windowVisible = true, true
-    katsa.run = require('source.engine.core.frameLoop').run
+    katsa.run = require('../core.frameLoop').run
 
     Runtime.activeScene = function()
         return manager and manager.stack[#manager.stack]
@@ -65,7 +65,7 @@ function Bootstrap.install(project, options)
             options.beforeLoad(arguments)
         end
         if not testing and not smoke then
-            require('source.engine.debug.session').start()
+            require('../debug.session').start()
         end
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
@@ -241,7 +241,7 @@ function Bootstrap.install(project, options)
                 return 1
             end
         end
-        return require('source.engine.debug.errorScreen').create(traceback)
+        return require('../debug.errorScreen').create(traceback)
     end
 end
 

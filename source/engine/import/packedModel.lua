@@ -1,10 +1,10 @@
-local unpack = require('source.engine.math.array').unpack
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local unpack = require('../math.array').unpack
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
 -- Optional build-time sidecar. Source hashing prevents stale geometry from loading.
 local JSON = require('vendor.json')
-local Geometry = require('source.engine.graphics.geometry.primitives')
-local M = require('source.engine.math.math3d')
+local Geometry = require('../graphics.geometry.primitives')
+local M = require('../math.math3d')
 
 local Packed = {}
 
@@ -18,7 +18,7 @@ function Packed.write(model, source, destination)
         sourceHash = katsa.data.hash('sha256', assert(katsa.filesystem.read(source))),
     }
     header.sourceHash = katsa.data.encode('string', 'hex', header.sourceHash)
-    header.sourceFingerprint = require('source.engine.core.fingerprint').of(
+    header.sourceFingerprint = require('../core.fingerprint').of(
         assert(katsa.filesystem.read(source))
     )
     for i, n in ipairs(model.nodes) do
@@ -111,7 +111,7 @@ function Packed.try(path, resources)
     -- Sidecars carry a fast fingerprint of the source; older ones fall back to the SHA-256.
     local source = assert(katsa.filesystem.read(path))
     if header.sourceFingerprint then
-        if require('source.engine.core.fingerprint').of(source) ~= header.sourceFingerprint then
+        if require('../core.fingerprint').of(source) ~= header.sourceFingerprint then
             return
         end
     elseif
@@ -214,7 +214,7 @@ function Packed.try(path, resources)
             node = part.node and model.nodes[part.node],
         }
     end
-    require('source.engine.animation.skeleton.rig').initialize(model)
+    require('../animation.skeleton.rig').initialize(model)
     model:update(0)
     return model
 end

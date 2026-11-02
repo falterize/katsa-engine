@@ -1,8 +1,8 @@
-local ipairs = require('source.engine.math.array').ipairs
-local pairs = require('source.engine.math.array').pairs
+local ipairs = require('../math.array').ipairs
+local pairs = require('../math.array').pairs
 -- Install one cohesive responsibility on the public class.
-local Capture = require('source.engine.input.uiCapture')
-local Routing = require('source.engine.input.pointerRouting')
+local Capture = require('./uiCapture')
+local Routing = require('./pointerRouting')
 local hasWorldCamera, visualPanelAt = Routing.hasWorldCamera, Routing.visualPanelAt
 local Pointers = {}
 
@@ -13,7 +13,7 @@ function Pointers.install(Input)
             self:cancel(id)
         end
         local node = scene.ui and scene.ui:hit(x, y)
-        local focused = require('source.engine.ui.widgets.textFocus').current
+        local focused = require('../ui.widgets.textFocus').current
         if focused and focused ~= node then
             focused:blur()
         end
@@ -70,7 +70,7 @@ function Pointers.install(Input)
         local covered = worldUICovered or scene.ui and scene.ui:blocksWorldClick(x, y)
         local detector = not covered
             and hasWorldCamera(scene)
-            and require('source.engine.world.picking').detector(scene.world, scene.camera, x, y)
+            and require('../world.picking').detector(scene.world, scene.camera, x, y)
         local pending = detector and { detector = detector, startX = x, startY = y, moved = false }
         if not self.layout or not hasWorldCamera(scene) then
             if pending then
@@ -173,7 +173,7 @@ function Pointers.install(Input)
             if
                 not blocked
                 and hasWorldCamera(scene)
-                and require('source.engine.world.picking').detector(
+                and require('../world.picking').detector(
                         scene.world,
                         scene.camera,
                         x,

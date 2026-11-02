@@ -1,8 +1,8 @@
-local Array = require('source.engine.math.array')
-local ipairs = require('source.engine.math.array').ipairs
+local Array = require('../../math.array')
+local ipairs = require('../../math.array').ipairs
 -- A reusable graph widget edits serializable sequences, not executable callbacks.
-local Node = require('source.engine.nodes')
-local Sequence = require('source.engine.animation.sequence')
+local Node = require('../../nodes')
+local Sequence = require('../../animation.sequence')
 
 local Curve = Node.define('CurveEditor2D', 'Frame')
 Curve.interactive = true
@@ -125,7 +125,7 @@ function Curve:pointer(ui, phase, x, y, id)
                     return
                 end
             end
-            best = require('source.engine.editor.curves.sequenceModel').insert(
+            best = require('./sequenceModel').insert(
                 self.points,
                 t,
                 self.interpolation
