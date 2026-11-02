@@ -20,18 +20,31 @@ function Net.browse(options)
         end,
         update = function()
             list = {}
+            -- One server answers every query path (broadcast and loopback), from different
+            -- source addresses. Collapse those replies into a single entry, preferring the
+            -- network address over 127.0.0.1 so other machines can use it too.
+            local byKey = {}
             for _, server in ipairs(browser:update()) do
                 local name, port, players, maxPlayers, game =
                     server.info:match('^(.-)|(%d+)|(%d+)|(%d+)|(.*)$')
                 if name then
-                    list[#list + 1] = {
-                        name = name,
-                        address = server.address,
-                        port = tonumber(port),
-                        players = tonumber(players),
-                        maxPlayers = tonumber(maxPlayers),
-                        game = game,
-                    }
+                    local key = name .. '|' .. port .. '|' .. game
+                    local known = byKey[key]
+                    if not known then
+                        known = { loopbackOnly = true }
+                        byKey[key] = known
+                        list[#list + 1] = known
+                    end
+                    local loopback = server.address:match('^127%.') ~= nil
+                    if not loopback or known.address == nil then
+                        known.name = name
+                        known.address = server.address
+                        known.port = tonumber(port)
+                        known.players = tonumber(players)
+                        known.maxPlayers = tonumber(maxPlayers)
+                        known.game = game
+                        known.loopbackOnly = loopback
+                    end
                 end
             end
             return list

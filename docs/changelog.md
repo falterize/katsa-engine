@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Fixed objects vanishing while the camera moves (depth prepass wrote into a depth-only target that fell back to the screen).
+- Fixed flyingAudio crash (non-finite velocity on the first frame).
+- LAN server list shows one entry per server; connection timeouts now report address, port and connection state.
 - Fixed shadows everywhere: `setCanvas({ depthstencil = canvas })` without a color canvas was treated as "no canvas", so the shadow pass drew into the screen and the atlas stayed empty (the whole receiving area was shadowed). Depth-only targets are now supported, `clear(false, false, depth)` parses `false` as "skip color", and clearing honours the scissor box (needed for atlas tiles).
 - Fixed the hard seam across big floors with normal maps: the tangent-frame degeneracy threshold in `world.glsl` was absolute and switched the normal map off along a line of constant depth.
 - `Node:clone(properties, parent)`: deep copy of a node and its descendants (like Roblox `Instance:Clone()`). `properties` overrides fields, e.g. `vehicle:clone({ Name = 'ClonedTest' })`; `parent` defaults to the source's parent. Names registered per world (meshes) must stay unique, so a copy of `Wheel` becomes `Wheel_2`. Built from the Workspace property schema, so runtime caches and native handles are never copied.

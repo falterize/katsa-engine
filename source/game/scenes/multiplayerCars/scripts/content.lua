@@ -134,6 +134,7 @@ function Session:startClient(address, port, name)
     end)
     self.client = client
     self.mode = 'connecting'
+    self.targetAddress, self.targetPort = address, port
     self.connectTime = 0
     self.menu:setStatus(('Connecting to %s:%d ...'):format(address, port))
     client:connect()
@@ -252,7 +253,17 @@ function Session:update(dt)
             self.menu:setVisible(false)
             self.hud:setVisible(true)
         elseif self.client.client.rejection or self.connectTime > 6 then
-            local reason = self.client.client.rejection or 'No answer from the server'
+            local peer = self.client.client.host and self.client.client.host.server
+            local reason = self.client.client.rejection
+            if not reason then
+                reason = ('No answer from %s:%s (connection %s). Check that the host is still running, the address and port are right, and that the firewall allows UDP %s.'):format(
+                    tostring(self.targetAddress),
+                    tostring(self.targetPort),
+                    peer and peer:getState() or 'unknown',
+                    tostring(self.targetPort)
+                )
+            end
+            print('[multiplayerCars] ' .. reason)
             self:leave(reason)
         end
         return
