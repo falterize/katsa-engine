@@ -163,7 +163,7 @@ function ArenaView.build(scene)
     environment.fog.offset = 20
     environment.fog.maxOpacity = 0.85
     local shadows = environment.shadows
-    shadows.enabled, shadows.resolution, shadows.distance = true, 2048, 60
+    shadows.enabled, shadows.resolution, shadows.distance = true, 1024, 60
     shadows.fadeDistance, shadows.near = 12, 0.05
     shadows.bias, shadows.normalBias = 0.001, 0.015
     require('source.engine.composition.mesh').create(world, {
