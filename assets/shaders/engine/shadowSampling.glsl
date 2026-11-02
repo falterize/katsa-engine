@@ -103,6 +103,7 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
     }
     return mix(1.0, visibility, shadowParameters.z);
 }
+int debugCascade = 0;
 float directionalVisibility(int light, vec3 normal, vec3 towardLight) {
     int base = int(lightShadowData[light].x);
     for(int cascade=0; cascade<3; cascade++) {
@@ -115,6 +116,7 @@ float directionalVisibility(int light, vec3 normal, vec3 towardLight) {
                 float nextVisibility = shadowVisibility(base + cascade + 1, shadowMatrix(base + cascade+1)*vec4(worldPosition+normal*shadowParameters.y,1.0), normal, towardLight, true, cascade + 1);
                 visibility = mix(visibility, nextVisibility, smoothstep(0.8, 1.0, edge));
             }
+            debugCascade = cascade + 1;
             return visibility;
         }
     }

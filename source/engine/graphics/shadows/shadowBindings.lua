@@ -20,6 +20,9 @@ function ShadowBindings.install(Shadows)
                     or 1
             end
         end
+        if shader:hasUniform('normalDebug') then
+            shader:send('normalDebug', lighting.debug and lighting.debug.normalView == true)
+        end
         if shader:hasUniform('shadowDebug') then
             shader:send('shadowDebug', lighting.debug and lighting.debug.shadowView == true)
         end
