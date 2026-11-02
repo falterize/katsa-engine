@@ -68,6 +68,18 @@ local function category(key)
 end
 local Inspector = {}
 
+-- The nearest ancestor with Interactable off, if any. Such an ancestor disables input for the
+-- whole branch below it, so the node's own Interactable setting has no effect.
+function Inspector.interactableBlocker(node)
+    local ancestor = node and node.parent
+    while ancestor do
+        if ancestor.interactable == false then
+            return ancestor
+        end
+        ancestor = ancestor.parent
+    end
+end
+
 function Inspector.install(Workspace)
     function Workspace:select(node, preserveScroll)
         local oldScroll = preserveScroll and self.properties.scrollY or 0
@@ -126,15 +138,28 @@ function Inspector.install(Workspace)
                             y = y + 48
                         else
                             local compact = field.kind ~= 'vector' or field.colorMaximum ~= nil
+                            -- Interactable is cascading: an ancestor that has it off blocks this node
+                            -- (and everything inside it), whatever its own value says.
+                            local blocker = field.key == 'interactable'
+                                and Inspector.interactableBlocker(node)
+                            local blockedHint = blocker
+                                and ('Blocked: ancestor "%s" has Interactable off, so this node and its '
+                                    .. 'descendants take no input.'):format(tostring(blocker.name))
                             self.ui:text({
                                 position = { 0, 8, 0, y },
                                 size = compact and { 0.42, -12, 0, 40 } or { 1, -16, 0, 24 },
-                                text = field.key,
+                                text = blocker and (field.key .. '  !') or field.key,
+                                textColor = blocker and { 1, 0.72, 0.2 } or nil,
                                 onPress = function()
+                                    if blockedHint then
+                                        self.status.text = blockedHint
+                                    end
                                     self:showHint(field)
                                 end,
                                 onEnter = function()
-                                    if field.hint then
+                                    if blockedHint then
+                                        self.status.text = blockedHint
+                                    elseif field.hint then
                                         self.status.text = field.hint
                                     end
                                 end,

@@ -19,6 +19,19 @@ function Tests:shot(name)
     end
 end
 
+-- A screen point where two fingers `width` px apart touch no interactable UI.
+function Tests:freeSpot(ui, width)
+    local w, h = katsa.graphics.getDimensions()
+    for y = h * 0.35, h * 0.8, 20 do
+        for x = 20, w - width - 20, 20 do
+            if not ui:blocksWorldClick(x, y, true) and not ui:blocksWorldClick(x + width, y, true) then
+                return x, y
+            end
+        end
+    end
+    return 20, 20
+end
+
 function Tests:startRemote()
     local World3D = require('source.engine.world.world')
     local world = World3D.new(self.host.world.resources, nil, {
@@ -286,28 +299,45 @@ function Tests:draw()
         -- Phone toggles: tapping Run / Crouch latches the input.
         session.hud.runButton.onPress()
         session.hud.crouchButton.onPress()
-        session:updateWalker(0.016, nil, nil)
+        host.input:update(0.016)
         self:check(
             walker.input.sprint and walker.input.crouch,
             'the Run and Crouch buttons latch sprint and crouch'
         )
         session.hud.runButton.onPress()
         session.hud.crouchButton.onPress()
-        session:updateWalker(0.016, nil, nil)
+        host.input:update(0.016)
         self:check(
             not walker.input.sprint and not walker.input.crouch,
             'tapping the buttons again releases them'
         )
+        -- The on-screen joystick (Move action) drives the car and the walker like the keys.
+        local heldW = host.input.actions.keys.w
+        host.input.actions.keys.w = nil
+        host.input.axisX, host.input.axisY = -0.5, 0.8 -- the on-screen stick
+        host.input:update(0.016)
+        local drive = session:input()
+        self:check(
+            math.abs(drive.throttle - 0.8) < 1e-6 and math.abs(drive.steer + 0.5) < 1e-6,
+            'the joystick steers the car'
+        )
+        self:check(
+            math.abs(walker.input.forward - 0.8) < 1e-6 and math.abs(walker.input.right + 0.5) < 1e-6,
+            'the joystick moves the walker'
+        )
+        host.input.axisX, host.input.axisY = 0, 0
+        host.input.actions.keys.w = heldW
         -- Zoom: buttons and a two-finger pinch move the orbit camera.
         local before = session.orbit.distance
         session.hud.zoomIn.onPress()
         self:check(session.orbit.distance < before, 'the zoom button brings the camera closer')
         session.hud.zoomOut.onPress()
         session.hud.zoomOut.onPress()
-        session:pointerpressed(1, 100, 100)
-        session:pointerpressed(2, 200, 100)
+        local fx, fy = self:freeSpot(session.scene.ui, 260)
+        session:pointerpressed(1, fx, fy)
+        session:pointerpressed(2, fx + 100, fy)
         local mid = session.orbit.distance
-        session:pointermoved(2, 300, 100)
+        session:pointermoved(2, fx + 200, fy)
         self:check(session.orbit.distance < mid, 'spreading two fingers zooms in')
         session:pointerreleased(1)
         session:pointerreleased(2)
@@ -316,12 +346,24 @@ function Tests:draw()
         host:wheelmoved(0, 1)
         self:check(session.orbit.distance < wheelBefore, 'the mouse wheel zooms through the host')
         local pinchBefore = session.orbit.distance
-        host:pointerpressed(11, 100, 100)
-        host:pointerpressed(12, 200, 100)
-        host:pointermoved(12, 320, 100, 120, 0)
-        host:pointerreleased(11, 100, 100)
-        host:pointerreleased(12, 320, 100)
+        host:pointerpressed(11, fx, fy)
+        host:pointerpressed(12, fx + 100, fy)
+        host:pointermoved(12, fx + 220, fy, 120, 0)
+        host:pointerreleased(11, fx, fy)
+        host:pointerreleased(12, fx + 220, fy)
         self:check(session.orbit.distance < pinchBefore, 'a pinch zooms through the host')
+        -- The wheel belongs to the UI over any interactable element; a branch with Interactable
+        -- off takes no input, so the camera zooms there again.
+        local ui, button = session.scene.ui, session.hud.sitButton
+        local bx, by = ui:position(button)
+        local sx, sy = ui.offsetX + (bx + 6) * ui.scale, ui.offsetY + (by + 6) * ui.scale
+        self:check(ui:blocksWorldClick(sx, sy, true), 'a visible HUD button blocks the camera zoom')
+        session.hud.root.interactable = false
+        self:check(
+            not ui:blocksWorldClick(sx, sy, true),
+            'Interactable off on an ancestor frees the wheel for the camera'
+        )
+        session.hud.root.interactable = true
         -- World TimeScale also paces the server while the window is unfocused.
         local seenStep
         local original = session.updateInBackground
@@ -349,7 +391,7 @@ function Tests:draw()
                 walker:place(run[1], Arena.ground(run[1], run[2]) + 0.2, run[2])
                 session.orbit.yaw = run[3]
                 keys.w = true
-                session.runToggled = sprint
+                host.input.runToggled = sprint
                 local streak, landed = 0, false
                 for _ = 1, 360 do
                     session:update(1 / 60)
@@ -363,7 +405,7 @@ function Tests:draw()
                 end
             end
         end
-        session.runToggled = false
+        host.input.runToggled = false
         keys.w = nil
         self:check(
             worst <= 2,

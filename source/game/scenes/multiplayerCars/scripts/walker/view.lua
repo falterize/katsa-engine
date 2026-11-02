@@ -43,9 +43,9 @@ function WalkerView:update(dt)
     local state = WalkerEntity.states[model.state or 1]
     local riding = state == 'drive' or state == 'passenger'
     self.root.visible = not riding
-    self.root.position = { model.x, model.y, model.z }
+    self.root.position = { model.rx or model.x, model.ry or model.y, model.rz or model.z }
     -- Engine yaw runs opposite to the model heading.
-    self.root.rotation = { 0, -(model.heading or 0), 0 }
+    self.root.rotation = { 0, -(model.rheading or model.heading or 0), 0 }
     if riding or not tracks.Idle then
         return
     end
@@ -59,7 +59,8 @@ function WalkerView:update(dt)
     local jumpWeight =
         math.min(1, math.max(0, self.jumpTime / 0.1), math.max(0, (duration - self.jumpTime) / 0.1))
     local ground = 1 - self.airBlend
-    local walk, crouch = model.walkBlend or 0, model.crouchBlend or 0
+    local walk, crouch =
+        model.rwalk or model.walkBlend or 0, model.rcrouch or model.crouchBlend or 0
     tracks.Idle.weight = ground * (1 - crouch) * (1 - walk)
     tracks.Walk.weight = ground * (1 - crouch) * walk
     tracks.Crouch.weight = ground * crouch

@@ -3,7 +3,9 @@ local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
 local ArenaView = require('scene.scripts.view.arenaView')
 local CarView = require('scene.scripts.view.carView')
+local RenderPose = require('scene.scripts.game.renderPose')
 local Orbit = require('scene.scripts.cameras.orbit')
+local Input = require('scene.scripts.controller.input')
 local Walker = require('scene.scripts.walker.controller')
 local WalkerView = require('scene.scripts.walker.view')
 local GameServer = require('scene.scripts.game.gameServer')
@@ -38,7 +40,13 @@ function Session.new(scene)
             lanTimer = 0,
         }, Session)
     -- Meters, real gravity: the terrain and walls are static bodies the vehicles will drive on.
-    scene:createPhysics({ unitsPerMeter = 1, gravity = { 0, -9.81, 0 }, backend = 'jolt' })
+    scene:createPhysics({
+        unitsPerMeter = 1,
+        gravity = { 0, -9.81, 0 },
+        backend = 'jolt',
+        fixedDelta = 1 / 60,
+        interpolate = true,
+    })
     ArenaView.build(scene)
     -- The on-foot player steps with the physics world; the car server and client chain after it.
     scene.physics.beforeStep = function(_, dt)
@@ -66,12 +74,17 @@ function Session.new(scene)
         end,
         -- Toggles for phones: no need to keep a finger on the button.
         run = function()
-            self.runToggled = not self.runToggled
-            self.hud:setToggles(self.runToggled, self.crouchToggled)
+            local input = self.scene.input
+            input.runToggled = not input.runToggled
+            self.hud:setToggles(input.runToggled, input.crouchToggled)
         end,
         crouch = function()
-            self.crouchToggled = not self.crouchToggled
-            self.hud:setToggles(self.runToggled, self.crouchToggled)
+            local input = self.scene.input
+            input.crouchToggled = not input.crouchToggled
+            self.hud:setToggles(input.runToggled, input.crouchToggled)
+        end,
+        menu = function()
+            self.scene.input:toggleMenu()
         end,
         zoom = function(amount)
             self.orbit:zoom(amount)
@@ -105,9 +118,7 @@ function Session.new(scene)
     scene.camera = scene.world:setCamera(self.camera)
     -- The StareShooter orbit camera: dragging (mouse or touch) orbits, the wheel zooms.
     self.orbit = Orbit.new(scene, self.camera)
-    scene.input.actions:on('Look', function(_, look)
-        self.orbit:look(look[1], look[2])
-    end)
+    scene.input = Input.new(scene, self)
     self:applyLaunchArguments()
     return self
 end
@@ -177,19 +188,16 @@ function Session:applyLaunchArguments()
     end
 end
 
+-- Keys and the on-screen joystick (the engine's `Move` action: x = right, z = forward) both
+-- steer; whichever is pushed harder wins, so the two never add up beyond full deflection.
+-- Throttle/steer or forward/right from the keys and the on-screen joystick (zero in a menu).
+function Session:moveAxes()
+    return self.scene.input:axes()
+end
+
 function Session:input()
     local keys = self.scene.input.actions.keys
-    local throttle = (keys.w or keys.up) and 1 or 0
-    if keys.s or keys.down then
-        throttle = throttle - 1
-    end
-    local steer = 0
-    if keys.d or keys.right then
-        steer = steer + 1
-    end
-    if keys.a or keys.left then
-        steer = steer - 1
-    end
+    local throttle, steer = self:moveAxes()
     return { throttle = throttle, steer = steer, nitro = keys.lshift == true or keys.rshift == true }
 end
 
@@ -328,14 +336,24 @@ end
 
 -- The camera follows the car's roof line and swings behind it while driving.
 function Session:updateCamera(dt, car)
-    self.orbit:setMode('car', car.heading)
-    self.orbit:update(dt, car.x, car.y + 1.3, car.z, car.heading, math.abs(car.speed or 0))
+    local orbit = self.orbit
+    orbit:setMode('car', car.rheading or car.heading)
+    orbit:follow(dt, car.rheading or car.heading, car.speed)
+    orbit:update(car.rx or car.x, (car.ry or car.y) + 1.3, car.rz or car.z)
 end
 
--- Third-person camera around the on-foot player (the StareShooter pivot at chest height).
+-- Third-person camera around the on-foot player: the StareShooter pivot (chest height of the
+-- interpolated body) and its distance.
 function Session:updateWalkerCamera(dt, walker)
-    self.orbit:setMode('walk')
-    self.orbit:update(dt, walker.x, walker.y + 1.4, walker.z)
+    local orbit = self.orbit
+    orbit:setMode('walk')
+    orbit:follow(dt, nil, 0)
+    local height = self.walker and self.walker.height or 2
+    orbit:update(
+        walker.rx or walker.x,
+        (walker.ry or walker.y) + 1 + (height - 2) / 2 + 0.5,
+        walker.rz or walker.z
+    )
 end
 
 -- With the window unfocused only the network side runs, so a hosted game keeps answering players.
@@ -363,7 +381,7 @@ local function pinchDistance(touches)
 end
 
 function Session:pointerpressed(id, x, y)
-    if id ~= 'mouse' then
+    if id ~= 'mouse' and not self.scene.ui:blocksWorldClick(x, y, true) then
         self.touches = self.touches or {}
         self.touches[id] = { x, y }
         self.pinchLast = pinchDistance(self.touches)
@@ -392,28 +410,14 @@ end
 
 Session.pointercancelled = Session.pointerreleased
 
-function Session:wheelmoved(x, y)
-    if self.client then
-        self.orbit:zoom(y)
-        return true
-    end
-    return self.scene.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
-end
-
 -- Feeds the keys to the walker, and keeps its riding state in step with the seat the server gave.
 function Session:updateWalker(dt, car, seat)
     local walker = self.walker
     if not walker then
         return
     end
-    local keys = self.scene.input.actions.keys
+    -- Keys, joystick and the toggles are read by the input (controller/input.lua).
     self.jumpHeld = math.max(0, (self.jumpHeld or 0) - dt)
-    local input = walker.input
-    input.forward = ((keys.w or keys.up) and 1 or 0) - ((keys.s or keys.down) and 1 or 0)
-    input.right = ((keys.d or keys.right) and 1 or 0) - ((keys.a or keys.left) and 1 or 0)
-    input.jump = keys.space == true or self.jumpHeld > 0
-    input.sprint = keys.lshift == true or keys.rshift == true or self.runToggled == true
-    input.crouch = keys.lctrl == true or keys.c == true or self.crouchToggled == true
     walker.cameraYaw = math.rad(self.orbit.yaw)
     if car then
         walker:setSeat(car.x, car.y - car.config.rideHeight + 0.5, car.z)
@@ -424,6 +428,11 @@ function Session:updateWalker(dt, car, seat)
     elseif walker:isRiding() then
         walker:place(walker.model.x, walker.model.y + 0.5, walker.model.z)
     end
+end
+
+-- Tab / the menu button: the cursor is back (open) or captured again (closed).
+function Session:onMenuToggled(open)
+    self.hud:setMenuOpen(open)
 end
 
 -- Physics of the hosted or driven cars and the network traffic of the server and client.
@@ -439,6 +448,40 @@ function Session:updateNetwork(dt)
     end
     if self.client then
         self.client:update(dt)
+    end
+    self:updateRenderPoses()
+end
+
+-- Bodies simulated by this process are drawn between their last two physics steps.
+function Session:updateRenderPoses()
+    local physics = self.scene.physics
+    local alpha = physics and physics.interpolationAlpha or 1
+    local function pose(model, simulated)
+        if simulated then
+            RenderPose.sample(model)
+            RenderPose.apply(model, alpha)
+        elseif model._renderPose then
+            RenderPose.clear(model)
+        end
+    end
+    local client = self.client
+    if client then
+        for netId, car in pairs(client.cars) do
+            local body = client.bodies[netId] or (self.server and self.server.bodies[netId])
+            pose(car, body ~= nil and body.mode == 'dynamic')
+        end
+        for _, walker in pairs(client.walkers) do
+            local own = self.walker ~= nil and walker == self.walker.model
+            if own and not self.walker:isRiding() then
+                -- The local character is drawn from its interpolated body, as in StareShooter.
+                local x, y, z, heading, walk, crouch = self.walker:renderPose()
+                walker.rx, walker.ry, walker.rz = x, y, z
+                walker.rheading, walker.rwalk, walker.rcrouch = heading, walk, crouch
+            elseif walker.rx then
+                RenderPose.clear(walker)
+                walker.rwalk, walker.rcrouch = nil, nil
+            end
+        end
     end
 end
 

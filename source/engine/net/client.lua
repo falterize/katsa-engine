@@ -379,13 +379,18 @@ function Client:update(dt)
         return
     end
     self.clock = self.clock + dt
-    for event in self.host:poll() do
+    local host = self.host
+    for event in host:poll() do
         if event.type == 'connect' then
             sendHello(self)
         elseif event.type == 'receive' then
             handleMessage(self, event.data)
         elseif event.type == 'disconnect' then
             finish(self, event.reason)
+        end
+        if self.host ~= host then
+            -- A handler (the scene leaving after the host went away) already closed the client.
+            return
         end
     end
     if self.state == 'connected' then
@@ -402,7 +407,9 @@ function Client:update(dt)
         interpolate(self)
     end
     self.link:update(dt)
-    self.host:flush()
+    if self.host then
+        self.host:flush()
+    end
 end
 
 function Client:disconnect()
