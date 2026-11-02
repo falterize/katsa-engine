@@ -2,6 +2,7 @@
 
 Renderer properties are editable in Workspace Lighting / Render. `renderDensity`
 uses the device DPI scale by default (clamped to 1..3); `msaa` defaults to 2 on desktop, except Intel UHD (0); mobile also defaults to 0.
+`vsync` (boolean, default: the window's current setting) switches vertical sync at runtime; the Environment setting overrides the window.
 Intel UHD retains the fastest native-resolution path to preserve frame rate.
 MSAA smooths geometry edges at additional GPU cost. Set it to 0 for the fastest
 native-resolution path or 4 for stronger edge smoothing.

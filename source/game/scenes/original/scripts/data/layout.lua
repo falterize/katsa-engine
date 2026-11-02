@@ -3,7 +3,7 @@ return {
         { kind = 'cube', args = { 1, { 0, 0, 25 }, { 10 * 2, 10 * 2, 10 * 2 }, 'stone' } },
         {
             kind = 'cube',
-            args = { 'Susie', { 40, 0, 25 }, { 15 * 2, 15 * 2, 15 * 2 }, 'grass' },
+            args = { 'Susie', { 40, 0, 25 }, { 15 * 2, 15 * 2, 15 * 2 }, 'deltarune' },
         },
         {
             kind = 'cube',

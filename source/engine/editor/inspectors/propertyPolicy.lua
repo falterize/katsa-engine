@@ -20,6 +20,7 @@ local fields = {
     'maxMeshDistance',
     'renderDensity',
     'msaa',
+    'vsync',
     'actualMSAA',
     'maxRenderPixels',
     'maxRenderBytes',

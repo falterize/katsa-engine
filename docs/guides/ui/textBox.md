@@ -12,6 +12,7 @@ local input = scene.ui:create('TextBox', {
     position = { 0, 20, 0, 100 },
     size = { 0, 300, 0, 36 },
     fontSize = 16,
+    font = 'shared://fonts/test-font', -- optional; same path rules as images, extension optional
     backgroundColor = { 0.08, 0.13, 0.19 },
     backgroundTransparency = 0,
     maxLength = 40,

@@ -299,15 +299,54 @@ function UI:font(size)
     return self.fonts[key]
 end
 
-function UI:rasterFont(size)
+-- Resolves a font property such as 'shared://fonts/name' (extension optional) to file data.
+function UI:fontData(path)
+    local resources = self.resources
+    local base = resources and resources.canonical and resources:canonical(path) or path
+    local fs = katsa.filesystem
+    local candidates = { base, base .. '.ttf', base .. '.otf' }
+    -- 'shared://assets/fonts/x' is accepted as a spelling of 'shared://fonts/x'.
+    local collapsed = base:gsub('^assets/assets/', 'assets/')
+    if collapsed ~= base then
+        candidates[#candidates + 1] = collapsed
+        candidates[#candidates + 1] = collapsed .. '.ttf'
+        candidates[#candidates + 1] = collapsed .. '.otf'
+    end
+    for _, candidate in ipairs(candidates) do
+        if fs.isFile(candidate) then
+            return fs.read(candidate), candidate
+        end
+    end
+    error('Font file not found: ' .. path)
+end
+
+function UI:rasterFont(size, path)
     local density = self.density
     local pixels = math.max(1, math.floor((size or 22) * density + 0.5))
-    local key = 'pixels:' .. pixels
+    local key = (path and path ~= '' and path .. '@' or '') .. 'pixels:' .. pixels
     local font = self.fonts[key]
     if not font then
-        -- Keep glyph advances and atlas quads in physical pixels. LÃƒâ€“VE 11.x
-        -- rounds fractional-DPI metrics in logical units before drawing them.
-        font = self.resources:own(katsa.graphics.newFont(pixels, 'normal', 1))
+        -- Keep glyph advances and atlas quads in physical pixels; fractional-DPI
+        -- metrics would otherwise be rounded in logical units before drawing.
+        if path and path ~= '' then
+            self.fontFiles = self.fontFiles or {}
+            local data = self.fontFiles[path]
+            if not data then
+                local ok, loaded = pcall(self.fontData, self, path)
+                if ok then
+                    data = katsa.filesystem.newFileData(loaded, 'font')
+                else
+                    -- A missing font is reported once and falls back to the default.
+                    katsa.log.warn(tostring(loaded), 'UI', false)
+                    data = false
+                end
+                self.fontFiles[path] = data
+            end
+            if data then
+                font = self.resources:own(katsa.graphics.newFont(data, pixels, 'normal', 1))
+            end
+        end
+        font = font or self.resources:own(katsa.graphics.newFont(pixels, 'normal', 1))
         font:setFilter('linear', 'linear')
         self.fonts[key] = font
     end

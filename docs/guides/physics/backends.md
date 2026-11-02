@@ -73,7 +73,7 @@ source/engine/physics/
 
 Third-party Jolt headers, generated FFI declarations, binaries, licenses and provenance are under `vendor/joltPhysics`, alongside `vendor/oimoPhysics`. The adapter files above are project code. See [dependency layout](../../../vendor/README.md).
 
-`nodes/physics/3d/constraints.lua` resolves attachments, observes input changes and owns joint lifetime. Backend-specific configuration stays in the appropriate adapter. The old `physics/constraintInputs.lua` path remains a one-line compatibility import.
+`nodes/physics/3d/constraints3D.lua` (formerly `constraints.lua`, kept as an alias) resolves attachments, observes input changes and owns joint lifetime. Backend-specific configuration stays in the appropriate adapter. The old `physics/constraintInputs.lua` path remains a one-line compatibility import.
 
 ## Adapter contract
 

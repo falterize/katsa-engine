@@ -42,6 +42,11 @@ function RenderPreparation.install(Renderer)
         for key, value in pairs(world.environment.render) do
             self[key] = value
         end
+        if self.vsync ~= nil and self.vsync ~= self.appliedVSync then
+            -- Vertical sync is a window property; the Environment setting drives it.
+            katsa.window.setVSync(self.vsync == true)
+            self.appliedVSync = self.vsync
+        end
         Triangles.begin()
         local prepareStart = katsa.timer.getTime()
         self:resize(

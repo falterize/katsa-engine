@@ -55,6 +55,9 @@ function C.initialize(self)
             maxRenderPixels = require('source.engine.graphics.quality.renderQuality').defaultPixels(),
             maxRenderBytes = 402653184,
         }
+    if self.render.vsync == nil then
+        self.render.vsync = (katsa.window.getVSync() or 0) ~= 0
+    end
     if self.render.depthPrepass == nil then
         self.render.depthPrepass = true
     end

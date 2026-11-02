@@ -21,7 +21,7 @@ require('./render.decal3D')
 require('./interactions.clickDetector3D')
 require('./physics.3d.body3D')
 require('./physics.3d.collider3D')
-require('./physics.3d.constraints')
+require('./physics.3d.constraints3D')
 require('./ui.screenUI')
 
 require('./audio.soundGroup')
