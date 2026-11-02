@@ -281,11 +281,11 @@ function GameServer:bindRemotes()
         return self:exit(player)
     end)
     -- A driver's client simulates its own car, so it reports the collisions it felt.
-    server:remote('impact'):onServer(function(player, netId, x, z, nx, nz, speed)
+    server:remote('impact'):onServer(function(player, netId, x, z, nx, nz, speed, y, ny)
         local car = self.cars[netId]
         if car and self.server:getAuthority(netId) == player and #car.impacts < 8 then
             car.impacts[#car.impacts + 1] =
-                { x = x, z = z, nx = nx, nz = nz, speed = math.min(speed, 40) }
+                { x = x, y = y, z = z, nx = nx, ny = ny, nz = nz, speed = math.min(speed, 40) }
         end
     end)
     server:remote('nitroAd'):onRequest(function(player, token)
@@ -318,6 +318,15 @@ function GameServer:grantNitro(player, token)
     return true
 end
 
+-- Server events (players joining/leaving, kicks, damage) go to the console and to `onEvent`.
+function GameServer:log(format, ...)
+    local text = select('#', ...) > 0 and format:format(...) or format
+    katsa.log.log('[server] ' .. text, 'multiplayerCars')
+    if self.onEvent then
+        self.onEvent(text)
+    end
+end
+
 function GameServer:addDent(netId, car, impact, now)
     if car.lastDent and now - car.lastDent < DENT_COOLDOWN then
         return
@@ -325,11 +334,17 @@ function GameServer:addDent(netId, car, impact, now)
     if car.dents:addImpact(impact) then
         car.lastDent = now
         local list = car.dents:serialize()
+        local lost = car.damage:hit(impact, car.wheels)
+        car.detached = car.damage.detached
         local entity = self.server:findEntity(netId)
         if entity then
             entity.args.dents = list
+            entity.args.detached = car.detached
         end
-        self.server:remote('dents'):fireAll(netId, list)
+        self.server:remote('dents'):fireAll(netId, list, car.detached)
+        for _, index in ipairs(lost or {}) do
+            self:log('car %d lost wheel %d (%.1f m/s hit)', netId, index, impact.speed)
+        end
     end
 end
 

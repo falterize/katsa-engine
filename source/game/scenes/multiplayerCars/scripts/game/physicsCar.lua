@@ -167,7 +167,8 @@ function PhysicsCar:step(dt)
     if boosting then
         model.nitro = math.max(0, model.nitro - config.nitroDrain * dt)
     end
-    local top = config.maxSpeed * (boosting and config.nitroSpeedMultiplier or 1)
+    local lostWheels = require('scene.nodes.vehicle.damage').countDetached(model.detached)
+    local top = config.maxSpeed * (boosting and config.nitroSpeedMultiplier or 1) * (1 - 0.15 * lostWheels)
     local limit = config.maxSteer / (1 + math.abs(speed) / config.steerSpeedFalloff)
     model.steerAngle =
         approach(model.steerAngle, math.max(-1, math.min(1, input.steer or 0)) * limit, 180, dt)
@@ -185,7 +186,8 @@ function PhysicsCar:step(dt)
         local ra, rb = self.rayA, self.rayB
         ra[1], ra[2], ra[3] = mx, my, mz
         rb[1], rb[2], rb[3] = mx - up[1] * rayLength, my - up[2] * rayLength, mz - up[3] * rayLength
-        local hit = body.physics:raycast(ra, rb, self.filter, self.hit)
+        local gone = math.floor((model.detached or 0) / 2 ^ (i - 1)) % 2 == 1
+        local hit = not gone and body.physics:raycast(ra, rb, self.filter, self.hit) or nil
         local length = t.restLength + t.droop
         self.grounded[i] = false
         if hit then
@@ -298,23 +300,26 @@ function PhysicsCar:readState()
     local prev = self.previous
     local dvx, dvy, dvz = v[1] - prev[1], v[2] - prev[2], v[3] - prev[3]
     if self.hasPrevious and next(self.node.body:getContacts()) then
-        local dh = math.sqrt(dvx * dvx + dvz * dvz)
-        if dh > self.tuning.impactSpeed then
-            -- The push direction (into the body) in car space, with the contact on the opposite side.
-            local nx, nz = dvx / dh, dvz / dh
-            local lx, lz = dot({ nx, 0, nz }, right), dot({ nx, 0, nz }, forward)
-            local length = math.sqrt(lx * lx + lz * lz)
-            if length > 1e-4 then
-                lx, lz = lx / length, lz / length
-                local size = self.tuning.size
-                self.impacts[#self.impacts + 1] = {
-                    x = -lx * size[1] * 0.5,
-                    z = -lz * size[3] * 0.5,
-                    nx = lx,
-                    nz = lz,
-                    speed = dh,
-                }
-            end
+        local dv = math.sqrt(dvx * dvx + dvy * dvy + dvz * dvz)
+        if dv > self.tuning.impactSpeed then
+            -- The push direction (into the body) in car space: x right, y up, z forward. The
+            -- contact sits on the opposite side of the hull, at the box surface.
+            local nx, ny, nz = dvx / dv, dvy / dv, dvz / dv
+            local lx = nx * right[1] + ny * right[2] + nz * right[3]
+            local ly = nx * up[1] + ny * up[2] + nz * up[3]
+            local lz = nx * forward[1] + ny * forward[2] + nz * forward[3]
+            local size = self.tuning.size
+            local hw, hh, hl = size[1] * 0.5, size[2] * 0.5, size[3] * 0.5
+            local reach = math.max(math.abs(lx) / hw, math.abs(ly) / hh, math.abs(lz) / hl, 1e-4)
+            self.impacts[#self.impacts + 1] = {
+                x = -lx / reach,
+                y = 0.55 - ly / reach, -- the hull's center is 0.55 m above the ground plane
+                z = -lz / reach,
+                nx = lx,
+                ny = ly,
+                nz = lz,
+                speed = dv,
+            }
         end
     end
     prev[1], prev[2], prev[3] = v[1], v[2], v[3]
