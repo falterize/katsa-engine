@@ -118,8 +118,20 @@ function PhysicsCar:setMode(mode)
 end
 
 -- Moves a follow-mode body to the replicated pose.
-function PhysicsCar:follow()
+function PhysicsCar:follow(dt)
     local model = self.model
+    -- A teleported kinematic body has no velocity of its own; derive it from the pose change so
+    -- characters standing on this car are carried along (Body3D:getPointVelocity reads it).
+    local last = self.lastFollow
+    if last and dt and dt > 0 then
+        local velocity = self.followVelocity or {}
+        self.followVelocity = velocity
+        velocity[1], velocity[2], velocity[3] =
+            (model.x - last[1]) / dt, (model.y - last[2]) / dt, (model.z - last[3]) / dt
+        self.node.body:setVelocity(velocity)
+    end
+    self.lastFollow = last or {}
+    self.lastFollow[1], self.lastFollow[2], self.lastFollow[3] = model.x, model.y, model.z
     local angles = orientation(model.heading, model.pitch or 0, model.roll or 0, self.angles)
     self.node.position = { model.x, model.y, model.z }
     self.node.rotation = { angles[1], angles[2], angles[3] }
@@ -149,7 +161,7 @@ end
 -- Applies all car forces for one physics step.
 function PhysicsCar:step(dt)
     if self.mode == 'follow' then
-        return self:follow()
+        return self:follow(dt)
     end
     local t, model, config = self.tuning, self.model, self.config
     local body = self.node.body

@@ -16,7 +16,7 @@ return {
             drawCells = true,
             drawLinks = true,
             drawPaths = true,
-            drawDistance = 80,
+            drawDistance = 40,
         },
         draw = 'source.plugins.pathfinding.debug',
     },
