@@ -59,6 +59,7 @@ function D.open(workspace)
                 else
                     profile:startRecording({
                         scene = workspace.scene.zone,
+                        loading = profile.loading,
                         started = os.date('!%Y-%m-%dT%H:%M:%SZ'),
                     })
                 end
@@ -94,6 +95,21 @@ function D.open(workspace)
             end,
         },
     })
+    local loading = profile.loading
+    if loading and loading.phases and #loading.phases > 0 then
+        local lines = { string.format('Loading %s: %.0f ms', tostring(loading.scene), loading.total or 0) }
+        for _, phase in ipairs(loading.phases) do
+            lines[#lines + 1] = string.format('  %-34s %.1f ms', phase.name, phase.ms)
+        end
+        popup.ui:text({
+            position = { 0, 8, 0, y },
+            size = { 1, -16, 0, 16 * #lines },
+            text = table.concat(lines, '\n'),
+            fontSize = 12,
+            align = 'left',
+        }, popup.body)
+        y = y + 16 * #lines + 6
+    end
     local summary = profile:summary()
     local frame = summary.frame
     popup.ui:text({

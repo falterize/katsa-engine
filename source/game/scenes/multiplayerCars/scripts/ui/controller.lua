@@ -1,3 +1,4 @@
+-- UI controller: chat, speaking indicator and the player list (Tab).
 -- Chat and the player list. Chat lines fade after a few seconds unless the menu is open; Enter
 -- opens the input box (and frees the cursor), Tab shows the player list, where the host can kick.
 local Social = {}
