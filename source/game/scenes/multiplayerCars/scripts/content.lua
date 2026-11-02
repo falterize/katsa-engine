@@ -14,7 +14,7 @@ local AdsConfig = require('scene.scripts.game.adsConfig')
 local Interface = require('scene.scripts.ui.interface')
 local Menu = Interface.Menu
 local Hud = Interface.Hud
-local Social = require('scene.scripts.ui.social')
+local Social = require('scene.scripts.ui.controller')
 local Voice = require('scene.scripts.game.voice')
 
 local Session = {}

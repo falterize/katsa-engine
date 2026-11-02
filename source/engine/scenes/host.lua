@@ -25,11 +25,14 @@ function Host.new(manager, package, options)
 end
 
 function Host:load()
+    local profiler = self.manager.profiler
+    profiler:beginLoad(self.package.settings.id)
     self.settings = self.package.settings
     self.zone = self.settings.id
     self.resources =
         self.manager.resources:scope(Loader.manifest({}, self.settings.assets), self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
+    profiler:markLoad('Resources and audio')
     local lighting =
         Loader.configure(require('source.engine.lighting.defaults').create(), self.settings.world)
     self.world = World.new(self.resources, lighting)
@@ -42,14 +45,18 @@ function Host:load()
     self.ui.layoutMode = 'Viewport'
     self.input = Input.new(self)
     self.systems = Systems.new(self)
+    profiler:markLoad('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
     require('source.engine.plugins').activate(self.world, self.settings.plugins)
+    profiler:markLoad('Node types and plugins')
     self.lifecycle = require('source.engine.scenes.layout').lifecycle(self.package)
     self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
+    profiler:markLoad('Scene create script')
     local layer = self.ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self.ui.content)
     self.statistics = Statistics.new(self, layer)
     self.console = require('source.engine.debug.consolePanel').new(self.ui, layer)
     self:resize(katsa.graphics.getDimensions())
+    profiler:markLoad('Overlays and layout')
 end
 
 function Host:createPhysics2D(options, ui)

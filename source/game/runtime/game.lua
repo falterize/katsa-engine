@@ -57,6 +57,8 @@ function Game:createPhysics(settings)
 end
 
 function Game:load()
+    local profiler = self.manager.profiler
+    profiler:beginLoad(self.options.package or self.zone)
     self.package = self.options._package
         or Loader.open(
             self.options.package or self.zone,
@@ -68,6 +70,7 @@ function Game:load()
     local manifest = Loader.manifest(require('source.game.data.manifest'), self.settings.assets)
     self.resources = self.manager.resources:scope(manifest, self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
+    profiler:markLoad('Open package, resources and audio')
     local environment =
         Loader.configure(require('source.game.data.settings').create(), self.settings.world)
     self.world = World3D.new(self.resources, environment)
@@ -97,9 +100,12 @@ function Game:load()
         zIndex = 50,
     })
     self.input = Input.new(self, self.controls)
+    profiler:markLoad('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
     require('source.engine.plugins').activate(self.world, self.settings.plugins)
+    profiler:markLoad('Node types and plugins')
     self.demo = Loader.create(self)
+    profiler:markLoad('Scene create script')
     self.debugOverlay = require('source.engine.debug.menu').new(self)
     local debugControls = self.ui:canvasGroup({
         position = { 0, 0, 0, 0 },

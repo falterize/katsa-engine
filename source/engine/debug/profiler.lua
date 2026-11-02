@@ -30,6 +30,7 @@ function Profiler.new()
         recording = nil,
         running = {},
         warned = {},
+        loading = {},
     }, Profiler)
 end
 
@@ -42,6 +43,32 @@ end
 function Profiler:finish(name, start)
     if start then
         self:sample(name, (katsa.timer.getTime() - start) * 1000)
+    end
+end
+
+-- Load phases. They are measured even while the profiler is off (a scene loads before anyone can
+-- switch it on), kept in `loading` and added to exports and the diagnostics panel:
+--   profiler:beginLoad('Scene multiplayerCars')
+--   ... open the package ...    profiler:markLoad('Open package')
+--   ... create the world ...    profiler:markLoad('Create world')
+-- Each mark records the time since the previous mark (or the begin) as one phase.
+function Profiler:beginLoad(scene)
+    self.loading = { scene = scene, phases = {}, started = katsa.timer.getTime() }
+    self.loadMark = self.loading.started
+end
+
+function Profiler:markLoad(name)
+    local now = katsa.timer.getTime()
+    local loading = self.loading
+    if not (loading and loading.phases and self.loadMark) then
+        return
+    end
+    local ms = (now - self.loadMark) * 1000
+    self.loadMark = now
+    loading.phases[#loading.phases + 1] = { name = name, ms = ms }
+    loading.total = (now - loading.started) * 1000
+    if self.enabled then
+        self:sample('Load: ' .. name, ms)
     end
 end
 
@@ -283,6 +310,13 @@ local function stageNames(recording)
     return names
 end
 
+function Profiler.loadingSummary(loading)
+    if not (loading and loading.phases) then
+        return nil
+    end
+    return { scene = loading.scene, total_ms = loading.total, phases = loading.phases }
+end
+
 -- format: 'json' (summary plus compact rows) or 'csv' (one line per frame).
 function Profiler.export(recording, format)
     local names = stageNames(recording)
@@ -302,6 +336,7 @@ function Profiler.export(recording, format)
             app_version = Version.value,
             scene = recording.meta.scene,
             started_utc = recording.meta.started,
+            loading = Profiler.loadingSummary(recording.meta.loading),
             columns = { 'frame', 'time_s', 'frame_ms', 'lua_kib', unpack(names) },
             summary = summary,
             rows = compact,

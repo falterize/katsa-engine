@@ -91,6 +91,7 @@ function Bootstrap.install(project, options)
             if argument == '--profile' then
                 manager.profiler:startRecording({
                     scene = source,
+                    loading = manager.profiler.loading,
                     started = os.date('!%Y-%m-%dT%H:%M:%SZ'),
                 })
             end
