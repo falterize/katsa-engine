@@ -116,6 +116,13 @@ function Session.new(scene)
                 self.client:sendChat(text)
             end
         end,
+        hostCommand = function(command)
+            if self.client then
+                self.client:hostCommand(command, function(ok, why)
+                    self.hud:flash(ok and 'Done' or ('Cannot: ' .. tostring(why)))
+                end)
+            end
+        end,
         kick = function(id)
             if self.client then
                 self.client:kickPlayer(id, function(ok, why)

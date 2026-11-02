@@ -64,7 +64,14 @@ end
 -- Uses `directory` itself as the save directory (the platform's per-app data path).
 function FS.setSaveDirectory(directory)
     state.saveFull = (directory:gsub('\\', '/'):gsub('/+$', ''))
-    state.saveRoot = state.saveRoot or state.saveFull
+    -- The platform path already ends with the identity (<org>/<identity>). Keep its parent as the
+    -- root so a later setIdentity() resolves to a sibling instead of nesting the identity twice.
+    local parent, leaf = state.saveFull:match('^(.*)/([^/]+)$')
+    if parent and leaf == state.identity then
+        state.saveRoot = parent
+    else
+        state.saveRoot = state.saveRoot or state.saveFull
+    end
 end
 
 function FS.setSaveRoot(directory)

@@ -4,6 +4,8 @@ local Scene = {}
 
 function Scene.create(scene, context)
     local Session = context:require('scripts.content')
+    -- Esc opens the pause menu without stopping time: the host's server must keep simulating.
+    require('source.game.runtime.pauseMenu').attach(scene, true)
     scene:preparePresentation()
     local state = Session.new(scene)
     context.instance = state

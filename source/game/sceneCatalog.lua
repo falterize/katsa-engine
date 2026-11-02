@@ -42,6 +42,5 @@ for _, entry in ipairs(Catalog.entries) do
 end
 
 Catalog.byId.menu = { id = 'menu', path = 'source/game/scenes/menu', interface = true }
-Catalog.byId.pause = { id = 'pause', path = 'source/game/scenes/pause', interface = true }
 
 return Catalog

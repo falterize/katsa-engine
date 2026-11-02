@@ -134,6 +134,9 @@ function Host:pointercancelled(id)
 end
 
 function Host:keypressed(key)
+    if self.pauseMenu and self.pauseMenu:keypressed(key) then
+        return
+    end
     if self.input:keypressed(key) then
         return
     end
@@ -161,6 +164,9 @@ function Host:release()
         return
     end
     self.released = true
+    if self.pauseMenu then
+        self.pauseMenu:close()
+    end
     if self.console then
         self.console:release()
     end

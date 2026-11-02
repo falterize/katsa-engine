@@ -281,6 +281,11 @@ function GameClient:sendChat(text)
 end
 
 -- Host only: disconnects a player. callback(ok, reason).
+-- Host-only tools: 'clearCars', 'clearBots', 'spawnCar', 'spawnBot'.
+function GameClient:hostCommand(command, callback)
+    self.client:remote('hostCommand'):request(callback or function() end, command)
+end
+
 function GameClient:kickPlayer(id, callback, reason)
     self.client:remote('kick'):request(callback or function() end, id, reason or '')
 end

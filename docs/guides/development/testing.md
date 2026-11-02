@@ -95,7 +95,7 @@ Use `--test-v102` for the retained 196 rendering/UI/Oimo checks and
 `--test-v106.3` for the current typography/scrolling pixel policy.
 
 `--test-v106.5` runs the retained package/backends coverage plus all
-29 scene folder contracts, lifecycle-only exports, menu/catalog/pause startup,
+29 scene folder contracts, lifecycle-only exports, menu/catalog startup,
 private node ownership and folder/ZIP/.katsa/TAR/TAR.GZ/TGZ/7z lifecycle fixtures.
 It checks discovery, deterministic order, initially disabled startup, runtime
 enabling, all three update phases, exactly one simulation/UI update, private

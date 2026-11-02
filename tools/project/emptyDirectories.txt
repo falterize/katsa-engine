@@ -123,13 +123,6 @@ source/game/scenes/particles/assets/models
 source/game/scenes/particles/assets/shaders
 source/game/scenes/particles/assets/textures
 source/game/scenes/particles/nodes
-source/game/scenes/pause/assets/audio
-source/game/scenes/pause/assets/fonts
-source/game/scenes/pause/assets/models
-source/game/scenes/pause/assets/shaders
-source/game/scenes/pause/assets/textures
-source/game/scenes/pause/nodes
-source/game/scenes/pause/systems
 source/game/scenes/physics/assets/audio
 source/game/scenes/physics/assets/fonts
 source/game/scenes/physics/assets/models

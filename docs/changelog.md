@@ -4,6 +4,10 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Pause menu is a module (`source/game/runtime/pauseMenu.lua`): an overlay inside the scene that sets the time scale to 0 while open and restores it. `attach(scene, true)` in a scene's `main.lua` keeps time running (multiplayerCars), so the host's server never freezes. The separate `pause` scene was removed.
+- multiplayerCars: host tools in the Tab panel (spawn car, spawn bot, clear bots, clear all cars; `remote('hostCommand')`, host-only), several bots, grass ground texture.
+- Fixed the save directory nesting the identity twice (`Katsa/katsa-engine/katsa-engine`); it is now `Katsa/katsa-engine`. Files written by older builds stay in the nested folder.
+- Follow-mode cars carry riders, pathfinding debug performance and one switch, voice meters, microphone checks, profiler scopes.
 - Chat (Enter, `[HOST]` tag, rate limited), player list (Tab) with host-only Kick, unique nicknames, kick reasons (`Server:kick(player, 'reason')` reaches the client), console events for join/leave/spawn/sit/exit/kick/wheel loss.
 - Voice chat: push-to-talk (V), `katsa.audio.openCapture` / `newQueueSource`, μ-law codec, unreliable remotes (`remote:unreliable()`), speaking indicator, 3D playback.
 - Profiler load phases (`profiler:beginLoad/markLoad`, shown in the panel and exported as `loading`).
