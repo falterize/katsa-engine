@@ -46,6 +46,13 @@ function Session.new(scene)
         leave = function()
             self:leave()
         end,
+        pathDebug = function()
+            self.pathDebug = not self.pathDebug
+            self.hud:setPathDebug(self.pathDebug)
+            if not self.pathDebug then
+                self:hidePathMarkers()
+            end
+        end,
     })
     self.hud:setVisible(false)
     local ok, browser = pcall(Net.browse)
@@ -63,8 +70,57 @@ function Session.new(scene)
         drawDistance = 400,
     })
     scene.camera = scene.world:setCamera(self.camera)
+    -- Dragging (mouse or touch) orbits the chase camera around the car.
+    self.orbit = { yaw = 0, pitch = 0 }
+    scene.input.actions:on('Look', function(_, look)
+        self.orbit.yaw = self.orbit.yaw - look[1] * 0.4
+        self.orbit.pitch = math.max(-20, math.min(55, self.orbit.pitch + look[2] * 0.3))
+        self.orbitIdle = 0
+    end)
     self:applyLaunchArguments()
     return self
+end
+
+-- Debug markers for the bot's route: small spheres on the terrain, plus one on the bot.
+function Session:hidePathMarkers()
+    for _, marker in ipairs(self.pathMarkers or {}) do
+        marker.visible = false
+    end
+end
+
+function Session:updatePathMarkers()
+    local route = self.client and self.client.botRoute
+    if not route then
+        return
+    end
+    local Arena = require('scene.scripts.game.arena')
+    self.pathMarkers = self.pathMarkers or {}
+    local count = #route.points / 2 + 1
+    for index = 1, math.max(count, #self.pathMarkers) do
+        local marker = self.pathMarkers[index]
+        if index <= count and not marker then
+            marker = self.scene.world:create('Mesh3D', {
+                name = 'PathMarker' .. index,
+                kind = 'sphere',
+                size = { 0.7, 0.7, 0.7 },
+                color = { 1, 0.9, 0.2 },
+                unlit = true,
+                castShadow = false,
+            })
+            self.pathMarkers[index] = marker
+        end
+        if marker then
+            marker.visible = index <= count
+            if index <= count then
+                local x, z = route.points[index * 2 - 1], route.points[index * 2]
+                if index == count then
+                    x, z = route.x, route.z
+                    marker.color = route.mode == 'chase' and { 1, 0.2, 0.2 } or { 0.2, 1, 0.4 }
+                end
+                marker.position = { x, Arena.ground(x, z) + 0.9, z }
+            end
+        end
+    end
 end
 
 -- --host [port], --connect address[:port], --name Name
@@ -205,9 +261,17 @@ end
 
 function Session:updateCamera(dt, car)
     local camera = self.camera
-    local heading = math.rad(car.heading)
+    -- The orbit offset eases back behind the car when the player stops dragging.
+    local orbit = self.orbit
+    self.orbitIdle = (self.orbitIdle or 0) + dt
+    if self.orbitIdle > 3 then
+        local ease = math.min(1, dt * 2)
+        orbit.yaw, orbit.pitch = orbit.yaw * (1 - ease), orbit.pitch * (1 - ease)
+    end
+    local heading = math.rad(car.heading + orbit.yaw)
     local fx, fz = math.sin(heading), math.cos(heading)
-    local target = { car.x - fx * 11, car.y + 5, car.z - fz * 11 }
+    local rise = 5 + orbit.pitch * 0.25
+    local target = { car.x - fx * 11, car.y + rise, car.z - fz * 11 }
     local p = camera.position
     local k = math.min(1, dt * 6)
     local x = p[1] + (target[1] - p[1]) * k
@@ -279,6 +343,9 @@ function Session:update(dt)
     local _, car, seat = self.client:getCar()
     for _, view in pairs(self.views) do
         view:update(dt)
+    end
+    if self.pathDebug then
+        self:updatePathMarkers()
     end
     if car then
         self:updateCamera(dt, car)

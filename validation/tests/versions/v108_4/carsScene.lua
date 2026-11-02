@@ -61,6 +61,18 @@ function Tests:draw()
         self:check(car and car.speed > 8, 'holding W drives the car')
         self:shot('driving')
         host.input.actions.keys.w = nil
+        -- Dragging orbits the camera; the path debug button shows the bot's route on the client.
+        host.input.actions:look(30, 10)
+        session.hud.debugPath.onPress()
+    elseif frame == 335 then
+        self:check(math.abs(session.orbit.yaw) > 1, 'dragging orbits the chase camera')
+        self:check(
+            session.pathDebug and session.pathMarkers and #session.pathMarkers >= 1,
+            'path debug draws the bot route markers on the client'
+        )
+        self:check(session.hud.debugPath.text == 'Path debug: ON', 'the path debug button shows its state')
+        self:shot('pathDebug')
+        session.hud.debugPath.onPress()
     elseif frame == 340 then
         local _, car = session.client:getCar()
         car.dents:addImpact({ x = 0, z = 2.1, nx = 0, nz = -1, speed = 15 })

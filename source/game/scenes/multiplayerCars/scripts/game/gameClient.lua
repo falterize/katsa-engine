@@ -56,6 +56,9 @@ function GameClient.new(context, options)
             end
         end
     end)
+    client:remote('botPath'):onClient(function(mode, x, z, flat)
+        self.botRoute = { mode = mode, x = x, z = z, points = flat }
+    end)
     client:remote('dents'):onClient(function(netId, list)
         local car = self.cars[netId]
         if car then

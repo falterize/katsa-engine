@@ -41,8 +41,41 @@ function CarView.new(scene, netId, model)
             position = { offset[1], 0.4, offset[2] },
         }, self.root)
     end
+    self:buildNitro(world, model)
     self:refreshDents()
     return self
+end
+
+local function ramp(a, b, c)
+    return { { time = 0, value = a }, { time = 0.5, value = b }, { time = 1, value = c } }
+end
+
+-- Two exhaust flames, lit only while the nitro tank is draining.
+function CarView:buildNitro(world, model)
+    self.flames = {}
+    local rearZ = (model.wheels[3] and model.wheels[3][2] or -1.3) - 1.5
+    for side = 1, 2 do
+        local ok, emitter = pcall(function()
+            return world:create('ParticleEmitter3D', {
+                name = 'Nitro' .. self.netId .. '_' .. side,
+                position = { side == 1 and -0.45 or 0.45, 0.45, rearZ },
+                rate = 0,
+                lifetime = { 0.25, 0.5 },
+                speed = { 5, 9 },
+                startSize = { 0.5, 0.9 },
+                spread = 8,
+                blendMode = 'Add',
+                drag = 0.5,
+                lifetimeBindings = {
+                    size = ramp(1, 0.7, 0.1),
+                    color = ramp({ 0.5, 0.8, 1 }, { 0.15, 0.4, 1 }, { 0.05, 0.05, 0.4 }),
+                },
+            }, self.root)
+        end)
+        if ok then
+            self.flames[#self.flames + 1] = emitter
+        end
+    end
 end
 
 function CarView:refreshDents()
@@ -62,6 +95,11 @@ function CarView:update(dt)
         wheel.rotation = { self.spin, steer, 0 }
         local offset = car.wheels[index]
         wheel.position = { offset[1], 0.4 + car.spring[index], offset[2] }
+    end
+    local burning = self.lastNitro ~= nil and car.nitro < self.lastNitro - 1e-4 and car.speed > 1
+    self.lastNitro = car.nitro
+    for _, flame in ipairs(self.flames or {}) do
+        flame.rate = burning and 70 or 0
     end
     if self.dentCount ~= #car.dents.dents or self.dirty then
         self:refreshDents()
