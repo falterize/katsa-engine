@@ -7,13 +7,6 @@ local Residency = {}
 function Residency.prepare(self, world, lights, time, settings)
     -- Reserve six adjacent tiles per resident source. Membership changes reuse
     -- vacant/evicted slots without relocating surviving maps or resizing storage.
-    local capacity = math.max(
-        1,
-        lights.limit
-            or world.lighting.lightSettings and world.lighting.lightSettings.maxActiveLights
-            or 32
-    )
-    capacity = math.min(32, capacity)
     self.residents = self.residents or {}
     local wanted = self.wanted or {}
     self.wanted = wanted
@@ -30,6 +23,28 @@ function Residency.prepare(self, world, lights, time, settings)
             wanted[light] = true
         end
     end
+    -- Size the atlas for the lights that actually cast shadows, not the global light cap: 32
+    -- reserved point lights meant a 14336 x 14336 depth map (about 820 MB) even for two casters.
+    -- Capacity grows in steps of four and only shrinks once demand falls below half of it.
+    local limit = math.min(
+        32,
+        math.max(
+            1,
+            lights.limit
+                or world.lighting.lightSettings and world.lighting.lightSettings.maxActiveLights
+                or 32
+        )
+    )
+    local demand = 0
+    for _ in pairs(wanted) do
+        demand = demand + 1
+    end
+    local capacity = math.min(limit, math.max(4, math.ceil(demand / 4) * 4))
+    local previous = self.capacity
+    if previous and previous <= limit and previous >= capacity and capacity * 2 > previous then
+        capacity = previous
+    end
+    self.capacity = capacity
     for index, record in pairs(self.residents) do
         if record.light.destroyed or index > capacity then
             self.residents[index] = nil

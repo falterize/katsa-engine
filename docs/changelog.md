@@ -9,6 +9,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 - Audio: OpenAL EFX is implemented (reverb, echo, chorus, distortion auxiliary sends and low/high/band-pass filters). Previously only pitch worked.
 - Debug menu toggles show their real state on open; crash screen renders tabs correctly; the console (F1 or Debug > Console) is available in the game runtime and receives journal warnings.
 - Shader layers now work like layer groups: `Default2D`/`Default3D` start layers, a symmetric interaction matrix (add, rename, delete, priority) replaces Suppress, and `Shader2D.affects3D` is gone (a Shader2D processes 3D when its layer interacts with `Default3D`).
+- Performance: fixed a Lua heap leak in UI change tracking (a per-frame table literal grew the compiled snapshot cache, ~0.085 MB/frame in physics2D); shadow atlas sized by demand; redundant framebuffer rebinds skipped; editor panels draw without offscreen groups; GC tuned at boot.
 - Fixed objects vanishing while the camera moves (depth prepass wrote into a depth-only target that fell back to the screen).
 - Fixed flyingAudio crash (non-finite velocity on the first frame).
 - LAN server list shows one entry per server; connection timeouts now report address, port and connection state.

@@ -40,6 +40,14 @@ function Drawing.install(UI)
         if alpha <= 0 then
             return
         end
+        -- A fully opaque group that opted out (editor panels) is drawn straight to the target:
+        -- the offscreen copy would only cost a full-screen clear and composite every frame.
+        if alpha >= 1 and n._noOffscreen then
+            n._drawingGroup = true
+            self:drawNode(n)
+            n._drawingGroup = nil
+            return
+        end
         -- Capture in native pixels, then restore logical geometry with one inverse scale.
         -- Snapping the composite prevents a second interpolation of already rasterized glyphs.
         local width = math.max(1, math.ceil(n._width * self.density))

@@ -94,6 +94,11 @@ end
 
 -- Returns the process exit status.
 function Boot.start(host)
+    -- LuaJIT's default collector lets a game with a small live heap balloon to hundreds of MB of
+    -- garbage and then pause for tens of milliseconds. Start cycles earlier and sweep faster so
+    -- the heap stays near its live size and each step is short.
+    collectgarbage('setpause', 120)
+    collectgarbage('setstepmul', 400)
     local Native = require('source.katsa.core.native')
     local exeDir = exeDirectory(host.exe)
     Native.addDirectory(exeDir)

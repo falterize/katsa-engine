@@ -20,7 +20,12 @@ function Popup.new(workspace, field)
         self.rampSnapshot = self.target:exportData()
     end
     self.group =
-        self.ui:canvasGroup({ name = 'PropertyPopup', size = { 1, 0, 1, 0 }, zIndex = 1000 })
+        self.ui:canvasGroup({
+            name = 'PropertyPopup',
+            size = { 1, 0, 1, 0 },
+            zIndex = 1000,
+            _noOffscreen = true,
+        })
     self.ui:button({
         size = { 1, 0, 1, 0 },
         text = '',

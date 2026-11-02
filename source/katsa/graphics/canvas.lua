@@ -43,6 +43,9 @@ local function sharedDepthStencil(w, h, msaa)
 end
 
 local function dropFbo(id)
+    if id == currentFbo then
+        currentFbo = -1 -- the deleted target is no longer bound; the next switch must bind
+    end
     for key, value in pairs(fboCache) do
         if value == id then
             fboCache[key] = nil
@@ -111,6 +114,9 @@ Core.onAttachmentDeleted = function(kind, id)
         for piece in key:gmatch('[^,]+') do
             if piece == token or piece == 'd' .. token then
                 fboCache[key] = nil
+                if fbo == currentFbo then
+                    currentFbo = -1
+                end
                 Core.forgetFramebuffer(fbo)
                 gl.glDeleteFramebuffers(1, ffi.new('GLuint[1]', fbo))
                 break
@@ -162,13 +168,19 @@ end
 
 function G.setCanvasInternal(canvases, options)
     State.requireReady()
-    State.flush()
     options = options or {}
     if canvases == nil then
-        S.canvases, S.canvasOptions = nil, nil
-        currentFbo = 0
-        Core.bindFramebuffer(0)
-        stats.canvasswitches = stats.canvasswitches + 1
+        -- push('all')/pop() restore the target every time; re-selecting the target that is
+        -- already bound must not break the batch or touch the framebuffer.
+        if currentFbo ~= 0 then
+            State.flush()
+            S.canvases, S.canvasOptions = nil, nil
+            currentFbo = 0
+            Core.bindFramebuffer(0)
+            stats.canvasswitches = stats.canvasswitches + 1
+        else
+            S.canvases, S.canvasOptions = nil, nil
+        end
     else
         local first = canvases[1] or assert(options.depthstencil, 'setCanvas needs a target')
         for _, c in ipairs(canvases) do
@@ -192,11 +204,16 @@ function G.setCanvasInternal(canvases, options)
             local message = 'Canvas cannot be used as a render target (framebuffer status 0x%X)'
             error(message:format(status), 3)
         end
-        S.canvases, S.canvasOptions = canvases, options
-        currentFbo = fbo
-        Core.bindFramebuffer(fbo)
-        stats.canvasswitches = stats.canvasswitches + 1
-        markTargetsDirty()
+        if fbo == currentFbo then
+            S.canvases, S.canvasOptions = canvases, options
+        else
+            State.flush()
+            S.canvases, S.canvasOptions = canvases, options
+            currentFbo = fbo
+            Core.bindFramebuffer(fbo)
+            stats.canvasswitches = stats.canvasswitches + 1
+            markTargetsDirty()
+        end
     end
     Frame.applyViewport()
     RenderState.applyScissor()
