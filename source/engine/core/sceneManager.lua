@@ -157,6 +157,17 @@ function Manager:requestSwitch(factory, ...)
     self.pendingSwitch = { factory = factory, arguments = { ... } }
 end
 
+-- Whether the top scene keeps its full update while the window is unfocused or minimised. The
+-- debug menu sets `backgroundOverride` (true/false) for the current run; otherwise the scene's
+-- `runInBackground` setting decides (default false).
+function Manager:runsInBackground()
+    if self.backgroundOverride ~= nil then
+        return self.backgroundOverride
+    end
+    local scene = self.stack[#self.stack]
+    return scene ~= nil and scene.settings ~= nil and scene.settings.runInBackground == true
+end
+
 function Manager:update(dt, realDt)
     if self.drawFinishedAt then
         self.frameGapMilliseconds = (katsa.timer.getTime() - self.drawFinishedAt) * 1000
@@ -170,7 +181,7 @@ function Manager:update(dt, realDt)
     self.frameDelta = frameDelta
     self.frameTime = self.frameTime + frameDelta
     local scene = self.stack[#self.stack]
-    if scene and self.focused and scene.update then
+    if scene and (self.focused or self:runsInBackground()) and scene.update then
         self._busy = true
         local ok, err =
             pcall(scene.update, scene, self.time:update(dt, scene.simulation == false), dt)
@@ -248,7 +259,7 @@ function Manager:focus(focused)
     end
     local top = self.stack[#self.stack]
     if top and top.audio then
-        if focused then
+        if focused or self:runsInBackground() then
             top.audio:resume()
         else
             top.audio:pause()

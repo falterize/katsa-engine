@@ -14,6 +14,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 - flyingAudio: the kinematic cube is driven per fixed physics step along the exact path and rendered with physics interpolation, which removes the jerky motion.
 - Graphics: `push('all')`/`pop()` and the state setters (blend, colour mask, scissor, stencil, depth, cull, winding, wireframe) no longer flush the batch or call GL when the state is unchanged; the stack snapshot no longer copies tables.
 - Hosting: an unfocused or minimised window no longer freezes a hosted game. Scenes can define `updateInBackground(dt, realDt)`; the scene manager calls it instead of `update` while the window has no focus, so joining players still get answers when several apps share one PC. multiplayerCars runs its network and physics there.
+- Scene `settings.lua.runInBackground` and a debug menu toggle ("Keep running when the window is unfocused") keep the full scene update running without window focus.
 - Loading: model sidecars and extracted native libraries are validated with `engine/core/fingerprint.lua` (an exact full-pass fingerprint, 10 ms for 8 MB) instead of the pure-Lua SHA-256, which took most of the load time of model scenes.
 - Physics: static `Mesh` colliders (triangle meshes) for terrain, with a focused test.
 - Audio: OpenAL EFX is implemented (reverb, echo, chorus, distortion auxiliary sends and low/high/band-pass filters). Previously only pitch worked.

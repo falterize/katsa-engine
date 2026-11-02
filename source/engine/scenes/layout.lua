@@ -16,6 +16,10 @@ local Layout = {
 }
 
 function Layout.validate(root, settings)
+    assert(
+        settings.runInBackground == nil or type(settings.runInBackground) == 'boolean',
+        'runInBackground must be a boolean'
+    )
     if settings.frameRateLimit ~= nil then
         require('source.engine.core.runtime').validateFrameRateLimit(settings.frameRateLimit)
     end
