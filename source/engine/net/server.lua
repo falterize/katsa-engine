@@ -135,7 +135,8 @@ function Server:sendRemote(player, name, count, args)
     writer:u8(P.REMOTE)
     writer:string(name)
     writer:values(args, count)
-    send(player, writer, P.RELIABLE)
+    local remote = self.remotes[name]
+    send(player, writer, remote and remote.channel or P.RELIABLE)
 end
 
 -- Spawns an entity of a defined kind and replicates it. `args` reaches create() on every

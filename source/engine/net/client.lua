@@ -102,7 +102,8 @@ function Client:sendRemote(_, name, count, args)
     writer:u8(P.REMOTE)
     writer:string(name)
     writer:values(args, count)
-    send(self, writer, P.RELIABLE)
+    local remote = self.remotes[name]
+    send(self, writer, remote and remote.channel or P.RELIABLE)
 end
 
 function Client:sendRequest(name, callback, count, args)

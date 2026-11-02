@@ -8,6 +8,13 @@ function Remote.new(owner, name)
     return setmetatable({ owner = owner, name = name }, Remote)
 end
 
+-- Marks the remote as best-effort (no retransmission, may be dropped or reordered): for streams
+-- such as voice where an old packet is worthless.
+function Remote:unreliable()
+    self.channel = 3 -- Protocol.UNRELIABLE
+    return self
+end
+
 -- Server side
 function Remote:onServer(handler)
     self.serverHandler = handler

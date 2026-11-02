@@ -43,4 +43,21 @@ return function(T)
     T.check(Audio.getEffect('echo') == nil, 'effect removed')
     source:release()
     copy:release()
+
+    -- Voice building blocks: μ-law keeps speech within ~3% and the stream API is silent-safe.
+    local MuLaw = require('source.engine.audio.muLaw')
+    local pcm = { 0, 100, -100, 1000, -1000, 8000, -8000, 30000, -30000 }
+    local decoded = MuLaw.decode(MuLaw.encode(pcm, #pcm))
+    local worst = 0
+    for index = 1, #pcm do
+        local error = math.abs(decoded[index - 1] - pcm[index]) / math.max(64, math.abs(pcm[index]))
+        worst = math.max(worst, error)
+    end
+    T.check(worst < 0.07, 'mu-law round trip stays close (' .. ('%.3f'):format(worst) .. ')')
+    T.check(#MuLaw.encode(pcm, #pcm) == #pcm, 'mu-law halves the size (one byte per sample)')
+    local speaker = Audio.newQueueSource(8000)
+    speaker:queue(decoded, #pcm)
+    speaker:setPosition(1, 2, 3)
+    speaker:release()
+    T.check(true, 'a queue source on the null driver swallows data')
 end

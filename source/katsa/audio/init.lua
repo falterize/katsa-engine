@@ -2,7 +2,7 @@
 -- silent null driver used for servers and tests) turns it into sound.
 local State = require('source.katsa.audio.state')
 
-for _, name in ipairs({ 'control', 'source', 'listener', 'effects', 'spatial' }) do
+for _, name in ipairs({ 'control', 'source', 'listener', 'effects', 'spatial', 'stream' }) do
     require('source.katsa.audio.' .. name)
 end
 

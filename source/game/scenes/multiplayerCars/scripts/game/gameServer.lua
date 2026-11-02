@@ -314,6 +314,7 @@ function GameServer:bindRemotes()
                 { x = x, y = y, z = z, nx = nx, ny = ny, nz = nz, speed = math.min(speed, 40) }
         end
     end)
+    require('scene.scripts.game.voice').bindServer(self)
     server:remote('chat'):onServer(function(player, text)
         self:chat(player, text)
     end)

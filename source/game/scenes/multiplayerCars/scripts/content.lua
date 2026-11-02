@@ -15,6 +15,7 @@ local Interface = require('scene.scripts.ui.interface')
 local Menu = Interface.Menu
 local Hud = Interface.Hud
 local Social = require('scene.scripts.ui.social')
+local Voice = require('scene.scripts.game.voice')
 
 local Session = {}
 -- Exposed so tests can build a second, independent client and physics world.
@@ -273,6 +274,15 @@ function Session:startClient(address, port, name)
         end
     end)
     self.client = client
+    self.voice = Voice.new(client, {
+        positionOf = function(id)
+            for _, walker in pairs(client.walkers) do
+                if walker.playerId == id then
+                    return walker.x, walker.y + 1.5, walker.z
+                end
+            end
+        end,
+    })
     self.mode = 'connecting'
     self.targetAddress, self.targetPort = address, port
     self.connectTime = 0
@@ -303,6 +313,10 @@ function Session:join(address, port, name)
 end
 
 function Session:leave(message)
+    if self.voice then
+        self.voice:destroy()
+        self.voice = nil
+    end
     if self.client then
         self.client:disconnect()
         self.client = nil
@@ -468,6 +482,29 @@ function Session:onMenuToggled(open)
     self:refreshPlayers()
 end
 
+-- Push-to-talk (V, desktop only) and the speaking indicator.
+function Session:updateVoice(dt)
+    local voice = self.voice
+    if not voice or self.mode ~= 'playing' then
+        return
+    end
+    local input = self.scene.input
+    local held = not input.touchDevice
+        and input:playing()
+        and katsa.keyboard.isDown(input.talkKey or 'v')
+    voice:setTalking(held == true)
+    voice:update(dt)
+    local names = {}
+    for _, id in ipairs(voice:getSpeaking()) do
+        for _, player in ipairs(self.client:getPlayers()) do
+            if player.id == id then
+                names[#names + 1] = player.name
+            end
+        end
+    end
+    self.social:setSpeaking(names, voice:isTalking(), voice.capture ~= false)
+end
+
 -- Rebuilds the player list (names, [HOST] tag, Kick buttons for the host).
 function Session:refreshPlayers()
     local client = self.client
@@ -529,6 +566,7 @@ end
 function Session:update(dt)
     local keys = self.scene.input.actions.keys
     self:updateNetwork(dt)
+    self:updateVoice(dt)
     if self.mode == 'menu' then
         self.lanTimer = self.lanTimer - dt
         if self.browser then

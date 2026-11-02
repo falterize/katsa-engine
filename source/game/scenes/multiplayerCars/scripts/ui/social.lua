@@ -62,6 +62,15 @@ function Social.create(scene, callbacks)
     }, self.root)
     ui:create('UICorner', { radius = { 0, 8 } }, self.input)
 
+    self.speaking = ui:text({
+        position = { 0, 16, 0, 130 },
+        size = { 0, 360, 0, 28 },
+        text = '',
+        fontSize = 16,
+        align = 'left',
+        textColor = { 0.5, 1, 0.6 },
+        interactable = false,
+    }, self.root)
     self.players = styled(ui, ui:container({
         name = 'PlayersPanel',
         position = { 0.5, 0, 0.5, 0 },
@@ -116,6 +125,24 @@ function Social:update()
         self.log.text = shown
     end
     self.chat.visible = shown ~= '' or self.open or self.typing == true
+end
+
+-- Names currently speaking (and your own microphone state), shown top-left.
+function Social:setSpeaking(names, talking, available)
+    local parts = {}
+    if talking then
+        parts[#parts + 1] = 'You (mic on)'
+    end
+    for _, name in ipairs(names) do
+        parts[#parts + 1] = name
+    end
+    local text_ = #parts > 0 and ('Speaking: ' .. table.concat(parts, ', ')) or ''
+    if text_ == '' and available == false then
+        text_ = ''
+    end
+    if self.speaking.text ~= text_ then
+        self.speaking.text = text_
+    end
 end
 
 -- Menu open (cursor free): the full chat history and the player list are visible.
