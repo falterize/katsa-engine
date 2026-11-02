@@ -58,23 +58,24 @@ local function garageBoxes()
     local g = Arena.garage
     local r = g.ramp
     local boxes = {}
-    local function box(name, cx, cy, cz, sx, sy, sz, rotation, color)
-        boxes[#boxes + 1] = { name, { cx, cy, cz }, { sx, sy, sz }, rotation, color }
+    local function box(name, cx, cy, cz, sx, sy, sz, rotation, color, floor)
+        -- floor = the NavMap floor the box is ground of (the deck, curbs and ramp are floor 2)
+        boxes[#boxes + 1] = { name, { cx, cy, cz }, { sx, sy, sz }, rotation, color, floor }
     end
     local width, depth = g.x1 - g.x0, g.z1 - g.z0
     local centerX, centerZ = (g.x0 + g.x1) / 2, (g.z0 + g.z1) / 2
     local grey, dark = { 0.5, 0.5, 0.52 }, { 0.38, 0.38, 0.4 }
-    box('GarageDeck', centerX, g.deckY - g.thickness / 2, centerZ, width, g.thickness, depth, nil, grey)
+    box('GarageDeck', centerX, g.deckY - g.thickness / 2, centerZ, width, g.thickness, depth, nil, grey, 2)
     local c = g.curb
     local top = g.deckY + c / 2
-    box('GarageCurbS', centerX, top, g.z0 + 0.25, width, c, 0.5, nil, dark)
-    box('GarageCurbN', centerX, top, g.z1 - 0.25, width, c, 0.5, nil, dark)
-    box('GarageCurbW', g.x0 + 0.25, top, centerZ, 0.5, c, depth, nil, dark)
+    box('GarageCurbS', centerX, top, g.z0 + 0.25, width, c, 0.5, nil, dark, 2)
+    box('GarageCurbN', centerX, top, g.z1 - 0.25, width, c, 0.5, nil, dark, 2)
+    box('GarageCurbW', g.x0 + 0.25, top, centerZ, 0.5, c, depth, nil, dark, 2)
     -- The east curb has an opening where the ramp arrives.
     local south = (r.z0 - g.z0)
     local north = (g.z1 - r.z1)
-    box('GarageCurbES', g.x1 - 0.25, top, g.z0 + south / 2, 0.5, c, south, nil, dark)
-    box('GarageCurbEN', g.x1 - 0.25, top, g.z1 - north / 2, 0.5, c, north, nil, dark)
+    box('GarageCurbES', g.x1 - 0.25, top, g.z0 + south / 2, 0.5, c, south, nil, dark, 2)
+    box('GarageCurbEN', g.x1 - 0.25, top, g.z1 - north / 2, 0.5, c, north, nil, dark, 2)
     for index, column in ipairs(Arena.garageColumns()) do
         box('GarageColumn' .. index, column[1], (g.deckY - g.thickness) / 2, column[2], 1, g.deckY - g.thickness, 1, nil, dark)
     end
@@ -91,8 +92,9 @@ local function garageBoxes()
         slab,
         t,
         r.z1 - r.z0,
-        { 0, 0, math.deg(angle) },
-        grey
+        { 0, 0, -math.deg(angle) },
+        grey,
+        2
     )
     return boxes
 end
@@ -117,6 +119,7 @@ function ArenaView.buildPhysics(scene)
                 position = box[2],
                 size = box[3],
                 rotation = box[4],
+                navFloor = box[6],
             })
         end
         for index, obstacle in ipairs(Arena.obstacles) do

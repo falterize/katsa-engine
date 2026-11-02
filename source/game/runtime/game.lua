@@ -98,6 +98,7 @@ function Game:load()
     })
     self.input = Input.new(self, self.controls)
     self.package:registerNodes(self.world, self.settings.nodes or {})
+    require('source.engine.plugins').activate(self.world, self.settings.plugins)
     self.demo = Loader.create(self)
     self.debugOverlay = require('source.engine.debug.menu').new(self)
     local debugControls = self.ui:canvasGroup({

@@ -174,6 +174,13 @@ function Debug.new(scene)
     end, function()
         require('source.engine.cameras.debugCamera').toggle(scene)
     end)
+    for _, section in ipairs(require('source.engine.plugins').debugSections(scene.world)) do
+        toggle(section.title .. ' debug', function()
+            return section.settings.enabled == true
+        end, function()
+            section.settings.enabled = not section.settings.enabled
+        end)
+    end
     local physicsDebug = scene.world.environment.debug.physics
     local sliders = {}
     local debugSelected

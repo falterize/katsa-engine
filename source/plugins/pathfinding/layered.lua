@@ -58,6 +58,11 @@ local function decode(self, id)
     return level, rest % self.width + 1, math.floor(rest / self.width) + 1
 end
 
+-- Splits a node id into level, cellX, cellZ (used by debug views).
+function Layered:decode(id)
+    return decode(self, id)
+end
+
 -- blocked(level, x, z) -> bool and heightAt(level, x, z) -> y, both in world coordinates.
 function Layered:bake(blocked, heightAt)
     for level, grid in ipairs(self.levels) do

@@ -108,6 +108,9 @@ function RenderFrame.install(Renderer)
         if world.physics then
             world.physics:drawDebug(camera)
         end
+        if world.plugins then
+            require('source.engine.plugins').drawDebug(world, camera)
+        end
         if world.animators then
             require('source.engine.graphics.debug.skeletonDebug').draw(world, camera)
         end
