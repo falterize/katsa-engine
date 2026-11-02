@@ -100,6 +100,8 @@ function Game:load()
         zIndex = 50,
     })
     self.input = Input.new(self, self.controls)
+    -- Default Esc menu; a scene's main.lua calls attach(scene, true) to keep time running.
+    require('source.game.runtime.pauseMenu').attach(self)
     profiler:markLoad('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
     require('source.engine.plugins').activate(self.world, self.settings.plugins)
@@ -240,7 +242,7 @@ function Game:keypressed(key)
     if key == 'f2' then
         self.workspace:toggle()
     elseif key == 'escape' then
-        self.manager:push(require('source.game.runtime.pause').new)
+        self.pauseMenu:toggle()
     elseif key == 'f3' then
         self.showStats = not self.showStats
     elseif key == 'f4' then
@@ -281,6 +283,7 @@ function Game:resume()
 end
 
 function Game:exit()
+    self.pauseMenu:close()
     self.workspace:cancelEdit()
     self.input:reset()
     self.audio:stop()

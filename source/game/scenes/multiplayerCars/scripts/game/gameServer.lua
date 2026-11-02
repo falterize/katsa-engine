@@ -44,6 +44,7 @@ function GameServer.new(context, options)
         refills = {}, -- player id -> server time of the last refill
         nextSpawn = 1,
         bot = nil,
+        bots = {},
     }, GameServer)
     CarEntity.define(server)
     WalkerEntity.define(server)
@@ -166,17 +167,69 @@ function GameServer:buildNav(Pathfinding)
     return Arena.buildNav(Pathfinding)
 end
 
-function GameServer:spawnBot()
-    local point = Arena.spawns[#Arena.spawns]
+-- Adds a bot car. `point` is { x, z, heading }; the arena's last spawn point by default. The
+-- first bot stays `self.bot` / `self.botId` (the one clients draw the debug route of).
+function GameServer:spawnBot(point)
+    point = point or Arena.spawns[#Arena.spawns]
     local model, netId =
         self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
-    local Pathfinding = Plugins.require('pathfinding')
-    self.bot = Bot.new(model, {
-        nav = self:buildNav(Pathfinding),
-        sightRadius = self.options.sightRadius,
-    })
-    self.botId = netId
-    return model
+    self.nav = self.nav or self:buildNav(Plugins.require('pathfinding'))
+    local bot = Bot.new(model, { nav = self.nav, sightRadius = self.options.sightRadius })
+    self.bots[netId] = bot
+    if not self.bot then
+        self.bot, self.botId = bot, netId
+    end
+    return model, netId
+end
+
+-- Host tools (all host-only). Commands: clearCars, clearBots, spawnCar, spawnBot.
+-- Returns ok, reason.
+function GameServer:hostCommand(requester, command)
+    if requester ~= self.hostPlayer then
+        return false, 'only the host can do that'
+    end
+    if command == 'clearCars' or command == 'clearBots' then
+        local onlyBots = command == 'clearBots'
+        for _, player in ipairs(self.server:getPlayers()) do
+            local netId = self.playerCars[player.id]
+            if netId and (not onlyBots or self.bots[netId]) then
+                self:exit(player)
+            end
+        end
+        local doomed = {}
+        for _, netId in ipairs(self.order) do
+            if not onlyBots or self.bots[netId] then
+                doomed[#doomed + 1] = netId
+            end
+        end
+        for _, netId in ipairs(doomed) do
+            self:removeCar(netId)
+        end
+        self:log('%s ran %s (%d cars removed)', requester.name, command, #doomed)
+        return true, #doomed
+    elseif command == 'spawnCar' or command == 'spawnBot' then
+        -- Six metres ahead of the host's walker, facing the same way.
+        local walker = self.walkers[requester.id]
+        local point
+        if walker then
+            local heading = math.rad(walker.heading)
+            point = {
+                walker.x + math.cos(heading) * 6,
+                walker.z - math.sin(heading) * 6,
+                walker.heading,
+            }
+        else
+            point = self:nextSpawnPoint()
+        end
+        if command == 'spawnBot' then
+            self:spawnBot(point)
+        else
+            self:spawnCar({ x = point[1], z = point[2], heading = point[3] })
+        end
+        self:log('%s ran %s', requester.name, command)
+        return true
+    end
+    return false, 'unknown command'
 end
 
 -- Each player gets a parked car and appears on foot beside it.
@@ -321,6 +374,9 @@ function GameServer:bindRemotes()
     server:remote('kick'):onRequest(function(player, id, reason)
         return self:kickPlayer(player, id, reason)
     end)
+    server:remote('hostCommand'):onRequest(function(player, command)
+        return self:hostCommand(player, command)
+    end)
     server:remote('nitroAd'):onRequest(function(player, token)
         return self:grantNitro(player, token)
     end)
@@ -464,9 +520,10 @@ function GameServer:onTick(dt)
     for _, netId in ipairs(self.order) do
         local car = self.cars[netId]
         if car then
-            if netId == self.botId and self.bot then
+            local bot = self.bots[netId]
+            if bot then
                 local stamp = self.options.profiler and self.options.profiler:begin()
-                car.input = self.bot:think(models, dt)
+                car.input = bot:think(models, dt)
                 if stamp then
                     self.options.profiler:finish('Cars: bot', stamp)
                 end
@@ -514,6 +571,15 @@ function GameServer:removeCar(netId)
         self.bodies[netId] = nil
     end
     self.cars[netId] = nil
+    self.bots[netId] = nil
+    if self.botId == netId then
+        self.botId, self.bot = next(self.bots)
+    end
+    for id, owned in pairs(self.ownCars) do
+        if owned == netId then
+            self.ownCars[id] = nil
+        end
+    end
     for index, id in ipairs(self.order) do
         if id == netId then
             table.remove(self.order, index)

@@ -248,6 +248,21 @@ return function(T)
         'carsGame: the host kicks a player, who is told why (' .. tostring(kicked) .. ')'
     )
 
+    -- Host tools: the host spawns a car and a bot, then clears bots and every car.
+    local before = #server.order
+    local tool
+    one:hostCommand('spawnBot', function(ok)
+        tool = ok
+    end)
+    run(30)
+    T.check(tool == true and #server.order == before + 1 and next(server.bots) ~= nil, 'carsGame: the host spawns a bot')
+    one:hostCommand('spawnCar')
+    run(30)
+    T.check(#server.order == before + 2, 'carsGame: the host spawns a car')
+    one:hostCommand('clearBots')
+    run(30)
+    T.check(next(server.bots) == nil and server.botId == nil, 'carsGame: the host clears every bot')
+
     -- Nitro refill for a rewarded ad, rate limited and verified by the server.
     serverOne.nitro = 0
     local refill
@@ -288,6 +303,13 @@ return function(T)
     T.check(
         left and left[1] == true and one:getCar() == nil,
         'carsGame: leaving the car works and the seat is freed'
+    )
+
+    one:hostCommand('clearCars')
+    run(30)
+    T.check(
+        #server.order == 0 and next(server.cars) == nil,
+        'carsGame: the host clears every car'
     )
 
     one:disconnect()

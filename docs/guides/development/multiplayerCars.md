@@ -31,6 +31,9 @@ FOV with speed (`speedFov`).
   HUD shows who is speaking.
 * Names are unique ignoring case: the server rejects a second *"ann"* with *The name "ann" is
   already taken* (`Server` option `uniqueNames = false` turns it off).
+* Host tools (Tab panel, host only, checked on the server): Spawn car / Spawn bot appear six metres in front
+  of the host, Clear bots removes every bot, Clear cars removes every car (players are put out first).
+  Esc opens the pause menu with `keepTime`, so the hosted game keeps simulating.
 * Kick: only the host (`GameServer.hostPlayer`) may call `remote('kick')`; the target receives
   *Kicked by the host* as the disconnect reason and may join again.
 

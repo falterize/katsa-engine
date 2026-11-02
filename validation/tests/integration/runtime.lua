@@ -121,11 +121,17 @@ function Runtime:update()
         self.savedTime = s.time
         m:dispatch('keypressed', 'escape')
     elseif self.frame == 24 then
-        self:check(#m.stack == 2 and m.stack[1].time == self.savedTime, 'Pause freezes game update')
+        self:check(
+            s.pauseMenu:isOpen() and m.time.scale == 0 and s.time == self.savedTime,
+            'Pause freezes game update'
+        )
         self.screenshot = 'pause'
         m:dispatch('keypressed', 'escape')
     elseif self.frame == 27 then
-        self:check(#m.stack == 1 and s.time > self.savedTime, 'Resume updates game')
+        self:check(
+            not s.pauseMenu:isOpen() and m.time.scale == 1 and s.time > self.savedTime,
+            'Resume updates game'
+        )
         m:switch(require('source.game.runtime.game').new, 'models')
     elseif self.frame == 34 then
         self:check(

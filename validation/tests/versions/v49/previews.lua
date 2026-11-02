@@ -3,7 +3,6 @@ local Preview = {}
 Preview.__index = Preview
 local stages = {
     { 'menu', 360, 640 },
-    { 'pause', 640, 360 },
     { 'audioNodes', 360, 640 },
     { 'uiGallery', 360, 640 },
     { 'workspace', 320, 480 },
@@ -25,7 +24,7 @@ function Preview:update()
             return
         end
         katsa.window.setMode(entry[2], entry[3], { depth = 24, stencil = 8, vsync = 0 })
-        if entry[1] == 'menu' or entry[1] == 'pause' then
+        if entry[1] == 'menu' then
             self.scene = self.manager:switch(require('source.game.scenes.' .. entry[1]).new)
         else
             self.scene = self.manager:switch(

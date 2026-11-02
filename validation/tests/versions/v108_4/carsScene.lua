@@ -138,14 +138,12 @@ function Tests:draw()
             full == 2 and updated == 3,
             'without the setting an unfocused scene only updates in background'
         )
-        local covered = 0
-        stub.focused = true
-        stub.stack = {
-            { updateInBackground = function() covered = covered + 1 end, settings = { runWhenCovered = true } },
-            { update = function() end },
-        }
-        stub.update(stub, 0.01)
-        self:check(covered == 1, 'a scene under the pause menu keeps serving when it opts in')
+        host.pauseMenu:open()
+        self:check(
+            host.pauseMenu:isOpen() and self.manager.time.scale == 1,
+            'the pause menu of a hosted game leaves time running'
+        )
+        host.pauseMenu:close()
         local count = 0
         for _ in pairs(session.views) do
             count = count + 1

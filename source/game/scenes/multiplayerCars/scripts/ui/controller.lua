@@ -14,7 +14,7 @@ local function styled(ui, node, radius)
     return node
 end
 
--- callbacks: send(text), kick(playerId)
+-- callbacks: send(text), kick(playerId), hostCommand(name)
 function Social.create(scene, callbacks)
     local ui = scene.ui
     local self = setmetatable({ ui = ui, callbacks = callbacks, lines = {}, open = false }, Social)
@@ -64,7 +64,7 @@ function Social.create(scene, callbacks)
     self.players = styled(ui, ui:container({
         name = 'PlayersPanel',
         position = { 0.5, 0, 0.5, 0 },
-        size = { 0, 380, 0, 300 },
+        size = { 0, 380, 0, 360 },
         anchorPoint = { 0.5, 0.5 },
         backgroundColor = PANEL,
         backgroundTransparency = 0.1,
@@ -87,9 +87,34 @@ function Social.create(scene, callbacks)
     }, self.players)
     self.list = ui:scroll({
         position = { 0, 12, 0, 48 },
-        size = { 1, -24, 1, -80 },
+        size = { 1, -24, 1, -146 },
         length = 0,
     }, self.players)
+    -- Host tools: shown to the host only (the server checks again).
+    self.hostTools = ui:container({
+        position = { 0, 12, 1, -92 },
+        size = { 1, -24, 0, 60 },
+        backgroundTransparency = 1,
+        visible = false,
+    }, self.players)
+    local tools = {
+        { 'Spawn car', 'spawnCar' },
+        { 'Spawn bot', 'spawnBot' },
+        { 'Clear bots', 'clearBots' },
+        { 'Clear cars', 'clearCars' },
+    }
+    for index, tool in ipairs(tools) do
+        ui:button({
+            position = { (index - 1) / 4, (index > 1 and 2 or 0), 0, 0 },
+            size = { 0.25, -4, 1, 0 },
+            text = tool[1],
+            fontSize = 14,
+            backgroundColor = index > 2 and { 0.5, 0.2, 0.15 } or { 0.1, 0.32, 0.45 },
+            onPress = function()
+                callbacks.hostCommand(tool[2])
+            end,
+        }, self.hostTools)
+    end
     return self
 end
 
@@ -200,6 +225,7 @@ end
 -- players: array of { id, name }; hostId; myId. Only the host gets Kick buttons.
 function Social:setPlayers(players, hostId, myId)
     local ui = self.ui
+    self.hostTools.visible = myId == hostId
     for index = #self.list.children, 1, -1 do
         self.list.children[index]:destroy()
     end

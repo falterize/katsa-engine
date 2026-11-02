@@ -20,4 +20,18 @@ return function(T)
     local a, b, c = Data.unpack('<i4 s1 d', packed)
     T.check(a == -5 and b == 'xy' and c == 2.5, 'pack/unpack round trip')
     T.check(Data.newByteData('abc'):getString() == 'abc', 'ByteData keeps its contents')
+
+    -- The platform save path ends with the identity; changing identity later must not nest it.
+    local FS = require('source.katsa.core.filesystem')
+    local oldIdentity, oldDir = FS.getIdentity(), FS.getSaveDirectory()
+    FS.setIdentity('demo')
+    FS.setSaveDirectory('/data/Katsa/demo')
+    FS.setIdentity('demo')
+    T.check(FS.getSaveDirectory() == '/data/Katsa/demo', 'save directory is not nested after setIdentity')
+    FS.setIdentity('other')
+    T.check(FS.getSaveDirectory() == '/data/Katsa/other', 'another identity is a sibling directory')
+    FS.setIdentity(oldIdentity)
+    if oldDir ~= '.' then
+        FS.setSaveDirectory(oldDir)
+    end
 end

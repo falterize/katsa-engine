@@ -13,7 +13,7 @@ local function groundGeometry()
         local nx = Arena.ground(x - e, z) - Arena.ground(x + e, z)
         local nz = Arena.ground(x, z - e) - Arena.ground(x, z + e)
         local length = math.sqrt(nx * nx + 4 * e * e + nz * nz)
-        return { x, h, z, x / 8, z / 8, nx / length, 2 * e / length, nz / length }
+        return { x, h, z, x / 6, z / 6, nx / length, 2 * e / length, nz / length }
     end
     for x = -half, half - step, step do
         for z = -half, half - step, step do
@@ -166,10 +166,11 @@ function ArenaView.build(scene)
     shadows.enabled, shadows.resolution, shadows.distance = true, 2048, 60
     shadows.fadeDistance, shadows.near = 12, 0.05
     shadows.bias, shadows.normalBias = 0.001, 0.015
-    world:create('Mesh3D', {
+    require('source.engine.composition.mesh').create(world, {
         name = 'Ground',
         geometry = groundGeometry(),
-        color = { 0.28, 0.42, 0.26 },
+        color = { 1, 1, 1 },
+        surfaceAppearance = { colorMap = 'scene://textures/grass.png', roughness = 1 },
         position = { 0, 0, 0 },
     })
     for index, obstacle in ipairs(Arena.obstacles) do

@@ -47,7 +47,7 @@ function Tests:layout()
         count = count + 1
     end
     self:check(
-        count == #require('source.game.sceneCatalog').entries + 2,
+        count == #require('source.game.sceneCatalog').entries + 1,
         'All gameplay and interface scenes use folders'
     )
     local ok = pcall(Package.open, fixtures .. 'missingCategory.zip')
@@ -136,15 +136,11 @@ function Tests:interfaces()
             'Interface scenes use the same lifecycle and private system ownership'
         )
     end
-    local scene = assert(self.manager:switch(Application.new, 'menu'))
-    local pause = assert(self.manager:push(Application.new, 'pause'))
-    self.manager:update(1 / 60)
-    self.manager:draw()
-    self.manager:pop()
-    self:check(
-        self.manager.stack[1] == scene and pause.package.references == 0,
-        'Pause overlay releases its package and resumes the previous scene'
-    )
+    local game = assert(self.manager:switch(Game.new, 'models'))
+    game.pauseMenu:open()
+    self:check(self.manager.time.scale == 0, 'The pause menu stops game time while open')
+    game.pauseMenu:close()
+    self:check(self.manager.time.scale == 1, 'Closing the pause menu restores the time scale')
 end
 
 function Tests:privateNodes()

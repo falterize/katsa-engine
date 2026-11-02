@@ -134,7 +134,7 @@ function Methods:buildUI()
         self.manager:switch(require('source.game.runtime.menu').new)
     end)
     x = button('pause', 'Pause', x, 16, 90, function()
-        self.manager:push(require('source.game.runtime.pause').new)
+        self.pauseMenu:toggle()
     end)
     x = button('animations', 'Animations', x, 16, 145, function()
         self.demoAnimations = not self.demoAnimations

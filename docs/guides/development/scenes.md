@@ -307,3 +307,11 @@ in automatic scene-owned startup/update/release dispatch. A folder name alone
 does not turn helper code into a scheduled system. UI construction/controllers
 belong in scripts/ui; an optional dedicated UI behavior system can use them.
 See [node authoring](nodeAuthoring.md) for node hooks versus scene/system hooks.
+
+## Pause menu
+
+`source/game/runtime/pauseMenu.lua` is the Esc menu as a module. `Game` attaches it to every scene by
+default; a scene's `main.lua` can call `require('source.game.runtime.pauseMenu').attach(scene, true)`
+to override it. Opening sets the time scale to 0 and closing restores the previous value; with
+`keepTime = true` the time scale is never touched (hosted multiplayer keeps simulating). The menu is an
+overlay inside the scene, not a separate scene, so the scene keeps updating underneath.
