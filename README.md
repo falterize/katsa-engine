@@ -47,7 +47,10 @@ Collider3D GeometrySource accepts live model nodes or OBJ/GLB/glTF paths. Points
 - [Physics backends](docs/guides/physics/backends.md) and [parallel execution](docs/guides/physics/parallel.md), [particles](docs/guides/particles/api.md), [audio](docs/guides/audio/audioNodes.md)
 - [Dependencies](vendor/README.md), [testing](docs/guides/development/testing.md) and [limitations](docs/guides/development/limitations.md)
 - [Multiplayer](docs/guides/development/multiplayer.md)
-- [Plugins and pathfinding](docs/guides/development/plugins.md) and [networking](docs/guides/katsa/net.md)
+- [Plugins, NavMap and pathfinding debug](docs/guides/development/plugins.md)
+- [Background execution and time scale](docs/guides/development/backgroundExecution.md)
+- [multiplayerCars sample (chat, voice, kick, damage)](docs/guides/development/multiplayerCars.md)
+- [Networking transport](docs/guides/katsa/net.md) (katsa.net)
 - [Console, logs and crash reports](docs/guides/development/console.md)
 - [Stats and metric history](docs/guides/development/statistics.md), including clickable plots and recent averages
 - [Runtime performance](docs/guides/development/performance.md), including JIT cache policy and open-Stats profiling
