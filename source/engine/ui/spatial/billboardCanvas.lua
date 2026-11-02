@@ -125,6 +125,13 @@ function BillboardCanvas.install(BillboardUI)
         local g = katsa.graphics
         g.push('all')
         g.setCanvas({ self.canvas, stencil = self.ui.hasCorners or false })
+        -- A refresh can run inside another UI's draw (a ViewportFrame's world), which leaves its
+        -- clip scissor and stencil test active. They would clip the clear and the content, and a
+        -- never-written canvas then shows uninitialised GPU memory.
+        g.setScissor()
+        g.setStencilTest()
+        g.setColor(1, 1, 1, 1)
+        g.setBlendMode('alpha')
         g.clear(0, 0, 0, 0)
         g.setShader()
         g.setDepthMode()

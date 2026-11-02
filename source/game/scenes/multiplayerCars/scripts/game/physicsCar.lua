@@ -22,6 +22,9 @@ local TUNING = {
     gripRate = 9, -- how quickly sideways velocity is removed (1/s)
     gripLimit = 9, -- maximum sideways acceleration (m/s^2)
     yawGain = 8, -- how quickly the body follows the steering yaw rate (1/s)
+    maxLateral = 10, -- steering never asks for more sideways acceleration than this (m/s^2)
+    levelStiffness = 22, -- anti-roll/pitch assist: pull toward the ground plane (1/s^2) ...
+    levelDamping = 8, -- ... and damp the tilt rate (1/s)
     impactSpeed = 3.5, -- sudden velocity change that counts as a collision
 }
 
@@ -169,6 +172,7 @@ function PhysicsCar:step(dt)
 
     -- Suspension: ray down from each mount, spring + damper along the chassis up axis.
     local grounded = 0
+    local nx, ny, nz = 0, 0, 0 -- summed ground normals under the wheels
     local rayLength = t.restLength + t.wheelRadius + t.droop
     local mass = t.mass
     for i, wheel in ipairs(model.wheels) do
@@ -184,6 +188,7 @@ function PhysicsCar:step(dt)
         self.grounded[i] = false
         if hit then
             local distance = hit.fraction * rayLength
+            nx, ny, nz = nx + hit.normal[1], ny + hit.normal[2], nz + hit.normal[3]
             length = math.max(0, distance - t.wheelRadius)
             local x = t.restLength - length
             local rate = (x - self.compression[i]) / dt
@@ -235,9 +240,34 @@ function PhysicsCar:step(dt)
 
         -- Steering: follow the bicycle-model yaw rate for the current speed and wheel angle.
         local target = speed / config.wheelBase * math.tan(math.rad(model.steerAngle))
+        -- A turn tighter than the tires hold only throws the car sideways onto its roof.
+        local cap = t.maxLateral / math.max(2, math.abs(speed))
+        target = math.max(-cap, math.min(cap, target))
         local inertia = mass * (t.size[3] ^ 2 + t.size[1] ^ 2) / 12
         local torque = (target - yawRate) * t.yawGain * inertia * share
         body:applyTorque({ up[1] * torque, up[2] * torque, up[3] * torque })
+
+        -- Anti-roll assist: a stabiliser that levels the chassis with the ground under the wheels
+        -- and damps roll and pitch, so hard cornering and bumps cannot tip the car over.
+        local length = math.sqrt(nx * nx + ny * ny + nz * nz)
+        if length > 1e-4 then
+            nx, ny, nz = nx / length, ny / length, nz / length
+            -- up x normal: the axis that turns the chassis up toward the ground normal.
+            local ex = up[2] * nz - up[3] * ny
+            local ey = up[3] * nx - up[1] * nz
+            local ez = up[1] * ny - up[2] * nx
+            local wx, wy, wz = self.angular.x, self.angular.y, self.angular.z
+            local spin = wx * up[1] + wy * up[2] + wz * up[3]
+            -- Tilt rate without the yaw spin.
+            wx, wy, wz = wx - up[1] * spin, wy - up[2] * spin, wz - up[3] * spin
+            local sx, sy, sz = t.levelStiffness * ex - t.levelDamping * wx,
+                t.levelStiffness * ey - t.levelDamping * wy,
+                t.levelStiffness * ez - t.levelDamping * wz
+            -- Roll inertia of the box (about forward), used for both axes: gentle on pitch.
+            local rollInertia = mass * (t.size[1] ^ 2 + t.size[2] ^ 2) / 12 * 2.5
+            local k = rollInertia * share
+            body:applyTorque({ sx * k, sy * k, sz * k })
+        end
     end
     self.boosting = boosting
     self.lastSpeed = speed

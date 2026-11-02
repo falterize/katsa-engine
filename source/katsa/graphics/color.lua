@@ -62,12 +62,20 @@ local function applyBlend()
     gl.glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA)
 end
 
+local blendApplied, alphaApplied
+
 function G.setBlendMode(mode, alphamode)
     State.requireReady()
-    State.flush()
     blendFactors = blendFactors or blendTable()
     assert(blendFactors[mode], 'Invalid blend mode: ' .. tostring(mode))
-    S.blend, S.alphaMode = mode, alphamode or 'alphamultiply'
+    alphamode = alphamode or 'alphamultiply'
+    -- Re-selecting the active mode must not break the batch (push('all')/pop() do it constantly).
+    if blendApplied == mode and alphaApplied == alphamode then
+        return
+    end
+    State.flush()
+    S.blend, S.alphaMode = mode, alphamode
+    blendApplied, alphaApplied = mode, alphamode
     applyBlend()
 end
 
@@ -80,12 +88,19 @@ local function applyColorMask()
     gl.glColorMask(m[1], m[2], m[3], m[4])
 end
 
+local maskR, maskG, maskB, maskA
+
 function G.setColorMask(r, g, b, a)
-    State.flush()
     if r == nil then
         r, g, b, a = true, true, true, true
     end
-    S.colorMask = { not not r, not not g, not not b, not not a }
+    r, g, b, a = not not r, not not g, not not b, not not a
+    if maskR == r and maskG == g and maskB == b and maskA == a then
+        return
+    end
+    State.flush()
+    S.colorMask = { r, g, b, a }
+    maskR, maskG, maskB, maskA = r, g, b, a
     applyColorMask()
 end
 

@@ -38,7 +38,7 @@ local path = filename
     and 'source/engine/physics/backends/jolt/native/' .. Library.platform .. '/' .. filename
 if path and katsa.filesystem.getInfo(path) then
     local bytes = assert(katsa.filesystem.read(path))
-    local hash = katsa.data.encode('string', 'hex', katsa.data.hash('sha256', bytes))
+    local hash = require('source.engine.core.fingerprint').of(bytes)
     local directory = 'native-cache/katsa-jolt-' .. hash
     assert(katsa.filesystem.createDirectory(directory))
     local target = directory .. '/' .. filename
