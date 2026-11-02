@@ -161,7 +161,7 @@ function Tests:draw()
         host.input.actions.keys.w = true
     elseif frame == 320 then
         local _, car = session.client:getCar()
-        self:check(car and car.speed > 8, 'holding W drives the car')
+        self:check(car and car.speed > 18, 'holding W accelerates the car briskly (> 18 m/s in under 2 s)')
         self:shot('driving')
         -- Full lock at speed for a second: the car must lean, not tip over.
         host.input.actions.keys.a = true
