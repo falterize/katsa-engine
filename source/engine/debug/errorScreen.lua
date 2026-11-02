@@ -27,6 +27,12 @@ function Screen.create(traceback, api)
     if api.event and api.event.clear then
         api.event.clear()
     end
+    -- The font has no glyph for tabs (they print as "?" at the start of traceback lines), and
+    -- carriage returns or control bytes do the same. Show them as spaces.
+    local shown = tostring(traceback)
+        :gsub('\r\n?', '\n')
+        :gsub('\t', '    ')
+        :gsub('[%z\1-\8\11\12\14-\31]', ' ')
     local g, scroll, font = api.graphics, 0, nil
     if g and g.isActive() then
         g.reset()
@@ -64,7 +70,7 @@ function Screen.create(traceback, api)
             g.printf(
                 'Katsa stopped after an error. Close the window to exit.\n'
                     .. 'Ctrl+C: copy | Wheel: scroll | Saved: crashes/crash-01.log (last 10)\n\n'
-                    .. traceback,
+                    .. shown,
                 24,
                 24 - scroll,
                 math.max(1, g.getWidth() - 48)

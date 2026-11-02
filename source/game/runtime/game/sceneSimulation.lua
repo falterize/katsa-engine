@@ -6,6 +6,9 @@ function Game:update(dt, realDt)
     if self.debugOverlay and self.debugOverlay.visible and self.debugOverlay._syncDebug then
         self.debugOverlay._syncDebug()
     end
+    if self.console then
+        self.console:update()
+    end
     local profiler = self.manager.profiler
     local updateStamp = profiler:begin() or (self.showStats and katsa.timer.getTime())
     if self.world.activeCamera then

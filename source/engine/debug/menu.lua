@@ -66,6 +66,21 @@ function Debug.new(scene)
         y = y + 54
         return button
     end
+    -- A toggle shows its real state ("Label: ON") from the moment the menu opens and after every
+    -- press; `get` reads the live setting, `set` flips it.
+    local toggles = {}
+    local function toggle(label, get, set)
+        local button
+        button = row(label, function()
+            set()
+            button.text = label .. ': ' .. (get() and 'ON' or 'OFF')
+        end)
+        toggles[#toggles + 1] = function()
+            button.text = label .. ': ' .. (get() and 'ON' or 'OFF')
+        end
+        toggles[#toggles]()
+        return button
+    end
     for _, setting in ipairs({ 'enabled', 'shapes', 'joints', 'centers', 'velocities', 'contacts' }) do
         local button = row('2D physics debug: ' .. setting, function(button)
             local physics = scene.ui.physics2D
@@ -81,11 +96,12 @@ function Debug.new(scene)
         end)
         button._debug2DSetting = setting
     end
-    row('Pause 2D physics', function(button)
+    toggle('Pause 2D physics', function()
+        return scene.ui.physics2D ~= nil and scene.ui.physics2D.paused == true
+    end, function()
         local physics = scene.ui.physics2D
         if physics then
             physics.paused = not physics.paused
-            button.text = 'Paused: ' .. tostring(physics.paused)
         end
     end)
     row('Single 2D physics step', function()
@@ -99,37 +115,48 @@ function Debug.new(scene)
     end)
     section = 'Directions'
     for _, dimension in ipairs({ '2D', '3D' }) do
-        row(dimension .. ' orientation axes ON/OFF', function(button)
-            local key = 'orientation' .. dimension
-            scene.ui.debug = scene.ui.debug or {}
-            local target = dimension == '2D' and scene.ui.debug or scene.world.debug
+        local key = 'orientation' .. dimension
+        scene.ui.debug = scene.ui.debug or {}
+        local target = dimension == '2D' and scene.ui.debug or scene.world.debug
+        toggle(dimension .. ' orientation axes', function()
+            return target[key] == true
+        end, function()
             target[key] = not target[key]
             if dimension == '2D' then
                 scene.world.debug[key] = false
             end
-            button.text = dimension .. ' orientation axes: ' .. (target[key] and 'ON' or 'OFF')
         end)
     end
     section = 'Diagnostics'
+    toggle('Console (F1)', function()
+        return scene.console ~= nil and scene.console.visible == true
+    end, function()
+        if scene.console then
+            scene.console:toggle()
+        end
+    end)
     row('CPU profiler / error journal', function()
         require('source.engine.editor.debug.diagnostics').open(scene.workspace)
     end)
     section = 'Rendering'
     scene.world.debug = scene.world.debug or { bones = false, wireframe = false }
-    row('Bone debug ON/OFF', function(n)
+    toggle('Bone debug', function()
+        return scene.world.debug.bones == true
+    end, function()
         scene.world.debug.bones = not scene.world.debug.bones
         for _, animator in ipairs(scene.world.animators or {}) do
             animator.debugEnabled = scene.world.debug.bones
         end
-        n.text = 'Bone debug: ' .. (scene.world.debug.bones and 'ON' or 'OFF')
     end)
-    row('Wireframe render ON/OFF', function(n)
+    toggle('Wireframe render', function()
+        return scene.world.debug.wireframe == true
+    end, function()
         scene.world.debug.wireframe = not scene.world.debug.wireframe
-        n.text = 'Wireframe render: ' .. (scene.world.debug.wireframe and 'ON' or 'OFF')
     end)
-    row('Free debug camera', function(n)
-        local enabled = require('source.engine.cameras.debugCamera').toggle(scene)
-        n.text = enabled and 'Free debug camera: ON' or 'Free debug camera: OFF'
+    toggle('Free debug camera', function()
+        return scene.freeDebugCamera ~= nil
+    end, function()
+        require('source.engine.cameras.debugCamera').toggle(scene)
     end)
     local physicsDebug = scene.world.environment.debug.physics
     local sliders = {}
@@ -205,7 +232,9 @@ function Debug.new(scene)
         }
         y = y + 54
     end
-    row('Light gizmos ON/OFF', function()
+    toggle('Light gizmos', function()
+        return scene.world.lighting.debug.gizmos.enabled == true
+    end, function()
         scene.world.lighting.debug.gizmos.enabled = not scene.world.lighting.debug.gizmos.enabled
     end)
     row('Light loop: ' .. scene.world.environment.render.lightLoop, function(button)
@@ -213,14 +242,12 @@ function Debug.new(scene)
         render.lightLoop = render.lightLoop == 'Direct' and 'Masked' or 'Direct'
         button.text = 'Light loop: ' .. render.lightLoop
     end)
-    row(
-        'Static frame cache: ' .. (scene.world.environment.render.frameCache and 'ON' or 'OFF'),
-        function(button)
-            local render = scene.world.environment.render
-            render.frameCache = not render.frameCache
-            button.text = 'Static frame cache: ' .. (render.frameCache and 'ON' or 'OFF')
-        end
-    )
+    toggle('Static frame cache', function()
+        return scene.world.environment.render.frameCache == true
+    end, function()
+        local render = scene.world.environment.render
+        render.frameCache = not render.frameCache
+    end)
     slider('3D density', scene.world.environment.render.renderDensity, 0.5, 3, function(v)
         scene.world.environment.render.renderDensity = math.floor(v * 4 + 0.5) / 4
     end)
@@ -234,7 +261,9 @@ function Debug.new(scene)
         scene.camera.layers = scene.camera.layers == 1 and 2 or scene.camera.layers == 2 and -1 or 1
     end)
     local lighting = scene.world.lighting
-    row('Shadows ON/OFF', function()
+    toggle('Shadows', function()
+        return lighting.shadows.enabled == true
+    end, function()
         lighting.shadows.enabled = not lighting.shadows.enabled
     end)
     row('Shadow map: 256 / 512 / 1024', function(n)
@@ -263,10 +292,14 @@ function Debug.new(scene)
     section = '3D Physics'
     if scene.physics then
         local physics = scene.physics
-        row('Physics debug ON/OFF', function()
+        toggle('Physics debug', function()
+            return physicsDebug.enabled == true
+        end, function()
             physicsDebug.enabled = not physicsDebug.enabled
         end)
-        row('Pause physics ON/OFF', function()
+        toggle('Pause physics', function()
+            return physics.paused == true
+        end, function()
             physics.paused = not physics.paused
         end)
         row('Single physics step', function()
@@ -286,7 +319,9 @@ function Debug.new(scene)
             'drawJointLimits',
             'drawBvh',
         }) do
-            row(field .. ' ON/OFF', function()
+            toggle(field, function()
+                return physicsDebug[field] == true
+            end, function()
                 physicsDebug.enabled = true
                 physicsDebug[field] = not physicsDebug[field]
             end)
@@ -338,12 +373,16 @@ function Debug.new(scene)
                 end
             )
         end
-        row('Selected collision ON/OFF', function()
+        toggle('Selected collision', function()
+            return selected == nil or selected.canCollide ~= false
+        end, function()
             if selected then
                 selected:set({ canCollide = not selected.canCollide })
             end
         end)
-        row('Selected query ON/OFF', function()
+        toggle('Selected query', function()
+            return selected == nil or selected.canQuery ~= false
+        end, function()
             if selected then
                 selected:set({ canQuery = not selected.canQuery })
             end
@@ -424,6 +463,9 @@ function Debug.new(scene)
     end
     overlay:setDebugSection(scene.ui.physics2D and '2D Physics' or 'Rendering')
     overlay._syncDebug = function()
+        for _, refresh in ipairs(toggles) do
+            refresh()
+        end
         for _, item in ipairs(sections) do
             local setting = item.node._debug2DSetting
             if setting then
