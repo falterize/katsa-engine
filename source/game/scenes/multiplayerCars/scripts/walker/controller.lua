@@ -4,6 +4,8 @@
 local StateMachine = require('source.engine.core.stateMachine')
 local Math = require('scene.scripts.walker.math')
 local WalkerEntity = require('scene.scripts.game.walkerEntity')
+local Arena = require('scene.scripts.game.arena')
+local StepValue = require('source.engine.animation.stepValue')
 
 local Walker = {}
 Walker.__index = Walker
@@ -79,6 +81,12 @@ function Walker.new(world, model, settings)
         cameraYaw = 0,
         grounded = false,
         groundGap = 0,
+        -- Gameplay state is authored per fixed tick; rendering samples it between ticks.
+        smooth = {
+            yaw = StepValue.new(math.rad(model.heading or 0), true),
+            walk = StepValue.new(0),
+            crouch = StepValue.new(0),
+        },
         jumpTimer = 0,
         airTime = 0,
         air = true,
@@ -164,9 +172,12 @@ end
 
 -- Puts the walker on foot at feet position (x, y, z).
 function Walker:place(x, y, z)
+    -- Never inside the terrain: the ground mesh only collides from above.
+    y = math.max(y, Arena.ground(x, z) + 0.1)
     self.node.position = { x, y + self.settings.standingHeight / 2, z }
     self.velocity[1], self.velocity[2], self.velocity[3] = 0, 0, 0
     self.body:sync()
+    self.smooth.yaw:reset(self.visualYaw)
     self.fsm:change('fall')
 end
 
@@ -185,6 +196,16 @@ function Walker:step(dt)
     self.body:getVelocity(self.velocity)
     if not self.riding then
         local foot = p[2] - settings.standingHeight / 2
+        -- Fell through the map (spawned inside the terrain, or a huge time step): put the player
+        -- back on the surface instead of falling forever.
+        local half = Arena.size / 2 + 3 -- beyond the boundary walls: escaped the arena
+        local gx = math.max(-half, math.min(half, p[1]))
+        local gz = math.max(-half, math.min(half, p[3]))
+        if foot < Arena.ground(gx, gz) - 2 or p[1] ~= gx or p[3] ~= gz then
+            self:place(gx, math.max(Arena.ground(gx, gz), 0) + 1.5, gz)
+            p = self.node.position
+            foot = p[2] - settings.standingHeight / 2
+        end
         -- Uneven terrain: while walking on the ground the ray reaches further down, so a small
         -- drop (slope, bump, seam between mesh triangles) never reads as a fall.
         local reach = (self.grounded and not self.coyote) and settings.stickReach or 0.05
@@ -238,10 +259,28 @@ function Walker:step(dt)
     p = self.node.position
     model.x, model.y, model.z = p[1], p[2] - settings.standingHeight / 2, p[3]
     model.heading = math.deg(self.visualYaw) % 360
+    local smooth = self.smooth
+    smooth.yaw:capture(self.visualYaw)
+    smooth.walk:capture(self.walkBlend)
+    smooth.crouch:capture(self.crouchBlend)
     model.state = WalkerEntity.stateIndex[self.fsm.name]
     model.speed = math.sqrt(self.velocity[1] ^ 2 + self.velocity[3] ^ 2)
     model.walkBlend, model.crouchBlend = self.walkBlend, self.crouchBlend
     model.walkScale, model.air, model.jumpSequence = self.walkScale, self.air, self.jumpSequence % 256
+end
+
+-- The pose that is drawn: the body's interpolated render matrix and the sampled step values.
+-- Returns feet x, y, z, heading (degrees), walk and crouch blends.
+function Walker:renderPose()
+    local physics = self.body.physics
+    local m = self.node:getRenderWorldMatrix()
+    local smooth = self.smooth
+    return m[4],
+        m[8] - self.settings.standingHeight / 2,
+        m[12],
+        math.deg(smooth.yaw:sampleFor(physics)) % 360,
+        smooth.walk:sampleFor(physics),
+        smooth.crouch:sampleFor(physics)
 end
 
 function Walker:destroy()

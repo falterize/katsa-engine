@@ -89,8 +89,17 @@ end
 -- Moves the nodes to the model state. Call every frame.
 function CarView:update(dt)
     local car = self.model
-    self.root.position = { car.x, car.y - car.config.rideHeight, car.z }
-    self.root.rotation = orientation(car.heading, car.pitch or 0, car.roll or 0, self.angles)
+    self.root.position = {
+        car.rx or car.x,
+        (car.ry or car.y) - car.config.rideHeight,
+        car.rz or car.z,
+    }
+    self.root.rotation = orientation(
+        car.rheading or car.heading,
+        car.rpitch or car.pitch or 0,
+        car.rroll or car.roll or 0,
+        self.angles
+    )
     self.spin = (self.spin + car.speed * dt / 0.4 * 57.3) % 360
     for index, wheel in ipairs(self.wheels) do
         local steer = index <= 2 and car.steerAngle or 0

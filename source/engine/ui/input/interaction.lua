@@ -58,7 +58,8 @@ function Interaction.install(UI)
         end
     end
     -- Conservative visual UI rectangles block 3D taps even when disabled/decorative.
-    function UI:blocksWorldClick(x, y)
+    -- With `onlyInteractable`, branches whose Interactable is off are ignored (they take no input).
+    function UI:blocksWorldClick(x, y, onlyInteractable)
         if self.visible == false or (self.transparency or 0) >= 1 then
             return false
         end
@@ -76,6 +77,7 @@ function Interaction.install(UI)
                     and layerVisible(n)
                     and not n._layoutCollapsed
                     and not n.modifier
+                    and (not onlyInteractable or n.interactable ~= false and n.enabled ~= false)
                     and (not n:isA('CanvasGroup') or (n.transparency or 0) < 1)
                 then
                     local clip = n._clip

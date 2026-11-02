@@ -281,6 +281,16 @@ function Hud.create(scene, callbacks)
             callbacks.zoom(-2)
         end,
     }, self.root)
+    -- Gives the cursor back (Tab does the same): the camera follows the mouse until then.
+    self.menuButton = ui:button({
+        position = { 1, -16, 1, -16 },
+        size = { 0, 150, 0, 48 },
+        anchorPoint = { 1, 1 },
+        text = 'Menu (Tab)',
+        fontSize = 18,
+        backgroundColor = { 0.08, 0.16, 0.25 },
+        onPress = callbacks.menu,
+    }, self.root)
     self.message = ui:text({
         position = { 0.5, 0, 0, 120 },
         size = { 0, 500, 0, 30 },
@@ -312,6 +322,10 @@ function Hud:setToggles(run, crouch)
     self.runButton.backgroundColor = run and HUD_ON or HUD_OFF
     self.crouchButton.text = 'Crouch: ' .. (crouch and 'ON' or 'OFF')
     self.crouchButton.backgroundColor = crouch and HUD_ON or HUD_OFF
+end
+
+function Hud:setMenuOpen(open)
+    self.menuButton.text = open and 'Resume (Tab)' or 'Menu (Tab)'
 end
 
 function Hud:setVisible(visible)
