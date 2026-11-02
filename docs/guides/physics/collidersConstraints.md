@@ -64,3 +64,11 @@ solver and honor AllowCollision through their native connection.
 
 The Animation & Physics Laboratory demonstrates all ten concrete constraints,
 a bone-driven rope, an animated physical rig, rolling balls and an inclined ramp.
+
+## Static triangle meshes
+
+`{ shape = 'Mesh', vertices = { {x,y,z}, ... }, indices = { 1,2,3, ... } }` builds a static
+triangle-mesh collider (Jolt backend, `Static` bodies only). Indices are 1-based, three per
+triangle, and triangles must be wound counter-clockwise when seen from the side that should
+collide: back faces are ignored, so a mesh viewed from behind lets bodies through. Use it for
+terrain, ramps and level geometry; a dynamic body should use boxes, spheres, capsules or Convex.

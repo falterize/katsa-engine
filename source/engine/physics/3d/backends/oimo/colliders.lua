@@ -52,6 +52,34 @@ function Colliders.add(body, collider)
             vertices[i] = vec(v, scale / u)
         end
         sc.geometry = O.ConvexHullGeometry.new(O.array(vertices))
+    elseif shape == 'Mesh' then
+        -- Static triangle meshes exist only in the Jolt world. The Lua mirror is a tiny marker box
+        -- at the mesh centre (it never collides) so debug and bookkeeping code keep a shape.
+        assert(
+            collider.vertices and #collider.vertices >= 3,
+            'Mesh collider requires vertices {x,y,z}'
+        )
+        assert(
+            collider.indices and #collider.indices >= 3 and #collider.indices % 3 == 0,
+            'Mesh collider requires triangle indices (1-based, three per triangle)'
+        )
+        assert(self.type == 'Static', 'Mesh colliders are static-only')
+        local min, max = { math.huge, math.huge, math.huge }, { -math.huge, -math.huge, -math.huge }
+        for _, v in ipairs(collider.vertices) do
+            for axis = 1, 3 do
+                min[axis] = math.min(min[axis], v[axis])
+                max[axis] = math.max(max[axis], v[axis])
+            end
+        end
+        collider = setmetatable({
+            position = {
+                (min[1] + max[1]) * 0.5,
+                (min[2] + max[2]) * 0.5,
+                (min[3] + max[3]) * 0.5,
+            },
+            _meshMirror = true,
+        }, { __index = collider })
+        sc.geometry = O.BoxGeometry.new(vec({ 0.01, 0.01, 0.01 }, 1 / u))
     else
         error('Unsupported collider shape: ' .. tostring(shape))
     end
@@ -66,10 +94,16 @@ function Colliders.add(body, collider)
     sc.collisionMask = (self.canCollide and self.colliderEnabled ~= false and not self.isTrigger)
             and p.masks[self.group]
         or 0
+    if collider._meshMirror then
+        sc.collisionMask = 0
+    end
     sc.contactCallback = Contacts.create(self)
     local raw = O.Shape.new(sc)
     raw.userData = self
-    self.shapes[#self.shapes + 1] = { raw = raw, collider = collider }
+    self.shapes[#self.shapes + 1] = {
+        raw = raw,
+        collider = collider._meshMirror and getmetatable(collider).__index or collider,
+    }
     self.raw:addShape(raw)
 end
 

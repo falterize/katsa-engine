@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Physics: static `Mesh` colliders (triangle meshes) for terrain, with a focused test.
 - Audio: OpenAL EFX is implemented (reverb, echo, chorus, distortion auxiliary sends and low/high/band-pass filters). Previously only pitch worked.
 - Debug menu toggles show their real state on open; crash screen renders tabs correctly; the console (F1 or Debug > Console) is available in the game runtime and receives journal warnings.
 - Shader layers: per-layer `Affects 3D` setting (`ShaderLayers:setAffects3D`).

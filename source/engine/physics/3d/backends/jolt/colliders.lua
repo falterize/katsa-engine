@@ -85,11 +85,31 @@ function Colliders:makeShape(body)
                 local settings = C.JPH_ConvexHullShapeSettings_Create(points, count, 0)
                 shape = C.JPH_ConvexHullShapeSettings_CreateShape(settings)
                 C.JPH_ShapeSettings_Destroy(cast('ShapeSettings', settings))
+            elseif kind == 'Mesh' then
+                local source = collider.vertices
+                local points = ffi.new('JPH_Vec3[?]', #source)
+                for j, v in ipairs(source) do
+                    vector(points[j - 1], v, scale)
+                end
+                local triangleCount = #collider.indices / 3
+                local triangles = ffi.new('JPH_IndexedTriangle[?]', triangleCount)
+                for t = 0, triangleCount - 1 do
+                    triangles[t].i1 = collider.indices[t * 3 + 1] - 1
+                    triangles[t].i2 = collider.indices[t * 3 + 2] - 1
+                    triangles[t].i3 = collider.indices[t * 3 + 3] - 1
+                    triangles[t].materialIndex = 0
+                    triangles[t].userData = 0
+                end
+                local settings = C.JPH_MeshShapeSettings_Create2(points, #source, triangles, triangleCount)
+                shape = C.JPH_MeshShapeSettings_CreateShape(settings)
+                C.JPH_ShapeSettings_Destroy(cast('ShapeSettings', settings))
             else
                 error('Jolt unsupported collider: ' .. kind)
             end
             assert(shape ~= nil, 'Jolt rejected ' .. kind .. ' collider')
-            C.JPH_ConvexShape_SetDensity(cast('ConvexShape', shape), entry.raw:getDensity())
+            if kind ~= 'Mesh' then
+                C.JPH_ConvexShape_SetDensity(cast('ConvexShape', shape), entry.raw:getDensity())
+            end
             vector(self.v1, collider.position or { 0, 0, 0 }, scale)
             if collider.rotation then
                 local m = require('source.engine.math.math3d').compose(
