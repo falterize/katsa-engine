@@ -82,3 +82,17 @@ The [node authoring reference](nodeAuthoring.md) explains adopt, mount, all comm
 instance/spatial methods, built-in type methods and a tested scene-owned Spinner.
 Node `enabled = false` suppresses behavior updates; use `setProcess(false)` when
 the first start callback must also remain unscheduled.
+
+## Cloning
+
+`node:clone(properties, parent)` returns a deep copy of the node and all of its descendants:
+
+```lua
+local copy = vehicle:clone({ Name = 'ClonedTest', position = { 10, 0, 0 } })
+local other = vehicle:clone(nil, spawnFolder) -- same properties, different parent
+```
+
+- `properties` overrides copied fields (`Name` and `name` are equivalent). `parent` defaults to the source's parent.
+- The copy is created through the scene's normal `world:create`, so it registers with the world, NodeTree and UI like any other node. Signal connections and runtime caches are not copied.
+- Properties come from the same schema as the Workspace inspector. Node references and resources are shared; plain tables and vectors are copied.
+- A world keeps mesh names unique, so a copy named `Wheel` is created as `Wheel_2`, `Wheel_3`, ... when `Wheel` is alive. Pass `Name` for the root to choose its name.
