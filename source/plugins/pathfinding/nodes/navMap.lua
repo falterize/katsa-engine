@@ -35,6 +35,20 @@ function NavMap.initialize(self)
     self.map, self.baked, self.recent = nil, false, {}
 end
 
+-- Called when the map is baked: the debug view finds maps through the world's list.
+local function register(self)
+    local world = self._world or self._sceneWorld
+    if world then
+        world.navMaps = world.navMaps or {}
+        for _, known in ipairs(world.navMaps) do
+            if known == self then
+                return
+            end
+        end
+        world.navMaps[#world.navMaps + 1] = self
+    end
+end
+
 function NavMap:getMap()
     return self.map
 end
@@ -208,6 +222,7 @@ function NavMap:bake(physics)
         end
     end
     self.map, self.baked = map, true
+    register(self)
     local free = 0
     for level = 1, self.floors do
         for index = 1, width * depth do

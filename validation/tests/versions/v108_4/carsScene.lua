@@ -465,6 +465,11 @@ function Tests:draw()
             decks = decks + (route.levels[index] == 2 and 1 or 0)
         end
         self:check(route and decks > 0, 'NavMap routes up the ramp to the car park deck')
+        local registered = false
+        for _, known in ipairs(scene.world.navMaps or {}) do
+            registered = registered or known == map
+        end
+        self:check(registered, 'a baked NavMap registers for the debug view')
         scene.world.environment.debug.pathfinding.enabled = true
         self:check(select(1, pcall(function() scene.renderer:render() end)) or true, 'pathfinding debug draws')
         scene.world.environment.debug.pathfinding.enabled = false
@@ -570,6 +575,14 @@ function Tests:draw()
         self:check(kicked ~= nil, 'the Kick button asks to kick that player')
         social.callbacks.kick = original
         input:toggleMenu()
+    elseif frame == 920 then
+        -- A car driven by another client is a kinematic stand-in: it still carries riders.
+        local body = session.server.bodies[self.remoteId]
+        local v = body.node.body:getVelocity({})
+        self:check(
+            body.mode == 'follow' and math.sqrt(v[1] ^ 2 + v[3] ^ 2) > 3,
+            'a followed car reports its velocity so riders move with it (' .. ('%.1f'):format(math.sqrt(v[1] ^ 2 + v[3] ^ 2)) .. ' m/s)'
+        )
     elseif frame == 940 then
         local _, car = self.remote.client:getCar()
         local server = session.server

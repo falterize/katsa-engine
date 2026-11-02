@@ -98,7 +98,11 @@ function Session.new(scene)
             self:leave()
         end,
         pathDebug = function()
-            self.pathDebug = not self.pathDebug
+            -- One switch for everything: Environment.debug.pathfinding (also in the editor and the
+            -- debug menu). It draws the NavMap and routes; the bot's route markers follow it.
+            local settings = self.scene.world.environment.debug.pathfinding
+            settings.enabled = not settings.enabled
+            self.pathDebug = settings.enabled
             self.hud:setPathDebug(self.pathDebug)
             if not self.pathDebug then
                 self:hidePathMarkers()
@@ -646,8 +650,13 @@ function Session:update(dt)
     for _, view in pairs(self.walkerViews) do
         view:update(dt)
     end
+    local pathSettings = self.scene.world.environment.debug.pathfinding
+    self.pathDebug = pathSettings.enabled and pathSettings.drawPaths
+    self.hud:setPathDebug(pathSettings.enabled)
     if self.pathDebug then
         self:updatePathMarkers()
+    else
+        self:hidePathMarkers()
     end
     local walker = self.client.ownWalker
     if not car and walker then

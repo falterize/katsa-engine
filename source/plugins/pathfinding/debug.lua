@@ -6,11 +6,10 @@ local Debug = {}
 local FLOOR_COLORS = { { 0.2, 0.8, 0.4 }, { 0.3, 0.6, 1 }, { 1, 0.7, 0.2 }, { 0.9, 0.4, 0.9 } }
 
 local function eachMap(world, visit)
-    for _, node in ipairs(world.root:getDescendants()) do
-        if node.className == 'NavMap' or node.isA and node:isA('NavMap') then
-            if node.baked and node.map then
-                visit(node)
-            end
+    -- NavMaps register themselves (see nodes/navMap.lua), so no tree walk per frame.
+    for _, node in ipairs(world.navMaps or {}) do
+        if not node.destroyed and node.baked and node.map then
+            visit(node)
         end
     end
 end
@@ -24,29 +23,56 @@ local function line(camera, a, b, color, alpha)
     end
 end
 
+-- Cells near the camera only; every corner is projected once and shared by its neighbours, and
+-- each free cell draws just its two near edges (plus far edges next to blocked cells).
 function Debug.drawMap(map, camera, settings)
     local eye = camera.position or { 0, 0, 0 }
+    local size = map.cellSize
+    local reach = math.ceil(settings.drawDistance / size)
+    local cxEye, czEye = map:toCell(eye[1], eye[3])
+    local x0, x1 = math.max(1, cxEye - reach), math.min(map.width, cxEye + reach)
+    local z0, z1 = math.max(1, czEye - reach), math.min(map.height, czEye + reach)
     local range2 = settings.drawDistance ^ 2
-    local half = map.cellSize / 2 * 0.9
+    local stride = map.width + 2
     for level, grid in ipairs(map.levels) do
         local color = FLOOR_COLORS[(level - 1) % #FLOOR_COLORS + 1]
-        for cz = 1, map.height do
-            for cx = 1, map.width do
-                if not grid:isBlocked(cx, cz) then
-                    local x, z = grid:toWorld(cx, cz)
-                    local y = (map:heightAtCell(level, cx, cz) or 0) + 0.05
-                    local dx, dz = x - eye[1], z - eye[3]
-                    if dx * dx + dz * dz < range2 then
-                        if settings.drawCells then
+        local corners = {}
+        local function corner(ix, iz, y)
+            local key = iz * stride + ix
+            local point = corners[key]
+            if point == nil then
+                local wx = grid.originX + (ix - 1) * size
+                local wz = grid.originY + (iz - 1) * size
+                local sx, sy = camera:project({ wx, y, wz })
+                point = sx and { sx, sy } or false
+                corners[key] = point
+            end
+            return point
+        end
+        local function edge(a, b, alpha)
+            if a and b then
+                katsa.graphics.setColor(color[1], color[2], color[3], alpha)
+                katsa.graphics.line(a[1], a[2], b[1], b[2])
+            end
+        end
+        if settings.drawCells then
+            for cz = z0, z1 do
+                for cx = x0, x1 do
+                    if not grid:isBlocked(cx, cz) then
+                        local x, z = grid:toWorld(cx, cz)
+                        local dx, dz = x - eye[1], z - eye[3]
+                        if dx * dx + dz * dz < range2 then
+                            local y = (map:heightAtCell(level, cx, cz) or 0) + 0.05
                             local a, b, c, d =
-                                { x - half, y, z - half },
-                                { x + half, y, z - half },
-                                { x + half, y, z + half },
-                                { x - half, y, z + half }
-                            line(camera, a, b, color, 0.7)
-                            line(camera, b, c, color, 0.7)
-                            line(camera, c, d, color, 0.7)
-                            line(camera, d, a, color, 0.7)
+                                corner(cx, cz, y), corner(cx + 1, cz, y), corner(cx, cz + 1, y), corner(cx + 1, cz + 1, y)
+                            edge(a, b, 0.7)
+                            edge(a, c, 0.7)
+                            if grid:isBlocked(cx + 1, cz) then
+                                edge(b, d, 0.9)
+                            end
+                            if grid:isBlocked(cx, cz + 1) then
+                                edge(c, d, 0.9)
+                            end
                         end
                     end
                 end
@@ -57,11 +83,13 @@ function Debug.drawMap(map, camera, settings)
         for id, targets in pairs(map.portals) do
             local level, cx, cz = map:decode(id)
             local x, z = map.levels[level]:toWorld(cx, cz)
-            local a = { x, (map:heightAtCell(level, cx, cz) or 0) + 0.1, z }
-            for _, target in ipairs(targets) do
-                local tl, tx, tz = map:decode(target[1])
-                local bx, bz = map.levels[tl]:toWorld(tx, tz)
-                line(camera, a, { bx, (map:heightAtCell(tl, tx, tz) or 0) + 0.1, bz }, { 1, 1, 1 }, 0.9)
+            if (x - eye[1]) ^ 2 + (z - eye[3]) ^ 2 < range2 then
+                local a = { x, (map:heightAtCell(level, cx, cz) or 0) + 0.1, z }
+                for _, target in ipairs(targets) do
+                    local tl, tx, tz = map:decode(target[1])
+                    local bx, bz = map.levels[tl]:toWorld(tx, tz)
+                    line(camera, a, { bx, (map:heightAtCell(tl, tx, tz) or 0) + 0.1, bz }, { 1, 1, 1 }, 0.9)
+                end
             end
         end
     end
