@@ -42,9 +42,25 @@ function Editor.open(workspace)
             end
             return ok, tostring(err)
         end)
+        popup.ui:button({
+            position = { 0, 4, 0, 88 },
+            size = { 1, -8, 0, 34 },
+            text = (registry:affects3D(selected) and '[x] ' or '[ ] ')
+                .. 'Affects 3D (Shader2D in "'
+                .. selected
+                .. '" may change the 3D scene)',
+            fontSize = 12,
+            textScaled = true,
+            maxTextSize = 12,
+            backgroundColor = { 0.085, 0.135, 0.19 },
+            onPress = function()
+                registry:setAffects3D(selected, not registry:affects3D(selected))
+                render()
+            end,
+        }, popup.body)
         for i, name in ipairs(registry.names) do
             popup.ui:button({
-                position = { 0, 4, 0, 88 + (i - 1) * 38 },
+                position = { 0, 4, 0, 126 + (i - 1) * 38 },
                 size = { 0.48, -8, 0, 34 },
                 text = name .. ' (' .. registry:priority(name) .. ')',
                 fontSize = 12,
@@ -56,7 +72,7 @@ function Editor.open(workspace)
             }, popup.body)
             local available = registry:priority(selected) > registry:priority(name)
             popup.ui:button({
-                position = { 0.48, 0, 0, 88 + (i - 1) * 38 },
+                position = { 0.48, 0, 0, 126 + (i - 1) * 38 },
                 size = { 0.52, -4, 0, 34 },
                 text = (registry:suppresses(selected, name) and '[x] Suppress ' or '[ ] Suppress ')
                     .. name,
@@ -71,7 +87,7 @@ function Editor.open(workspace)
                 end,
             }, popup.body)
         end
-        popup.body.length = 92 + #registry.names * 38
+        popup.body.length = 130 + #registry.names * 38
     end
     render()
     return popup

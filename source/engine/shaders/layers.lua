@@ -5,7 +5,13 @@ Layers.__index = Layers
 
 function Layers.new()
     return setmetatable(
-        { names = { 'Default' }, priorities = { Default = 0 }, suppression = {}, revision = 0 },
+        {
+            names = { 'Default' },
+            priorities = { Default = 0 },
+            suppression = {},
+            blocked3D = {},
+            revision = 0,
+        },
         Layers
     )
 end
@@ -49,6 +55,19 @@ function Layers:suppresses(upper, lower)
             and self.suppression[upper]
             and self.suppression[upper][lower]
         or false
+end
+
+-- A layer may forbid its Shader2D nodes from touching the 3D scene (default: allowed). A node
+-- affects 3D only when its own `affects3D` is set and its layer allows it.
+function Layers:affects3D(name)
+    self:priority(name)
+    return not self.blocked3D[name]
+end
+
+function Layers:setAffects3D(name, enabled)
+    self:priority(name)
+    self.blocked3D[name] = enabled == false or nil
+    self.revision = self.revision + 1
 end
 
 function Layers:resolve(nodes, out)
