@@ -101,6 +101,21 @@ function Tests:draw()
         }, Manager)
         stub.update(stub, 0.01)
         self:check(updated == 1, 'the scene manager runs updateInBackground for an unfocused scene')
+        local full = 0
+        stub.stack[1].update = function() full = full + 1 end
+        stub.stack[1].settings = { runInBackground = true }
+        stub.update(stub, 0.01)
+        self:check(full == 1, 'runInBackground in the scene settings keeps the full update')
+        stub.stack[1].settings = { runInBackground = false }
+        stub.backgroundOverride = true
+        stub.update(stub, 0.01)
+        self:check(full == 2, 'the debug menu override keeps the full update')
+        stub.backgroundOverride = nil
+        stub.update(stub, 0.01)
+        self:check(
+            full == 2 and updated == 2,
+            'without the setting an unfocused scene only updates in background'
+        )
         local count = 0
         for _ in pairs(session.views) do
             count = count + 1

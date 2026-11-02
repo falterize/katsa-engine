@@ -53,6 +53,8 @@ Starter Game in the scene menu. There is no separate ready-game folder to edit.
 The generator copies this canonical scene to `source/game/scenes/start` only
 when you explicitly create an independent game.
 
+Scene `settings.lua.runInBackground = true` keeps the scene's full update running while the window is unfocused or minimised (default `false`: the scene freezes). The debug menu has a matching toggle for the current run. A scene can instead define `updateInBackground(dt, realDt)` in its state to run only that work (network, physics) while frozen.
+
 Scene `settings.lua.frameRateLimit` is optional: `0` is uncapped, and a positive
 integer requests a frame ceiling. The scene file controls the chosen value. The loop waits until
 the frame deadline, using a high-resolution blocking timer on supported Windows

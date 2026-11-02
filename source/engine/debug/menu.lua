@@ -135,6 +135,22 @@ function Debug.new(scene)
             scene.console:toggle()
         end
     end)
+    toggle('Keep running when the window is unfocused', function()
+        return scene.manager ~= nil and scene.manager:runsInBackground()
+    end, function()
+        local manager = scene.manager
+        if manager then
+            manager.backgroundOverride = not manager:runsInBackground()
+            -- Audio follows the same rule the next time the focus changes.
+            if not manager.focused and scene.audio then
+                if manager.backgroundOverride then
+                    scene.audio:resume()
+                else
+                    scene.audio:pause()
+                end
+            end
+        end
+    end)
     row('CPU profiler / error journal', function()
         require('source.engine.editor.debug.diagnostics').open(scene.workspace)
     end)
