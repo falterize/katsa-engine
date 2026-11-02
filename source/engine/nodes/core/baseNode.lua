@@ -197,6 +197,12 @@ for _, key in ipairs({
     Node[key] = Hierarchy[key]
 end
 
+-- Deep copy of this node and its descendants; `properties` overrides the copy's fields
+-- (for example { Name = 'Copy' }) and `parent` defaults to this node's parent.
+function Node:clone(properties, parent)
+    return require('source.engine.nodes.core.clone').node(self, properties, parent)
+end
+
 function Node:attachment(properties)
     return Node.new('Attachment3D', properties or {}, self)
 end
@@ -208,6 +214,7 @@ for _, key in ipairs({
     'onDestroy',
     'destroy',
     'attachment',
+    'clone',
     'connect',
     'emit',
     'setProcess',

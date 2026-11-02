@@ -29,6 +29,11 @@ switching works the same in a folder, a `.katsa` and a fused executable.
 
 `KATSA_LIB_DIR` points the loader at another directory.
 
+**Running from source on Windows** (`luajit tools/dev/katsa.lua`): compiled libraries are not stored in
+Git. Put `katsa_native.dll`, `katsa_box2d.dll`, `katsa_net.dll`, `SDL2.dll` and `soft_oal.dll`
+(OpenAL Soft) into `lib/` in the repository root, or download the `native.yml` workflow artifact.
+Without `katsa_native.dll` the start fails with `Cannot load Katsa; tried: ...`.
+
 ## Build steps
 
 1. **katsa_native** (any target): `python tools/native/build.py <linux|windows|macos|android>`.
