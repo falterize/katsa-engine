@@ -1,0 +1,22 @@
+{
+    "sourceArchive": "stare-shooter.rar",
+    "exporter": "Godot 4.7.1 stable mono; GLTFDocument",
+    "conversion": "Reflect Z, bind matrices and rotations together; trim to authored clip boundaries; retain eight weights; embed original PNG bytes.",
+    "clipsSeconds": {
+        "Player_Crouch": 1.0666666666666669,
+        "Player_Fall": 0.6,
+        "Player_Idle": 9.933333333333334,
+        "Player_Jump": 0.6,
+        "Player_Walk": 1.4,
+        "RESET": 0.001
+    },
+    "sourceFiles": {
+        "assets/graphics/1.png": "837c92b03d317f6a1bd32fff01b76db10047f330f3a5ecafbf407c011cef09d3",
+        "assets/graphics/3.png": "0bf0ae3b700fdbe4da5ff5c994953d33b96196f477367a8b2e459a98ddf101e4",
+        "assets/models/Tubby/Base_Color_Body.png": "9d421a703672efd1fda13736e0fa0a21983d2277c5654b2243f083c0a0689266",
+        "assets/models/Tubby/Base_Color_Ears.png": "c29100a9167f9011fe17fad53a2f100e5e615083d0d64c25483da292ccb9b1a6",
+        "assets/models/Tubby/Base_Color_Face.png": "be660893b65134d42977f4cc9068a52a1f288ad8372556dca208a81b207af46e",
+        "assets/models/Tubby/Teletubby 4.fbx": "23b4b821e660723be0b3e1051d28bc129cf13e9dc1449ff02003cdae40b43408"
+    },
+    "assetLicense": "Unspecified in the supplied project; original rights retained."
+}

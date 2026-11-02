@@ -28,7 +28,7 @@ function Menu.create(scene, callbacks)
     ui:text({
         position = { 0, 20, 0, 50 },
         size = { 1, -40, 0, 22 },
-        text = 'WASD / arrows drive, Shift nitro, E change car, N watch an ad for nitro',
+        text = 'WASD move or drive, Space jump, Shift run or nitro, E enter / exit a car, N watch an ad for nitro',
         fontSize = 15,
         textColor = { 0.5, 0.75, 0.9 },
         align = 'left',
@@ -194,11 +194,11 @@ function Hud.create(scene, callbacks)
         fontSize = 28,
         align = 'right',
     }, self.root)
-    ui:button({
+    self.sitButton = ui:button({
         position = { 1, -16, 0, 112 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
-        text = 'Change car (E)',
+        text = 'Enter car (E)',
         fontSize = 15,
         backgroundColor = { 0.085, 0.135, 0.19 },
         onPress = callbacks.sit,
@@ -230,6 +230,16 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.1, 0.25, 0.2 },
         onPress = callbacks.pathDebug,
     }, self.root)
+    -- Touch jump for the on-foot player; hidden while riding.
+    self.jumpButton = ui:button({
+        position = { 1, -16, 1, -150 },
+        size = { 0, 120, 0, 64 },
+        anchorPoint = { 1, 0 },
+        text = 'Jump',
+        fontSize = 20,
+        backgroundColor = { 0.12, 0.3, 0.45 },
+        onPress = callbacks.jump,
+    }, self.root)
     self.message = ui:text({
         position = { 0.5, 0, 0, 120 },
         size = { 0, 500, 0, 30 },
@@ -243,6 +253,13 @@ end
 
 function Hud:setPathDebug(on)
     self.debugPath.text = 'Path debug: ' .. (on and 'ON' or 'OFF')
+end
+
+-- On foot the seat button enters a car and Jump is shown; in a car it exits and nitro is shown.
+function Hud:setOnFoot(onFoot)
+    self.sitButton.text = onFoot and 'Enter car (E)' or 'Exit car (E)'
+    self.jumpButton.visible = onFoot
+    self.adButton.visible = not onFoot
 end
 
 function Hud:setVisible(visible)

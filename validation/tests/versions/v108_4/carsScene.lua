@@ -84,6 +84,17 @@ function Tests:draw()
         -- The bot only patrols here, so it cannot ram the test drive.
         session.server.bot.sightRadius = 0
     elseif frame == 201 then
+        local walker = session.walker
+        self:check(
+            walker and (walker.fsm.name == 'idle' or walker.fsm.name == 'walk'),
+            'the player starts on foot beside their own car (' .. tostring(walker and walker.fsm.name) .. ')'
+        )
+        self:check(session.client:getCar() == nil, 'nobody is seated at spawn')
+        session:changeCar() -- E near the parked car
+    elseif frame == 215 then
+        local _, car, seat = session.client:getCar()
+        self:check(car and seat == 1, 'E gets the player into the driver seat')
+        self:check(session.walker.fsm.name == 'drive', 'the walker state machine switches to drive')
         host.input.actions.keys.w = true
     elseif frame == 320 then
         local _, car = session.client:getCar()
@@ -177,8 +188,26 @@ function Tests:draw()
             math.abs(model.pitch) < 30 and math.abs(model.roll) < 30 and model.y > 0.3,
             'the car rests on its wheels after the crash'
         )
+        session:changeCar() -- E in the car gets out
+    elseif frame == 596 then
+        local walker = session.walker
+        self:check(session.client:getCar() == nil, 'E in a car gets the player out')
+        local car = session.server.cars[self.wall]
+        local apart = math.sqrt((walker.model.x - car.x) ^ 2 + (walker.model.z - car.z) ^ 2)
+        self:check(
+            walker.fsm.name ~= 'drive' and apart < 5,
+            'the walker stands beside the car it left (' .. ('%.1f'):format(apart) .. ' m)'
+        )
+        self:shot('exited')
+        host.input.actions.keys.w = true
+    elseif frame == 640 then
+        self:shot('walking')
+        host.input.actions.keys.w = nil
         self:startRemote()
-    elseif frame == 700 then
+    elseif frame == 720 then
+        local rc = self.remote.client
+        rc:sit(rc:findNearbyCar(6))
+    elseif frame == 740 then
         local rc = self.remote.client
         local netId, car = rc:getCar()
         local server = session.server
@@ -194,7 +223,7 @@ function Tests:draw()
         )
         self.remoteStart = { car.x, car.z }
         self.remote.throttle = 1
-    elseif frame == 880 then
+    elseif frame == 940 then
         local _, car = self.remote.client:getCar()
         local server = session.server
         local moved = math.sqrt((car.x - self.remoteStart[1]) ^ 2 + (car.z - self.remoteStart[2]) ^ 2)
@@ -206,7 +235,7 @@ function Tests:draw()
         )
         self.remote.throttle = 0
         self.remote.client:disconnect()
-    elseif frame == 1000 then
+    elseif frame == 1060 then
         local server = session.server
         self:check(
             server.server:getAuthority(self.remoteId) == nil and server.bodies[self.remoteId].mode == 'dynamic',
@@ -221,7 +250,7 @@ function Tests:draw()
         )
         host:update(1 / 60, 1 / 60)
         host:draw()
-    elseif frame == 1010 then
+    elseif frame == 1080 then
         host:release()
         print('PASSED ' .. self.count .. ' v108.4 cars scene checks')
         katsa.event.quit()
