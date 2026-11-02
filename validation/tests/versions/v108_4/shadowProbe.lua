@@ -36,6 +36,9 @@ function Tests:draw()
     if self.frame == 40 and os.getenv('KATSA_NOSHADOW') and scene and scene.world then
         scene.world.environment.shadows.enabled = false
     end
+    if os.getenv('KATSA_TOGGLE') and scene and scene.world then
+        scene.world.environment.shadows.enabled = not (self.frame >= 68)
+    end
     if self.frame == 40 and os.getenv('KATSA_NOCAST') and scene and scene.world then
         for _, o in ipairs(scene.world.objects) do
             if o.skin then o.castShadow = false end
@@ -48,6 +51,18 @@ function Tests:draw()
     end
     if self.frame == 40 and os.getenv('KATSA_FREEZE') and scene and scene.world then
         scene.world.timeScale = 0
+    end
+    if os.getenv('KATSA_DATA') and self.frame >= 60 and self.frame < 76 and scene and scene.world then
+        local r = scene.world._activeRenderer
+        local sh = r and r.shadows
+        if sh then
+            local out = {}
+            for i = 1, 4 do
+                local d = sh.lightData[i]
+                out[#out + 1] = ('%s/%s'):format(tostring(d[1]), tostring(d[3]))
+            end
+            print(('DATA f%d gen=%s upd=%s pend=%s %s'):format(self.frame, tostring(sh.generation), tostring(sh.updatedFaces), tostring(sh.pendingFaces), table.concat(out, ' ')))
+        end
     end
     if self.frame >= 60 and self.frame < 76 + (tonumber(os.getenv('KATSA_FRAMES')) or 0) and dir then
         katsa.graphics.captureScreenshot(('%s/f%02d.png'):format(dir, self.frame - 60))
