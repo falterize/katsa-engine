@@ -6,6 +6,7 @@ another application has the focus. What runs in the second case is decided per s
 | Setting / hook | Where | Effect |
 | --- | --- | --- |
 | `runInBackground = true` | scene `settings.lua` | the scene's full `update` keeps running while unfocused |
+| `runWhenCovered = true` | scene `settings.lua` | the scene's `updateInBackground` keeps running while another scene (the Esc pause menu) is pushed on top, so a hosted game does not freeze |
 | `updateInBackground(dt, realDt)` | scene state / `Game` | runs *only* this while unfocused (network, physics, AI) |
 | debug menu *Run in background* | Debug / F4 | overrides the setting for the current run |
 
