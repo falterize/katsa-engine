@@ -36,6 +36,16 @@ function Tests:draw()
     if self.frame == 40 and os.getenv('KATSA_NOSHADOW') and scene and scene.world then
         scene.world.environment.shadows.enabled = false
     end
+    if self.frame == 40 and os.getenv('KATSA_NOCAST') and scene and scene.world then
+        for _, o in ipairs(scene.world.objects) do
+            if o.skin then o.castShadow = false end
+        end
+    end
+    if self.frame == 40 and os.getenv('KATSA_NORECV') and scene and scene.world then
+        for _, o in ipairs(scene.world.objects) do
+            if o.skin then o.receiveShadow = false end
+        end
+    end
     if self.frame == 40 and os.getenv('KATSA_FREEZE') and scene and scene.world then
         scene.world.timeScale = 0
     end
