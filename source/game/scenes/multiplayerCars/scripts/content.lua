@@ -397,7 +397,7 @@ function Session:wheelmoved(x, y)
         self.orbit:zoom(y)
         return true
     end
-    self.scene.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
+    return self.scene.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 -- Feeds the keys to the walker, and keeps its riding state in step with the seat the server gave.

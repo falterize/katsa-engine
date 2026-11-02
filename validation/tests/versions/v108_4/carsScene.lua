@@ -311,9 +311,64 @@ function Tests:draw()
         self:check(session.orbit.distance < mid, 'spreading two fingers zooms in')
         session:pointerreleased(1)
         session:pointerreleased(2)
+        -- The real event paths: the host forwards the wheel and the touches to the scene.
+        local wheelBefore = session.orbit.distance
+        host:wheelmoved(0, 1)
+        self:check(session.orbit.distance < wheelBefore, 'the mouse wheel zooms through the host')
+        local pinchBefore = session.orbit.distance
+        host:pointerpressed(11, 100, 100)
+        host:pointerpressed(12, 200, 100)
+        host:pointermoved(12, 320, 100, 120, 0)
+        host:pointerreleased(11, 100, 100)
+        host:pointerreleased(12, 320, 100)
+        self:check(session.orbit.distance < pinchBefore, 'a pinch zooms through the host')
+        -- World TimeScale also paces the server while the window is unfocused.
+        local seenStep
+        local original = session.updateInBackground
+        session.updateInBackground = function(_, dt) seenStep = dt end
+        host.world.root.timeScale = 5
+        host:updateInBackground(0.1, 0.1)
+        host.world.root.timeScale = 1
+        session.updateInBackground = original
+        self:check(
+            seenStep and math.abs(seenStep - 0.5) < 1e-9,
+            'the background step is scaled by the world TimeScale'
+        )
         self:shot('walking')
         host.input.actions.keys.w = nil
         self:startRemote()
+    elseif frame == 641 then
+        -- Walk (and sprint) up and down the hills: the fall state must never trigger on terrain.
+        local Arena = require('source.game.scenes.multiplayerCars.scripts.game.arena')
+        local walker = session.walker
+        local keys = host.input.actions.keys
+        local runs = { { -48, -10, 90 }, { -30, 10, 180 }, { 10, -35, 90 }, { -5, -40, 90 } }
+        local worst = 0
+        for _, run in ipairs(runs) do
+            for _, sprint in ipairs({ false, true }) do
+                walker:place(run[1], Arena.ground(run[1], run[2]) + 0.2, run[2])
+                session.orbit.yaw = run[3]
+                keys.w = true
+                session.runToggled = sprint
+                local streak, landed = 0, false
+                for _ = 1, 360 do
+                    session:update(1 / 60)
+                    if walker.fsm.name == 'fall' then
+                        streak = landed and streak + 1 or streak
+                    else
+                        landed = true
+                        streak = 0
+                    end
+                    worst = math.max(worst, streak)
+                end
+            end
+        end
+        session.runToggled = false
+        keys.w = nil
+        self:check(
+            worst <= 2,
+            'walking and sprinting over hills never flips to the fall state (' .. worst .. ' frames)'
+        )
     elseif frame == 720 then
         local rc = self.remote.client
         rc:sit(rc:findNearbyCar(6))

@@ -7,7 +7,10 @@ local Game = {}
 function Game:updateInBackground(dt, realDt)
     local demo = self.demo
     if demo and demo.updateInBackground then
-        return demo:updateInBackground(dt, realDt)
+        -- The world's TimeScale applies exactly as in a focused update: a hosted server keeps
+        -- its pace when the window loses focus.
+        local scaled = require('source.engine.world.clock').delta(self.world.root, dt)
+        return demo:updateInBackground(scaled, realDt)
     end
 end
 

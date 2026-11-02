@@ -8,6 +8,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 - multiplayerCars: walker gravity follows the physics world's gravity (`gravityMultiplier` 2.5, or an absolute `settings.gravity`), so changing the scene gravity changes jump height.
 - multiplayerCars: camera zoom on phones (two-finger pinch and +/- buttons) and toggle Run / Crouch buttons.
 - Scene manager: the `updateInBackground` step is time-scaled like a focused update, so the debug `timeScale` still affects a hosted game while its window is unfocused.
+- multiplayerCars: fixed the walker flipping to the fall animation on slopes. Climbing lifts the body (positive vertical speed), which the ground test treated as leaving the ground; only a short window after a jump is excluded now.
+- Game: the mouse wheel and touch pointers are forwarded to the scene's own `wheelmoved` / `pointer*` handlers (camera zoom and pinch did nothing before).
+- `updateInBackground` also receives the world TimeScale, so a hosted game keeps its debug time scale when the window loses focus.
 - multiplayerCars: hilly terrain (static Jolt bodies), chase camera orbit by dragging, no UP/DOWN buttons (`cameraButtons = false` scene setting), HUD moved below the Debug button, replicated bot route with a Path debug toggle, nitro exhaust flames.
 - multiplayerCars: cars are now rigid `Body3D` bodies (Jolt) with raycast spring suspension, drive/brake/grip forces, real collisions with terrain, walls and other cars, dents from physics impacts, and self-righting respawn. The server owns the physics; clients interpolate the replicated pose.
 - multiplayerCars: car authority follows the driver. A joined driver's client simulates its own car (kinematic stand-ins for the others) and the server follows its state; with no driver, or for the hosting player, the server simulates. Collisions felt by a driving client are reported to the server for dents.

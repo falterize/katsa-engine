@@ -5,6 +5,7 @@ local Jump = {}
 function Jump.enter(player)
     player.velocity[2] = player.settings.jumpPower
     player.grounded, player.air = false, true
+    player.jumpTimer = player.settings.jumpGrace
     player.jumpSequence = player.jumpSequence + 1
 end
 
