@@ -438,7 +438,32 @@ function Tests:draw()
             ('the character rides a moving body (%.1f m of %.1f m)'):format(carried, platformMoved)
         )
         platform:destroy()
+        -- A hard hit beside a wheel tears it off on the server...
+        local hitId, hitCar
+        for netId, candidate in pairs(session.server.cars) do
+            if candidate.damage then
+                hitId, hitCar = netId, candidate
+            end
+        end
+        session.server:addDent(hitId, hitCar, {
+            x = -0.9, y = 0.4, z = 1.3, nx = 1, ny = 0, nz = 0.2, speed = 32,
+        }, 1e9)
+        self:check(hitCar.detached ~= 0, 'a hard hit beside a wheel tears it off (server)')
+        self.hitCarId = hitId
         walker:place(-30, 3, -10)
+    elseif frame == 700 and self.hitCarId then
+        -- ... and every client hides it and sheds a rolling wheel.
+        local id = self.hitCarId
+        local view = session.views[id]
+        local replicated = session.client.cars[id]
+        local hidden = 0
+        for _, wheel in ipairs(view and view.wheels or {}) do
+            hidden = hidden + (wheel.visible == false and 1 or 0)
+        end
+        self:check(
+            replicated and replicated.detached ~= 0 and hidden >= 1 and #view.debris >= 1,
+            'the lost wheel replicates: hidden on the car and rolling away as debris'
+        )
     elseif frame == 720 then
         local rc = self.remote.client
         rc:sit(rc:findNearbyCar(6))

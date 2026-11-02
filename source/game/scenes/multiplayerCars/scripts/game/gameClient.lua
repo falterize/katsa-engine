@@ -97,10 +97,21 @@ function GameClient.new(context, options)
     client:remote('botPath'):onClient(function(mode, x, z, flat)
         self.botRoute = { mode = mode, x = x, z = z, points = flat }
     end)
-    client:remote('dents'):onClient(function(netId, list)
+    client:remote('dents'):onClient(function(netId, list, detached)
         local car = self.cars[netId]
         if car then
             car.dents:load(list)
+            local before = car.detached or 0
+            car.detached = detached or before
+            car.damage.detached = car.detached
+            for index = 1, 4 do
+                local mask = 2 ^ (index - 1)
+                if math.floor(car.detached / mask) % 2 == 1 and math.floor(before / mask) % 2 == 0 then
+                    if self.onWheelLost then
+                        self.onWheelLost(netId, car, index)
+                    end
+                end
+            end
             if self.onDents then
                 self.onDents(netId, car)
             end
@@ -155,7 +166,9 @@ function GameClient:afterPhysics()
                     impact.z,
                     impact.nx,
                     impact.nz,
-                    impact.speed
+                    impact.speed,
+                    impact.y,
+                    impact.ny
                 )
             end
             body.impacts = {}

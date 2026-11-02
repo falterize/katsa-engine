@@ -1,11 +1,11 @@
 -- Body dents. A dent is a small record in car space, so the whole damage state is a short list
--- that can be replicated and replayed on every machine: { x, y, z, dx, dz, depth, radius }.
+-- that can be replicated and replayed on every machine: { x, y, z, dx, dz, depth, radius, dy }.
 -- (dx, dz) is the unit push direction (into the body). Vertices near the dent move along it.
 local Deformation = {}
 Deformation.__index = Deformation
 
 local MAX_DENTS = 24
-local MAX_DEPTH = 0.45
+local MAX_DEPTH = 0.55
 
 function Deformation.new(options)
     options = options or {}
@@ -31,6 +31,7 @@ function Deformation:addImpact(impact)
         y = impact.y or 0.5,
         z = impact.z,
         dx = impact.nx,
+        dy = impact.ny or 0,
         dz = impact.nz,
         depth = depth,
         radius = 0.7 + depth,
@@ -72,7 +73,8 @@ function Deformation:offsetAt(x, y, z)
             local weight = t * t * (3 - 2 * t) * dent.depth
             ox = ox + dent.dx * weight
             oz = oz + dent.dz * weight
-            oy = oy - weight * 0.15
+            -- Pushed in along the hit direction; a little extra sag makes the panel crumple.
+            oy = oy + (dent.dy or 0) * weight - weight * 0.1
         end
     end
     return ox, oy, oz
@@ -100,7 +102,8 @@ end
 function Deformation:serialize()
     local out = {}
     for _, dent in ipairs(self.dents) do
-        out[#out + 1] = { dent.x, dent.y, dent.z, dent.dx, dent.dz, dent.depth, dent.radius }
+        out[#out + 1] =
+            { dent.x, dent.y, dent.z, dent.dx, dent.dz, dent.depth, dent.radius, dent.dy or 0 }
     end
     return out
 end
@@ -116,6 +119,7 @@ function Deformation:load(list)
             dz = row[5],
             depth = row[6],
             radius = row[7],
+            dy = row[8] or 0,
         }
     end
 end

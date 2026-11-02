@@ -232,6 +232,11 @@ function Session:startClient(address, port, name)
             self.walkerViews[netId] = nil
         end
     end
+    client.onWheelLost = function(netId, _, index)
+        if self.views[netId] then
+            self.views[netId]:shedWheel(index)
+        end
+    end
     client.onDents = function(netId)
         if self.views[netId] then
             self.views[netId]:markDirty()

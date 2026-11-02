@@ -2,6 +2,7 @@
 -- authority use one step function. The simulated object is the vehicle model itself.
 local Model = require('scene.nodes.vehicle.model')
 local Deformation = require('scene.nodes.vehicle.deformation')
+local Damage = require('scene.nodes.vehicle.damage')
 local Arena = require('scene.scripts.game.arena')
 
 local CarEntity = {}
@@ -22,6 +23,8 @@ function CarEntity.create(_, args)
     car.impacts = {}
     car.dents = Deformation.new()
     car.dents:load(args.dents)
+    car.detached = args.detached or 0 -- torn-off wheels (bit i-1 = wheel i), set by the server
+    car.damage = Damage.new(car.detached)
     car.isBot = args.bot == true
     car.color = args.color
     for index, id in ipairs(args.seats or {}) do
