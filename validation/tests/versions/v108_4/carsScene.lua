@@ -411,6 +411,34 @@ function Tests:draw()
             worst <= 2,
             'walking and sprinting over hills never flips to the fall state (' .. worst .. ' frames)'
         )
+        -- Standing on a moving body carries the character along with it.
+        local platform = session.scene.world:create('Body3D', {
+            name = 'TestPlatform',
+            bodyType = 'Dynamic',
+            size = { 8, 0.5, 8 },
+            position = { 0, 40, 0 },
+            mass = 4000,
+            gravityScale = 0,
+            autoSleep = false,
+            linearDamping = 0,
+            angularDamping = 0,
+            rotationFactor = { 0, 0, 0 },
+            friction = 0.5,
+        })
+        walker:place(0, 40.25, 0)
+        local startX = 0 -- where the walker was placed
+        for _ = 1, 150 do
+            platform.body:setVelocity({ 3, 0, 0 })
+            session:update(1 / 60)
+        end
+        local carried = walker.model.x - startX
+        local platformMoved = platform.position[1]
+        self:check(
+            walker.fsm.name ~= 'fall' and math.abs(carried - platformMoved) < 1.5 and carried > 4,
+            ('the character rides a moving body (%.1f m of %.1f m)'):format(carried, platformMoved)
+        )
+        platform:destroy()
+        walker:place(-30, 3, -10)
     elseif frame == 720 then
         local rc = self.remote.client
         rc:sit(rc:findNearbyCar(6))

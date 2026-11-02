@@ -5,6 +5,25 @@ local Affine = require('source.engine.math.affine')
 local BodyExtensions = {}
 
 function BodyExtensions.install(Body3D, Physics, O)
+    -- Velocity of the material point of this body at a world position (linear + angular x r),
+    -- in world units per second. Something standing on a moving body is carried by this.
+    function Body3D:getPointVelocity(position, out)
+        out = out or {}
+        self._pointPosition = self._pointPosition or O.Vec3.new()
+        self._pointAngular = self._pointAngular or O.Vec3.new()
+        self._pointVelocity = self._pointVelocity or {}
+        local p, angular = self._pointPosition, self._pointAngular
+        self.raw:getPositionTo(p)
+        self.raw:getAngularVelocityTo(angular)
+        local v, units = self:getVelocity(self._pointVelocity), self.physics.units
+        local rx, ry, rz =
+            position[1] - p.x * units, position[2] - p.y * units, position[3] - p.z * units
+        out[1] = v[1] + (angular.y * rz - angular.z * ry)
+        out[2] = v[2] + (angular.z * rx - angular.x * rz)
+        out[3] = v[3] + (angular.x * ry - angular.y * rx)
+        return out
+    end
+
     function Body3D:pointResponse(position, axis)
         self._pointPosition = self._pointPosition or O.Vec3.new()
         self._pointAngular = self._pointAngular or O.Vec3.new()
