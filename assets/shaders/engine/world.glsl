@@ -37,6 +37,9 @@ vec4 position(mat4 transformProjection, vec4 vertexPosition) {
     if(instanced) {
         normalMatrix=transpose(mat3(instanceNormal1,instanceNormal2,instanceNormal3));
     }
+    // Skinned meshes derive the normal matrix from the model matrix sent with the same draw,
+    // so it can never lag behind a stale per-object uniform.
+    else if(skinEnabled) normalMatrix=transpose(inverse(mat3(modelMatrix)));
     diagnosticPosition = surfaceMissing
         ? (vertexPosition.xyz-surfaceDiagnosticBounds.xyz)*surfaceDiagnosticBounds.w
         : vec3(0.0);
