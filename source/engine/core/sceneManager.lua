@@ -207,6 +207,19 @@ function Manager:update(dt, realDt)
             error(err, 0)
         end
     end
+    -- Scenes below an overlay (the pause menu) normally freeze. One that must keep serving
+    -- something, a hosted multiplayer game, opts in with `runWhenCovered = true` in its settings
+    -- and does that work in `updateInBackground`.
+    for index = #self.stack - 1, 1, -1 do
+        local covered = self.stack[index]
+        if covered.updateInBackground and covered.settings and covered.settings.runWhenCovered then
+            local ok, err = pcall(covered.updateInBackground, covered, dt * (self.time.scale or 1), frameDelta)
+            if not ok then
+                self.journal:record('Covered scene update', err, nil, 'scene.updateInBackground')
+                error(err, 0)
+            end
+        end
+    end
     self:flushTransitions()
 end
 
