@@ -86,6 +86,11 @@ options require a selected metric; all-Stats export also works from the list.
 The export dialog captures pointer input until closed. Stats keeps recording
 while the dialog is open.
 
+**Export without the panel:** press **F6** (or *Export Stats CSV* in the F4 menu, or call
+`scene.statistics:export(30)`) to save the last 30 seconds. Frame, loop and update histories are
+recorded in the background, so the panel can stay hidden; panel-only metrics are marked unavailable.
+The saved path is written to the console.
+
 CSV files are saved in `stats-logs/` inside `katsa.filesystem.getSaveDirectory()`.
 Use **Open log folder** to locate them. No network request or automatic disk
 logging occurs. Filenames include UTC time, scope/metric and window length;

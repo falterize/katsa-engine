@@ -74,6 +74,13 @@ function C.initialize(self)
     end
 end
 
+-- Applies 'Low' | 'Medium' | 'High' (see graphics/quality/profiles.lua). Only numeric
+-- render and shadow settings change; no feature is disabled.
+function C:applyQualityProfile(name)
+    assert(self._dimension ~= 2, 'Quality profiles belong to the 3D Environment')
+    return require('source.engine.graphics.quality.profiles').apply(self, name)
+end
+
 function C.mount(context, properties, parent)
     local plane = parent and parent:isA('World2D') and parent or nil
     assert(

@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Stats export without the panel: **F6** (also *Export Stats CSV* in the F4 menu, `statistics:export(seconds)`) saves the last 30 s of the background-recorded histories.
+- Quality profiles `Low` / `Medium` / `High` (`Environment:applyQualityProfile`, F4 menu): render density, MSAA and shadow resolution cap, distance, update rate, filter samples and update budget; no feature is removed. `renderDensity` is the render-resolution scale.
 - `Environment.rendering.vsync` (boolean) drives the window's vertical sync from the scene (default: the current window setting).
 - `TextLabel`, `Button` and `TextBox` have a `font` property: a path resolved like image paths (`shared://fonts/test-font`, extension optional, `.ttf`/`.otf`). A missing file logs a warning and falls back to the default font. `assets/fonts/test-font.ttf` ships as an example.
 - Renamed `nodes/physics/3d/constraints.lua` to `constraints3D.lua` (matching `constraints2D.lua`; the old name remains a one-line alias). The character texture `surfaces/grass.jpg` is now `surfaces/deltarune.jpg` (manifest key `deltarune`), and `surfaces/grass.png` is a real grass texture.

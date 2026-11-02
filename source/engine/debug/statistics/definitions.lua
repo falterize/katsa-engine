@@ -203,6 +203,18 @@ function Statistics.new(scene, parent)
     return self
 end
 
+-- Saves the recorded history (default: last 30 s) as CSV. Works while the panel is hidden:
+-- frame, loop and update histories are recorded in the background.
+function Statistics:export(seconds)
+    local ok, path, rows = self.panel:export('all', seconds == 5 and 5 or 30)
+    if ok then
+        katsa.log.log(('Stats exported: %d rows -> %s'):format(rows, path), 'Stats', false)
+    else
+        katsa.log.warn('Stats export failed: ' .. tostring(path), 'Stats', false)
+    end
+    return ok, path
+end
+
 function Statistics:sample()
     local scene = self.scene
     if scene.showStats and scene.manager.frameTime >= self.panel.nextRefresh then

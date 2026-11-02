@@ -245,6 +245,8 @@ function Game:keypressed(key)
         self.pauseMenu:toggle()
     elseif key == 'f3' then
         self.showStats = not self.showStats
+    elseif key == 'f6' then
+        self.statistics:export(30)
     elseif key == 'f4' then
         self.debugOverlay.visible = not self.debugOverlay.visible
     elseif key == 'f1' then

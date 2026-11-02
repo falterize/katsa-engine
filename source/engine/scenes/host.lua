@@ -142,6 +142,8 @@ function Host:keypressed(key)
     end
     if key == 'f3' then
         self.showStats = not self.showStats
+    elseif key == 'f6' and self.statistics then
+        self.statistics:export(30)
     elseif key == 'f1' then
         self.console:toggle()
     end

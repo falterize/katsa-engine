@@ -151,6 +151,11 @@ function Debug.new(scene)
             end
         end
     end)
+    row('Export Stats CSV (F6, last 30 s)', function()
+        if scene.statistics then
+            scene.statistics:export(30)
+        end
+    end)
     row('CPU profiler / error journal', function()
         require('source.engine.editor.debug.diagnostics').open(scene.workspace)
     end)
@@ -259,6 +264,12 @@ function Debug.new(scene)
         return scene.world.lighting.debug.gizmos.enabled == true
     end, function()
         scene.world.lighting.debug.gizmos.enabled = not scene.world.lighting.debug.gizmos.enabled
+    end)
+    local profiles = require('source.engine.graphics.quality.profiles')
+    row('Quality profile: tap to cycle (weak GPU: Low)', function(button)
+        scene.qualityProfileName = profiles.next(scene.qualityProfileName)
+        scene.world.environment:applyQualityProfile(scene.qualityProfileName)
+        button.text = 'Quality profile: ' .. scene.qualityProfileName
     end)
     row('Light loop: ' .. scene.world.environment.render.lightLoop, function(button)
         local render = scene.world.environment.render
