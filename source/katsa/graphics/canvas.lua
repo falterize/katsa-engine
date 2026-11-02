@@ -61,7 +61,7 @@ local function fboFor(canvases, options)
     if depth then
         local kind, id = depth:_renderAttachment()
         keys[#keys + 1] = 'd' .. kind:sub(1, 1) .. id
-    elseif options.stencil or options.depth then
+    elseif first and (options.stencil or options.depth) then
         keys[#keys + 1] = 's' .. first._pw .. 'x' .. first._ph .. ':' .. first._msaa
     end
     local key = table.concat(keys, ',')
@@ -78,11 +78,17 @@ local function fboFor(canvases, options)
         c:_attachTo(E.COLOR_ATTACHMENT0 + i - 1)
         drawBuffers[i - 1] = E.COLOR_ATTACHMENT0 + i - 1
     end
-    gl.glDrawBuffers(#canvases, drawBuffers)
+    if #canvases > 0 then
+        gl.glDrawBuffers(#canvases, drawBuffers)
+    else
+        -- Depth-only framebuffer: no color attachment may be drawn to or read from.
+        gl.glDrawBuffers(1, ffi.new('GLenum[1]', 0))
+        gl.glReadBuffer(0)
+    end
     if depth then
         local point = depth._info.stencil and E.DEPTH_STENCIL_ATTACHMENT or E.DEPTH_ATTACHMENT
         depth:_attachTo(point)
-    elseif options.stencil or options.depth then
+    elseif first and (options.stencil or options.depth) then
         gl.glFramebufferRenderbuffer(E.FRAMEBUFFER, E.DEPTH_STENCIL_ATTACHMENT, E.RENDERBUFFER,
             sharedDepthStencil(first._pw, first._ph, first._msaa))
     end
@@ -147,7 +153,8 @@ local function parseCanvasArgs(...)
             options.depthstencil = first.depthstencil.canvas
         end
     end
-    if #list == 0 then
+    -- A depth-only target (shadow maps) has no color canvas but still names a depthstencil.
+    if #list == 0 and not options.depthstencil then
         return nil, nil
     end
     return list, options
@@ -163,7 +170,7 @@ function G.setCanvasInternal(canvases, options)
         Core.bindFramebuffer(0)
         stats.canvasswitches = stats.canvasswitches + 1
     else
-        local first = canvases[1]
+        local first = canvases[1] or assert(options.depthstencil, 'setCanvas needs a target')
         for _, c in ipairs(canvases) do
             assert(c._kind == 'canvas', 'setCanvas expects Canvas objects')
             assert(not c._depth, 'Depth canvases can only be used as the depthstencil target')
@@ -174,7 +181,7 @@ function G.setCanvasInternal(canvases, options)
         assert(#canvases <= Core.limits.multicanvas,
             'This system can\'t simultaneously render to that many canvases')
         local depth = options.depthstencil
-        if depth then
+        if depth and canvases[1] then
             assert(depth._pw == first._pw and depth._ph == first._ph,
                 'The depthstencil canvas must match the canvas size')
             assert(depth._msaa == first._msaa,

@@ -31,7 +31,7 @@ end
 
 local function applyViewport()
     if S.canvases then
-        local first = S.canvases[1]
+        local first = S.canvases[1] or S.canvasOptions.depthstencil
         target.pw, target.ph, target.dpi, target.isCanvas = first._pw, first._ph, first._dpi, true
     else
         refreshBackbuffer()
