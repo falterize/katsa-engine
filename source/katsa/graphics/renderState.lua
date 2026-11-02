@@ -182,15 +182,17 @@ local cullApplied
 
 local function applyCull()
     cullApplied = S.cull .. S.winding .. tostring(target.isCanvas)
+    -- Rendering into a canvas flips the 2D projection, so front faces flip as well. The winding
+    -- is applied even with culling off: gl_FrontFacing still depends on it, and the applied-state
+    -- cache above would otherwise claim a winding the driver never received.
+    local ccw = (S.winding == 'ccw') ~= target.isCanvas
+    gl.glFrontFace(ccw and E.CCW or E.CW)
     if S.cull == 'none' then
         gl.glDisable(E.CULL_FACE)
         return
     end
     gl.glEnable(E.CULL_FACE)
     gl.glCullFace(S.cull == 'back' and E.BACK or E.FRONT)
-    -- Rendering into a canvas flips the 2D projection, so front faces flip as well.
-    local ccw = (S.winding == 'ccw') ~= target.isCanvas
-    gl.glFrontFace(ccw and E.CCW or E.CW)
 end
 
 function G.setMeshCullMode(mode)

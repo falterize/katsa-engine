@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Rig lighting flicker root cause: with mesh culling off the front-face winding was never sent to the driver (the applied-state cache claimed it was), so `gl_FrontFacing` was intermittently inverted and double-sided meshes (the skinned rig) got negated normals, losing the sun term. `glFrontFace` is now applied for every cull mode.
 - Skinned meshes now derive their normal matrix in the vertex shader from the same model matrix used for positions (suspected cause of rig lighting flicker: normals flipping between frames in `animationPhysicsLab`).
 - Shadow view debug mode (F4 > Shadow view, or `lighting.debug.shadowView = true`): paints lit surfaces green, shadowed ones red and surfaces whose shadow data was not evaluated blue, to tell shadow-map darkness from other darkness. Brightness shows the sun cascade (brightest = nearest). F4 > Normal view (`lighting.debug.normalView`) paints world normals as colour to spot flipped skinned normals.
 - New plugin `uiStyler` (style sheets by class / tag / name with `$token` values, `corner` and `stroke` pseudo properties, themes switchable at runtime; see `docs/guides/ui/uiStyler.md`) and the scene `launcherShowcase` (a launcher window in dark and light themes with an icon toolbar, grouped list, action panel, status bar and a background picture).
