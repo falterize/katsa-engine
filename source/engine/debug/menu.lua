@@ -265,6 +265,11 @@ function Debug.new(scene)
     end, function()
         scene.world.lighting.debug.gizmos.enabled = not scene.world.lighting.debug.gizmos.enabled
     end)
+    toggle('Shadow view (red shadowed, green lit, blue none)', function()
+        return scene.world.lighting.debug.shadowView == true
+    end, function()
+        scene.world.lighting.debug.shadowView = not scene.world.lighting.debug.shadowView
+    end)
     local profiles = require('source.engine.graphics.quality.profiles')
     row('Quality profile: tap to cycle (weak GPU: Low)', function(button)
         scene.qualityProfileName = profiles.next(scene.qualityProfileName)
