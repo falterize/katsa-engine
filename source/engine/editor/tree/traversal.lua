@@ -100,6 +100,9 @@ local function children(node)
                             { 'Physics3D', node.debug.physics, 'PhysicsDebug' },
                             { 'Gizmos', node.debug.gizmos },
                         }
+                    for _, section in ipairs(rawget(node, '_pluginDebug') or {}) do
+                        debugEntries[#debugEntries + 1] = { section.title, section.settings }
+                    end
                     for index, child in ipairs(debugEntries) do
                         local item = row._categoryRows[child[1]]
                             or {

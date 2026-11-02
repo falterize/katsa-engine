@@ -53,8 +53,11 @@ function GameServer.new(context, options)
             self.hostPlayer = player -- the first client is the hosting machine's own player
         end
         self:onPlayerAdded(player)
+        self:log('%s joined (id %d)%s', player.name, player.id, player == self.hostPlayer and ' [HOST]' or '')
+        self:publishHost()
     end)
     server.playerRemoved:connect(function(player)
+        self:log('%s left', player.name)
         self:leaveCar(player)
         self.walkers[player.id] = nil
         self.refills[player.id] = nil
@@ -143,13 +146,33 @@ function GameServer:nextSpawnPoint()
     return point
 end
 
+-- The bot's navigation: baked from the physics world by a NavMap node when there is one (so it
+-- sees exactly what cars collide with); otherwise built from the arena data.
+function GameServer:buildNav(Pathfinding)
+    local world = self.options.world
+    if world and world.physics and world.plugins and world.plugins.names.pathfinding then
+        local map = world:create('NavMap', {
+            name = 'ArenaNavMap',
+            areaSize = { Arena.size, Arena.size },
+            cellSize = Arena.cellSize,
+            floors = 2,
+            castTop = 20,
+            castBottom = -2,
+        })
+        self.navMap = map
+        map:bake()
+        return map:getMap()
+    end
+    return Arena.buildNav(Pathfinding)
+end
+
 function GameServer:spawnBot()
     local point = Arena.spawns[#Arena.spawns]
     local model, netId =
         self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
     local Pathfinding = Plugins.require('pathfinding')
     self.bot = Bot.new(model, {
-        nav = Arena.buildNav(Pathfinding),
+        nav = self:buildNav(Pathfinding),
         sightRadius = self.options.sightRadius,
     })
     self.botId = netId
@@ -172,6 +195,7 @@ function GameServer:onPlayerAdded(player)
         name = player.name,
     }, player)
     self.walkers[player.id] = walker
+    self:log('spawned %s on foot at (%.0f, %.0f) with car %d', player.name, x, z, netId)
 end
 
 -- Gives the car's physics to its driver's client, or back to the server (nil, or the hosting
@@ -240,6 +264,7 @@ function GameServer:exit(player)
     local heading = math.rad(car.heading)
     local x, z = car.x + math.cos(heading) * 2.8, car.z - math.sin(heading) * 2.8
     self:leaveCar(player)
+    self:log('%s got out of car %d', player.name, netId)
     return true, x, Arena.ground(x, z) + 0.2, z
 end
 
@@ -269,6 +294,7 @@ function GameServer:seat(player, netId)
         self:assignDriver(netId, player)
     end
     self:publishSeats(netId)
+    self:log('%s sat in car %d (seat %d)', player.name, netId, seat)
     return seat
 end
 
@@ -288,9 +314,62 @@ function GameServer:bindRemotes()
                 { x = x, y = y, z = z, nx = nx, ny = ny, nz = nz, speed = math.min(speed, 40) }
         end
     end)
+    server:remote('chat'):onServer(function(player, text)
+        self:chat(player, text)
+    end)
+    server:remote('kick'):onRequest(function(player, id, reason)
+        return self:kickPlayer(player, id, reason)
+    end)
     server:remote('nitroAd'):onRequest(function(player, token)
         return self:grantNitro(player, token)
     end)
+end
+
+-- Tells everyone who the host is, so clients can tag them and show the kick menu to them only.
+function GameServer:publishHost()
+    self.server:remote('host'):fireAll(self.hostPlayer and self.hostPlayer.id or 0)
+end
+
+local CHAT_LIMIT, CHAT_BURST, CHAT_WINDOW = 200, 5, 4
+
+-- A chat line from a player: trimmed, length-limited, and rate-limited (5 lines per 4 seconds).
+function GameServer:chat(player, text)
+    text = tostring(text or ''):gsub('[%c]', ' '):match('^%s*(.-)%s*$')
+    if text == '' then
+        return
+    end
+    text = text:sub(1, CHAT_LIMIT)
+    local now = self.server.time
+    local recent = self.chatTimes and self.chatTimes[player.id] or {}
+    self.chatTimes = self.chatTimes or {}
+    self.chatTimes[player.id] = recent
+    for index = #recent, 1, -1 do
+        if now - recent[index] > CHAT_WINDOW then
+            table.remove(recent, index)
+        end
+    end
+    if #recent >= CHAT_BURST then
+        return
+    end
+    recent[#recent + 1] = now
+    self:log('chat <%s> %s', player.name, text)
+    self.server:remote('chat'):fireAll(player.id, player.name, player == self.hostPlayer, text)
+end
+
+-- Host-only: disconnects another player with a reason. They may join again. Returns ok, reason.
+function GameServer:kickPlayer(requester, id, reason)
+    if requester ~= self.hostPlayer then
+        return false, 'only the host can kick'
+    end
+    local target = self:findPlayer(id)
+    if not target or target == requester then
+        return false, 'no such player'
+    end
+    reason = tostring(reason or ''):sub(1, 80)
+    local message = reason ~= '' and ('Kicked by the host: ' .. reason) or 'Kicked by the host'
+    self:log('%s was kicked by %s%s', target.name, requester.name, reason ~= '' and (' (' .. reason .. ')') or '')
+    self.server:kick(target, message)
+    return true
 end
 
 -- A rewarded ad finished on a client; refill that player's car. Returns ok, reason.

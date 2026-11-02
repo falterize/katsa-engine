@@ -243,8 +243,17 @@ function Server:getAuthority(objectOrId)
     return entity and entity.authority
 end
 
+-- Disconnects a player. `reason` (text) is shown to them: the client's `disconnected` signal
+-- fires with it. They may join again afterwards.
 function Server:kick(player, reason)
-    player.peer:disconnect(reason or 0, 'later')
+    if type(reason) == 'string' then
+        local writer = Codec.writer()
+        writer:u8(P.REJECT)
+        writer:string(reason)
+        send(player, writer, P.RELIABLE)
+        player.link:update(1e9)
+    end
+    player.peer:disconnect(type(reason) == 'number' and reason or 1, 'later')
 end
 
 local function removePlayer(self, player)
@@ -285,6 +294,16 @@ local function handleHello(self, peer, reader)
     end
     if self:getPlayerCount() >= self.maxPlayers then
         return reject('Server is full')
+    end
+    -- Names are unique among connected players, ignoring case (options.uniqueNames = false to allow
+    -- duplicates).
+    if self.options.uniqueNames ~= false then
+        local wanted = name:lower()
+        for _, other in pairs(self.players) do
+            if other.name:lower() == wanted then
+                return reject('The name "' .. name .. '" is already taken')
+            end
+        end
     end
     local player = setmetatable({
         id = self.nextPlayerId,

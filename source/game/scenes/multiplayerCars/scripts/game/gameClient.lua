@@ -77,6 +77,37 @@ function GameClient.new(context, options)
             end
         end
     end)
+    -- Chat and roster: lines are kept for the UI (`onChat`) and echoed to the console.
+    self.chatLog, self.hostId = {}, 0
+    client:remote('chat'):onClient(function(id, name, isHost, text)
+        local line = { id = id, name = name, host = isHost, text = text }
+        self.chatLog[#self.chatLog + 1] = line
+        if #self.chatLog > 100 then
+            table.remove(self.chatLog, 1)
+        end
+        katsa.log.log(('[chat] %s%s: %s'):format(isHost and '[HOST] ' or '', name, text), 'multiplayerCars')
+        if self.onChat then
+            self.onChat(line)
+        end
+    end)
+    client:remote('host'):onClient(function(id)
+        self.hostId = id
+        if self.onRoster then
+            self.onRoster()
+        end
+    end)
+    client.playerJoined:connect(function(player)
+        katsa.log.log(('[client] %s joined'):format(player.name), 'multiplayerCars')
+        if self.onRoster then
+            self.onRoster()
+        end
+    end)
+    client.playerLeft:connect(function(player)
+        katsa.log.log(('[client] %s left'):format(player.name), 'multiplayerCars')
+        if self.onRoster then
+            self.onRoster()
+        end
+    end)
     client:remote('refill'):onClient(function(netId)
         local car = self.cars[netId]
         if car then

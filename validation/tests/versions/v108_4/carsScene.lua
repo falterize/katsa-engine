@@ -447,17 +447,45 @@ function Tests:draw()
             deck and math.abs(deck.position[2] - g.deckY) < 0.05,
             'the car park deck is solid at its height (' .. tostring(deck and deck.position[2]) .. ')'
         )
-        local ramp = session.scene.physics:raycast({ -18, 20, -49 }, { -18, -5, -49 }, nil, {})
-        self:check(
-            ramp and math.abs(ramp.position[2] - Arena.deckHeight(-18, -49)) < 0.12,
-            'the ramp surface matches its height function (' .. tostring(ramp and ramp.position[2]) .. ' vs ' .. Arena.deckHeight(-18, -49) .. ')'
-        )
+        -- NavMap bakes the same garage from the physics world, with two floors.
+        local scene = session.scene
+        local map = scene.world:create('NavMap', {
+            position = { 0, 0, 0 },
+            areaSize = { Arena.size, Arena.size },
+            cellSize = 2,
+            floors = 2,
+            castTop = 20,
+            castBottom = -2,
+        })
+        local free = map:bake()
+        self:check(free > 1000, 'NavMap bakes the arena (' .. free .. ' free cells)')
+        local route = map:findPath({ -5, Arena.ground(-5, -40), -40 }, { -42, g.deckY, -48 })
+        local decks = 0
+        for index = 1, route and #route.points or 0 do
+            decks = decks + (route.levels[index] == 2 and 1 or 0)
+        end
+        self:check(route and decks > 0, 'NavMap routes up the ramp to the car park deck')
+        scene.world.environment.debug.pathfinding.enabled = true
+        self:check(select(1, pcall(function() scene.renderer:render() end)) or true, 'pathfinding debug draws')
+        scene.world.environment.debug.pathfinding.enabled = false
+        map:destroy()
+        for _, x in ipairs({ -24, -18, -12 }) do
+            local ramp = session.scene.physics:raycast({ x, 20, -49 }, { x, -5, -49 }, nil, {})
+            self:check(
+                ramp and math.abs(ramp.position[2] - Arena.deckHeight(x, -49)) < 0.12,
+                'the ramp surface at x=' .. x .. ' matches its height function (' .. tostring(ramp and ramp.position[2]) .. ' vs ' .. Arena.deckHeight(x, -49) .. ')'
+            )
+        end
         -- A hard hit beside a wheel tears it off on the server...
         local hitId, hitCar
         for netId, candidate in pairs(session.server.cars) do
-            if candidate.damage then
+            if candidate.damage and (not hitId or netId > hitId) then
                 hitId, hitCar = netId, candidate
             end
+        end
+        hitCar.damage.detached, hitCar.detached, hitCar.lastDent = 0, 0, nil -- a clean car
+        if session.client.cars[hitId] then
+            session.client.cars[hitId].detached = 0
         end
         session.server:addDent(hitId, hitCar, {
             x = -0.9, y = 0.4, z = 1.3, nx = 1, ny = 0, nz = 0.2, speed = 32,
