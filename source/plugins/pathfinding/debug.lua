@@ -23,60 +23,177 @@ local function line(camera, a, b, color, alpha)
     end
 end
 
--- Cells near the camera only; every corner is projected once and shared by its neighbours, and
--- each free cell draws just its two near edges (plus far edges next to blocked cells).
+-- The per-cell facts the view needs (free flag, surface height) are extracted once per map
+-- revision, so a frame only walks the cells near the camera with plain array reads. Corners are
+-- projected once per frame and shared by neighbouring cells; no tables are created per frame.
+local layouts = setmetatable({}, { __mode = 'k' })
+local segment = { 0, 0, 0, 0 }
+local frame = 0
+
+local function revisionOf(map)
+    local total = map.revision or 0
+    for _, grid in ipairs(map.levels) do
+        total = total + (grid.revision or 0)
+    end
+    return total
+end
+
+local function layoutOf(map)
+    local revision = revisionOf(map)
+    local layout = layouts[map]
+    if layout and layout.revision == revision then
+        return layout
+    end
+    layout = { revision = revision, levels = {} }
+    local width, height = map.width, map.height
+    for level, grid in ipairs(map.levels) do
+        local free, heights, stamps, sx, sy = {}, {}, {}, {}, {}
+        for cz = 1, height do
+            for cx = 1, width do
+                local i = (cz - 1) * width + cx
+                free[i] = not grid:isBlocked(cx, cz)
+                heights[i] = (map:heightAtCell(level, cx, cz) or 0) + 0.05
+            end
+        end
+        layout.levels[level] = { free = free, heights = heights, stamps = stamps, sx = sx, sy = sy, ys = {} }
+    end
+    layouts[map] = layout
+    return layout
+end
+
+-- Cells near the camera only; each free cell draws just its two near edges (plus far edges next
+-- to blocked cells).
 function Debug.drawMap(map, camera, settings)
     local eye = camera.position or { 0, 0, 0 }
     local size = map.cellSize
     local reach = math.ceil(settings.drawDistance / size)
     local cxEye, czEye = map:toCell(eye[1], eye[3])
-    local x0, x1 = math.max(1, cxEye - reach), math.min(map.width, cxEye + reach)
-    local z0, z1 = math.max(1, czEye - reach), math.min(map.height, czEye + reach)
+    local width, height = map.width, map.height
+    local x0, x1 = math.max(1, cxEye - reach), math.min(width, cxEye + reach)
+    local z0, z1 = math.max(1, czEye - reach), math.min(height, czEye + reach)
     local range2 = settings.drawDistance ^ 2
-    local stride = map.width + 2
+    local layout = layoutOf(map)
+    local view = camera.view
+    local nearClip, far = camera.nearClip, camera.far
+    local halfWidth, halfHeight = camera.width / 2, camera.height / 2
+    local orthographic, scale, focal = camera.orthographic, camera.pixelsPerUnit, camera.focal
+    local g = katsa.graphics
+    local v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12 =
+        view[1], view[2], view[3], view[4], view[5], view[6], view[7], view[8], view[9], view[10], view[11], view[12]
+    frame = frame + 1
     for level, grid in ipairs(map.levels) do
         local color = FLOOR_COLORS[(level - 1) % #FLOOR_COLORS + 1]
-        local corners = {}
+        local data = layout.levels[level]
+        local free, heights, stamps, sx, sy = data.free, data.heights, data.stamps, data.sx, data.sy
+        local originX, originY = grid.originX, grid.originY
+        local stride = width + 2
+        -- Screen position of cell corner (ix, iz) at height y, cached for this frame.
         local function corner(ix, iz, y)
             local key = iz * stride + ix
-            local point = corners[key]
-            if point == nil then
-                local wx = grid.originX + (ix - 1) * size
-                local wz = grid.originY + (iz - 1) * size
-                local sx, sy = camera:project({ wx, y, wz })
-                point = sx and { sx, sy } or false
-                corners[key] = point
+            if stamps[key] ~= frame then
+                stamps[key] = frame
+                local wx = originX + (ix - 1) * size
+                local wz = originY + (iz - 1) * size
+                local x = v1 * wx + v2 * y + v3 * wz + v4
+                local vy = v5 * wx + v6 * y + v7 * wz + v8
+                local z = v9 * wx + v10 * y + v11 * wz + v12
+                if z < nearClip or z > far then
+                    sx[key] = false
+                elseif orthographic then
+                    sx[key], sy[key] = halfWidth + x * scale, halfHeight - vy * scale
+                else
+                    sx[key], sy[key] = halfWidth + x * focal / z, halfHeight - vy * focal / z
+                end
             end
-            return point
+            return sx[key], sy[key]
         end
-        local function edge(a, b, alpha)
-            if a and b then
-                katsa.graphics.setColor(color[1], color[2], color[3], alpha)
-                katsa.graphics.line(a[1], a[2], b[1], b[2])
+        local function edge(ax, ay, bx, by, alpha)
+            if ax and bx then
+                g.setColor(color[1], color[2], color[3], alpha)
+                segment[1], segment[2], segment[3], segment[4] = ax, ay, bx, by
+                g.line(segment)
             end
         end
         if settings.drawCells then
+            -- Neighbouring cells share edges on one straight line, so a run of free cells at the
+            -- same height is a single segment: sweeps along rows (near and far edges) and along
+            -- columns (left and right edges) replace four short segments per cell.
+            local ys = data.ys
             for cz = z0, z1 do
+                local row = (cz - 1) * width
+                local dz = originY + (cz - 0.5) * size - eye[3]
                 for cx = x0, x1 do
-                    if not grid:isBlocked(cx, cz) then
-                        local x, z = grid:toWorld(cx, cz)
-                        local dx, dz = x - eye[1], z - eye[3]
-                        if dx * dx + dz * dz < range2 then
-                            local y = (map:heightAtCell(level, cx, cz) or 0) + 0.05
-                            local a, b, c, d =
-                                corner(cx, cz, y), corner(cx + 1, cz, y), corner(cx, cz + 1, y), corner(cx + 1, cz + 1, y)
-                            edge(a, b, 0.7)
-                            edge(a, c, 0.7)
-                            if grid:isBlocked(cx + 1, cz) then
-                                edge(b, d, 0.9)
+                    local i = row + cx
+                    local dx = originX + (cx - 0.5) * size - eye[1]
+                    ys[i] = free[i] and dx * dx + dz * dz < range2 and heights[i] or false
+                end
+            end
+            local function qualifies(cx, cz, horizontal, far)
+                local i = (cz - 1) * width + cx
+                local y = ys[i]
+                if y and far then
+                    if horizontal then
+                        if cz < height and free[i + width] then
+                            return nil
+                        end
+                    elseif cx < width and free[i + 1] then
+                        return nil
+                    end
+                end
+                return y or nil
+            end
+            local function sweep(horizontal, far)
+                local outerFrom, outerTo = horizontal and z0 or x0, horizontal and z1 or x1
+                local innerFrom, innerTo = horizontal and x0 or z0, horizontal and x1 or z1
+                local alpha = far and 0.9 or 0.7
+                for outer = outerFrom, outerTo do
+                    local start, runY
+                    for inner = innerFrom, innerTo + 1 do
+                        local y
+                        if inner <= innerTo then
+                            if horizontal then
+                                y = qualifies(inner, outer, true, far)
+                            else
+                                y = qualifies(outer, inner, false, far)
                             end
-                            if grid:isBlocked(cx, cz + 1) then
-                                edge(c, d, 0.9)
+                        end
+                        if start and y ~= runY then
+                            local line = (far and outer + 1 or outer)
+                            local ax, ay, bx, by
+                            if horizontal then
+                                ax, ay = corner(start, line, runY)
+                                bx, by = corner(inner, line, runY)
+                            else
+                                ax, ay = corner(line, start, runY)
+                                bx, by = corner(line, inner, runY)
                             end
+                            if ax and bx then
+                                edge(ax, ay, bx, by, alpha)
+                            else
+                                -- An end is behind the camera: draw the visible cells one by one.
+                                for cell = start, inner - 1 do
+                                    if horizontal then
+                                        ax, ay = corner(cell, line, runY)
+                                        bx, by = corner(cell + 1, line, runY)
+                                    else
+                                        ax, ay = corner(line, cell, runY)
+                                        bx, by = corner(line, cell + 1, runY)
+                                    end
+                                    edge(ax, ay, bx, by, alpha)
+                                end
+                            end
+                            start = nil
+                        end
+                        if y and not start then
+                            start, runY = inner, y
                         end
                     end
                 end
             end
+            sweep(true, false)
+            sweep(false, false)
+            sweep(true, true)
+            sweep(false, true)
         end
     end
     if settings.drawLinks then
