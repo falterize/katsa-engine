@@ -15,7 +15,7 @@ Walker.settings = {
     jumpPower = 6,
     acceleration = 50,
     friction = 35,
-    gravity = 24.5,
+    gravityMultiplier = 2.5, -- walker gravity = world gravity x this (9.81 x 2.5 = 24.5, snappy jumps)
     radius = 0.5,
     standingHeight = 2,
     crouchingHeight = 1,
@@ -23,6 +23,9 @@ Walker.settings = {
     crouchSpeedFactor = 0.65,
     blendSpeed = 5,
     mass = 80,
+    stickReach = 0.45, -- how far below the feet the ground still counts while walking
+    stickSpeed = 12, -- fastest snap down onto the terrain (m/s)
+    coyoteTime = 0.12, -- grace after the ground disappears (curbs, bumps, mesh seams)
 }
 
 function Walker.new(world, model, settings)
@@ -74,6 +77,8 @@ function Walker.new(world, model, settings)
         visualYaw = math.rad(model.heading or 0), -- heading: forward = (sin, cos)
         cameraYaw = 0,
         grounded = false,
+        groundGap = 0,
+        airTime = 0,
         air = true,
         walkBlend = 0,
         crouchBlend = 0,
@@ -96,11 +101,28 @@ function Walker:moving()
     return self.direction[1] ~= 0 or self.direction[3] ~= 0
 end
 
+-- Downward acceleration (m/s^2): follows the physics world's gravity, so changing it in the
+-- scene changes jump height. `settings.gravity` overrides it with an absolute value.
+function Walker:gravityAcceleration()
+    local settings = self.settings
+    if settings.gravity then
+        return settings.gravity
+    end
+    local physics = self.body.physics
+    local _, y = physics:getGravity()
+    return math.abs(y) * settings.gravityMultiplier
+end
+
 function Walker:gravity(dt)
-    if not self.grounded then
-        self.velocity[2] = self.velocity[2] - self.settings.gravity * dt
-    elseif self.velocity[2] < 0 then
-        self.velocity[2] = 0
+    if self.grounded and not self.coyote then
+        if self.groundGap > 0.03 then
+            -- Walking down a slope or over a bump: stay glued to the terrain instead of hovering.
+            self.velocity[2] = -math.min(self.groundGap / dt, self.settings.stickSpeed)
+        elseif self.velocity[2] < 0 then
+            self.velocity[2] = 0
+        end
+    else
+        self.velocity[2] = self.velocity[2] - self:gravityAcceleration() * dt
     end
 end
 
@@ -161,13 +183,26 @@ function Walker:step(dt)
     self.body:getVelocity(self.velocity)
     if not self.riding then
         local foot = p[2] - settings.standingHeight / 2
+        -- Uneven terrain: while walking on the ground the ray reaches further down, so a small
+        -- drop (slope, bump, seam between mesh triangles) never reads as a fall.
+        local reach = (self.grounded and not self.coyote) and settings.stickReach or 0.05
         self.rayStart[1], self.rayStart[2], self.rayStart[3] = p[1], foot + settings.radius, p[3]
-        self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = p[1], foot - 0.05, p[3]
+        self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = p[1], foot - reach, p[3]
         local hit =
             self.body.physics:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
-        self.grounded = self.velocity[2] <= 0.05
+        local onGround = self.velocity[2] <= 0.05
             and hit ~= nil
-            and hit.normal[2] >= math.cos(math.rad(45))
+            and hit.normal[2] >= math.cos(math.rad(50))
+        if onGround then
+            self.airTime = 0
+            self.coyote = false
+            self.groundGap = math.max(0, foot - hit.position[2])
+        else
+            self.airTime = self.airTime + dt
+            -- A short grace period keeps the walking state through one-frame ground misses.
+            self.coyote = self.grounded and self.velocity[2] <= 0.05 and self.airTime < settings.coyoteTime
+        end
+        self.grounded = onGround or self.coyote
         -- Forward is the camera's facing, right is its screen-right (the engine is left-handed).
         local sin, cos = math.sin(self.cameraYaw), math.cos(self.cameraYaw)
         local f, r = self.input.forward, self.input.right

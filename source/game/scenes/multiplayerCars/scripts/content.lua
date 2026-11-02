@@ -64,6 +64,18 @@ function Session.new(scene)
         jump = function()
             self.jumpHeld = 0.25
         end,
+        -- Toggles for phones: no need to keep a finger on the button.
+        run = function()
+            self.runToggled = not self.runToggled
+            self.hud:setToggles(self.runToggled, self.crouchToggled)
+        end,
+        crouch = function()
+            self.crouchToggled = not self.crouchToggled
+            self.hud:setToggles(self.runToggled, self.crouchToggled)
+        end,
+        zoom = function(amount)
+            self.orbit:zoom(amount)
+        end,
         leave = function()
             self:leave()
         end,
@@ -333,6 +345,53 @@ function Session:updateInBackground(dt)
     end
 end
 
+-- Two-finger pinch zooms the camera (touch screens).
+local PINCH_SCALE = 0.02
+
+local function pinchDistance(touches)
+    local a, b
+    for _, touch in pairs(touches) do
+        if not a then
+            a = touch
+        elseif not b then
+            b = touch
+        end
+    end
+    if a and b then
+        return math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2)
+    end
+end
+
+function Session:pointerpressed(id, x, y)
+    if id ~= 'mouse' then
+        self.touches = self.touches or {}
+        self.touches[id] = { x, y }
+        self.pinchLast = pinchDistance(self.touches)
+    end
+end
+
+function Session:pointermoved(id, x, y)
+    local touches = self.touches
+    if id == 'mouse' or not touches or not touches[id] then
+        return
+    end
+    touches[id][1], touches[id][2] = x, y
+    local distance = pinchDistance(touches)
+    if distance and self.pinchLast and self.client then
+        self.orbit:zoom((distance - self.pinchLast) * PINCH_SCALE)
+    end
+    self.pinchLast = distance
+end
+
+function Session:pointerreleased(id)
+    if self.touches then
+        self.touches[id] = nil
+        self.pinchLast = pinchDistance(self.touches)
+    end
+end
+
+Session.pointercancelled = Session.pointerreleased
+
 function Session:wheelmoved(x, y)
     if self.client then
         self.orbit:zoom(y)
@@ -353,8 +412,8 @@ function Session:updateWalker(dt, car, seat)
     input.forward = ((keys.w or keys.up) and 1 or 0) - ((keys.s or keys.down) and 1 or 0)
     input.right = ((keys.d or keys.right) and 1 or 0) - ((keys.a or keys.left) and 1 or 0)
     input.jump = keys.space == true or self.jumpHeld > 0
-    input.sprint = keys.lshift == true or keys.rshift == true
-    input.crouch = keys.lctrl == true or keys.c == true
+    input.sprint = keys.lshift == true or keys.rshift == true or self.runToggled == true
+    input.crouch = keys.lctrl == true or keys.c == true or self.crouchToggled == true
     walker.cameraYaw = math.rad(self.orbit.yaw)
     if car then
         walker:setSeat(car.x, car.y - car.config.rideHeight + 0.5, car.z)

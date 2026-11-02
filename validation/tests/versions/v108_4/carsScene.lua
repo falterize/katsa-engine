@@ -101,6 +101,15 @@ function Tests:draw()
         }, Manager)
         stub.update(stub, 0.01)
         self:check(updated == 1, 'the scene manager runs updateInBackground for an unfocused scene')
+        local seen
+        stub.time = { update = function(_, dt) return dt * 5 end }
+        stub.stack[1].updateInBackground = function(_, dt) seen = dt; updated = updated + 1 end
+        stub.update(stub, 0.01)
+        self:check(
+            seen and math.abs(seen - 0.05) < 1e-9,
+            'the background update gets the time-scaled step, so timeScale applies to a hosted game'
+        )
+        stub.time = { update = function(_, dt) return dt end }
         local full = 0
         stub.stack[1].update = function() full = full + 1 end
         stub.stack[1].settings = { runInBackground = true }
@@ -113,7 +122,7 @@ function Tests:draw()
         stub.backgroundOverride = nil
         stub.update(stub, 0.01)
         self:check(
-            full == 2 and updated == 2,
+            full == 2 and updated == 3,
             'without the setting an unfocused scene only updates in background'
         )
         local count = 0
@@ -249,6 +258,7 @@ function Tests:draw()
         self:shot('exited')
         host.input.actions.keys.w = true
     elseif frame == 640 then
+        local walker = session.walker
         local view
         for _, v in pairs(session.walkerViews) do
             view = v
@@ -262,6 +272,45 @@ function Tests:draw()
             tracks and tracks.Walk.weight > 0.5 and tracks.Idle.weight < 0.5,
             'walking blends the Walk animation in'
         )
+        self:check(
+            walker.fsm.name == 'walk' or walker.fsm.name == 'run',
+            'walking on the terrain never switches to the fall state (' .. walker.fsm.name .. ')'
+        )
+        -- Walker gravity follows the physics world's gravity.
+        local g = walker:gravityAcceleration()
+        local _, wy = session.scene.physics:getGravity()
+        self:check(
+            math.abs(g - math.abs(wy) * walker.settings.gravityMultiplier) < 1e-6,
+            'walker gravity follows the world gravity (' .. ('%.2f'):format(g) .. ' m/s2)'
+        )
+        -- Phone toggles: tapping Run / Crouch latches the input.
+        session.hud.runButton.onPress()
+        session.hud.crouchButton.onPress()
+        session:updateWalker(0.016, nil, nil)
+        self:check(
+            walker.input.sprint and walker.input.crouch,
+            'the Run and Crouch buttons latch sprint and crouch'
+        )
+        session.hud.runButton.onPress()
+        session.hud.crouchButton.onPress()
+        session:updateWalker(0.016, nil, nil)
+        self:check(
+            not walker.input.sprint and not walker.input.crouch,
+            'tapping the buttons again releases them'
+        )
+        -- Zoom: buttons and a two-finger pinch move the orbit camera.
+        local before = session.orbit.distance
+        session.hud.zoomIn.onPress()
+        self:check(session.orbit.distance < before, 'the zoom button brings the camera closer')
+        session.hud.zoomOut.onPress()
+        session.hud.zoomOut.onPress()
+        session:pointerpressed(1, 100, 100)
+        session:pointerpressed(2, 200, 100)
+        local mid = session.orbit.distance
+        session:pointermoved(2, 300, 100)
+        self:check(session.orbit.distance < mid, 'spreading two fingers zooms in')
+        session:pointerreleased(1)
+        session:pointerreleased(2)
         self:shot('walking')
         host.input.actions.keys.w = nil
         self:startRemote()

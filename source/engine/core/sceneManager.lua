@@ -194,7 +194,13 @@ function Manager:update(dt, realDt)
         -- An unfocused or minimised window freezes its scene. A scene that must keep serving
         -- something (a hosted game answering the network) does that work here instead.
         self._busy = true
-        local ok, err = pcall(scene.updateInBackground, scene, dt, realDt or dt)
+        local ok, err = pcall(
+            scene.updateInBackground,
+            scene,
+            -- Same scaled step as a focused update, so the debug timeScale still applies.
+            self.time:update(dt, scene.simulation == false),
+            dt
+        )
         self._busy = false
         if not ok then
             self.journal:record('Scene background update', err, nil, 'scene.updateInBackground')

@@ -153,6 +153,8 @@ end
 local Hud = {}
 Hud.__index = Hud
 
+local HUD_OFF = { 0.12, 0.2, 0.3 }
+
 function Hud.create(scene, callbacks)
     local ui = scene.ui
     local self = setmetatable({ ui = ui }, Hud)
@@ -240,6 +242,45 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.12, 0.3, 0.45 },
         onPress = callbacks.jump,
     }, self.root)
+    -- Toggle buttons: tap once to keep running / crouching, tap again to stop.
+    self.runButton = ui:button({
+        position = { 1, -16, 1, -222 },
+        size = { 0, 120, 0, 56 },
+        anchorPoint = { 1, 0 },
+        text = 'Run: OFF',
+        fontSize = 18,
+        backgroundColor = HUD_OFF,
+        onPress = callbacks.run,
+    }, self.root)
+    self.crouchButton = ui:button({
+        position = { 1, -146, 1, -150 },
+        size = { 0, 120, 0, 64 },
+        anchorPoint = { 1, 0 },
+        text = 'Crouch: OFF',
+        fontSize = 18,
+        backgroundColor = HUD_OFF,
+        onPress = callbacks.crouch,
+    }, self.root)
+    self.zoomIn = ui:button({
+        position = { 0, 16, 1, -150 },
+        size = { 0, 56, 0, 56 },
+        text = '+',
+        fontSize = 28,
+        backgroundColor = HUD_OFF,
+        onPress = function()
+            callbacks.zoom(2)
+        end,
+    }, self.root)
+    self.zoomOut = ui:button({
+        position = { 0, 16, 1, -86 },
+        size = { 0, 56, 0, 56 },
+        text = '-',
+        fontSize = 28,
+        backgroundColor = HUD_OFF,
+        onPress = function()
+            callbacks.zoom(-2)
+        end,
+    }, self.root)
     self.message = ui:text({
         position = { 0.5, 0, 0, 120 },
         size = { 0, 500, 0, 30 },
@@ -259,7 +300,18 @@ end
 function Hud:setOnFoot(onFoot)
     self.sitButton.text = onFoot and 'Enter car (E)' or 'Exit car (E)'
     self.jumpButton.visible = onFoot
+    self.runButton.visible = onFoot
+    self.crouchButton.visible = onFoot
     self.adButton.visible = not onFoot
+end
+
+local HUD_ON = { 0.15, 0.5, 0.25 }
+
+function Hud:setToggles(run, crouch)
+    self.runButton.text = 'Run: ' .. (run and 'ON' or 'OFF')
+    self.runButton.backgroundColor = run and HUD_ON or HUD_OFF
+    self.crouchButton.text = 'Crouch: ' .. (crouch and 'ON' or 'OFF')
+    self.crouchButton.backgroundColor = crouch and HUD_ON or HUD_OFF
 end
 
 function Hud:setVisible(visible)
