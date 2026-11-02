@@ -47,6 +47,12 @@ function Interface:load()
     end
 end
 
+-- True while the scene must keep updating in an unfocused window (e.g. a game server).
+function Interface:keepsRunning()
+    local state = self.state
+    return state ~= nil and state.keepsRunning ~= nil and state:keepsRunning() == true
+end
+
 function Interface:update(dt, realDt)
     local state = self.state
     self.lifecycle.update2D(state, dt, realDt)

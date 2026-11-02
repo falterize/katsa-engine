@@ -2,6 +2,12 @@ local ipairs = require('source.engine.math.array').ipairs
 
 local Game = {}
 
+-- True while the scene must keep updating in an unfocused window (e.g. a hosted game server).
+function Game:keepsRunning()
+    local demo = self.demo
+    return demo ~= nil and demo.keepsRunning ~= nil and demo:keepsRunning() == true
+end
+
 function Game:update(dt, realDt)
     if self.debugOverlay and self.debugOverlay.visible and self.debugOverlay._syncDebug then
         self.debugOverlay._syncDebug()

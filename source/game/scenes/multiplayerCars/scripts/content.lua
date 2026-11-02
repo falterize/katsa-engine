@@ -326,6 +326,11 @@ function Session:updateWalkerCamera(dt, walker)
     self.orbit:update(dt, walker.x, walker.y + 1.4, walker.z)
 end
 
+-- A hosted game keeps running with its window in the background, so joining players get answers.
+function Session:keepsRunning()
+    return self.server ~= nil
+end
+
 function Session:wheelmoved(x, y)
     if self.client then
         self.orbit:zoom(y)
