@@ -155,6 +155,14 @@ Hud.__index = Hud
 
 local HUD_OFF = { 0.12, 0.2, 0.3 }
 
+-- A HUD button: rounded, with a thin outline in the accent color.
+local function button(ui, settings, parent)
+    local node = ui:button(settings, parent)
+    ui:create('UICorner', { radius = { 0, 10 } }, node)
+    ui:create('UIStroke', { target = 'Border', thickness = { 0, 1.5 }, color = { 0.3, 0.6, 0.9 } }, node)
+    return node
+end
+
 function Hud.create(scene, callbacks)
     local ui = scene.ui
     local self = setmetatable({ ui = ui }, Hud)
@@ -176,11 +184,21 @@ function Hud.create(scene, callbacks)
         size = { 0, 260, 0, 22 },
         backgroundColor = { 0.05, 0.07, 0.1 },
     }, self.root)
+    ui:create('UICorner', { radius = { 0, 8 } }, self.barBack)
+    ui:create('UIStroke', { target = 'Border', thickness = { 0, 1.5 }, color = { 0.3, 0.6, 0.9 } }, self.barBack)
     self.bar = ui:container({
         position = { 0, 2, 0, 2 },
         size = { 1, -4, 1, -4 },
         backgroundColor = { 0.2, 0.75, 1 },
     }, self.barBack)
+    ui:create('UICorner', { radius = { 0, 6 } }, self.bar)
+    ui:create('Ramp', {
+        rotation = 0,
+        points = {
+            { time = 0, value = { 0.1, 0.55, 1, 1 } },
+            { time = 1, value = { 0.35, 0.95, 1, 1 } },
+        },
+    }, self.bar)
     ui:text({
         position = { 0, 16, 1, -80 },
         size = { 0, 260, 0, 22 },
@@ -196,7 +214,7 @@ function Hud.create(scene, callbacks)
         fontSize = 28,
         align = 'right',
     }, self.root)
-    self.sitButton = ui:button({
+    self.sitButton = button(ui, {
         position = { 1, -16, 0, 112 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
@@ -205,7 +223,7 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.085, 0.135, 0.19 },
         onPress = callbacks.sit,
     }, self.root)
-    self.adButton = ui:button({
+    self.adButton = button(ui, {
         position = { 1, -16, 0, 158 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
@@ -214,7 +232,7 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.35, 0.2, 0.55 },
         onPress = callbacks.ad,
     }, self.root)
-    ui:button({
+    button(ui, {
         position = { 1, -16, 0, 204 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
@@ -223,7 +241,7 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.4, 0.15, 0.15 },
         onPress = callbacks.leave,
     }, self.root)
-    self.debugPath = ui:button({
+    self.debugPath = button(ui, {
         position = { 1, -16, 0, 250 },
         size = { 0, 170, 0, 40 },
         anchorPoint = { 1, 0 },
@@ -233,7 +251,7 @@ function Hud.create(scene, callbacks)
         onPress = callbacks.pathDebug,
     }, self.root)
     -- Touch jump for the on-foot player; hidden while riding.
-    self.jumpButton = ui:button({
+    self.jumpButton = button(ui, {
         position = { 1, -16, 1, -150 },
         size = { 0, 120, 0, 64 },
         anchorPoint = { 1, 0 },
@@ -243,7 +261,7 @@ function Hud.create(scene, callbacks)
         onPress = callbacks.jump,
     }, self.root)
     -- Toggle buttons: tap once to keep running / crouching, tap again to stop.
-    self.runButton = ui:button({
+    self.runButton = button(ui, {
         position = { 1, -16, 1, -222 },
         size = { 0, 120, 0, 56 },
         anchorPoint = { 1, 0 },
@@ -252,17 +270,17 @@ function Hud.create(scene, callbacks)
         backgroundColor = HUD_OFF,
         onPress = callbacks.run,
     }, self.root)
-    self.crouchButton = ui:button({
-        position = { 1, -146, 1, -150 },
-        size = { 0, 120, 0, 64 },
+    self.crouchButton = button(ui, {
+        position = { 1, -176, 1, -150 },
+        size = { 0, 150, 0, 64 },
         anchorPoint = { 1, 0 },
         text = 'Crouch: OFF',
         fontSize = 18,
         backgroundColor = HUD_OFF,
         onPress = callbacks.crouch,
     }, self.root)
-    self.zoomIn = ui:button({
-        position = { 0, 16, 1, -150 },
+    self.zoomIn = button(ui, {
+        position = { 0.5, 6, 1, -72 },
         size = { 0, 56, 0, 56 },
         text = '+',
         fontSize = 28,
@@ -271,8 +289,8 @@ function Hud.create(scene, callbacks)
             callbacks.zoom(2)
         end,
     }, self.root)
-    self.zoomOut = ui:button({
-        position = { 0, 16, 1, -86 },
+    self.zoomOut = button(ui, {
+        position = { 0.5, -62, 1, -72 },
         size = { 0, 56, 0, 56 },
         text = '-',
         fontSize = 28,
@@ -282,7 +300,7 @@ function Hud.create(scene, callbacks)
         end,
     }, self.root)
     -- Gives the cursor back (Tab does the same): the camera follows the mouse until then.
-    self.menuButton = ui:button({
+    self.menuButton = button(ui, {
         position = { 1, -16, 1, -16 },
         size = { 0, 150, 0, 48 },
         anchorPoint = { 1, 1 },

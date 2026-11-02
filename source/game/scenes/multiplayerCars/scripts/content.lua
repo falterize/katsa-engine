@@ -14,6 +14,7 @@ local AdsConfig = require('scene.scripts.game.adsConfig')
 local Interface = require('scene.scripts.ui.interface')
 local Menu = Interface.Menu
 local Hud = Interface.Hud
+local Social = require('scene.scripts.ui.social')
 
 local Session = {}
 -- Exposed so tests can build a second, independent client and physics world.
@@ -101,6 +102,24 @@ function Session.new(scene)
         end,
     })
     self.hud:setVisible(false)
+    self.social = Social.create(scene, {
+        send = function(text)
+            if self.client then
+                self.client:sendChat(text)
+            end
+        end,
+        kick = function(id)
+            if self.client then
+                self.client:kickPlayer(id, function(ok, why)
+                    self.hud:flash(ok and 'Player kicked' or ('Cannot kick: ' .. tostring(why)))
+                end)
+            end
+        end,
+    })
+    self.social.root.visible = false
+    self.social.onTypingDone = function()
+        self.scene.input:chatClosed()
+    end
     local ok, browser = pcall(Net.browse)
     self.browser = ok and browser or nil
     if Plugins.has('ads') then
@@ -232,6 +251,12 @@ function Session:startClient(address, port, name)
             self.walkerViews[netId] = nil
         end
     end
+    client.onChat = function(line)
+        self.social:addChat(line)
+    end
+    client.onRoster = function()
+        self:refreshPlayers()
+    end
     client.onWheelLost = function(netId, _, index)
         if self.views[netId] then
             self.views[netId]:shedWheel(index)
@@ -301,6 +326,7 @@ function Session:leave(message)
     self.mode = 'menu'
     self.menu:setVisible(true)
     self.hud:setVisible(false)
+    self.social.root.visible = false
     self.menu:setStatus(message or '')
 end
 
@@ -438,6 +464,16 @@ end
 -- Tab / the menu button: the cursor is back (open) or captured again (closed).
 function Session:onMenuToggled(open)
     self.hud:setMenuOpen(open)
+    self.social:setMenuOpen(open)
+    self:refreshPlayers()
+end
+
+-- Rebuilds the player list (names, [HOST] tag, Kick buttons for the host).
+function Session:refreshPlayers()
+    local client = self.client
+    if client and self.social.open then
+        self.social:setPlayers(client:getPlayers(), client.hostId, client:getPlayerId())
+    end
 end
 
 -- Physics of the hosted or driven cars and the network traffic of the server and client.
@@ -511,6 +547,7 @@ function Session:update(dt)
             self.mode = 'playing'
             self.menu:setVisible(false)
             self.hud:setVisible(true)
+            self.social.root.visible = true
         elseif self.client.client.rejection or self.connectTime > 6 then
             local peer = self.client.client.host and self.client.client.host.server
             local reason = self.client.client.rejection
@@ -548,6 +585,7 @@ function Session:update(dt)
     local walker = self.client.ownWalker
     if not car and walker then
         self:updateWalkerCamera(dt, walker)
+        self.social:update()
         self.hud:update(dt, {
             speed = walker.speed,
             nitro = 0,
@@ -562,6 +600,7 @@ function Session:update(dt)
         for _ in pairs(self.client.client.players) do
             players = players + 1
         end
+        self.social:update()
         self.hud:update(dt, {
             speed = car.speed,
             nitro = car.nitro,

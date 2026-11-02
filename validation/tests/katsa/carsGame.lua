@@ -154,6 +154,63 @@ return function(T)
         'carsGame: dents are replicated to everyone'
     )
 
+    -- Chat reaches everyone with the sender's name and [HOST] flag; the host alone can kick.
+    server.hostPlayer = server.server:getPlayers()[1]
+    server:publishHost()
+    local hostName = server.hostPlayer.name
+    local heard = {}
+    two.onChat = function(line)
+        heard[#heard + 1] = line
+    end
+    one:sendChat('  hello there  ')
+    for _ = 1, 8 do
+        one:sendChat('spam')
+    end
+    run(60)
+    T.check(
+        heard[1] and heard[1].text == 'hello there' and heard[1].name == hostName and heard[1].host == true,
+        'carsGame: a chat line is trimmed, tagged with the sender and [HOST]'
+    )
+    T.check(#heard <= 5, 'carsGame: chat is rate limited (' .. #heard .. ' lines)')
+    T.check(two.hostId == server.hostPlayer.id, 'carsGame: clients learn who the host is')
+
+    -- Nicknames are unique, ignoring case.
+    local clone = newClient(hostName:upper(), function()
+        return {}
+    end)
+    local rejected
+    clone.client.disconnected:connect(function(reason)
+        rejected = reason
+    end)
+    for _ = 1, 120 do
+        server:update(dt)
+        clone:update(dt)
+    end
+    T.check(
+        rejected and tostring(rejected):find('already taken', 1, true),
+        'carsGame: a duplicate nickname is rejected (' .. tostring(rejected) .. ')'
+    )
+
+    local kicked
+    two.client.disconnected:connect(function(reason)
+        kicked = reason
+    end)
+    local denied
+    two:kickPlayer(one:getPlayerId(), function(ok, why)
+        denied = { ok, why }
+    end)
+    run(60)
+    T.check(denied and denied[1] == false, 'carsGame: only the host can kick')
+    local kickResult
+    one:kickPlayer(two:getPlayerId(), function(ok)
+        kickResult = ok
+    end, 'testing')
+    run(90)
+    T.check(
+        kickResult == true and kicked and tostring(kicked):find('Kicked by the host', 1, true),
+        'carsGame: the host kicks a player, who is told why (' .. tostring(kicked) .. ')'
+    )
+
     -- Nitro refill for a rewarded ad, rate limited and verified by the server.
     serverOne.nitro = 0
     local refill
