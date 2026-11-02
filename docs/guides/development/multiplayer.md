@@ -106,3 +106,25 @@ Launch options: `--host [port]` starts a server and joins it, `--connect address
 `--name Name` sets the player name (scenes read them from `katsa.launchArguments`).
 Tests: `validation/tests/katsa/carsGame.lua` (rules over loopback UDP) and `--test-v108.4.cars`
 (the scene on the real renderer; `KATSA_CARS_SHOT=<dir>` saves screenshots).
+
+## Kicks, names and unreliable remotes
+
+```lua
+-- Server: disconnect a player and tell them why. The client's `disconnected` signal receives the
+-- text; the player may join again.
+server:kick(player, 'Kicked by the host: spamming')
+
+-- Names are unique among connected players, ignoring case. A duplicate is rejected with
+-- 'The name "Ann" is already taken'. Disable with Net.Server.new(world, { uniqueNames = false }).
+
+-- Best-effort remotes for streams (voice): no retransmission, may drop or reorder.
+server:remote('voice'):unreliable():onServer(function(player, bytes)
+    server:remote('voice'):fireOthers(player, player.id, bytes)
+end)
+client:remote('voice'):unreliable():onClient(function(speakerId, bytes) play(bytes) end)
+client:remote('voice'):fireServer(bytes)
+```
+
+Both ends must mark the remote `unreliable()`; reliable remotes (the default) are ordered and
+retransmitted. See [multiplayerCars](multiplayerCars.md) for chat, voice, host-only kick requests
+(`remote:onRequest`) and console events.

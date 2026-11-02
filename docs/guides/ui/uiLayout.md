@@ -107,3 +107,20 @@ See [ScrollFrame](scrolling.md) for X/Y/XY scrolling, canvas dimensions and scro
 
 See [text rendering and shared widgets](textRendering.md) for physical-pixel glyphs,
 CanvasGroup/ViewportFrame density and the common input capture path.
+
+## Interactable cascades
+
+`interactable = false` on a node turns off input for the node **and every descendant**, whatever
+their own `interactable` says (an ancestor that is off wins). The editor marks such a setting with
+an orange `!` next to its name and explains which ancestor blocks it in the status line. Use it to
+make a decorative panel click-through while its buttons stay inside it:
+
+```lua
+local panel = ui:container({ interactable = false }, ui.content)   -- never blocks the mouse
+local label = ui:text({ text = 'status' }, panel)                  -- also not interactable
+```
+
+`ui:blocksWorldClick(x, y, onlyInteractable)` tells a game whether the cursor is over UI that
+should keep a click or wheel away from the world; pass `true` to ignore non-interactable
+branches. `ui:wheel(x, y, dy, dx)` returns `true` when a scroll frame consumed the wheel, so a
+camera zoom should only act when neither returned true.

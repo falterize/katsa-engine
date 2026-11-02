@@ -76,3 +76,32 @@ transformed conservative spheres; skeleton-deformed bounds await skeleton suppor
 The journal is bounded to 64 entries; NodeTree, resource loading and scene failures
 supply context where available. It records errors without suppressing failures.
 Bone/particle visualization and animation/particle budgets are future system work.
+
+## Where to find it, and loading phases
+
+* In a running scene: **Debug / F4 → CPU profiler / error journal** (the same panel is in the
+  editor workspace as *CPU profiler*). Switch **Profiler ON**, optionally **Record session**, and
+  use **Export JSON / CSV** to write the report.
+* From the command line: `--profile` records the whole run, including loading, and saves
+  `logs/profile-*.json|csv` in the save directory on quit.
+* **Load phases** are measured even while the profiler is off (a scene loads before you can switch
+  it on). The panel lists them under *Loading <scene>* and recordings carry them as a `loading`
+  object in the JSON export (`scene`, `total_ms`, `phases[{name, ms}]`). Built-in phases: open
+  package / resources / audio, world / renderer / UI, node types and plugins, scene create script.
+* Add your own phases in a scene script:
+
+```lua
+local profiler = scene.manager.profiler
+profiler:beginLoad('My scene')                    -- optional: starts a fresh list
+loadTerrain();  profiler:markLoad('Terrain')      -- time since the previous mark
+buildNavMap();  profiler:markLoad('NavMap bake')
+```
+
+* Scopes with a name of your choice work anywhere, across frames, nested:
+
+```lua
+katsa.profiler.start('Loading scene')
+-- ... many frames of async work ...
+katsa.profiler.stop('Loading scene')              -- adds a sample; shows in stages and exports
+local pathMs = katsa.profiler.scope('Bot plan', function() return map:findPath(a, b) end)
+```

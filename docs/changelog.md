@@ -4,6 +4,10 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Chat (Enter, `[HOST]` tag, rate limited), player list (Tab) with host-only Kick, unique nicknames, kick reasons (`Server:kick(player, 'reason')` reaches the client), console events for join/leave/spawn/sit/exit/kick/wheel loss.
+- Voice chat: push-to-talk (V), `katsa.audio.openCapture` / `newQueueSource`, μ-law codec, unreliable remotes (`remote:unreliable()`), speaking indicator, 3D playback.
+- Profiler load phases (`profiler:beginLoad/markLoad`, shown in the panel and exported as `loading`).
+- Docs: plugins (contributions, NavMap, debug), background execution and TimeScale, multiplayerCars, interactable cascade, live audio, kicks/unreliable remotes, profiling locations.
 - Plugins can now contribute to scenes that list them in `settings.plugins`: new node types (`nodes`), settings and methods for existing node classes (`extend`, `engine/nodes/core/extensions.lua`) and a debug section in `Environment.debug` (`debug`, drawn by the renderer, listed in the editor and the debug menu). Manifests: `source/plugins/<name>/plugin.lua`.
 - Pathfinding plugin 1.1: `NavMap` node (bakes a multi-floor map from the physics world, `bake`, `findPath`, `levelAt`), `Body3D.navWalkable` / `Body3D.navFloor` settings added by the plugin, and a Pathfinding debug view (cells per floor, floor links, recent routes with waypoints).
 - multiplayerCars: the bot navigates on a NavMap baked from the real colliders; fixed the car park ramp, which was mirrored (rising away from the deck).

@@ -53,3 +53,24 @@ engine:play()
 
 Verification: `katsa . --test-v108.1` runs 30 audio checks against instrumented katsa audio (routing, attenuation, listener
 selection, lifetime). It does not test audible output.
+
+## Live audio: capture and queue playback
+
+`katsa.audio` also has the pieces voice chat uses (`source/katsa/audio/stream.lua`):
+
+```lua
+local mic = katsa.audio.openCapture(12000)       -- mono 16-bit; nil, reason without a microphone
+mic:start()
+local pcm, count = mic:read()                    -- int16 cdata + samples recorded since last read
+mic:stop(); mic:close()
+
+local voice = katsa.audio.newQueueSource(12000)  -- gapless queue, 3D like any Source
+voice:queue(pcm, count)
+voice:setPosition(x, y, z); voice:setVolume(0.8)
+voice:getQueued()                                -- buffers waiting (use it to cap latency)
+voice:release()
+```
+
+With the null driver (servers, tests, `KATSA_AUDIO=null`) `openCapture` returns nil and the queue
+source swallows data. `source/engine/audio/muLaw.lua` compresses 16-bit samples to one byte
+(`MuLaw.encode(samples, count)` / `MuLaw.decode(bytes)`), enough for speech at 8-16 kHz.
