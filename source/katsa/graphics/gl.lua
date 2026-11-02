@@ -61,6 +61,7 @@ GL.signatures = {
     glFramebufferRenderbuffer = 'void (*)(GLenum, GLenum, GLenum, GLuint)',
     glCheckFramebufferStatus = 'GLenum (*)(GLenum)',
     glDrawBuffers = 'void (*)(GLsizei, const GLenum*)',
+    glReadBuffer = 'void (*)(GLenum)',
     glBlitFramebuffer = 'void (*)(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, '
         .. 'GLbitfield, GLenum)',
     glGenRenderbuffers = 'void (*)(GLsizei, GLuint*)',

@@ -212,6 +212,40 @@ return function(T)
         g.present()
     end
 
+
+    -- depth-only render target (shadow maps): no color canvas, only a depthstencil canvas
+    do
+        local depth = g.newCanvas(16, 16, { format = 'depth24', readable = true, dpiscale = 1 })
+        depth:setFilter('nearest', 'nearest')
+        g.setCanvas({ depthstencil = depth })
+        T.check(g.getPixelWidth() == 16, 'setCanvas accepts a depth-only target')
+        g.setDepthMode('always', true)
+        g.clear(false, false, 1)
+        g.setScissor(0, 0, 8, 16)
+        g.clear(false, false, 0.25)
+        g.setScissor()
+        g.setCanvas()
+        local color = g.newCanvas(16, 16, { dpiscale = 1 })
+        local view = g.newShader([[
+            vec4 effect(vec4 c, Image t, vec2 uv, vec2 sc) {
+                return vec4(vec3(Texel(t, uv).r), 1.0);
+            }
+        ]])
+        g.setCanvas(color)
+        g.setShader(view)
+        g.setColor(1, 1, 1, 1)
+        g.draw(depth, 0, 0)
+        g.setShader()
+        g.setCanvas()
+        local data = color:newImageData()
+        local left, right = data:getPixel(2, 8), data:getPixel(13, 8)
+        T.check(left < 0.3 and right > 0.95,
+            'depth-only clear honours the scissor and fills the depth canvas')
+        g.setDepthMode()
+        color:release()
+        depth:release()
+    end
+
     -- statistics follow creation and release
     local before = g.getStats()
     local counted = g.newCanvas(32, 32, { dpiscale = 1 })

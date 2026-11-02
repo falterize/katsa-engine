@@ -18,9 +18,12 @@ function G.clear(...)
     State.flush()
     local args = { ... }
     local colors, rest = {}, 1
-    if type(args[1]) == 'table' then
+    -- clear(color, stencil, depth): `false` skips the color of that target. One entry per active
+    -- color canvas, so clear(false, false, 1) is "keep color, keep stencil, clear depth to 1".
+    local limit = math.max(1, S.canvases and #S.canvases or 1)
+    if type(args[1]) == 'table' or args[1] == false then
         local count = 0
-        while type(args[rest]) == 'table' or args[rest] == false do
+        while count < limit and (type(args[rest]) == 'table' or args[rest] == false) do
             count = count + 1
             colors[count] = args[rest]
             rest = rest + 1
@@ -44,11 +47,8 @@ function G.clear(...)
     elseif type(clearDepth) == 'number' then
         depthValue = clearDepth
     end
-    -- glClear is affected by the scissor box and write masks; clearing ignores both.
-    local hadScissor = S.scissor ~= nil
-    if hadScissor then
-        gl.glDisable(E.SCISSOR_TEST)
-    end
+    -- Like glClear, clearing is limited to the scissor box (shadow atlas tiles rely on it).
+    local hadScissor = false
     gl.glColorMask(true, true, true, true)
     local mask = 0
     local multi = S.canvases and #S.canvases > 1

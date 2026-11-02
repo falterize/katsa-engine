@@ -167,7 +167,11 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
             vec3 a=dFdx(worldPosition),b=dFdy(worldPosition);
             vec2 u=dFdx(uv),v=dFdy(uv);
             float determinant=u.x*v.y-u.y*v.x;
-            if(abs(determinant)>.0000001) {
+            // UV derivatives shrink with a large UV area or a near camera, so the degeneracy test
+            // must be relative to their size. An absolute threshold switched the normal map off
+            // along a line of constant depth on big floors.
+            float derivativeArea=length(u)*length(v);
+            if(derivativeArea>0.0 && abs(determinant)>.0001*derivativeArea) {
                 vec3 tangent=normalize((a*v.y-b*u.y)/determinant);
                 tangent=normalize(tangent-normal*dot(tangent,normal));
                 vec3 bitangent=normalize(cross(normal,tangent))*sign(determinant);
