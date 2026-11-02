@@ -465,7 +465,11 @@ function GameServer:onTick(dt)
         local car = self.cars[netId]
         if car then
             if netId == self.botId and self.bot then
+                local stamp = self.options.profiler and self.options.profiler:begin()
                 car.input = self.bot:think(models, dt)
+                if stamp then
+                    self.options.profiler:finish('Cars: bot', stamp)
+                end
             elseif not car:getDriver() then
                 car.input = {} -- coast to a stop
             elseif self.hostPlayer and car:getDriver() == self.hostPlayer.id then

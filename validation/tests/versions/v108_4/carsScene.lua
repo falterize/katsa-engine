@@ -545,6 +545,31 @@ function Tests:draw()
         )
         self.remoteStart = { car.x, car.z }
         self.remote.throttle = 1
+    elseif frame == 745 then
+        -- The host's player list has a working Kick button for the other player.
+        local input, social = session.scene.input, session.social
+        input:toggleMenu()
+        local kicked
+        local original = social.callbacks.kick
+        social.callbacks.kick = function(id)
+            kicked = id
+        end
+        local button
+        for _, child in ipairs(social.list.children) do
+            if child.text == 'Kick' then
+                button = child
+            end
+        end
+        self:check(button ~= nil, 'the host sees a Kick button in the player list')
+        if button then
+            session.scene.ui:pointer(button, 'press', 0, 0, 1) -- not reachable: use the handler
+        end
+        if button and button.onPress then
+            button.onPress()
+        end
+        self:check(kicked ~= nil, 'the Kick button asks to kick that player')
+        social.callbacks.kick = original
+        input:toggleMenu()
     elseif frame == 940 then
         local _, car = self.remote.client:getCar()
         local server = session.server
@@ -557,6 +582,31 @@ function Tests:draw()
         )
         self.remote.throttle = 0
         self.remote.client:disconnect()
+    elseif frame == 300 or frame == 1000 then
+        -- Leak check: live Lua memory after a full collection must not keep growing.
+        collectgarbage()
+        collectgarbage()
+        local kib = collectgarbage('count')
+        if frame == 300 then
+            self.memoryBefore = kib
+        else
+            self:check(
+                kib < self.memoryBefore * 1.25 + 4096,
+                ('Lua memory is stable over 700 frames (%.0f -> %.0f KiB)'):format(self.memoryBefore, kib)
+            )
+        end
+    elseif frame == 960 and os.getenv('KATSA_PROBE') then
+        session.scene.world.timeScale = tonumber(os.getenv('KATSA_PROBE'))
+        session.scene.manager.profiler.enabled = true
+        if os.getenv('KATSA_NOUI') then
+            session.hud:setVisible(false)
+            session.social.root.visible = false
+        end
+    elseif frame == 1050 and os.getenv('KATSA_PROBE') then
+        local summary = session.scene.manager.profiler:summary()
+        for _, stage in ipairs(summary.stages) do
+            print(('PROBE %-34s mean %.2f ms  peak %.2f'):format(stage.name, stage.meanMilliseconds or stage.mean or 0, stage.peakMilliseconds or stage.peak or 0))
+        end
     elseif frame == 1060 then
         local server = session.server
         self:check(

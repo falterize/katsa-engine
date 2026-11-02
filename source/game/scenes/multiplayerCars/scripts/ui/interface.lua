@@ -309,6 +309,16 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.08, 0.16, 0.25 },
         onPress = callbacks.menu,
     }, self.root)
+    -- Opens the chat box (Enter does the same).
+    self.chatButton = button(ui, {
+        position = { 1, -176, 1, -16 },
+        size = { 0, 120, 0, 48 },
+        anchorPoint = { 1, 1 },
+        text = 'Chat (Enter)',
+        fontSize = 16,
+        backgroundColor = { 0.08, 0.16, 0.25 },
+        onPress = callbacks.chat,
+    }, self.root)
     self.message = ui:text({
         position = { 0.5, 0, 0, 120 },
         size = { 0, 500, 0, 30 },

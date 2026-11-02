@@ -31,6 +31,7 @@ local function declare()
         'void alcCaptureStart(ALCdevice* device);',
         'void alcCaptureStop(ALCdevice* device);',
         'void alcCaptureSamples(ALCdevice* device, void* buffer, int samples);',
+        'const char* alcGetString(ALCdevice* device, int parameter);',
         'void alcGetIntegerv(ALCdevice* device, int parameter, int size, int* values);',
         'void alGenSources(int count, unsigned int* sources);',
         'void alDeleteSources(int count, const unsigned int* sources);',
@@ -69,6 +70,26 @@ local function library()
     return lib
 end
 
+-- Names of the capture devices (microphones) OpenAL can see, and the default one.
+function Audio.getCaptureDevices()
+    local lib = library()
+    if not lib then
+        return {}, nil
+    end
+    local list = {}
+    local pointer = lib.alcGetString(nil, 0x310) -- ALC_CAPTURE_DEVICE_SPECIFIER
+    if pointer ~= nil then
+        local offset = 0
+        while pointer[offset] ~= 0 do
+            local name = ffi.string(pointer + offset)
+            list[#list + 1] = name
+            offset = offset + #name + 1
+        end
+    end
+    local default = lib.alcGetString(nil, 0x311)
+    return list, default ~= nil and ffi.string(default) or nil
+end
+
 -- Capture ---------------------------------------------------------------------------------------
 local Capture = {}
 Capture.__index = Capture
@@ -79,9 +100,12 @@ function Audio.openCapture(sampleRate, deviceName)
         return nil, 'OpenAL is not available'
     end
     sampleRate = sampleRate or 12000
+    if #Audio.getCaptureDevices() == 0 then
+        return nil, 'no microphone found'
+    end
     local ok, device = pcall(lib.alcCaptureOpenDevice, deviceName, sampleRate, FORMAT_MONO16, sampleRate)
     if not ok or device == nil then
-        return nil, 'no capture device (microphone)'
+        return nil, 'the microphone could not be opened (is it in use, or blocked in the system privacy settings?)'
     end
     return setmetatable({ lib = lib, device = device, rate = sampleRate, running = false }, Capture)
 end

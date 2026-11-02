@@ -16,6 +16,23 @@ local MAX_PACKET = 2400
 local SPEAKING_HOLD = 0.4 -- how long the indicator stays after the last packet
 
 -- Server side: relay. `server` is the GameServer.
+-- Loudness of int16 samples as 0..1 (RMS, lifted so quiet speech is still visible).
+local function loudness(pcm, count, from)
+    local sum = 0
+    for index = from or 0, (from or 0) + count - 1 do
+        local sample = pcm[index] / 32768
+        sum = sum + sample * sample
+    end
+    return math.min(1, math.sqrt(sum / math.max(1, count)) * 4)
+end
+
+function Voice:setLevel(id, value)
+    local level = self.levels[id]
+    if not level or value >= level.value then
+        self.levels[id] = { value = value, time = self.now }
+    end
+end
+
 function Voice.bindServer(server)
     local remote = server.server:remote('voice'):unreliable()
     local last = {}
@@ -50,6 +67,9 @@ function Voice.new(gameClient, options)
         talking = false,
         now = 0,
         speakingSince = {},
+        levels = {}, -- playerId (0 = you) -> { value 0..1, time }
+        hearingRange = options.hearingRange or 80,
+        listenerAt = options.listenerAt,
     }, Voice)
     gameClient.client:remote('voice'):unreliable():onClient(function(id, bytes)
         self:receive(id, bytes)
@@ -59,8 +79,15 @@ end
 
 function Voice:isAvailable()
     if self.capture == nil then
-        local capture = katsa.audio.openCapture(self.rate)
+        local capture, reason = katsa.audio.openCapture(self.rate)
         self.capture = capture or false
+        self.problem = reason
+        local devices = katsa.audio.getCaptureDevices()
+        katsa.log.log(
+            capture and ('[voice] microphone ready: ' .. tostring(devices[1]))
+                or ('[voice] ' .. tostring(reason)),
+            'multiplayerCars'
+        )
     end
     return self.capture ~= false
 end
@@ -83,6 +110,14 @@ function Voice:setTalking(talking)
     end
 end
 
+-- 'ready', or the reason the microphone cannot be used (checked on first use).
+function Voice:getStatus()
+    if self:isAvailable() then
+        return 'ready'
+    end
+    return self.problem or 'unavailable'
+end
+
 function Voice:isTalking()
     return self.talking
 end
@@ -92,6 +127,7 @@ function Voice:send(flush)
     if self.capture and self.talking or flush then
         local pcm, count = self.capture:read()
         if pcm then
+            self:setLevel(0, loudness(pcm, count))
             local merged = ffi.new('int16_t[?]', self.pendingCount + count)
             if self.pendingCount > 0 then
                 ffi.copy(merged, self.pending, self.pendingCount * 2)
@@ -133,6 +169,7 @@ function Voice:receive(id, bytes)
     end
     speaker.source:queue(pcm, count)
     self.speakingSince[id] = self.now
+    self:setLevel(id, loudness(pcm, count))
 end
 
 -- Moves each voice to its speaker and ages the speaking indicator.
@@ -147,9 +184,39 @@ function Voice:update(dt)
             x, y, z = self.positionOf(id)
         end
         if x then
-            speaker.source:setPosition(x, y, z)
+            speaker.source:setPosition(x, y, -z) -- OpenAL is right-handed: mirror Z like the engine does
         end
     end
+end
+
+-- Who is audible right now: { id, level, mine } sorted by id. Other players only count while
+-- they are inside the hearing range (their voice is placed in 3D and fades out beyond it);
+-- levels fall off smoothly after the last packet, like a VU meter.
+function Voice:getMeters()
+    local list = {}
+    local ex, ey, ez
+    if self.listenerAt then
+        ex, ey, ez = self.listenerAt()
+    end
+    for id, level in pairs(self.levels) do
+        local age = self.now - level.time
+        local shown = level.value * math.max(0, 1 - age / 0.35)
+        if shown > 0.02 then
+            local near = true
+            if id ~= 0 and ex and self.positionOf then
+                local x, y, z = self.positionOf(id)
+                near = x ~= nil
+                    and (x - ex) ^ 2 + (y - ey) ^ 2 + (z - ez) ^ 2 <= self.hearingRange ^ 2
+            end
+            if near then
+                list[#list + 1] = { id = id, level = shown, mine = id == 0 }
+            end
+        end
+    end
+    table.sort(list, function(a, b)
+        return a.id < b.id
+    end)
+    return list
 end
 
 -- Player ids that spoke in the last moments.
