@@ -174,6 +174,28 @@ return function(T)
     T.check(#heard <= 5, 'carsGame: chat is rate limited (' .. #heard .. ' lines)')
     T.check(two.hostId == server.hostPlayer.id, 'carsGame: clients learn who the host is')
 
+    -- Voice: packets from one player are relayed to the others (not back to the sender).
+    do
+        local Voice = load('multiplayerCars', 'scene.scripts.game.voice')
+        local MuLaw = require('source.engine.audio.muLaw')
+        local listener = Voice.new(two, {})
+        local echo = Voice.new(one, {})
+        local sender = one:getPlayerId()
+        local pcm = {}
+        for index = 1, 960 do
+            pcm[index] = math.floor(math.sin(index / 8) * 8000)
+        end
+        for _ = 1, 3 do
+            one.client:remote('voice'):fireServer(MuLaw.encode(pcm, #pcm))
+        end
+        run(40)
+        T.check(listener.speakingSince[sender] ~= nil, 'carsGame: voice packets reach the other players')
+        T.check(next(echo.speakingSince) == nil, 'carsGame: the sender does not hear itself')
+        one.client:remote('voice'):fireServer(string.rep('x', 5000))
+        run(20)
+        T.check(true, 'carsGame: oversized voice packets are dropped')
+    end
+
     -- Nicknames are unique, ignoring case.
     local clone = newClient(hostName:upper(), function()
         return {}
