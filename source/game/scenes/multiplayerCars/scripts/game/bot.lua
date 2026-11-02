@@ -12,14 +12,15 @@ local function wrap(angle)
     return (angle + 180) % 360 - 180
 end
 
--- options: sightRadius (default 45), seed, replan (seconds between route updates, default 0.5)
+-- options: sightRadius (default 45), seed, replan (seconds between route updates, default 0.5),
+-- nav (a Layered navigation map; built from the arena when omitted).
 function Bot.new(car, options)
     options = options or {}
     local seed = options.seed or 7
     local state = seed
     return setmetatable({
         car = car,
-        grid = options.grid or Arena.buildGrid(Pathfinding.Grid),
+        nav = options.nav or Arena.buildNav(Pathfinding),
         sightRadius = options.sightRadius or 45,
         replanEvery = options.replan or 0.5,
         random = function()
@@ -36,17 +37,36 @@ function Bot.new(car, options)
     }, Bot)
 end
 
--- Nearest car in `cars` that is driven by a person and visible from the bot.
+-- The floor a car is on (1 = ground, 2 = car park deck), from its height above the surface.
+function Bot:levelOf(car)
+    return self.nav:levelAt(car.x, car.y - 0.6, car.z, 2.5)
+end
+
+-- Nearest car driven by a person that the bot can reach: on the same floor it needs a clear line
+-- across the grid, on another floor the route itself must be short enough.
 function Bot:findTarget(cars)
-    local car, grid = self.car, self.grid
+    local car, nav = self.car, self.nav
+    local level = self:levelOf(car)
     local best, bestDistance = nil, self.sightRadius
-    local bx, bz = grid:toCell(car.x, car.z)
+    if not level then
+        return nil
+    end
+    local bx, bz = nav:toCell(car.x, car.z)
     for _, other in ipairs(cars) do
         if other ~= car and other:getDriver() and not other.isBot then
             local distance = math.sqrt((other.x - car.x) ^ 2 + (other.z - car.z) ^ 2)
-            if distance < bestDistance then
-                local ox, oz = grid:toCell(other.x, other.z)
-                if grid:lineOfSight(bx, bz, ox, oz) then
+            local otherLevel = self:levelOf(other)
+            if distance < bestDistance and otherLevel then
+                local visible
+                if otherLevel == level then
+                    local ox, oz = nav:toCell(other.x, other.z)
+                    visible = nav.levels[level]:lineOfSight(bx, bz, ox, oz)
+                else
+                    -- Another floor: reachable if the route is not much longer than the sight radius.
+                    local path = nav:findPath(car.x, car.y - 0.6, car.z, other.x, other.y - 0.6, other.z)
+                    visible = path ~= nil and path.length < self.sightRadius * 2
+                end
+                if visible then
                     best, bestDistance = other, distance
                 end
             end
@@ -60,17 +80,32 @@ function Bot:pickPatrolPoint()
     for _ = 1, 30 do
         local x = (self.random() * 2 - 1) * half
         local z = (self.random() * 2 - 1) * half
-        local cx, cz = self.grid:toCell(x, z)
-        if not self.grid:isBlocked(cx, cz) then
+        local cx, cz = self.nav:toCell(x, z)
+        if not self.nav:isBlocked(1, cx, cz) then
             return { x, z }
         end
     end
     return { 0, -45 }
 end
 
-function Bot:plan(x, z)
-    self.path = self.grid:findPath(self.car.x, self.car.z, x, z)
+function Bot:plan(x, y, z)
+    local car = self.car
+    self.path = self.nav:findPath(car.x, car.y - 0.6, car.z, x, y - 0.6, z)
     self.sinceReplan = 0
+end
+
+-- Aims at the farthest upcoming waypoint that is still on this floor and within a short look-ahead,
+-- so the car cuts corners but never aims through a wall behind the next turn.
+function Bot:aimPoint()
+    local path, car = self.path, self.car
+    if not path then
+        return nil
+    end
+    local px, py, pz = path:target(car.x, car.y, car.z, 3.5)
+    if not px then
+        return nil
+    end
+    return px, pz
 end
 
 -- Returns the input for this tick. `cars` lists every car in the world.
@@ -82,7 +117,7 @@ function Bot:think(cars, dt)
     if target then
         self.mode, self.target = 'chase', target
         if self.sinceReplan >= self.replanEvery or not self.path then
-            self:plan(target.x, target.z)
+            self:plan(target.x, target.y, target.z)
         end
         goalX, goalZ = target.x, target.z
     else
@@ -96,35 +131,38 @@ function Bot:think(cars, dt)
             self.path = nil
         end
         if not self.path or self.path:isFinished() then
-            self:plan(point[1], point[2])
+            self:plan(point[1], Arena.ground(point[1], point[2]) + 0.6, point[2])
         end
         goalX, goalZ = point[1], point[2]
     end
 
-    -- Follow the route; fall back to heading straight at the goal when no route exists.
-    local aimX, aimZ = goalX, goalZ
-    if self.path then
-        local px, pz = self.path:target(car.x, car.z, nil, 3.5)
-        if px then
-            aimX, aimZ = px, pz
-        end
-    end
+    local aimX, aimZ = self:aimPoint()
+    aimX, aimZ = aimX or goalX, aimZ or goalZ
     local error = wrap(math.deg(math.atan2(aimX - car.x, aimZ - car.z)) - car.heading)
     local input = { throttle = 1, steer = math.max(-1, math.min(1, error / 25)) }
-    if math.abs(error) > 75 then
+    -- Slow for sharp turns so the car does not slide into the wall it is turning around.
+    local sharp = math.abs(error)
+    if sharp > 75 then
         input.throttle = 0.35
+    elseif sharp > 40 and car.speed > 14 then
+        input.throttle = 0.2
+    end
+    -- On the deck there is little room: keep the speed down.
+    if self:levelOf(car) == 2 and car.speed > 11 then
+        input.throttle = 0
     end
     if self.mode == 'chase' and distance and distance < 10 and car.speed > 12 then
-        input.throttle = 0 -- ease off near the target instead of overshooting
+        input.throttle = 0
     end
-    if self.mode == 'chase' and distance and distance > 25 and math.abs(error) < 20 then
+    if self.mode == 'chase' and distance and distance > 25 and sharp < 20 then
         input.nitro = car.nitro > 0.25
     end
 
-    -- Unstick: reversing out of a wall for a moment, steering the other way.
+    -- Unstick: reversing out of a wall for a moment, steering the other way, then replan.
     if self.reverse > 0 then
         self.reverse = self.reverse - dt
         input.throttle, input.steer, input.nitro = -1, -input.steer, false
+        self.path = nil
     elseif math.abs(car.speed) < 1 then
         self.stuck = self.stuck + dt
         if self.stuck > 1.2 then

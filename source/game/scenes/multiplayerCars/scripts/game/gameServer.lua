@@ -149,7 +149,7 @@ function GameServer:spawnBot()
         self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
     local Pathfinding = Plugins.require('pathfinding')
     self.bot = Bot.new(model, {
-        grid = Arena.buildGrid(Pathfinding.Grid),
+        nav = Arena.buildNav(Pathfinding),
         sightRadius = self.options.sightRadius,
     })
     self.botId = netId
@@ -362,7 +362,7 @@ function GameServer:broadcastBotPath(now)
         -- Packets are small; the nearest points are the useful ones.
         for index = path.index, math.min(#path.points, path.index + 39) do
             local point = path.points[index]
-            flat[#flat + 1], flat[#flat + 2] = point[1], point[2]
+            flat[#flat + 1], flat[#flat + 2], flat[#flat + 3] = point[1], point[2], point[3]
         end
     end
     local car = self.cars[self.botId]
@@ -370,7 +370,8 @@ function GameServer:broadcastBotPath(now)
         bot.mode or 'patrol',
         car and car.x or 0,
         car and car.z or 0,
-        flat
+        flat,
+        car and car.y or 0
     )
 end
 

@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- Pathfinding: new `Pathfinding.Layered` (multi-floor A*, floors linked by ramps, `levelAt`, 3D `Path` points `{x, y, z}` with `path.levels`).
+- multiplayerCars: two-floor car park in the SW corner (solid deck, curbs, columns, ramp). The bot navigates in 3D (`Arena.buildNav`), aims only at waypoints on its floor, slows for sharp turns and on the deck, replans after reversing. Route debug markers now follow the real floor height.
 - multiplayerCars: the walker no longer drops into the fall state on bumpy or sloped terrain (longer ground probe while walking, 0.12 s coyote time, snap down onto the slope).
 - multiplayerCars: walker gravity follows the physics world's gravity (`gravityMultiplier` 2.5, or an absolute `settings.gravity`), so changing the scene gravity changes jump height.
 - multiplayerCars: camera zoom on phones (two-finger pinch and +/- buttons) and toggle Run / Crouch buttons.

@@ -137,7 +137,7 @@ function Session:updatePathMarkers()
     end
     local Arena = require('scene.scripts.game.arena')
     self.pathMarkers = self.pathMarkers or {}
-    local count = #route.points / 2 + 1
+    local count = #route.points / 3 + 1
     for index = 1, math.max(count, #self.pathMarkers) do
         local marker = self.pathMarkers[index]
         if index <= count and not marker then
@@ -154,12 +154,12 @@ function Session:updatePathMarkers()
         if marker then
             marker.visible = index <= count
             if index <= count then
-                local x, z = route.points[index * 2 - 1], route.points[index * 2]
+                local x, y, z = route.points[index * 3 - 2], route.points[index * 3 - 1], route.points[index * 3]
                 if index == count then
-                    x, z = route.x, route.z
+                    x, y, z = route.x, (route.y or 0) - 0.6, route.z
                     marker.color = route.mode == 'chase' and { 1, 0.2, 0.2 } or { 0.2, 1, 0.4 }
                 end
-                marker.position = { x, Arena.ground(x, z) + 0.9, z }
+                marker.position = { x, y + 0.9, z }
             end
         end
     end

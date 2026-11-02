@@ -93,6 +93,27 @@ return function(T)
     end
     T.check(chased, 'carsGame: the bot chases a car in its sight radius')
 
+    -- Two floors: a car on the car park deck is reached by a route over the ramp.
+    do
+        local Arena = load('multiplayerCars', 'scene.scripts.game.arena')
+        local g = Arena.garage
+        local nav = server.bot.nav
+        local path = nav:findPath(20, Arena.ground(20, -30), -30, -42, g.deckY, -48)
+        local usesDeck = false
+        for index = 1, path and #path.points or 0 do
+            usesDeck = usesDeck or path.levels[index] == 2
+        end
+        T.check(path and usesDeck, 'carsGame: the bot plans a route up to the car park deck')
+        local sane = path ~= nil
+        for index = 2, path and #path.points or 0 do
+            local a, b = path.points[index - 1], path.points[index]
+            if path.levels[index] == path.levels[index - 1] and math.abs(b[2] - a[2]) > 0.45 * math.max(1, math.sqrt((b[1] - a[1]) ^ 2 + (b[3] - a[3]) ^ 2)) then
+                sane = false
+            end
+        end
+        T.check(sane, 'carsGame: no route leg is steeper than the ramp')
+    end
+
     -- Seats: Bob's walker is far from Ann's car, then walks up to it.
     local far
     two:sit(oneId, function(seat, reason)
