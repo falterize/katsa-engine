@@ -17,12 +17,13 @@ local TUNING = {
     wheelRadius = 0.35,
     restLength = 0.4, -- spring length with no load
     droop = 0.15, -- extra ray length so a wheel can hang below its rest position
-    stiffness = 27000, -- N/m per wheel
-    damping = 3500, -- N*s/m per wheel
-    gripRate = 9, -- how quickly sideways velocity is removed (1/s)
-    gripLimit = 9, -- maximum sideways acceleration (m/s^2)
-    yawGain = 8, -- how quickly the body follows the steering yaw rate (1/s)
-    maxLateral = 10, -- steering never asks for more sideways acceleration than this (m/s^2)
+    gravityScale = 1.8, -- a heavier feel than real gravity: no floating over bumps and ramps
+    stiffness = 52000, -- N/m per wheel
+    damping = 6500, -- N*s/m per wheel
+    gripRate = 14, -- how quickly sideways velocity is removed (1/s)
+    gripLimit = 15, -- maximum sideways acceleration (m/s^2)
+    yawGain = 12, -- how quickly the body follows the steering yaw rate (1/s)
+    maxLateral = 13, -- steering never asks for more sideways acceleration than this (m/s^2)
     levelStiffness = 22, -- anti-roll/pitch assist: pull toward the ground plane (1/s^2) ...
     levelDamping = 8, -- ... and damp the tilt rate (1/s)
     impactSpeed = 3.5, -- sudden velocity change that counts as a collision
@@ -58,6 +59,7 @@ function PhysicsCar.new(world, model, netId, options)
         restitution = 0.1,
         linearDamping = 0.01,
         angularDamping = 0.8,
+        gravityScale = t.gravityScale,
         autoSleep = false,
         position = { model.x, ground + height + 0.1, model.z },
         rotation = { 0, -model.heading, 0 }, -- engine yaw runs opposite to the model heading
@@ -194,7 +196,7 @@ function PhysicsCar:step(dt)
             local rate = (x - self.compression[i]) / dt
             self.compression[i] = x
             if x > 0 then
-                local force = math.min(t.stiffness * x + t.damping * rate, mass * 9.81 * 1.5)
+                local force = math.min(t.stiffness * x + t.damping * rate, mass * 9.81 * t.gravityScale * 1.5)
                 if force > 0 then
                     body:applyForceAt({ up[1] * force, up[2] * force, up[3] * force }, { mx, my, mz })
                 end
@@ -216,7 +218,7 @@ function PhysicsCar:step(dt)
             if speed < -0.5 then
                 longitudinal = config.brake * throttle
             else
-                local taper = math.max(0, 1 - speed / top)
+                local taper = math.max(0, 1 - (speed / top) ^ 2)
                 longitudinal = config.acceleration * (boosting and config.nitroMultiplier or 1) * throttle * taper
             end
         elseif throttle < 0 then
