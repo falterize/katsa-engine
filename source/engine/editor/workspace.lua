@@ -22,7 +22,12 @@ function Workspace.new(scene)
         categoryCollapsed = {},
     }, Workspace)
     local ui = self.ui
-    self.group = ui:canvasGroup({ name = 'WorkspaceEditor', size = { 1, 0, 1, 0 }, zIndex = 100 })
+    self.group = ui:canvasGroup({
+        name = 'WorkspaceEditor',
+        size = { 1, 0, 1, 0 },
+        zIndex = 100,
+        _noOffscreen = true,
+    })
     self.panel = ui:container({
         name = 'Workspace',
         position = { 1, 0, 0, 0 },

@@ -96,12 +96,15 @@ function ChangeTracking.install(UI)
         end
     end
 
+    -- Schemas are cached by table identity, so these must be stable (a literal leaks per call).
+    local noKeys, sizeVectors = {}, { 'size' }
+
     local function changed(list, paint)
         local result, animated = false, false
         for _, node in ipairs(list) do
             if node:isA('Node2D') then
                 node._spatialSnapshot = node._spatialSnapshot or {}
-                result = Snapshot.fields(node._spatialSnapshot, node, {}, { 'size' }) or result
+                result = Snapshot.fields(node._spatialSnapshot, node, noKeys, sizeVectors) or result
                 local childChanged, childAnimated = changed(node.children, paint)
                 result, animated = childChanged or result, childAnimated or animated
             elseif node:isA('UINode') or node:isA('Ramp') then
