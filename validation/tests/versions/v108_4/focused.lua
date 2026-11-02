@@ -18,6 +18,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_4.plugins').run(self)
     require('validation.tests.versions.v108_4.clone').run(self)
     require('validation.tests.versions.v108_4.flyingAudio').run(self)
+    require('validation.tests.versions.v108_4.layerAffects3D').run(self)
     print('PASSED ' .. self.count .. ' v108.4 focused checks')
     katsa.event.quit()
 end

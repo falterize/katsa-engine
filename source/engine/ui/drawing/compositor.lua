@@ -180,7 +180,10 @@ function Compositor.apply(ui, node)
     g.setCanvas(snapshot)
     reset()
     g.clear(0, 0, 0, 0)
-    local background = node.affects3D and ui._sceneBackground
+    local layerWorld = ui._sceneWorld or ui.owner and ui.owner._world
+    local allowed = not (layerWorld and layerWorld.shaderLayers)
+        or layerWorld.shaderLayers:affects3D(node.shaderLayer)
+    local background = node.affects3D and allowed and ui._sceneBackground
     if background then
         g.draw(background, 0, 0, 0, w / background:getWidth(), h / background:getHeight())
         g.setBlendMode('alpha', 'alphamultiply')
