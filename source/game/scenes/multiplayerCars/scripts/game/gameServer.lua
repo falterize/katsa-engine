@@ -1,4 +1,5 @@
--- Game rules on top of Net.Server: one car per player, seats for up to four riders, a bot,
+-- Game rules on top of Net.Server: one car and one on-foot walker per player, seats for up to four
+-- riders, a bot,
 -- collisions with replicated dents, and nitro refills granted for rewarded ads.
 --
 -- Clients only ask (sit / nitroAd); the server decides. A reward is never granted from a client
@@ -10,6 +11,7 @@ local CarEntity = require('scene.scripts.game.carEntity')
 local Arena = require('scene.scripts.game.arena')
 local Bot = require('scene.scripts.game.bot')
 local PhysicsCar = require('scene.scripts.game.physicsCar')
+local WalkerEntity = require('scene.scripts.game.walkerEntity')
 
 local GameServer = {}
 GameServer.__index = GameServer
@@ -35,6 +37,8 @@ function GameServer.new(context, options)
         options = options,
         cars = {}, -- netId -> car model
         bodies = {}, -- netId -> PhysicsCar
+        walkers = {}, -- player id -> walker model
+        ownCars = {}, -- player id -> netId of the car spawned for that player
         order = {}, -- netIds in spawn order (stable iteration)
         playerCars = {}, -- player id -> netId
         refills = {}, -- player id -> server time of the last refill
@@ -42,6 +46,7 @@ function GameServer.new(context, options)
         bot = nil,
     }, GameServer)
     CarEntity.define(server)
+    WalkerEntity.define(server)
     self:bindRemotes()
     server.playerAdded:connect(function(player)
         if options.hostsPlayer and not self.hostPlayer then
@@ -51,6 +56,7 @@ function GameServer.new(context, options)
     end)
     server.playerRemoved:connect(function(player)
         self:leaveCar(player)
+        self.walkers[player.id] = nil
         self.refills[player.id] = nil
     end)
     server.ticked:connect(function(dt)
@@ -150,24 +156,29 @@ function GameServer:spawnBot()
     return model
 end
 
+-- Each player gets a parked car and appears on foot beside it.
 function GameServer:onPlayerAdded(player)
     local point = self:nextSpawnPoint()
-    local model, netId = self:spawnCar({
-        x = point[1],
-        z = point[2],
+    local _, netId = self:spawnCar({ x = point[1], z = point[2], heading = point[3] })
+    self.ownCars[player.id] = netId
+    local heading = math.rad(point[3])
+    local x, z = point[1] + math.cos(heading) * 3, point[2] - math.sin(heading) * 3
+    local walker = self.server:spawn('Walker', {
+        x = x,
+        y = Arena.ground(x, z) + 0.1,
+        z = z,
         heading = point[3],
-        seats = { player.id, 0, 0, 0 },
-    })
-    model.seats[1] = player.id
-    self.playerCars[player.id] = netId
-    self:assignDriver(netId, player)
+        playerId = player.id,
+        name = player.name,
+    }, player)
+    self.walkers[player.id] = walker
 end
 
 -- Gives the car's physics to its driver's client, or back to the server (nil, or the hosting
 -- machine's own player, whose input the server reads directly: it shares this physics world).
 function GameServer:assignDriver(netId, player)
     local car, body = self.cars[netId], self.bodies[netId]
-    local remote = player ~= nil and player ~= self.hostPlayer and body ~= nil
+    local remote = player ~= nil and player ~= self.hostPlayer
     self.server:setAuthority(netId, remote and player or nil)
     if body then
         body:setMode(remote and 'follow' or 'dynamic')
@@ -219,6 +230,19 @@ function GameServer:leaveCar(player)
     self:publishSeats(netId)
 end
 
+-- Gets a player out of their car, onto the ground beside it. Returns true, x, y, z.
+function GameServer:exit(player)
+    local netId = self.playerCars[player.id]
+    local car = netId and self.cars[netId]
+    if not car then
+        return false, 'not in a car'
+    end
+    local heading = math.rad(car.heading)
+    local x, z = car.x + math.cos(heading) * 2.8, car.z - math.sin(heading) * 2.8
+    self:leaveCar(player)
+    return true, x, Arena.ground(x, z) + 0.2, z
+end
+
 -- Moves a player into another car. Returns the seat or nil, reason.
 function GameServer:seat(player, netId)
     local target = self.cars[netId]
@@ -229,7 +253,9 @@ function GameServer:seat(player, netId)
     if mine == target then
         return nil, 'already there'
     end
-    if mine and (mine.x - target.x) ^ 2 + (mine.z - target.z) ^ 2 > SIT_RANGE ^ 2 then
+    -- Distance is measured from the car the player rides, or from the walker on foot.
+    local origin = mine or self.walkers[player.id]
+    if origin and (origin.x - target.x) ^ 2 + (origin.z - target.z) ^ 2 > SIT_RANGE ^ 2 then
         return nil, 'too far'
     end
     if target:getOccupants() >= SEATS then
@@ -250,6 +276,9 @@ function GameServer:bindRemotes()
     local server = self.server
     server:remote('sit'):onRequest(function(player, netId)
         return self:seat(player, netId)
+    end)
+    server:remote('exit'):onRequest(function(player)
+        return self:exit(player)
     end)
     -- A driver's client simulates its own car, so it reports the collisions it felt.
     server:remote('impact'):onServer(function(player, netId, x, z, nx, nz, speed)

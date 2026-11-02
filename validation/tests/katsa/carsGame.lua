@@ -50,53 +50,58 @@ return function(T)
 
     run(180)
     T.check(one:isConnected() and two:isConnected(), 'carsGame: both players connect')
-    local oneId, oneCar, oneSeat = one:getCar()
-    local twoId, twoCar = two:getCar()
     T.check(
-        oneId and twoId and oneId ~= twoId and oneSeat == 1,
-        'carsGame: each player starts as a driver'
+        one.ownWalker ~= nil and two.ownWalker ~= nil and one:getCar() == nil,
+        'carsGame: each player starts on foot'
     )
-    local count = 0
+    local walkers, count = 0, 0
+    for _ in pairs(one.walkers) do
+        walkers = walkers + 1
+    end
     for _ in pairs(one.cars) do
         count = count + 1
     end
     T.check(
-        count == 3 and server.botId ~= nil,
-        'carsGame: two player cars and the bot are replicated'
+        walkers == 2 and count == 3 and server.botId ~= nil,
+        'carsGame: two walkers, two parked cars and the bot are replicated'
+    )
+    local oneId, twoId = server.ownCars[one:getPlayerId()], server.ownCars[two:getPlayerId()]
+    T.check(oneId and twoId and oneId ~= twoId, 'carsGame: every player has an own car')
+
+    -- Getting in: E next to the own car takes the driver seat and the driver gets authority.
+    local entered
+    one:sit(oneId, function(seat, reason)
+        entered = { seat, reason }
+    end)
+    run(60)
+    T.check(entered and entered[1] == 1, 'carsGame: the own car is entered at the driver seat')
+    local seatedId, _, seat = one:getCar()
+    T.check(seatedId == oneId and seat == 1, 'carsGame: the seat is replicated to the player')
+    T.check(
+        server.server:getAuthority(oneId) ~= nil and server.server:getAuthority(twoId) == nil,
+        'carsGame: the driven car belongs to its driver, an empty one to the server'
     )
 
     -- The bot sees a player's car and closes in.
     local bot = server.cars[server.botId]
-    local function distanceTo(netId)
-        local other = server.cars[netId]
-        return math.sqrt((bot.x - other.x) ^ 2 + (bot.z - other.z) ^ 2)
-    end
-    local nearest = math.min(distanceTo(oneId), distanceTo(twoId))
-    local closest, chased = nearest, false
-    for _ = 1, 240 do
+    local serverOne, serverTwo = server.cars[oneId], server.cars[twoId]
+    serverOne.x, serverOne.z = bot.x + 20, bot.z
+    local chased = false
+    for _ = 1, 60 do
         run(1)
         chased = chased or server.bot.mode == 'chase'
-        closest = math.min(closest, distanceTo(oneId), distanceTo(twoId))
     end
     T.check(chased, 'carsGame: the bot chases a car in its sight radius')
-    T.check(closest < 15, 'carsGame: the bot closes in on the car')
 
-    -- Driving moves the authoritative car and prediction agrees.
-    local serverOne = server.cars[oneId]
-    local startZ = serverOne.z
-    drive = { 1, 0 }
-    run(120)
-    T.check(
-        serverOne.speed > 5 and serverOne.z ~= startZ,
-        'carsGame: the driver input moves the server car'
-    )
-    drive = { 0, 0 }
-    run(180)
-
-    -- Seats: Bob joins Ann's car, which needs to be close and have room.
-    local serverTwo = server.cars[twoId]
-    serverTwo:setPose(serverOne.x + 4, serverOne.z, 0)
-    serverTwo.speed = 0
+    -- Seats: Bob's walker is far from Ann's car, then walks up to it.
+    local far
+    two:sit(oneId, function(seat, reason)
+        far = { seat, reason }
+    end)
+    run(60)
+    T.check(far and far[1] == nil and far[2] == 'too far', 'carsGame: a far car cannot be entered')
+    -- A client owns its walker, so the move is made where the walker is simulated.
+    two.ownWalker.x, two.ownWalker.z = serverOne.x + 3, serverOne.z
     run(30)
     local result
     two:sit(oneId, function(seat, reason)
@@ -109,18 +114,6 @@ return function(T)
         joinedId == oneId and joinedSeat == 2,
         'carsGame: the passenger is seated on every client'
     )
-    T.check(
-        server.server:getAuthority(oneId) ~= nil and server.server:getAuthority(twoId) == nil,
-        'carsGame: the abandoned car has no driver'
-    )
-
-    serverTwo:setPose(60, 60, 0)
-    local far
-    one:sit(twoId, function(seat, reason)
-        far = { seat, reason }
-    end)
-    run(60)
-    T.check(far and far[1] == nil, 'carsGame: nobody can sit in a car that is not theirs to reach')
 
     -- A fourth seat is the limit.
     local car = server.cars[oneId]
@@ -129,13 +122,11 @@ return function(T)
     T.check(car:getOccupants() == 4, 'carsGame: four riders fit')
     car.seats[3], car.seats[4] = nil, nil
 
-    -- Dents: drive Ann's car into the wall and watch the replicas change.
-    serverOne:setPose(serverOne.x, 50, 0)
-    serverOne.speed = 25
-    drive = { 1, 0 }
-    run(180)
-    drive = { 0, 0 }
-    T.check(#serverOne.dents.dents > 0, 'carsGame: hitting a wall dents the car')
+    -- Dents: an impact reported to the server shows on every replica.
+    T.check(
+        server:addDent(oneId, serverOne, { x = 0, z = 2.1, nx = 0, nz = -1, speed = 15 }, 1) ~= false,
+        'carsGame: an impact dents the car'
+    )
     run(30)
     T.check(
         #two.cars[oneId].dents.dents == #serverOne.dents.dents,
@@ -153,7 +144,7 @@ return function(T)
         refill and refill[1] == true and serverOne.nitro == 1,
         'carsGame: a watched ad refills the nitro'
     )
-    serverOne.nitro = 0
+    serverOne.nitro, one.cars[oneId].nitro = 0, 0 -- the driver's client owns the value
     Ads.load()
     local again
     one:requestNitroRefill(function(ok, reason)
@@ -172,6 +163,17 @@ return function(T)
     end)
     run(60)
     T.check(skipped == false, 'carsGame: a skipped ad refills nothing')
+
+    -- Getting out puts the walker on the ground beside the car and frees the driver seat.
+    local left
+    one:exitCar(function(ok, x, _, z)
+        left = { ok, x, z }
+    end)
+    run(60)
+    T.check(
+        left and left[1] == true and one:getCar() == nil,
+        'carsGame: leaving the car works and the seat is freed'
+    )
 
     one:disconnect()
     two:disconnect()

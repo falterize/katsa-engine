@@ -3,6 +3,7 @@ local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
 local CarEntity = require('scene.scripts.game.carEntity')
 local PhysicsCar = require('scene.scripts.game.physicsCar')
+local WalkerEntity = require('scene.scripts.game.walkerEntity')
 
 local GameClient = {}
 GameClient.__index = GameClient
@@ -21,6 +22,7 @@ function GameClient.new(context, options)
         client = client,
         options = options,
         cars = {}, -- netId -> car model
+        walkers = {}, -- netId -> walker model (every player on foot)
         bodies = {}, -- netId -> PhysicsCar (owned dynamic, others follow)
         input = options.input or function()
             return {}
@@ -30,11 +32,20 @@ function GameClient.new(context, options)
         onDents = nil,
     }, GameClient)
     CarEntity.define(client)
+    WalkerEntity.define(client)
     client.inputProvider = function()
         return self.input()
     end
     client.entitySpawned:connect(function(object, kind, netId, owned)
-        if kind == 'Car' then
+        if kind == 'Walker' then
+            self.walkers[netId] = object
+            if owned then
+                self.ownWalker, self.ownWalkerId = object, netId
+            end
+            if self.onWalkerAdded then
+                self.onWalkerAdded(netId, object, owned)
+            end
+        elseif kind == 'Car' then
             self.cars[netId] = object
             self:attachBody(netId, object, owned)
             if self.onCarAdded then
@@ -43,7 +54,12 @@ function GameClient.new(context, options)
         end
     end)
     client.entityRemoved:connect(function(_, kind, netId)
-        if kind == 'Car' then
+        if kind == 'Walker' then
+            self.walkers[netId] = nil
+            if self.onWalkerRemoved then
+                self.onWalkerRemoved(netId)
+            end
+        elseif kind == 'Car' then
             self.cars[netId] = nil
             if self.bodies[netId] then
                 self.bodies[netId]:destroy()
@@ -195,22 +211,29 @@ function GameClient:getCar()
     end
 end
 
--- The nearest car with a free seat within `range` of the player's own car.
+-- The nearest car with a free seat within `range` of the player: measured from the car they
+-- ride, or from their walker on foot. The car they already sit in is not a candidate.
 function GameClient:findNearbyCar(range)
     local _, mine = self:getCar()
-    if not mine then
+    local origin = mine or self.ownWalker
+    if not origin then
         return nil
     end
     local best, bestDistance
     for netId, car in pairs(self.cars) do
         if car ~= mine and not car.isBot and car:getOccupants() < car.config.seats then
-            local distance = math.sqrt((car.x - mine.x) ^ 2 + (car.z - mine.z) ^ 2)
+            local distance = math.sqrt((car.x - origin.x) ^ 2 + (car.z - origin.z) ^ 2)
             if distance <= range and (not bestDistance or distance < bestDistance) then
                 best, bestDistance = netId, distance
             end
         end
     end
     return best
+end
+
+-- Asks to leave the current car; callback(ok, x, y, z) gets the spot on the ground.
+function GameClient:exitCar(callback)
+    self.client:remote('exit'):request(callback or function() end)
 end
 
 function GameClient:sit(netId, callback)
