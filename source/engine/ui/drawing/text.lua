@@ -35,7 +35,8 @@ local function layout(ui, runs, size, width, measureOnly, heightLimit)
     for _, run in ipairs(runs) do
         local font, rasterScale = ui:rasterFont(
             run.size and math.max(1, math.floor(run.size * size / (runs.baseSize or size) + 0.5))
-                or size
+                or size,
+            runs.fontPath
         )
         local fontHeight = font:getHeight() * rasterScale
         local spacing = fontHeight * font:getLineHeight()
@@ -140,11 +141,13 @@ function Text.prepare(ui, node)
         and cache.density == ui.density
         and cache.minimum == node.minTextSize
         and cache.maximum == node.maxTextSize
+        and cache.font == node.font
     then
         return node._textLines, node._textHeight
     end
     local runs = Rich.parse(node.text or '', node.richText)
     runs.baseSize = base
+    runs.fontPath = node.font
     local size = base
     -- Font-size probes need only measurements, not temporary lines, runs or concatenated strings.
     if node.textScaled then
@@ -196,6 +199,7 @@ function Text.prepare(ui, node)
     cache.text, cache.rich, cache.scaled = node.text, node.richText, node.textScaled
     cache.width, cache.height, cache.base, cache.density = width, height, base, ui.density
     cache.minimum, cache.maximum = node.minTextSize, node.maxTextSize
+    cache.font = node.font
     node._resolvedTextSize = size
     return node._textLines, node._textHeight
 end
@@ -267,7 +271,7 @@ function Text.drawLabel(ui, node)
     -- Retain glyph geometry; rebuild only when wrapping, font, text or alignment changes.
     if not node.textScaled and not node.richText then
         local glyphs = drawables(node, 'fixed')
-        local font, rasterScale = ui:rasterFont(node.fontSize)
+        local font, rasterScale = ui:rasterFont(node.fontSize, node.font)
         g.setFont(font)
         local scaleChanged = node._rasterScale ~= rasterScale
         node._rasterScale = rasterScale

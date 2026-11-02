@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.4
 
+- `Environment.rendering.vsync` (boolean) drives the window's vertical sync from the scene (default: the current window setting).
+- `TextLabel`, `Button` and `TextBox` have a `font` property: a path resolved like image paths (`shared://fonts/test-font`, extension optional, `.ttf`/`.otf`). A missing file logs a warning and falls back to the default font. `assets/fonts/test-font.ttf` ships as an example.
+- Renamed `nodes/physics/3d/constraints.lua` to `constraints3D.lua` (matching `constraints2D.lua`; the old name remains a one-line alias). The character texture `surfaces/grass.jpg` is now `surfaces/deltarune.jpg` (manifest key `deltarune`), and `surfaces/grass.png` is a real grass texture.
 - multiplayerCars: shadow map 1024 (was 2048; the atlas used 400 MB and was redrawn every frame because cars move).
 - Fewer hitches and faster loads: glTF accessors are read with typed arrays instead of per-number string unpacking, the multiplayerCars character is imported while the scene loads (cached for every walker), relative requires inside functions were reverted to absolute names (they cost a stack inspection per call), and the load phases of multiplayerCars show in the profiler. Steps slower than 50 ms (car / character views) are logged.
 - multiplayerCars: the HUD *Path debug* button and the yellow marker spheres are gone. `Environment.debug.pathfinding` is the only switch; the bot route is fed to the plugin's debug view (`Pathfinding.Debug.setRoute`).

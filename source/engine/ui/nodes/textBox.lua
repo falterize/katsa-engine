@@ -144,7 +144,7 @@ function Class:pointer(ui, phase, x, y, id)
         self._dragging = id
     end
     local lines = self:lines()
-    local font, scale = ui:rasterFont(self.fontSize)
+    local font, scale = ui:rasterFont(self.fontSize, self.font)
     local lineHeight = font:getHeight() * scale
     local lx, ly = (x - ui.offsetX) / ui.scale, (y - ui.offsetY) / ui.scale
     local padding = self.padding or 6
@@ -182,7 +182,7 @@ end
 function Class:drawSelf(ui)
     Node.getClass('Frame').drawSelf(self, ui)
     local lines, editor, g = self:lines(), self._editor, katsa.graphics
-    local font, scale = ui:rasterFont(self.fontSize)
+    local font, scale = ui:rasterFont(self.fontSize, self.font)
     local padding, height = self.padding or 6, font:getHeight() * scale
     local width = math.max(1, self._width - padding * 2)
     local active, row, column = Focus.current == self, 1, 0

@@ -36,6 +36,7 @@ function ChangeTracking.install(UI)
         'width',
         'height',
         'fontSize',
+        'font',
         'relativeTo',
         'sizeRelativeTo',
         'positionRelativeTo',
