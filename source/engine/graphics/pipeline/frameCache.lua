@@ -418,7 +418,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
     sceneChanged = scalar(
         c.options,
         'maskForceAll',
-        require('./lightMasks').forceAll
+        require('source.engine.graphics.pipeline.lightMasks').forceAll
     ) or sceneChanged
     cameraChanged = scalar(c.options, 'width', renderer.targetWidth or katsa.graphics.getWidth())
         or cameraChanged
@@ -475,7 +475,7 @@ function Cache.reusable(renderer, world, c)
     return c.valid
         and not c.volatile
         and world.environment.render.frameCache ~= false
-        and (not world.environment.shadows.enabled or require('../shadows.shadowCache').reusable(renderer.shadows, renderer, c))
+        and (not world.environment.shadows.enabled or require('source.engine.graphics.shadows.shadowCache').reusable(renderer.shadows, renderer, c))
         and not world.environment.debug.gizmos.enabled
         and not (world.debug and world.debug.bones)
         and not selectionDue

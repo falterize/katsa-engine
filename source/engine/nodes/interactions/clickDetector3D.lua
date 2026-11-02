@@ -13,7 +13,7 @@ end
 function Class.mount(world, properties, parent)
     local node = Node.new('ClickDetector3D', properties, parent)
     node._world = world
-    require('../../surfaces.support').initialize(node, node._requestedAdornee)
+    require('source.engine.surfaces.support').initialize(node, node._requestedAdornee)
     node._requestedAdornee = nil
     world.clickDetectors = world.clickDetectors or {}
     world.clickDetectors[node] = true
@@ -25,7 +25,7 @@ end
 
 function Class:setAdornee(node)
     assert(node == nil or node:isA('Mesh3D'), 'ClickDetector3D Adornee must be a Mesh3D')
-    return require('../../surfaces.support').set(self, node)
+    return require('source.engine.surfaces.support').set(self, node)
 end
 
 function Class:getTarget()

@@ -16,7 +16,7 @@ function Material.new(resources, options)
     assert(kind == 'world' or kind == 'ui', 'Material.kind must be world or ui')
     local code
     if kind == 'world' then
-        code = require('./shaderSource').read(
+        code = require('source.engine.graphics.shaderSource').read(
             options.template or 'assets/shaders/engine/world.glsl'
         )
         code = code:gsub('// EARLY_DEPTH_BEGIN.-// EARLY_DEPTH_END', '')

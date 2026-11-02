@@ -23,7 +23,7 @@ local palette = {
 }
 
 local function copy(value)
-    if require('../../math.managedValue').is(value) then
+    if require('source.engine.math.managedValue').is(value) then
         return value:clone()
     end
     if not Array.is(value) or value._node then

@@ -332,6 +332,7 @@ local Nav = require('./nodes.navMap')       -- subfolder: nodes/navMap.lua
   ordinary dotted name. Use absolute `source.*` names for modules more than two folders away.
 - Inside a scene the base is the scene root (the same tree `require('scene.…')` addresses), so a
   scene stays valid wherever it is packed. Engine modules are still required absolutely.
+- Put relative requires at the top of the file. A relative name finds its caller with `debug.getinfo` on every call, so inside functions that run often use the absolute name (`source.…`, or `scene.…` in a scene).
 - The caller is found from its file, so never tail-call it: write `return (require('./part'))`.
 - Plugin manifests use the same form for their modules (`nodes = { NavMap = './nodes.navMap' }`),
   relative to the plugin folder.

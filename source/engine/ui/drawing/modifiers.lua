@@ -92,7 +92,7 @@ function Modifiers.drawBorders(node)
         if
             stroke:isA('UIStroke')
             and stroke.target == 'Border'
-            and require('../../ui').isWorking(stroke)
+            and require('source.engine.ui').isWorking(stroke)
         then
             local thickness = Modifiers.thickness(stroke, node, 64)
             if thickness > 0 then
@@ -132,7 +132,7 @@ function Modifiers.textStrokes(node, draw)
         if
             stroke:isA('UIStroke')
             and stroke.target == 'Text'
-            and require('../../ui').isWorking(stroke)
+            and require('source.engine.ui').isWorking(stroke)
         then
             active = true
             break
@@ -162,7 +162,7 @@ function Modifiers.textStrokes(node, draw)
         if
             stroke:isA('UIStroke')
             and stroke.target == 'Text'
-            and require('../../ui').isWorking(stroke)
+            and require('source.engine.ui').isWorking(stroke)
         then
             local thickness = Modifiers.thickness(stroke, node, 8)
             g.push('all')

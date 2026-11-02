@@ -12,14 +12,14 @@ function Movement.install(Input)
             if
                 c.node
                 and (
-                    not require('../ui').canInteract(c.node)
+                    not require('source.engine.ui').canInteract(c.node)
                     or c.billboard and not c.billboard.drawable
                 )
             then
                 if
                     c.scroll
                     and (not c.billboard or c.billboard.drawable)
-                    and require('../ui').canInteract(c.scroll)
+                    and require('source.engine.ui').canInteract(c.scroll)
                 then
                     c.node.ui:pointer(c.node, 'cancel', 0, 0, id)
                     c.node = c.scroll
@@ -32,8 +32,8 @@ function Movement.install(Input)
                 end
             end
         end
-        local focused = require('../ui.widgets.textFocus').current
-        if focused and not require('../ui').canInteract(focused) then
+        local focused = require('source.engine.ui.widgets.textFocus').current
+        if focused and not require('source.engine.ui').canInteract(focused) then
             focused:blur()
             focused = nil
         end
@@ -100,7 +100,7 @@ function Movement.install(Input)
                     end
                     local detector = not covered
                         and scene.world
-                        and require('../world.picking').detector(
+                        and require('source.engine.world.picking').detector(
                             scene.world,
                             camera,
                             cx,

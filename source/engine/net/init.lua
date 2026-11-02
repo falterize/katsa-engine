@@ -1,11 +1,11 @@
 -- Engine networking: authoritative Server and predicting Client over katsa.net.
 -- See docs/guides/development/multiplayer.md.
 local Net = {
-    Server = require('./server'),
-    Client = require('./client'),
-    Link = require('./link'),
-    Types = require('./types'),
-    Codec = require('./codec'),
+    Server = require('source.engine.net.server'),
+    Client = require('source.engine.net.client'),
+    Link = require('source.engine.net.link'),
+    Types = require('source.engine.net.types'),
+    Codec = require('source.engine.net.codec'),
 }
 
 -- LAN server list. Returns a browser whose update() gives

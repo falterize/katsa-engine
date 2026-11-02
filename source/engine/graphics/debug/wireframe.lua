@@ -155,12 +155,12 @@ function Wireframe.draw(renderer, object)
         (object.color and object.color[4] or 1)
             * (object._renderOpacity or object:getEffectiveOpacity())
     )
-    require('../../animation.skeleton.skinning').bind(shader, object)
+    require('source.engine.animation.skeleton.skinning').bind(shader, object)
     local mesh = Wireframe.mesh(renderer, object.geometry or renderer.quad)
     g.setMeshCullMode('none')
     g.setColor(1, 1, 1, 1)
     renderer.stats.mainTriangles = renderer.stats.mainTriangles
-        + require('./triangles').mesh(mesh)
+        + require('source.engine.graphics.debug.triangles').mesh(mesh)
     g.draw(mesh)
 end
 

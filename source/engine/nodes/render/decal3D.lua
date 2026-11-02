@@ -11,7 +11,7 @@ Class.propertySchema.mode = {
 
 function Class.mount(world, properties, parent)
     properties.face = properties.face or 'Front'
-    require('../../surfaces.faces').validate(properties.face)
+    require('source.engine.surfaces.faces').validate(properties.face)
     properties._legacyTileFit = properties.imageMode == nil
         and properties.mode == 'Tiles'
         and properties.fitMode ~= nil
@@ -50,14 +50,14 @@ function Class.mount(world, properties, parent)
         or (properties.surfaceSize and { 0, properties.surfaceSize[1], 0, properties.surfaceSize[2] })
         or { 1, 0, 1, 0 }
     properties.surfaceSize = nil
-    require('../../components.image').initialize(properties)
+    require('source.engine.components.image').initialize(properties)
     properties._decalMode = properties.imageMode
     properties._world = world
     properties.matrix = Math.identity()
     properties.normal = {}
     properties.geometry = world.surfaceQuad
     properties.image = properties.image or ''
-    properties.textureImage = require('../../components.image').resolve(
+    properties.textureImage = require('source.engine.components.image').resolve(
         world.resources,
         properties,
         properties.image,
@@ -66,13 +66,13 @@ function Class.mount(world, properties, parent)
     local reference = properties.adornee
     if reference then
         local ok, reason =
-            require('../../surfaces.support').valid({ _world = world }, reference)
+            require('source.engine.surfaces.support').valid({ _world = world }, reference)
         assert(ok, reason)
     end
     rawset(properties, 'adornee', nil)
     properties.brightness = properties.brightness or 1
     properties.supportSize = properties.supportSize or { 1, 1, 1 }
-    require('../../core.validate').vector(properties.supportSize, 'Decal3D.supportSize', 3)
+    require('source.engine.core.validate').vector(properties.supportSize, 'Decal3D.supportSize', 3)
     for i = 1, 3 do
         assert(properties.supportSize[i] > 0, 'Decal3D.supportSize must be positive')
     end
@@ -83,7 +83,7 @@ function Class.mount(world, properties, parent)
         'Decal3D.brightness must be finite and nonnegative'
     )
     local node = Node.adopt(properties, 'Decal3D')
-    require('../../surfaces.support').initialize(node, reference)
+    require('source.engine.surfaces.support').initialize(node, reference)
     node.parent = parent
     world.decals[#world.decals + 1] = node
     node:onDestroy(function()
@@ -106,10 +106,10 @@ function Class:update(world, camera)
         self.image ~= self._imagePath
         or self.xml ~= self._xmlPath
         or self.imageMode ~= self._decalMode
-        or require('../../components.image').pixelate(self, world.environment)
+        or require('source.engine.components.image').pixelate(self, world.environment)
             ~= self._imagePixel
     then
-        self.textureImage = require('../../components.image').resolve(
+        self.textureImage = require('source.engine.components.image').resolve(
             world.resources,
             self,
             self.image,
@@ -117,7 +117,7 @@ function Class:update(world, camera)
         )
         self._xmlPath, self._decalMode = self.xml, self.imageMode
         self._imagePath, self._imagePixel =
-            self.image, require('../../components.image').pixelate(self, world.environment)
+            self.image, require('source.engine.components.image').pixelate(self, world.environment)
     end
     assert(
         self.mode == 'Decal'
@@ -127,11 +127,11 @@ function Class:update(world, camera)
             or self.mode == 'XML',
         'Decal3D.mode must be Decal, Texture, Tiles or Atlas'
     )
-    require('../../surfaces.faces').update(self, camera)
+    require('source.engine.surfaces.faces').update(self, camera)
 end
 
 function Class:setAdornee(reference)
-    return require('../../surfaces.support').set(self, reference)
+    return require('source.engine.surfaces.support').set(self, reference)
 end
 
 return Class

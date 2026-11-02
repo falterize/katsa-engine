@@ -35,7 +35,7 @@ end
 function R.draw(system, camera, emitter)
     if
         emitter
-        and not require('../visibility').relevant(emitter, camera, true)
+        and not require('source.engine.particles.visibility').relevant(emitter, camera, true)
     then
         return
     end
@@ -48,7 +48,7 @@ function R.draw(system, camera, emitter)
     if not system.shader then
         system.shader = system.world.resources:own(
             g.newShader(
-                require('../../graphics.shaderSource').read(
+                require('source.engine.graphics.shaderSource').read(
                     'assets/shaders/particles/sprite.glsl'
                 )
             )
@@ -67,10 +67,10 @@ function R.draw(system, camera, emitter)
     local list = emitter and system._drawList or system.emitters
     for _, emitter in ipairs(list) do
         world:resolveLayerGroup(emitter)
-        local material = require('../../shaders.materialResolver').resolve(world, emitter)
+        local material = require('source.engine.shaders.materialResolver').resolve(world, emitter)
         local shader = material and material.shader or system.shader
         g.setShader(shader)
-        require('../lighting').bind(shader, world, camera, emitter)
+        require('source.engine.particles.lighting').bind(shader, world, camera, emitter)
         shader:send('viewProjection', 'row', camera.viewProjection)
         if material then
             material:bind(world.simulationTime or 0)
@@ -124,7 +124,7 @@ function R.draw(system, camera, emitter)
             end
             local vertices = emitter._vertices or {}
             emitter._vertices = vertices
-            local image = require('../../components.image').resolve(
+            local image = require('source.engine.components.image').resolve(
                 world.resources,
                 emitter,
                 emitter.texture,
@@ -139,9 +139,9 @@ function R.draw(system, camera, emitter)
                 local alpha = math.max(0, math.min(1, 1 - sample(emitter, 'transparency', t)))
                     * emitter:getEffectiveOpacity()
                 local rx, ry, rz, ux, uy, uz =
-                    require('../basis').resolve(emitter, p, camera, matrix)
+                    require('source.engine.particles.basis').resolve(emitter, p, camera, matrix)
                 local u0, v0, uw, vh =
-                    require('../image').uv(emitter, p, image, p.renderSize)
+                    require('source.engine.particles.image').uv(emitter, p, image, p.renderSize)
                 local cos, sin =
                     math.cos(p.rotation + math.rad(sample(emitter, 'rotation', t))),
                     math.sin(p.rotation + math.rad(sample(emitter, 'rotation', t)))

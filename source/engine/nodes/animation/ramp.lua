@@ -185,8 +185,8 @@ function Ramp:apply(time)
         if not self.bindings[key] then
             self._staticStarts = self._staticStarts or {}
             self._staticStarts[key] = self._staticStarts[key]
-                or require('../../animation.rampGoals').value(self, key)
-            require('../../animation.bindings').set(
+                or require('source.engine.animation.rampGoals').value(self, key)
+            require('source.engine.animation.bindings').set(
                 target,
                 key,
                 Sequence.evaluate(
@@ -203,7 +203,7 @@ function Ramp:apply(time)
         if Array.is(value) then
             self._buffers[key] = value
         end
-        require('../../animation.bindings').set(target, key, value)
+        require('source.engine.animation.bindings').set(target, key, value)
     end
 end
 
@@ -225,7 +225,7 @@ function Ramp:exportData()
         'rotation',
         'transparency',
     }) do
-        data[key] = require('../../animation.bindings').copy(self[key])
+        data[key] = require('source.engine.animation.bindings').copy(self[key])
     end
     return data
 end
@@ -235,12 +235,12 @@ function Ramp:play()
     assert(not self:isLifetime(), 'Lifetime Ramp is sampled by particle age; use Static mode')
     local target = self.adornee or self.parent
     if not self:isSpatialGradient() then
-        require('../../animation.rampGoals').ensureTarget(self)
+        require('source.engine.animation.rampGoals').ensureTarget(self)
     end
     if self.track then
         self.track:destroy()
     end
-    self.track = require('../../animation.tween').new(target, {
+    self.track = require('source.engine.animation.tween').new(target, {
         ramp = not self:isSpatialGradient() and self or nil,
         playbackTime = self.playbackTime,
         reverses = self.reverses,

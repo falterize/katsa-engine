@@ -13,7 +13,7 @@ function RenderBindings.install(Renderer)
             return
         end
         local g = katsa.graphics
-        local image = require('../../components.image').resolve(
+        local image = require('source.engine.components.image').resolve(
             world.resources,
             s,
             s.texture,
@@ -109,7 +109,7 @@ function RenderBindings.install(Renderer)
         assert(not material or material.kind == 'world', '3D objects require a world material')
         local shader = wire and self.wireShader
             or material and material.shader
-            or require('./shaderVariants').get(self, object)
+            or require('source.engine.graphics.pipeline.shaderVariants').get(self, object)
         katsa.graphics.setShader(shader)
         if self.shaderFrames[shader] ~= self.frame then
             self:sendFrame(shader)

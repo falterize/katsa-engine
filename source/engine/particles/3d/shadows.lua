@@ -76,7 +76,7 @@ function S.prepare(world, camera, output)
                 end)
             end
             proxy._resolvedMaterial =
-                require('../../shaders.materialResolver').resolve(world, emitter)
+                require('source.engine.shaders.materialResolver').resolve(world, emitter)
             proxy._shaderBoundsUnknown = emitter._shaderBoundsUnknown
             proxy._shaderBoundsPadding = emitter._shaderBoundsPadding
             local matrix = emitter:getRenderWorldMatrix()
@@ -105,15 +105,15 @@ function S.prepare(world, camera, output)
                     x, y, z = M.transform(matrix, x, y, z)
                 end
                 if half > 0 and alpha > emitter.shadowAlphaCutoff then
-                    local image = require('../../components.image').resolve(
+                    local image = require('source.engine.components.image').resolve(
                         world.resources,
                         emitter,
                         emitter.texture
                     )
                     local u0, v0, uw, vh =
-                        require('../image').uv(emitter, p, image, half * 2)
+                        require('source.engine.particles.image').uv(emitter, p, image, half * 2)
                     local bx, by, bz, upx, upy, upz =
-                        require('../basis').resolve(emitter, p, camera, matrix)
+                        require('source.engine.particles.basis').resolve(emitter, p, camera, matrix)
                     local rotation = p.rotation
                         + math.rad(
                             Sequence.evaluate(
@@ -164,7 +164,7 @@ function S.prepare(world, camera, output)
                 proxy.layers = emitter.layers
                 proxy.shadowLayers = emitter.shadowLayers
                 proxy.shadowGroup = emitter.shadowGroup
-                proxy.image = require('../../components.image').resolve(
+                proxy.image = require('source.engine.components.image').resolve(
                     world.resources,
                     emitter,
                     emitter.texture,

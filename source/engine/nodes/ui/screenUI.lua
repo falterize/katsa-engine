@@ -15,7 +15,7 @@ C.propertySchema = {
 }
 
 function C.initialize(self)
-    require('../../world.gravity').initialize(self, 2)
+    require('source.engine.world.gravity').initialize(self, 2)
     self.layerGroup = self.layerGroup or 'Default'
     self.timeScale = self.timeScale or 1
     self.transparency = self.transparency or 0
@@ -23,7 +23,7 @@ end
 
 function C.mount(world, properties, parent)
     assert(parent == world.root, 'World2D belongs directly to its World3D')
-    local ui = require('../../ui')
+    local ui = require('source.engine.ui')
         .new(properties.width or 640, properties.height or 360, world.resources)
         :bindWorld(world)
     ui.transparency = properties.transparency or properties.Transparency or 0

@@ -4,14 +4,14 @@ local Catalog = require('../sceneCatalog')
 local Application = {}
 
 function Application.new(manager, source, options)
-    local package = Loader.open(source, Catalog, require('../data.assetRoots').shared)
+    local package = Loader.open(source, Catalog, require('source.game.data.assetRoots').shared)
     if package.settings.runtime == 'standalone' then
         return require('source.engine.scenes.host').new(manager, package, options)
     end
     if package.settings.kind == 'interface' then
         return require('source.engine.scenes.interface').new(manager, package, options)
     end
-    return require('./game').new(
+    return require('source.game.runtime.game').new(
         manager,
         package.settings.id,
         { _package = package }

@@ -104,7 +104,7 @@ function Plugins.activate(world, names)
             for className, modulePath in pairs(info.extend or {}) do
                 local spec = load(name, modulePath)
                 spec.plugin = name
-                require('../nodes.core.extensions').add(className, spec)
+                require('source.engine.nodes.core.extensions').add(className, spec)
             end
             local debug = info.debug
             if debug then

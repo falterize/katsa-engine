@@ -11,7 +11,7 @@ function Physics2D.new(options)
     options = options or {}
     local units = options.unitsPerMeter or options.units or 64
     assert(type(units) == 'number' and units > 0 and units < math.huge, 'Invalid 2D units')
-    local gravity = require('../../world.gravity').options(options, 2, { 0, -9.81 * units })
+    local gravity = require('source.engine.world.gravity').options(options, 2, { 0, -9.81 * units })
     -- Do not change katsa.physics.setMeter: that global also affects other worlds.
     local factor = katsa.physics.getMeter() / units
     local self = setmetatable({
@@ -32,13 +32,13 @@ function Physics2D.new(options)
         events = {},
         commands = {},
         debug = options.debugSettings
-            or require('./debugSettings').create(options.debug),
+            or require('source.engine.physics.2d.debugSettings').create(options.debug),
         stats = { steps = 0, droppedTime = 0, updateMilliseconds = 0, solverMilliseconds = 0 },
         world = katsa.physics.newWorld(gravity[1] * factor, gravity[2] * factor, true),
     }, Physics2D)
     assert(self.fixedDelta > 0 and self.fixedDelta < math.huge, 'Invalid 2D fixedDelta')
     assert(self.maxSteps >= 1 and self.maxSteps % 1 == 0, 'Invalid 2D maxSteps')
-    self.collisionGroups = require('../../core.groups').new(function(registry)
+    self.collisionGroups = require('source.engine.core.groups').new(function(registry)
         for _, body in ipairs(self.bodies) do
             if registry.renamed and body.object.collisionGroup == registry.renamed[1] then
                 body.object.collisionGroup = registry.renamed[2]
@@ -124,7 +124,7 @@ function Physics2D:setGravity(x, y)
         end
     end
     self.gravity[1], self.gravity[2] = x, y
-    require('../../world.gravity').read(self, x, y)
+    require('source.engine.world.gravity').read(self, x, y)
 end
 
 function Physics2D:getGravity()

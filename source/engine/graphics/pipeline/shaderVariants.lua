@@ -67,7 +67,7 @@ function Variants.get(renderer, object)
     local shader = renderer.shaderVariants[key]
     if not shader then
         local source =
-            require('../shaderSource').read('assets/shaders/engine/world.glsl')
+            require('source.engine.graphics.shaderSource').read('assets/shaders/engine/world.glsl')
         if not earlyDepth then
             source = source:gsub('// EARLY_DEPTH_BEGIN.-// EARLY_DEPTH_END', '')
         end

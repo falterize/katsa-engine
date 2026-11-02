@@ -83,7 +83,7 @@ function Statistics.new(scene, parent)
     add(definitions, 'frame.limit', 'Configured frame ceiling', 'frames/s', function(c)
         local scene = c.scene
         local limit = scene.settings.frameRateLimit
-        return limit ~= nil and limit or require('../../core.runtime').frameRateLimit or 0
+        return limit ~= nil and limit or require('source.engine.core.runtime').frameRateLimit or 0
     end)
     add(definitions, 'frame', 'Frame delta', 'ms', function(c)
         return c.scene.manager.frameDelta * 1000
@@ -182,7 +182,7 @@ function Statistics.new(scene, parent)
         { 'present', 'Loop present (previous frame)', 'ms' },
         { 'sleep', 'Loop sleep (previous frame)', 'ms' },
     }, function()
-        return require('../../core.runtime').timings
+        return require('source.engine.core.runtime').timings
     end)
     for _, definition in ipairs(definitions) do
         local id = definition.id

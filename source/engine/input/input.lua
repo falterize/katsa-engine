@@ -7,7 +7,7 @@ function Input.new(scene, layout)
     return setmetatable({
         scene = scene,
         layout = layout,
-        actions = require('./actions').new(),
+        actions = require('source.engine.input.actions').new(),
         captures = {},
         axisX = 0,
         axisY = 0,
@@ -37,7 +37,7 @@ require('./pointers').install(Input)
 require('./movement').install(Input)
 
 function Input:keypressed(key)
-    local focused = require('../ui.widgets.textFocus').current
+    local focused = require('source.engine.ui.widgets.textFocus').current
     if focused then
         return focused:editKey(key)
     end
@@ -46,7 +46,7 @@ function Input:keypressed(key)
 end
 
 function Input:textinput(text)
-    local focused = require('../ui.widgets.textFocus').current
+    local focused = require('source.engine.ui.widgets.textFocus').current
     if focused then
         focused:insertText(text)
         return true
@@ -84,7 +84,7 @@ end
 function Input:draw()
     if self.layout then
         if not self.joystickView then
-            self.joystickView = require('./joystickView').new(self)
+            self.joystickView = require('source.engine.input.joystickView').new(self)
         end
         self.joystickView:update()
     end

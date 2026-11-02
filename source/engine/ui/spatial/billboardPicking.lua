@@ -5,7 +5,7 @@ local BillboardPicking = {}
 
 function BillboardPicking.install(BillboardUI)
     function BillboardUI:localPoint(x, y)
-        local bx, by, t = require('../../surfaces.faces').point(self, self._camera, x, y)
+        local bx, by, t = require('source.engine.surfaces.faces').point(self, self._camera, x, y)
         if not bx then
             return
         end
@@ -38,7 +38,7 @@ function BillboardPicking.install(BillboardUI)
         if self:isA('SurfaceUI') then
             return Node.getClass('Node3D').getWorldMatrix(self)
         end
-        local support = require('../../surfaces.support')
+        local support = require('source.engine.surfaces.support')
         local reference = support.resolve(self)
         local frame = reference and support.frame(self, reference)
         local values = self._spatialValues or {}
@@ -66,7 +66,7 @@ function BillboardPicking.install(BillboardUI)
     end
 
     function BillboardUI:setAdornee(reference)
-        return require('../../surfaces.support').set(self, reference)
+        return require('source.engine.surfaces.support').set(self, reference)
     end
 end
 

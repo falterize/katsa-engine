@@ -274,7 +274,7 @@ function Node3D:getWorldPosition(out)
 end
 
 function Node3D:getWorldCFrame()
-    local CFrame = require('../../math.cframe')
+    local CFrame = require('source.engine.math.cframe')
     local m = Affine.withoutScale(self:getWorldMatrix())
     return CFrame.fromMatrix({ m[4], m[8], m[12] }, { m[1], m[5], m[9] }, { m[2], m[6], m[10] })
 end

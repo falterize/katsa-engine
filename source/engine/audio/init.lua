@@ -23,9 +23,9 @@ function Audio.new(options)
         paused = false,
         listener = { 0, 0, 0 },
         listeners = {},
-        resources = options.resources or require('../core.resources').new(),
+        resources = options.resources or require('source.engine.core.resources').new(),
     }, Audio)
-    self.manager = require('./manager').new(self)
+    self.manager = require('source.engine.audio.manager').new(self)
     return self
 end
 
@@ -106,7 +106,7 @@ function Audio:update(camera)
             node:sync(true)
         end
     end
-    local routing = require('./effects.routing')
+    local routing = require('source.engine.audio.effects.routing')
     for _, effect in ipairs(self.effects) do
         if effect._defined then
             if not effect.enabled then
@@ -131,7 +131,7 @@ function Audio:update(camera)
 end
 
 function Audio:refreshEffects()
-    local routing = require('./effects.routing')
+    local routing = require('source.engine.audio.effects.routing')
     for _, effect in ipairs(self.effects) do
         if effect._defined then
             routing.define(self, effect)
@@ -184,7 +184,7 @@ function Audio:stop()
 end
 
 function Audio:removeEffect(node)
-    require('./effects.routing').remove(self, node)
+    require('source.engine.audio.effects.routing').remove(self, node)
 end
 
 function Audio:release()

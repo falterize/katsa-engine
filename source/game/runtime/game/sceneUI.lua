@@ -131,7 +131,7 @@ function Methods:buildUI()
     }, header)
     local x = 16
     x = button('menu', 'Menu', x, 16, 85, function()
-        self.manager:switch(require('../menu').new)
+        self.manager:switch(require('source.game.runtime.menu').new)
     end)
     x = button('pause', 'Pause', x, 16, 90, function()
         self.pauseMenu:toggle()
@@ -235,7 +235,7 @@ function Methods:buildUI()
         zIndex = 100000,
         visible = false,
     })
-    self.statistics = require('../../ui.statistics').new(self, self.statsLayer)
+    self.statistics = require('source.game.ui.statistics').new(self, self.statsLayer)
     self.statsScroll, self.statsPanel = self.statistics.panel.scroll, self.statistics.panel.header
     self.toolsPanel.length = row * 44 + 16
     self:buildMixer()

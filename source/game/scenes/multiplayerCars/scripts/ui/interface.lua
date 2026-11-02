@@ -241,15 +241,6 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.4, 0.15, 0.15 },
         onPress = callbacks.leave,
     }, self.root)
-    self.debugPath = button(ui, {
-        position = { 1, -16, 0, 250 },
-        size = { 0, 170, 0, 40 },
-        anchorPoint = { 1, 0 },
-        text = 'Path debug: OFF',
-        fontSize = 15,
-        backgroundColor = { 0.1, 0.25, 0.2 },
-        onPress = callbacks.pathDebug,
-    }, self.root)
     -- Touch jump for the on-foot player; hidden while riding.
     self.jumpButton = button(ui, {
         position = { 1, -16, 1, -150 },
@@ -330,9 +321,6 @@ function Hud.create(scene, callbacks)
     return self
 end
 
-function Hud:setPathDebug(on)
-    self.debugPath.text = 'Path debug: ' .. (on and 'ON' or 'OFF')
-end
 
 -- On foot the seat button enters a car and Jump is shown; in a car it exits and nitro is shown.
 function Hud:setOnFoot(onFoot)

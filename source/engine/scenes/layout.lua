@@ -21,7 +21,7 @@ function Layout.validate(root, settings)
         'runInBackground must be a boolean'
     )
     if settings.frameRateLimit ~= nil then
-        require('../core.runtime').validateFrameRateLimit(settings.frameRateLimit)
+        require('source.engine.core.runtime').validateFrameRateLimit(settings.frameRateLimit)
     end
     assert(
         settings.layoutVersion == nil or settings.layoutVersion == 2 or settings.layoutVersion == 3,

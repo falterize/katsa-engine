@@ -30,7 +30,7 @@ C.propertySchema = {
 require('../../components.image').describe(C)
 
 function C.initialize(self)
-    require('../../components.image').initialize(self)
+    require('source.engine.components.image').initialize(self)
     for _, key in ipairs({
         'colorMap',
         'normalMap',

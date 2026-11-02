@@ -8,7 +8,7 @@ Class.interactive = true
 Class.propertySchema = {
     pixelate = {
         get = function(node)
-            return require('../../components.image').pixelate(
+            return require('source.engine.components.image').pixelate(
                 node,
                 node._sceneWorld.environment
             )
@@ -45,7 +45,7 @@ function Class:drawSelf(ui)
     if not world or self._width <= 0 or self._height <= 0 then
         return
     end
-    local w, h = require('../layout.metrics').resolve(
+    local w, h = require('source.engine.ui.layout.metrics').resolve(
         self.canvasSize,
         self._width,
         self._height
@@ -56,14 +56,14 @@ function Class:drawSelf(ui)
     local ratio = math.min(1, limits.texturesize / math.max(w, h), math.sqrt(budget / (w * h)))
     w, h = math.max(1, math.floor(w * ratio)), math.max(1, math.floor(h * ratio))
     self._canvasWidth, self._canvasHeight = w, h
-    local filter = require('../../components.image').pixelate(self, world.environment)
+    local filter = require('source.engine.components.image').pixelate(self, world.environment)
             and 'nearest'
         or 'linear'
     local canvas
     if world.activeCamera then
         if not world.renderer then
             world.renderer =
-                require('../../graphics.pipeline.renderer').new(world.resources)
+                require('source.engine.graphics.pipeline.renderer').new(world.resources)
         end
         world.renderer.targetWidth, world.renderer.targetHeight = w, h
         canvas = world.renderer:draw(world, world.activeCamera, world.viewportTime or 0, true)
@@ -115,8 +115,8 @@ function Class:drawSelf(ui)
     g.flushBatch()
     g.pop()
     -- Canvas switches can retain a driver scissor converted for the old target.
-    require('../../graphics.state').reapplyScissor()
-    require('../../graphics.state').restoreUIStencil(ui)
+    require('source.engine.graphics.state').reapplyScissor()
+    require('source.engine.graphics.state').restoreUIStencil(ui)
     g.push('all')
     g.setShader()
     g.setStencilTest()
@@ -160,7 +160,7 @@ function Class:pointer(ui, phase, x, y, id)
             end
         end
         self._captures[id] = {
-            click = world.activeCamera and require('../../world.picking').detector(
+            click = world.activeCamera and require('source.engine.world.picking').detector(
                 world,
                 world.activeCamera,
                 lx,
@@ -190,7 +190,7 @@ function Class:pointer(ui, phase, x, y, id)
         then
             if
                 world.activeCamera
-                and require('../../world.picking').detector(
+                and require('source.engine.world.picking').detector(
                         world,
                         world.activeCamera,
                         lx,

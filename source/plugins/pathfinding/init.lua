@@ -8,9 +8,10 @@
 --
 -- Layered = several floors joined by portals (ramps), with 3D routes; see layered.lua.
 return {
-    Grid = require('./grid'),
-    Graph = require('./graph'),
-    Layered = require('./layered'),
-    Path = require('./path'),
-    AStar = require('./astar'),
+    Grid = require('source.plugins.pathfinding.grid'),
+    Graph = require('source.plugins.pathfinding.graph'),
+    Layered = require('source.plugins.pathfinding.layered'),
+    Path = require('source.plugins.pathfinding.path'),
+    Debug = require('source.plugins.pathfinding.debug'),
+    AStar = require('source.plugins.pathfinding.astar'),
 }

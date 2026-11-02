@@ -17,7 +17,7 @@ function Simulation.update(self, dt)
     end
     assert(not self._updating, 'Physics2D:update is not reentrant')
     assert(type(dt) == 'number' and dt >= 0 and dt < math.huge, 'Invalid Physics2D delta')
-    require('../../world.gravity').apply(self)
+    require('source.engine.world.gravity').apply(self)
     self.stats.steps, self.stats.solverMilliseconds = 0, 0
     if self.paused then
         return

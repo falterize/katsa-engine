@@ -35,8 +35,8 @@ local function copyValue(value, seen)
 end
 
 function Clone.collect(node)
-    local Schema = require('../../editor.inspectors.schema')
-    local fields = require('../../editor.inspectors.propertyPolicy').fields
+    local Schema = require('source.engine.editor.inspectors.schema')
+    local fields = require('source.engine.editor.inspectors.propertyPolicy').fields
     local result = { name = node.name }
     for _, key in ipairs(Schema.keys(node, fields)) do
         if not SKIPPED[key] then
@@ -84,7 +84,7 @@ local function build(node, overrides, parent)
         copy = world:create(node.className, properties, parent)
     else
         copy =
-            require('./baseNode').create(node.className, properties, parent)
+            require('source.engine.nodes.core.baseNode').create(node.className, properties, parent)
     end
     return copy
 end

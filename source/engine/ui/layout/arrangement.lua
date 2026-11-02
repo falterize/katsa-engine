@@ -7,7 +7,7 @@ local Arrangement = {}
 
 function Arrangement.install(UI)
     local function arrange(list, px, py, pw, ph, clip)
-        list = require('./order').refresh(list)
+        list = require('source.engine.ui.layout.order').refresh(list)
         for _, n in ipairs(list) do
             if n:isA('Folder') then
                 arrange(n.children, px, py, pw, ph, clip)

@@ -50,9 +50,9 @@ function C.initialize(self)
         or {
             surfaceBlendResolution = 256,
             renderDensity = math.max(1, math.min(3, katsa.graphics.getDPIScale())),
-            msaa = require('../../graphics.quality.renderQuality').defaultSamples(),
+            msaa = require('source.engine.graphics.quality.renderQuality').defaultSamples(),
             maxMeshDistance = 0,
-            maxRenderPixels = require('../../graphics.quality.renderQuality').defaultPixels(),
+            maxRenderPixels = require('source.engine.graphics.quality.renderQuality').defaultPixels(),
             maxRenderBytes = 402653184,
         }
     if self.render.depthPrepass == nil then

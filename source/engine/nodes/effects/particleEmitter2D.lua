@@ -49,7 +49,7 @@ function Class.initialize(self)
             self[key] = Array.is(value) and { Array.unpack(value) } or value
         end
     end
-    require('../../particles.image').initialize(self)
+    require('source.engine.particles.image').initialize(self)
     self.particles, self.pool, self.emission = {}, {}, 0
     self.random = katsa.math.newRandomGenerator(self.seed)
 end
@@ -57,11 +57,11 @@ end
 function Class.mount(ui, properties, parent)
     local node = Node.getClass('Node2D').mount(ui, properties, parent)
     ui = node._plane
-    ui.particles = ui.particles or require('../../particles.system').new(ui, 2)
+    ui.particles = ui.particles or require('source.engine.particles.system').new(ui, 2)
     node._particleSystem = ui.particles
     ui.particles:add(node)
     node.lifetimeRamp = ui:create('Ramp', { name = 'LifetimeRamp', bindings = {} }, node)
-    require('../../particles.lifetime').configure(node, properties.lifetimeBindings)
+    require('source.engine.particles.lifetime').configure(node, properties.lifetimeBindings)
     node.lifetimeBindings = nil
     node:onDestroy(function()
         ui.particles:remove(node)
@@ -89,7 +89,7 @@ function Class:emissionMatrix(render)
     if self._adorneeLost and self[key] then
         return self[key]
     end
-    local transform = render and require('../../ui.spatial.plane').transform
+    local transform = render and require('source.engine.ui.spatial.plane').transform
         or Node.getClass('Node2D').getWorldTransform
     if support and not self._adorneeLost then
         assert(support._plane == self._plane, 'Particle support must belong to the same World2D')

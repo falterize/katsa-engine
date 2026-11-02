@@ -67,7 +67,7 @@ function PropertyRead.install(Properties)
             }
         end
         for _, key in ipairs(Schema.keys(target, fields)) do
-            local reference = require('./nodeReferences').expected(
+            local reference = require('source.engine.editor.inspectors.nodeReferences').expected(
                 target,
                 key
             ) ~= nil
@@ -103,7 +103,7 @@ function PropertyRead.install(Properties)
                     or key:match('^(image)Color$')
                     or key:match('^(text)Color$')
                 if channel then
-                    local color = require('../../ui.style').color(target, channel)
+                    local color = require('source.engine.ui.style').color(target, channel)
                     if color then
                         value = { color[1], color[2], color[3] }
                     end
@@ -112,7 +112,7 @@ function PropertyRead.install(Properties)
                     or key:match('^(image)Transparency$')
                     or key:match('^(text)Transparency$')
                 if alphaChannel and value == nil then
-                    local color = require('../../ui.style').color(target, alphaChannel)
+                    local color = require('source.engine.ui.style').color(target, alphaChannel)
                     value = 1 - (color and color[4] or 1)
                 end
                 if key == 'position' and not value then

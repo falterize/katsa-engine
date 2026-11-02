@@ -38,7 +38,7 @@ function UI.new(width, height, resources)
 end
 
 function UI.newBillboard(world, settings)
-    return require('./spatial.billboard').new(world, settings)
+    return require('source.engine.ui.spatial.billboard').new(world, settings)
 end
 
 function UI:invalidate()
@@ -54,7 +54,7 @@ function UI:invalidatePaint()
 end
 
 function UI:layerVisible(node)
-    local Layers = require('../world.visibilityLayers')
+    local Layers = require('source.engine.world.visibilityLayers')
     local world = self._sceneWorld or self.owner and (self.owner._world or self.owner._sceneWorld)
     return Layers.visible(world, node, Layers.viewer(self, node))
 end
@@ -124,7 +124,7 @@ function UI:add(node, parent)
     assert(node:isA('UINode'), 'UI:add requires a UINode instance')
     node.children = node.children or {}
     node.visible, node.enabled = node.visible ~= false, node.enabled ~= false
-    require('./layout.metrics').resolve(
+    require('source.engine.ui.layout.metrics').resolve(
         node.size,
         0,
         0,
@@ -197,7 +197,7 @@ function UI:remove(node)
 end
 
 function UI.udim2(scaleX, offsetX, scaleY, offsetY)
-    return require('../math.udim2').new(scaleX, offsetX, scaleY, offsetY)
+    return require('source.engine.math.udim2').new(scaleX, offsetX, scaleY, offsetY)
 end
 
 function UI:bindWorld(world)
@@ -225,7 +225,7 @@ function UI:bindWorld(world)
     end
     self.nodeTypes = world.nodeTypes or {}
     world.nodeTypes = self.nodeTypes
-    require('../nodes.core.hierarchy').bind(self, world.nodeTree, world)
+    require('source.engine.nodes.core.hierarchy').bind(self, world.nodeTree, world)
     return self
 end
 
@@ -278,9 +278,9 @@ function UI:createPhysics(options)
         self.environment.debug.physics.enabled = options.debug == true
     end
     options.debugSettings = self.environment.debug.physics
-    self.physics2D = require('../physics.2d').new(options)
+    self.physics2D = require('source.engine.physics.2d').new(options)
     self.physics2D.resources = self.resources
-    require('../world.gravity').bind(self, self.physics2D)
+    require('source.engine.world.gravity').bind(self, self.physics2D)
     self:onDestroy(function()
         self.physics2D:release()
     end)
@@ -346,7 +346,7 @@ function UI.canInteract(node)
 end
 
 function UI:updatePhysics(dt)
-    self._simulationDelta = require('../world.clock').delta(self, dt)
+    self._simulationDelta = require('source.engine.world.clock').delta(self, dt)
     if self.physics2D then
         self.physics2D:update(self._simulationDelta)
     end
@@ -358,8 +358,8 @@ end
 
 function UI:update(realDt, simulationDt)
     local sceneDt = simulationDt == nil and realDt or simulationDt
-    self._simulationDelta = require('../world.clock').delta(self, sceneDt)
-    self.time = self.time + require('../world.clock').delta(self, realDt)
+    self._simulationDelta = require('source.engine.world.clock').delta(self, sceneDt)
+    self.time = self.time + require('source.engine.world.clock').delta(self, realDt)
     if (self.physics2D or self.particles) and self.autoUpdatePhysics ~= false then
         self:updatePhysics(sceneDt)
     end
@@ -368,7 +368,7 @@ function UI:update(realDt, simulationDt)
     end
     -- Each nested viewport owns a World3D clock; the enclosing UI clock must not
     -- multiply it. Only the application's common simulation delta crosses worlds.
-    require('./spatial.viewportUpdate').update(self.children, sceneDt)
+    require('source.engine.ui.spatial.viewportUpdate').update(self.children, sceneDt)
 end
 
 function UI:release()

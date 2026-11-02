@@ -61,7 +61,7 @@ function Workspace.new(scene)
         fontSize = 13,
         backgroundColor = buttonColor,
         onPress = function()
-            require('./panels.groupEditor').open(self)
+            require('source.engine.editor.panels.groupEditor').open(self)
         end,
     }, self.panel)
     self.shaderLayersButton = ui:button({
@@ -72,7 +72,7 @@ function Workspace.new(scene)
         fontSize = 12,
         backgroundColor = buttonColor,
         onPress = function()
-            require('./panels.shaderLayers').open(self)
+            require('source.engine.editor.panels.shaderLayers').open(self)
         end,
     }, self.panel)
     self.close = ui:button({
@@ -298,7 +298,7 @@ function Workspace:update(dt)
         if
             not self.popup
             and self.schemaSignature
-                ~= require('./inspectors.schema').signature(
+                ~= require('source.engine.editor.inspectors.schema').signature(
                     self.selected._editorTarget or self.selected
                 )
         then

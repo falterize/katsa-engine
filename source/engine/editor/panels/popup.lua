@@ -121,7 +121,7 @@ function Popup:close(confirm)
             if old and old.destroyed then
                 old = nil
             end
-            require('../inspectors.properties').set(
+            require('source.engine.editor.inspectors.properties').set(
                 self.workspace.scene,
                 self.target,
                 self.originalField,
@@ -129,7 +129,7 @@ function Popup:close(confirm)
             )
         elseif Array.is(self.original) then
             for i = 1, #self.original do
-                require('../inspectors.properties').set(
+                require('source.engine.editor.inspectors.properties').set(
                     self.workspace.scene,
                     self.target,
                     self.originalField,
@@ -138,7 +138,7 @@ function Popup:close(confirm)
                 )
             end
         else
-            require('../inspectors.properties').set(
+            require('source.engine.editor.inspectors.properties').set(
                 self.workspace.scene,
                 self.target,
                 self.originalField,

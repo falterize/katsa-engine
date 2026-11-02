@@ -108,7 +108,7 @@ function Node.adopt(node, className)
     setmetatable(node, class.instanceMetatable)
     local ok, message = pcall(function()
         inheritInitializers(class, node)
-        require('../../math.valueTypes').initialize(node)
+        require('source.engine.math.valueTypes').initialize(node)
         PropertyChanges.initialize(node)
     end)
     if not ok then
@@ -200,7 +200,7 @@ end
 -- Deep copy of this node and its descendants; `properties` overrides the copy's fields
 -- (for example { Name = 'Copy' }) and `parent` defaults to this node's parent.
 function Node:clone(properties, parent)
-    return require('./clone').node(self, properties, parent)
+    return require('source.engine.nodes.core.clone').node(self, properties, parent)
 end
 
 function Node:attachment(properties)

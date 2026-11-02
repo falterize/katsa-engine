@@ -14,7 +14,7 @@ function PopupValues.install(Popup)
                 fontSize = 16,
                 backgroundColor = { 0.085, 0.135, 0.19 },
                 onPress = function()
-                    local ok, err = require('../inspectors.properties').set(
+                    local ok, err = require('source.engine.editor.inspectors.properties').set(
                         self.workspace.scene,
                         self.target,
                         self.field,
@@ -37,7 +37,7 @@ function PopupValues.install(Popup)
         for i, value in ipairs(self.field.value) do
             local index = i
             self:input(labels[i] or tostring(i), tostring(value), (i - 1) * 42, function(text)
-                local ok, err = require('../inspectors.properties').set(
+                local ok, err = require('source.engine.editor.inspectors.properties').set(
                     self.workspace.scene,
                     self.target,
                     self.field,
@@ -76,7 +76,7 @@ function PopupValues.install(Popup)
     end
 
     function Popup:nodeEditor()
-        local support = require('../../surfaces.support')
+        local support = require('source.engine.surfaces.support')
         local modelSource = self.field.key == 'geometrySource' and self.target:isA('Collider3D')
         local offset = modelSource and 44 or 0
         if modelSource then
@@ -85,7 +85,7 @@ function PopupValues.install(Popup)
                 type(self.target.geometrySource) == 'string' and self.target.geometrySource or '',
                 0,
                 function(text)
-                    return require('../inspectors.properties').set(
+                    return require('source.engine.editor.inspectors.properties').set(
                         self.workspace.scene,
                         self.target,
                         self.field,
@@ -99,7 +99,7 @@ function PopupValues.install(Popup)
         }
         local world = self.target._world or self.target._sceneWorld or self.workspace.scene.world
         for _, node in ipairs(world.root:getDescendants()) do
-            local valid = require('../inspectors.nodeReferences').accepts(
+            local valid = require('source.engine.editor.inspectors.nodeReferences').accepts(
                 self.target,
                 self.field.key,
                 node
@@ -119,7 +119,7 @@ function PopupValues.install(Popup)
                         .. ' ['
                         .. node.className
                         .. '] / '
-                        .. require('../inspectors.properties').parentPath(node),
+                        .. require('source.engine.editor.inspectors.properties').parentPath(node),
                 }
             end
         end
@@ -135,7 +135,7 @@ function PopupValues.install(Popup)
                 onPress = function()
                     self.workspace:cancelEdit()
                     self.focusNode, self.inputCallback = nil, nil
-                    local ok, err = require('../inspectors.properties').set(
+                    local ok, err = require('source.engine.editor.inspectors.properties').set(
                         self.workspace.scene,
                         self.target,
                         self.field,

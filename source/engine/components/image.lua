@@ -38,7 +38,7 @@ function Image.resolve(resources, node, source, environment)
             or attempt.resources ~= resources
         then
             local ok, definition = pcall(
-                require('../animation.formats.flipbookXml').bind,
+                require('source.engine.animation.formats.flipbookXml').bind,
                 resources,
                 node,
                 source
@@ -65,7 +65,7 @@ function Image.resolve(resources, node, source, environment)
         -- Preserve the last resolved sprite when leaving XML mode, even if no
         -- explicit image override was authored. Do not write over that property.
         if not node._xmlBinding and node.xml and node.xml ~= '' then
-            pcall(require('../animation.formats.flipbookXml').bind, resources, node)
+            pcall(require('source.engine.animation.formats.flipbookXml').bind, resources, node)
         end
         source = node._xmlBinding and node._xmlBinding.image or source
     end
@@ -105,7 +105,7 @@ function Image.resolve(resources, node, source, environment)
         g.setBlendMode('alpha', 'premultiplied')
         g.draw(source)
         g.pop()
-        require('../graphics.state').reapplyScissor()
+        require('source.engine.graphics.state').reapplyScissor()
         variant:setFilter(filter, filter)
         variant:setWrap('repeat', 'repeat')
         variants[filter] = variant
@@ -146,11 +146,11 @@ function Image.uv(node, iw, ih, width, height, frame, selectedMode)
     elseif mode == 'Tiles' then
         if node._legacyTileFit then
             local x, y, w, h =
-                require('../ui.drawing.image').rect(node.fitMode, width, height, iw, ih)
+                require('source.engine.ui.drawing.image').rect(node.fitMode, width, height, iw, ih)
             return -x / w, -y / h, width / w, height / h
         end
         local tw, th =
-            require('../ui.layout.metrics').resolve(node.tileSize, width, height)
+            require('source.engine.ui.layout.metrics').resolve(node.tileSize, width, height)
         assert(tw > 0 and th > 0, 'TileSize must be positive')
         return -node.tileOffset[1] / tw, -node.tileOffset[2] / th, width / tw, height / th
     end

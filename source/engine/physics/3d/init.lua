@@ -47,7 +47,7 @@ require('./bodyExtensions').install(Body3D, Physics, O)
 require('./interpolation').install(Body3D, O, Physics)
 
 function Physics.extractMeshPoints(source, body, options)
-    return require('./pointCollider').extract(source, body, options)
+    return require('source.engine.physics.3d.pointCollider').extract(source, body, options)
 end
 
 return Physics

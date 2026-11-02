@@ -151,12 +151,12 @@ function Editor.open(popup, selected)
     end
     button(popup, 'Edit ' .. selected .. ' points', 0, y, 1, function()
         if not popup.target.bindings[selected] then
-            popup.target.bindings[selected] = require('../../animation.sequence').linear(
+            popup.target.bindings[selected] = require('source.engine.animation.sequence').linear(
                 Goals.value(popup.target, selected),
                 Copy(popup.target.goals[selected])
             )
         end
-        require('./sequenceEditor').open(popup, selected)
+        require('source.engine.editor.curves.sequenceEditor').open(popup, selected)
     end)
     popup.body.length = y + 44
 end

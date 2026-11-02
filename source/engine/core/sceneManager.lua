@@ -10,8 +10,8 @@ Manager.__index = Manager
 function Manager.new(options)
     options = options or {}
     local clock = Time.new()
-    local resources = require('./resources').new(options.manifest)
-    local journal = require('../debug.journal').new()
+    local resources = require('source.engine.core.resources').new(options.manifest)
+    local journal = require('source.engine.debug.journal').new()
     resources.store.journal = journal
     return setmetatable({
         stack = {},
@@ -20,7 +20,7 @@ function Manager.new(options)
         frameTime = 0,
         time = clock,
         journal = journal,
-        profiler = require('../debug.profiler').new(),
+        profiler = require('source.engine.debug.profiler').new(),
         resources = resources,
         data = Data.new(),
         audio = Audio.new({ clock = clock, resources = resources:scope() }),
@@ -28,7 +28,7 @@ function Manager.new(options)
 end
 
 local function dispose(scene)
-    require('./cleanup').run({
+    require('source.engine.core.cleanup').run({
         function()
             if scene.input then
                 scene.input:reset()
@@ -135,7 +135,7 @@ function Manager:switch(factory, ...)
             dispose(previous)
         end
     end
-    local released, err = pcall(require('./cleanup').run, actions)
+    local released, err = pcall(require('source.engine.core.cleanup').run, actions)
     if not released then
         self:reportError(err)
     end
@@ -319,7 +319,7 @@ function Manager:release()
     actions[#actions + 1] = function()
         self.resources:release()
     end
-    require('./cleanup').run(actions)
+    require('source.engine.core.cleanup').run(actions)
 end
 
 return Manager

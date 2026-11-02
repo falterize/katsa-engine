@@ -194,7 +194,7 @@ function Compositor.apply(ui, node)
     g.pop()
     restoreScissor()
     node._effectQuad = node._effectQuad or node:own(g.newQuad(x, y, x2 - x, y2 - y, w, h))
-    require('../../graphics.state').restoreUIStencil(ui)
+    require('source.engine.graphics.state').restoreUIStencil(ui)
     node._effectQuad:setViewport(x, y, x2 - x, y2 - y, w, h)
     local effect = shader(ui, node)
     -- Built-in region uniforms describe this actual canvas/draw, including resize and nesting.
@@ -223,7 +223,7 @@ function Compositor.apply(ui, node)
     end
     local regions = { { x, y, x2 - x, y2 - y } }
     for _, upper in ipairs(masks) do
-        regions = require('../input.regions').subtract(regions, {
+        regions = require('source.engine.ui.input.regions').subtract(regions, {
             upper._x * ui.scale + ui.offsetX,
             upper._y * ui.scale + ui.offsetY,
             upper._width * ui.scale,

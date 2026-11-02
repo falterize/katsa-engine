@@ -30,7 +30,7 @@ function U.fromOffset(x, y)
 end
 
 function U:resolve(w, h, mode)
-    return require('../ui.layout.metrics').resolve(self, w, h, mode)
+    return require('source.engine.ui.layout.metrics').resolve(self, w, h, mode)
 end
 U.toArray, U.clone = Managed.toArray, Managed.clone
 

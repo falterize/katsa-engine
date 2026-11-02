@@ -4,7 +4,7 @@ local pairs = require('../math.array').pairs
 local Bindings = {}
 
 function Bindings.copy(value)
-    if require('../math.managedValue').is(value) then
+    if require('source.engine.math.managedValue').is(value) then
         return value:clone()
     end
     if not Array.is(value) then
