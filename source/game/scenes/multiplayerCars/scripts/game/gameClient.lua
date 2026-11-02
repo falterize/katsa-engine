@@ -275,6 +275,25 @@ function GameClient:findNearbyCar(range)
     return best
 end
 
+-- Sends a chat line to everyone (the server trims and rate-limits it).
+function GameClient:sendChat(text)
+    self.client:remote('chat'):fireServer(text)
+end
+
+-- Host only: disconnects a player. callback(ok, reason).
+function GameClient:kickPlayer(id, callback, reason)
+    self.client:remote('kick'):request(callback or function() end, id, reason or '')
+end
+
+-- Players currently in the game: array of { id, name }.
+function GameClient:getPlayers()
+    local list = {}
+    for _, player in pairs(self.client.players) do
+        list[#list + 1] = { id = player.id, name = player.name }
+    end
+    return list
+end
+
 -- Asks to leave the current car; callback(ok, x, y, z) gets the spot on the ground.
 function GameClient:exitCar(callback)
     self.client:remote('exit'):request(callback or function() end)

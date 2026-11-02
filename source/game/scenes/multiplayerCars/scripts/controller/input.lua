@@ -119,7 +119,30 @@ function Input:toggleMenu()
     katsa.mouse.setRelativeMode(self:playing() and not self.touchDevice)
 end
 
+-- Enter: free the cursor and type a chat line. The camera is captured again once the line is
+-- sent or cancelled.
+function Input:openChat()
+    if self.captureWanted then
+        self:toggleMenu()
+        self.chatOpenedMenu = true
+    end
+    self.session.social:setTyping(true)
+end
+
+function Input:chatClosed()
+    if self.chatOpenedMenu then
+        self.chatOpenedMenu = false
+        if not self.captureWanted then
+            self:toggleMenu()
+        end
+    end
+end
+
 function Input:keypressed(key)
+    if (key == 'return' or key == 'kpenter') and self.session.mode == 'playing' and self:playing() then
+        self:openChat()
+        return
+    end
     if key == self.menuKey and self.session.mode == 'playing' then
         self:toggleMenu()
         return

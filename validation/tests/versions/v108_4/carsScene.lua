@@ -506,6 +506,26 @@ function Tests:draw()
             replicated and replicated.detached ~= 0 and hidden >= 1 and #view.debris >= 1,
             'the lost wheel replicates: hidden on the car and rolling away as debris'
         )
+    elseif frame == 710 then
+        -- Chat and the player list: Enter frees the cursor and opens the input, Tab lists players.
+        local input, social = session.scene.input, session.social
+        local captured = input.captureWanted
+        input:keypressed('return')
+        self:check(
+            social:isTyping() and social.input.visible and not input.captureWanted,
+            'Enter opens the chat input and frees the cursor'
+        )
+        social.input:blur()
+        self:check(
+            not social:isTyping() and input.captureWanted == captured,
+            'closing the chat input captures the mouse again'
+        )
+        session.client.onChat({ id = 1, name = 'Tester', host = true, text = 'hi' })
+        self:check(social.log.text:find('[HOST] Tester: hi', 1, true) ~= nil, 'chat lines show the [HOST] tag')
+        input:toggleMenu()
+        self:check(social.players.visible, 'Tab shows the player list')
+        input:toggleMenu()
+        self:check(not social.players.visible, 'closing the menu hides the player list')
     elseif frame == 720 then
         local rc = self.remote.client
         rc:sit(rc:findNearbyCar(6))
