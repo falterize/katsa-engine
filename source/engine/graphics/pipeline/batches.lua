@@ -3,7 +3,7 @@ local readValue = require('../../math.managedValue').read
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 -- Opaque instancing keeps individual culling while sharing mesh/texture draw calls.
-local Surface = require('../../materials.surface')
+local Surface = require('../materials.surface')
 local allLights = require('./lightMasks').all
 
 local effectKeys = { 'lighting', 'shadows', 'fog', 'toneMapping' }

@@ -143,7 +143,7 @@ return function(test)
     )
     local owner = board.parent
     board:update(world, camera)
-    local frame = require('source.engine.surfaces.support').frame(board, socket)
+    local frame = require('source.engine.world.surfaces.support').frame(board, socket)
     local bx, by, bz = require('source.engine.math.math3d').transform(frame, 2, 3, 4)
     test:check(
         math.abs(board.worldPosition[2] - (by + 23)) < 1e-5,

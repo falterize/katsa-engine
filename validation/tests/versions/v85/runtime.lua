@@ -113,7 +113,7 @@ local function extra(test)
     a = capture(false)
     a:release()
     test:check(
-        not require('source.engine.materials.opaqueMesh').eligible(cube, r),
+        not require('source.engine.graphics.materials.opaqueMesh').eligible(cube, r),
         'Attached VertexColor alpha retains the full material path'
     )
     e.render.depthPrepass = false
@@ -124,7 +124,7 @@ local function extra(test)
     geometry.revision = geometry.revision + 1
     r:invalidate()
     test:check(
-        require('source.engine.materials.opaqueMesh').eligible(cube, r),
+        require('source.engine.graphics.materials.opaqueMesh').eligible(cube, r),
         'Removing a color stream restores the opaque path after invalidation'
     )
 end

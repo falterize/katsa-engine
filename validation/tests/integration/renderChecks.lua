@@ -74,7 +74,7 @@ return function(test)
     })
     local r, g, b = sample()
     test:check(r > 0.95 and b < 0.02, 'Depth buffer keeps near object over later far geometry')
-    local Material = require('source.engine.graphics.material')
+    local Material = require('source.engine.graphics.materials.material')
     near.material = Material.new(resources, { fragmentCode = 'result = vec3(0.0, 1.0, 0.0);' })
     r, g, b = sample()
     test:check(

@@ -1,6 +1,6 @@
-local unpack = require('../math.array').unpack
-local ipairs = require('../math.array').ipairs
-local pairs = require('../math.array').pairs
+local unpack = require('../../math.array').unpack
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Reusable, bounded material-map composition avoids exceeding mobile sampler limits.
 local B = {}
 
@@ -135,7 +135,7 @@ function B.resolve(world, object, nodes)
     if not changed(cache, nodes) and not resized then
         return cache.result
     end
-    local Surface = require('source.engine.materials.surface')
+    local Surface = require('source.engine.graphics.materials.surface')
     local g = katsa.graphics
     cache.shader = cache.shader
         or world.resources:cached('shader', 'surfaceBlend', function(owner)

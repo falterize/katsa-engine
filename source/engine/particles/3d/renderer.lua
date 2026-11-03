@@ -37,7 +37,7 @@ function R.draw(system, camera, emitter)
     if not system.shader then
         system.shader = system.world.resources:own(
             g.newShader(
-                require('source.engine.graphics.shaderSource').read(
+                require('source.engine.graphics.shaders.shaderSource').read(
                     'assets/shaders/particles/sprite.glsl'
                 )
             )
@@ -56,7 +56,7 @@ function R.draw(system, camera, emitter)
     local list = emitter and system._drawList or system.emitters
     for _, emitter in ipairs(list) do
         world:resolveLayerGroup(emitter)
-        local material = require('source.engine.shaders.materialResolver').resolve(world, emitter)
+        local material = require('source.engine.graphics.shaders.materialResolver').resolve(world, emitter)
         local shader = material and material.shader or system.shader
         g.setShader(shader)
         require('source.engine.particles.lighting').bind(shader, world, camera, emitter)

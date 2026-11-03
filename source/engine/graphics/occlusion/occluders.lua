@@ -3,7 +3,7 @@ local ipairs = require('../../math.array').ipairs
 local Math = require('../../math.math3d')
 local Projection = require('./projection')
 local Coverage = require('./coverage')
-local Opacity = require('../../materials.opacity')
+local Opacity = require('../materials.opacity')
 local GeometryCache = require('./geometryCache')
 
 local Occluders = {}

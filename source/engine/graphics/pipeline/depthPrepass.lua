@@ -1,12 +1,12 @@
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 -- Optional early visibility for costly fully opaque built-in material batches.
-local Opacity = require('../../materials.opacity')
+local Opacity = require('../materials.opacity')
 local Triangles = require('../debug.triangles')
 local Skinning = require('../../animation.skeleton.skinning')
 
 local Prepass = {}
-local Opaque = require('../../materials.opaqueMesh')
+local Opaque = require('../materials.opaqueMesh')
 
 local function eligible(object, renderer)
     return not object._shaderBoundsUnknown
@@ -86,7 +86,7 @@ function Prepass.draw(renderer)
     if not shader then
         shader = renderer.resources:own(
             g.newShader(
-                require('source.engine.graphics.shaderSource').read(
+                require('source.engine.graphics.shaders.shaderSource').read(
                     'assets/shaders/engine/depthPrepass.glsl'
                 )
             )

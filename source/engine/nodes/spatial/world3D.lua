@@ -24,7 +24,7 @@ function C.mount(context, properties, parent)
     local scope = context.resources:scope()
     local world = require('source.engine.world.world').new(
         scope,
-        require('source.engine.lighting.defaults').create()
+        require('source.engine.graphics.lighting.defaults').create()
     )
     world.hostWorld = context._world or context._sceneWorld
     world.root.name = properties.name or 'ViewportWorld'

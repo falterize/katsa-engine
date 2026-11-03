@@ -117,7 +117,7 @@ function Test:update()
     elseif self.frame == 2 then
         local scene = self:load('shaderLab')
         local demo = scene.demo
-        local resolver = require('source.engine.shaders.materialResolver')
+        local resolver = require('source.engine.graphics.shaders.materialResolver')
         local defaultScope =
             scene.world:create('Shader3D', { name = 'DefaultWorldScope', enabled = false })
         self:check(defaultScope.parent == scene.world.root, 'Shader3D defaults to world scope')

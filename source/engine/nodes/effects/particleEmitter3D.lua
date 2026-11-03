@@ -135,7 +135,7 @@ function C.mount(world, properties, parent)
     if not world.particles then
         world.particles = require('source.engine.particles.system').new(world)
     end
-    require('source.engine.surfaces.support').initialize(node, node._requestedAdornee)
+    require('source.engine.world.surfaces.support').initialize(node, node._requestedAdornee)
     node._requestedAdornee = nil
     world.particles:add(node)
     node.lifetimeRamp = world:create('Ramp', { name = 'LifetimeRamp', bindings = {} }, node)
@@ -148,11 +148,11 @@ function C.mount(world, properties, parent)
 end
 
 function C:setAdornee(node)
-    return require('source.engine.surfaces.support').set(self, node)
+    return require('source.engine.world.surfaces.support').set(self, node)
 end
 
 function C:emissionMatrix(render)
-    local Support = require('source.engine.surfaces.support')
+    local Support = require('source.engine.world.surfaces.support')
     local reference = Support.resolve(self)
     if not reference then
         return self._emissionMatrix or require('source.engine.math.math3d').identity()

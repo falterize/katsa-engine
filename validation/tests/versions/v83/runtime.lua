@@ -27,7 +27,7 @@ function T:draw()
     local Resources = require('source.engine.core.resources')
     local World = require('source.engine.world.world')
     local resources = Resources.new(require('source.game.data.manifest'))
-    local settings = require('source.engine.lighting.defaults').create()
+    local settings = require('source.engine.graphics.lighting.defaults').create()
     settings.sky.enabled, settings.fog.enabled = false, false
     settings.debug.gizmos.enabled = false
     settings.ambient, settings.toneMapping = { 0, 0, 0 }, false

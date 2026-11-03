@@ -2,7 +2,7 @@
 -- layers, fog-free world lighting and shadow reception behave exactly like particles.
 local Geometry = require('./geometry')
 local Image = require('../components.image')
-local Resolver = require('../shaders.materialResolver')
+local Resolver = require('../graphics.shaders.materialResolver')
 
 local R = {}
 
@@ -74,7 +74,7 @@ function R.draw(system, camera, node)
     if not system.shader then
         system.shader = world.resources:own(
             g.newShader(
-                require('source.engine.graphics.shaderSource').read(
+                require('source.engine.graphics.shaders.shaderSource').read(
                     'assets/shaders/particles/sprite.glsl'
                 )
             )

@@ -1,5 +1,5 @@
-local ipairs = require('../math.array').ipairs
-local pairs = require('../math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local pairs = require('../../math.array').pairs
 -- Shader layers behave like layer groups: a symmetric interaction matrix. Layers start as
 -- Default2D (Shader2D) and Default3D (Shader3D and the 3D render). Priority orders effects.
 --   * A Shader2D processes the 3D render only if its layer interacts with Default3D.

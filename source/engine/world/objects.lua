@@ -64,14 +64,14 @@ function Objects.install(World3D)
 
     function World3D:updateAppearance(o)
         o._batchRevision = (o._batchRevision or 0) + 1
-        local surface = require('source.engine.materials.surface').resolve(
+        local surface = require('source.engine.graphics.materials.surface').resolve(
             self,
             o,
             o._renderVisible,
             o._renderOpacity
         )
         local image = surface
-            and require('source.engine.materials.surface').image(
+            and require('source.engine.graphics.materials.surface').image(
                 self.resources,
                 surface,
                 'colorMap',

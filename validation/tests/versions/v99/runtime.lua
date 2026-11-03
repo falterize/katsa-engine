@@ -1,7 +1,7 @@
 local T = {}
 
 local function extra(test)
-    local Opacity = require('source.engine.materials.opacity')
+    local Opacity = require('source.engine.graphics.materials.opacity')
     local encoded = katsa.filesystem.newFileData('assets/textures/surfaces/dirt.jpg')
     local pixels = katsa.image.newImageData(encoded)
     local image = katsa.graphics.newImage(pixels)

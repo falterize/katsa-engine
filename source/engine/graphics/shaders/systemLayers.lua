@@ -1,4 +1,4 @@
-local ipairs = require('../math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 
 local System = {}
 local names = { 'lighting', 'shadows', 'fog', 'toneMapping' }

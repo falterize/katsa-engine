@@ -51,7 +51,7 @@ function CasterProxy.begin(world, node)
         proxy = create(node)
         node._shadowProxy = proxy
     end
-    proxy._resolvedMaterial = require('source.engine.shaders.materialResolver').resolve(world, node)
+    proxy._resolvedMaterial = require('source.engine.graphics.shaders.materialResolver').resolve(world, node)
     proxy._shaderBoundsUnknown = node._shaderBoundsUnknown
     proxy._shaderBoundsPadding = node._shaderBoundsPadding
     return proxy

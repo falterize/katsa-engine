@@ -17,7 +17,7 @@ function Class.mount(world, properties, parent)
     properties.className = 'SurfaceUI'
     properties.parent = parent
     properties.face = properties.face or 'Front'
-    require('source.engine.surfaces.faces').validate(properties.face)
+    require('source.engine.world.surfaces.faces').validate(properties.face)
     properties.surfaceSize = properties.surfaceSize
     properties.size = properties.size
         or (properties.surfaceSize and { 0, properties.surfaceSize[1], 0, properties.surfaceSize[2] })
@@ -32,11 +32,11 @@ end
 
 function Class:update(world, camera)
     self:resolveCanvas(camera)
-    require('source.engine.surfaces.faces').update(self, camera)
+    require('source.engine.world.surfaces.faces').update(self, camera)
 end
 
 function Class:localPoint(x, y)
-    return require('source.engine.surfaces.faces').point(self, self._camera, x, y)
+    return require('source.engine.world.surfaces.faces').point(self, self._camera, x, y)
 end
 
 function Class:hit(world, camera, x, y)

@@ -124,7 +124,7 @@ function Lab.new(scene)
     c.rotation = { 0, 0, 0 }
 
     scene.camera.position = { 0, 8, 17 }
-    scene.camera.rotation = { -20, 0, 0 }
+    scene.camera.rotation = { -20, 180, 0 }
     return self
 end
 

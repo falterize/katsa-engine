@@ -23,4 +23,4 @@ local palette = {
     { 0.1, 0.32, 0.45 },
 }
 
-return { palette = palette, copy = copy }
+return { palette = palette, copy = Tables.copyAuthored }

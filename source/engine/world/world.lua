@@ -36,7 +36,7 @@ World3D.__newindex = function(world, key, value)
 end
 
 function World3D.new(resources, lighting, options)
-    lighting = lighting or require('source.engine.lighting.defaults').create()
+    lighting = lighting or require('source.engine.graphics.lighting.defaults').create()
     local self = setmetatable({
         resources = resources,
         lighting = lighting,
@@ -54,7 +54,7 @@ function World3D.new(resources, lighting, options)
         layers = { default = 1, player = 2 },
     }, World3D)
     self.animations = require('source.engine.animation.scheduler').new()
-    self.shaderLayers = require('source.engine.shaders.layers').new(function(registry, info)
+    self.shaderLayers = require('source.engine.graphics.shaders.layers').new(function(registry, info)
         -- Renames and removals reach every shader node of this world, like layer groups.
         if not info or not self.root then
             return

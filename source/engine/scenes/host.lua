@@ -34,7 +34,7 @@ function Host:load()
     self.audio = self.manager.audio:scope(self.resources:scope())
     profiler:markLoad('Resources and audio')
     local lighting =
-        Loader.configure(require('source.engine.lighting.defaults').create(), self.settings.world)
+        Loader.configure(require('source.engine.graphics.lighting.defaults').create(), self.settings.world)
     self.world = World.new(self.resources, lighting)
     self.world.audio = self.audio
     self.audio.worldRoot = self.world.root

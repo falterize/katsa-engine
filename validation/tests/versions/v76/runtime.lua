@@ -132,7 +132,7 @@ function T:draw()
         local currentSampling =
             assert(katsa.filesystem.read('assets/shaders/engine/shadowSampling.glsl'))
         local source =
-            require('source.engine.graphics.shaderSource').read('assets/shaders/engine/world.glsl')
+            require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
         local first, last = assert(source:find(currentSampling, 1, true))
         local oldShader =
             katsa.graphics.newShader(source:sub(1, first - 1) .. oldSampling .. source:sub(last + 1))

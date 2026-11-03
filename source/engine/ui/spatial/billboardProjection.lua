@@ -16,7 +16,7 @@ function BillboardProjection.install(BillboardUI)
         }) do
             Validate.vector(self[key], 'BillboardUI.' .. key, 3)
         end
-        local support = require('source.engine.surfaces.support')
+        local support = require('source.engine.world.surfaces.support')
         local reference = support.resolve(self)
         if not reference then
             self.drawable = false
