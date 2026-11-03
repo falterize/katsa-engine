@@ -34,12 +34,15 @@ end
 
 function G.draw(drawable, ...)
     State.requireReady()
-    local args = { ... }
-    local quad
-    if type(args[1]) == 'table' and getmetatable(args[1]) == Quad.QuadMethods then
-        quad = table.remove(args, 1)
+    -- No argument table: this runs for every drawable of every frame.
+    local quad, first = nil, ...
+    local matrix
+    if type(first) == 'table' and getmetatable(first) == Quad.QuadMethods then
+        quad = first
+        matrix = Batch.composed(select(2, ...))
+    else
+        matrix = Batch.composed(...)
     end
-    local matrix = Batch.composed(unpack(args, 1, 9))
     if drawable._kind == 'image' or drawable._kind == 'canvas' then
         drawTexture(drawable, quad, matrix)
     elseif drawable.type and drawable:type() == 'Mesh' then
