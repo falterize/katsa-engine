@@ -11,15 +11,15 @@ local PhysicsCar = {}
 PhysicsCar.__index = PhysicsCar
 
 local TUNING = {
-    mass = 1100,
-    size = { 1.8, 0.8, 4.2 }, -- chassis box: width, height, length
-    mountY = -0.25, -- suspension top, relative to the body center
-    wheelRadius = 0.35,
-    restLength = 0.4, -- spring length with no load
+    mass = 1300,
+    size = { 1.9, 0.9, 5.1 }, -- chassis box: width, height, length (the Duke 69 hull)
+    mountY = -0.1, -- suspension top, relative to the body center
+    wheelRadius = 0.315,
+    restLength = 0.435, -- spring length with no load (rest height = 0.1 + 0.435 + 0.315 = 0.85)
     droop = 0.15, -- extra ray length so a wheel can hang below its rest position
     gravityScale = 1.8, -- a heavier feel than real gravity: no floating over bumps and ramps
-    stiffness = 52000, -- N/m per wheel
-    damping = 6500, -- N*s/m per wheel
+    stiffness = 58000, -- N/m per wheel
+    damping = 7000, -- N*s/m per wheel
     gripRate = 14, -- how quickly sideways velocity is removed (1/s)
     gripLimit = 15, -- maximum sideways acceleration (m/s^2)
     yawGain = 12, -- how quickly the body follows the steering yaw rate (1/s)
@@ -235,8 +235,8 @@ function PhysicsCar:step(dt)
         else
             self.compression[i] = 0
         end
-        -- Wheel height in the view's car space: the view places wheels at 0.4 + spring.
-        model.spring[i] = (config.rideHeight + t.mountY - length) - 0.4
+        -- Wheel height in the view's car space: the view places wheels at hubHeight + spring.
+        model.spring[i] = (config.rideHeight + t.mountY - length) - t.wheelRadius
     end
 
     local share = grounded / 4
@@ -340,7 +340,7 @@ function PhysicsCar:readState()
             local reach = math.max(math.abs(lx) / hw, math.abs(ly) / hh, math.abs(lz) / hl, 1e-4)
             self.impacts[#self.impacts + 1] = {
                 x = -lx / reach,
-                y = 0.55 - ly / reach, -- the hull's center is 0.55 m above the ground plane
+                y = self.config.rideHeight - ly / reach, -- the hull's centre above the ground plane
                 z = -lz / reach,
                 nx = lx,
                 ny = ly,

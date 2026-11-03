@@ -7,8 +7,11 @@ local Vehicle = {}
 Vehicle.__index = Vehicle
 
 local DEFAULTS = {
-    wheelBase = 2.6,
-    track = 1.6,
+    wheelBase = 2.935, -- front to rear axle, as in the Duke 69 model
+    frontAxle = 1.635, -- front axle ahead of the origin (the model centre is 0.17 m behind the middle)
+    rearAxle = 1.3, -- rear axle behind the origin
+    hubHeight = 0.315, -- wheel centre above the ground at rest (the tire radius)
+    track = 1.56,
     radius = 1.0, -- collision circle radius (two circles, front and rear)
     circleOffset = 1.0,
     maxSpeed = 32,
@@ -23,7 +26,7 @@ local DEFAULTS = {
     nitroMultiplier = 1.8,
     nitroSpeedMultiplier = 1.5,
     nitroDrain = 0.25,
-    rideHeight = 1.0, -- chassis center above the ground at rest
+    rideHeight = 0.85, -- chassis center above the ground at rest
     springStiffness = 90,
     springDamping = 9,
     seats = 4,
@@ -31,8 +34,10 @@ local DEFAULTS = {
 
 -- Wheel layout in car space (x right, z forward): front-left, front-right, rear-left, rear-right.
 function Vehicle.wheelOffsets(config)
-    local half, front = config.track / 2, config.wheelBase / 2
-    return { { -half, front }, { half, front }, { -half, -front }, { half, -front } }
+    local half = config.track / 2
+    local front = config.frontAxle or config.wheelBase / 2
+    local rear = config.rearAxle or config.wheelBase / 2
+    return { { -half, front }, { half, front }, { -half, -rear }, { half, -rear } }
 end
 
 -- config overrides DEFAULTS; ground(x, z) returns the terrain height (default flat 0).

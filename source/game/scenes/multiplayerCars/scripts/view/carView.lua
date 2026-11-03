@@ -1,5 +1,6 @@
 -- The visible side of one car: a dent-able body and four wheels, driven by the model state.
 local Body = require('./carMesh')
+local CarModel = require('./carModel')
 
 local orientation = require('../game.orientation')
 local CarAxes = require('../game.carAxes')
@@ -16,7 +17,7 @@ local PALETTE = {
     { 0.9, 0.5, 0.2 },
 }
 
-local WHEEL_RADIUS, WHEEL_WIDTH = 0.35, 0.28
+local WHEEL_RADIUS, WHEEL_WIDTH = 0.315, 0.28
 
 -- A wheel: a tire and a five-spoke rim as children of one node, so the whole wheel spins/steers.
 local function buildWheel(world, parent, name, position)
@@ -42,13 +43,10 @@ end
 function CarView.new(scene, netId, model)
     local world = scene.world
     local color = model.isBot and { 0.12, 0.12, 0.14 } or PALETTE[(netId - 1) % #PALETTE + 1]
-    local paint, glass = Body.create()
     local self = setmetatable({
         model = model,
         netId = netId,
         scene = scene,
-        paint = paint,
-        glass = glass,
         dentCount = -1,
         wheels = {},
         debris = {},
@@ -57,6 +55,23 @@ function CarView.new(scene, netId, model)
         up = {},
     }, CarView)
     self.root = world:create('Node3D', { name = 'Car' .. netId })
+    if CarModel.available(scene) then
+        local built = CarModel.create(scene, self.root, netId, color)
+        self.parts, self.wheels, self.wheelParts = built.parts, built.wheels, built.wheelGeometry
+    else
+        -- Without the model file the car falls back to the lofted hull and boxy lights.
+        self:buildProcedural(world, color)
+    end
+    self:buildNitro(world, model)
+    self:refreshDents()
+    return self
+end
+
+-- The fallback car: a lofted body and glass part, wheel prototypes and four lights.
+function CarView:buildProcedural(world, color)
+    local model, netId = self.model, self.netId
+    local paint, glass = Body.create()
+    self.paint, self.glass = paint, glass
     self.body = world:create('Mesh3D', {
         name = 'Body' .. netId,
         geometry = paint.geometry,
@@ -68,16 +83,17 @@ function CarView.new(scene, netId, model)
         color = { 0.08, 0.12, 0.16 },
     }, self.root)
     for index, offset in ipairs(model.wheels) do
-        self.wheels[index] =
-            buildWheel(world, self.root, 'Wheel' .. netId .. '_' .. index, { offset[1], 0.4, offset[2] })
+        self.wheels[index] = buildWheel(
+            world,
+            self.root,
+            'Wheel' .. netId .. '_' .. index,
+            { offset[1], model.config.hubHeight, offset[2] }
+        )
     end
     light(world, self.root, 'HeadL' .. netId, -0.58, 0.62, 2.1, { 1, 0.96, 0.8 })
     light(world, self.root, 'HeadR' .. netId, 0.58, 0.62, 2.1, { 1, 0.96, 0.8 })
     light(world, self.root, 'TailL' .. netId, -0.6, 0.78, -2.12, { 0.9, 0.05, 0.05 })
     light(world, self.root, 'TailR' .. netId, 0.6, 0.78, -2.12, { 0.9, 0.05, 0.05 })
-    self:buildNitro(world, model)
-    self:refreshDents()
-    return self
 end
 
 local function ramp(a, b, c)
@@ -87,12 +103,12 @@ end
 -- Two exhaust flames, lit only while the nitro tank is draining.
 function CarView:buildNitro(world, model)
     self.flames = {}
-    local rearZ = (model.wheels[3] and model.wheels[3][2] or -1.3) - 1.5
+    local rearZ = -(model.config.rearAxle or 1.3) - 1.4 -- behind the rear bumper
     for side = 1, 2 do
         local ok, emitter = pcall(function()
             return world:create('ParticleEmitter3D', {
                 name = 'Nitro' .. self.netId .. '_' .. side,
-                position = { side == 1 and -0.45 or 0.45, 0.45, rearZ },
+                position = { side == 1 and -0.55 or 0.55, 0.4, rearZ },
                 rate = 0,
                 lifetime = { 0.25, 0.5 },
                 speed = { 5, 9 },
@@ -113,8 +129,12 @@ function CarView:buildNitro(world, model)
 end
 
 function CarView:refreshDents()
-    Body.deform(self.paint.geometry, self.paint.rest, self.model.dents)
-    Body.deform(self.glass.geometry, self.glass.rest, self.model.dents)
+    if self.parts then
+        CarModel.deform(self.parts, self.model.dents)
+    else
+        Body.deform(self.paint.geometry, self.paint.rest, self.model.dents)
+        Body.deform(self.glass.geometry, self.glass.rest, self.model.dents)
+    end
     self.dentCount = #self.model.dents.dents
 end
 
@@ -131,7 +151,7 @@ function CarView:shedWheel(index)
     local rx, rz = fz, -fx
     local x = car.x + rx * offset[1] + fx * offset[2]
     local z = car.z + rz * offset[1] + fz * offset[2]
-    local y = car.y - car.config.rideHeight + 0.45
+    local y = car.y - car.config.rideHeight + car.config.hubHeight + 0.1
     local world = self.scene.world
     local debris = world:create('Body3D', {
         name = 'LostWheel' .. self.netId .. '_' .. index,
@@ -144,9 +164,22 @@ function CarView:shedWheel(index)
         restitution = 0.35,
         angularDamping = 0.2,
     })
-    local tire, rim = Body.wheelGeometry(WHEEL_RADIUS, WHEEL_WIDTH)
-    world:create('Mesh3D', { name = 'LostTire' .. self.netId .. '_' .. index, geometry = tire, color = { 0.06, 0.06, 0.07 } }, debris)
-    world:create('Mesh3D', { name = 'LostRim' .. self.netId .. '_' .. index, geometry = rim, color = { 0.78, 0.8, 0.84 } }, debris)
+    local source = self.wheelParts and self.wheelParts[CarModel.WHEEL_ORDER[index]]
+    if source then
+        -- The loose wheel is the model's own wheel, with its tire texture.
+        local mesh = world:create('Mesh3D', {
+            name = 'LostWheel' .. self.netId .. '_' .. index .. 'Mesh',
+            geometry = source.geometry,
+            color = source.material.color,
+        }, debris)
+        if source.material.image then
+            world:create('SurfaceAppearance3D', { colorMap = source.material.image }, mesh)
+        end
+    else
+        local tire, rim = Body.wheelGeometry(WHEEL_RADIUS, WHEEL_WIDTH)
+        world:create('Mesh3D', { name = 'LostTire' .. self.netId .. '_' .. index, geometry = tire, color = { 0.06, 0.06, 0.07 } }, debris)
+        world:create('Mesh3D', { name = 'LostRim' .. self.netId .. '_' .. index, geometry = rim, color = { 0.78, 0.8, 0.84 } }, debris)
+    end
     local side = offset[1] < 0 and -1 or 1
     debris.body:setVelocity({
         fx * (car.speed or 0) + rx * (car.slide or 0) + rx * side * 4,
@@ -171,7 +204,7 @@ function CarView:update(dt)
         (car.rz or car.z) - up[3] * drop,
     }
     self.root.rotation = orientation(heading, pitch, roll, self.angles)
-    self.spin = (self.spin + car.speed * dt / 0.35 * 57.3) % 360
+    self.spin = (self.spin + car.speed * dt / WHEEL_RADIUS * 57.3) % 360
     for index, wheel in ipairs(self.wheels) do
         local steer = index <= 2 and car.steerAngle or 0
         -- The car root turns by -heading (engine yaw opposes the model heading), so a wheel
@@ -182,7 +215,7 @@ function CarView:update(dt)
             wheel.visible = shown
         end
         local offset = car.wheels[index]
-        wheel.position = { offset[1], 0.4 + car.spring[index], offset[2] }
+        wheel.position = { offset[1], car.config.hubHeight + car.spring[index], offset[2] }
     end
     local burning = self.lastNitro ~= nil and car.nitro < self.lastNitro - 1e-4 and car.speed > 1
     self.lastNitro = car.nitro

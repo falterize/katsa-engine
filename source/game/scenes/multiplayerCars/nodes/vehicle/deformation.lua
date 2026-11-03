@@ -5,7 +5,9 @@ local Deformation = {}
 Deformation.__index = Deformation
 
 local MAX_DENTS = 24
-local MAX_DEPTH = 0.55
+local MAX_DEPTH = 0.7
+local CRUMPLE = 0.32 -- facet noise on the pushed panel, as a share of the local depth
+local PINCH = 0.22 -- how much the metal around the impact is drawn toward its centre
 
 function Deformation.new(options)
     options = options or {}
@@ -14,8 +16,8 @@ function Deformation.new(options)
         maxDents = options.maxDents or MAX_DENTS,
         maxDepth = options.maxDepth or MAX_DEPTH,
         minSpeed = options.minSpeed or 3,
-        halfLength = options.halfLength or 2.2,
-        halfWidth = options.halfWidth or 0.95,
+        halfLength = options.halfLength or 2.6,
+        halfWidth = options.halfWidth or 0.98,
     }, Deformation)
 end
 
@@ -25,7 +27,7 @@ function Deformation:addImpact(impact)
     if impact.speed < self.minSpeed then
         return nil
     end
-    local depth = math.min(self.maxDepth, (impact.speed - self.minSpeed) * 0.04 + 0.05)
+    local depth = math.min(self.maxDepth, (impact.speed - self.minSpeed) * 0.045 + 0.06)
     local dent = {
         x = impact.x,
         y = impact.y or 0.5,
@@ -34,7 +36,7 @@ function Deformation:addImpact(impact)
         dy = impact.ny or 0,
         dz = impact.nz,
         depth = depth,
-        radius = 0.7 + depth,
+        radius = 0.8 + depth * 1.6, -- a harder hit bends a wider area
     }
     return self:add(dent)
 end
@@ -62,7 +64,16 @@ function Deformation:clear()
     self.dents = {}
 end
 
--- Displacement of a point at car-space (x, y, z). Smooth falloff keeps the lattice continuous.
+-- A repeatable value in -1..1 for a point of the rest pose: the same on every machine, so the
+-- crumpled facets of a replicated dent look identical everywhere.
+local function facet(x, y, z)
+    local h = math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453
+    return (h - math.floor(h)) * 2 - 1
+end
+
+-- Displacement of a point at car-space (x, y, z). The metal is pushed along the hit direction,
+-- drawn toward the impact point and crinkled into facets; the smooth falloff keeps the lattice
+-- continuous at the rim of the dent.
 function Deformation:offsetAt(x, y, z)
     local ox, oy, oz = 0, 0, 0
     for _, dent in ipairs(self.dents) do
@@ -71,13 +82,32 @@ function Deformation:offsetAt(x, y, z)
         if distance < dent.radius then
             local t = 1 - distance / dent.radius
             local weight = t * t * (3 - 2 * t) * dent.depth
-            ox = ox + dent.dx * weight
-            oz = oz + dent.dz * weight
+            local push = weight * (1 + CRUMPLE * facet(x, y, z))
+            ox = ox + dent.dx * push
+            oz = oz + dent.dz * push
             -- Pushed in along the hit direction; a little extra sag makes the panel crumple.
-            oy = oy + (dent.dy or 0) * weight - weight * 0.1
+            oy = oy + (dent.dy or 0) * push - weight * 0.1
+            if distance > 1e-4 then
+                local pull = weight * PINCH * t / distance
+                ox, oy, oz = ox - ddx * pull, oy - ddy * pull, oz - ddz * pull
+            end
         end
     end
     return ox, oy, oz
+end
+
+-- True when the sphere of any dent touches the box [min, max] (car space): parts out of reach
+-- of every dent keep their rest pose and need no work.
+function Deformation:touches(minX, minY, minZ, maxX, maxY, maxZ)
+    for _, dent in ipairs(self.dents) do
+        local dx = math.max(minX - dent.x, 0, dent.x - maxX)
+        local dy = math.max(minY - dent.y, 0, dent.y - maxY)
+        local dz = math.max(minZ - dent.z, 0, dent.z - maxZ)
+        if dx * dx + dy * dy + dz * dz < dent.radius * dent.radius then
+            return true
+        end
+    end
+    return false
 end
 
 -- Builds a box lattice (segments per axis) of car-space points for a body of the given size.
