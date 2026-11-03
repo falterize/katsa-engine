@@ -164,6 +164,8 @@ function World3D:create(className, properties, parent)
         BillboardUI = 'Billboards',
         Body3D = 'Physics',
         ParticleEmitter3D = 'Effects',
+        Beam3D = 'Effects',
+        Trail3D = 'Effects',
         SoundGroup = 'Audio',
         Sound = 'Audio',
     })[className]
@@ -239,6 +241,7 @@ function World3D:setQualityProfile(name)
     for key, value in pairs(profile.lights) do
         self.lighting.lightSettings[key] = value
     end
+    self.ribbonDetail = profile.ribbons and profile.ribbons.detail or 1
     self.qualityProfile = name
 end
 

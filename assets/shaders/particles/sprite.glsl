@@ -23,6 +23,10 @@ uniform highp vec3 cameraPosition;
 uniform float particleShadowSlot[8];
 uniform vec3 particleLighting;
 uniform bool particleUnlit;
+// Ribbons: 1 - lightInfluence, premultiplied output and light emission (0 = alpha, 1 = additive).
+uniform float particleDetach;
+uniform bool ribbonPremultiply;
+uniform float ribbonEmission;
 uniform float particleBrightness;
 uniform float particleWorldBrightness;
 uniform vec3 particleFacing;
@@ -65,8 +69,9 @@ vec4 effect(vec4 color, Image spriteImage, vec2 uv, vec2 screen_coords) {
         }
         light*=particleWorldBrightness;
     }
-    vec3 result=texel.rgb*light*particleBrightness;
+    vec3 result=texel.rgb*mix(light,vec3(1.0),particleDetach)*particleBrightness;
     // MATERIAL_PIXEL
+    if (ribbonPremultiply) return vec4(result*texel.a, texel.a*(1.0-ribbonEmission));
     if (multiplyMode) return vec4(mix(vec3(1.0), result, texel.a), 1.0);
     return vec4(result,texel.a);
 }

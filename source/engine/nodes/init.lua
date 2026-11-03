@@ -31,6 +31,8 @@ require('./audio.sound')
 require('./audio.audioSource')
 require('./audio.audioListener')
 require('./effects.particleEmitter3D')
+require('./effects.beam3D')
+require('./effects.trail3D')
 
 require('./animation.ramp')
 require('./animation.bone3D')

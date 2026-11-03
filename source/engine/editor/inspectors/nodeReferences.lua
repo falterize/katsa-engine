@@ -7,6 +7,10 @@ function References.expected(target, key)
         return 'Node3D'
     end
     if key == 'attachment0' or key == 'attachment1' then
+        if target:isA('Beam3D') or target:isA('Trail3D') then
+            -- Ribbon ends may be any spatial node, so models need no Attachment3D.
+            return 'Node3D'
+        end
         return target:isA('Constraint2D') and 'Attachment2D' or 'Attachment3D'
     end
     local descriptor = Schema.descriptor(target, key)

@@ -28,7 +28,9 @@ function Goals.candidates(ramp)
         return result
     end
     if ramp:isLifetime() then
-        for key, value in pairs({ size = 1, color = { 1, 1, 1 }, transparency = 0, rotation = 0 }) do
+        local keys = target.ribbonKind and require('source.engine.ribbons.lifetime').keys()
+            or { size = 1, color = { 1, 1, 1 }, transparency = 0, rotation = 0 }
+        for key, value in pairs(keys) do
             result[#result + 1] = { key = key, value = value }
         end
     else

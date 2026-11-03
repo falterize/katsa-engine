@@ -54,8 +54,8 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 
 ## 5. Build, run, test
 
-- Run the dev host from the repo root: `xvfb-run -a luajit tools/dev/katsa.lua . <flags>`. `tools/dev/runTests.sh --test-v108.5 [timeout]` wraps it and prints pass/fail counts.
-- Current focused suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion, car body sharing, hover coalescing, console rows, menu loading label, Ctrl+C, net throttle, packaging, touch zoom, auto collision, .blend import; 137 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
+- Run the dev host from the repo root: `xvfb-run -a luajit tools/dev/katsa.lua . <flags>`. `tools/dev/runTests.sh --test-v108.6 [timeout]` wraps it and prints pass/fail counts.
+- Current focused suite: `--test-v108.6` (Beam3D / Trail3D ribbons: geometry, trail history, modes, inspector, shadows, quality profile; 29 checks). Previous suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion, car body sharing, hover coalescing, console rows, menu loading label, Ctrl+C, net throttle, packaging, touch zoom, auto collision, .blend import; 137 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
 - Regression suites worth running after UI/render changes: `--test-v106.8` (991 checks, must pass), `--test-v108.4`, `--test-v108.1` family. Known old failures unrelated to recent work: `--test-v105` ("Native contact bridge") and `--test-v50` (Screen UI check). Do not "fix" them blindly; compare with the last known-good branch first.
 - Probe tooling: `validation/tests/versions/v108_4/shadowProbe.lua` renders frames to `~/.local/share/Katsa/katsa-engine/tmp/<dir>/fNN.png`:
   `KATSA_SHOT=tmp/<dir> KATSA_SCENE=<scene> KATSA_FRAMES=<n> xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.4.shadow`
@@ -66,7 +66,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 
 ## 6. Git and releases
 
-- Current line: branch `v108.5` (version string in `source/engine/core/version.lua`). `v108.4` is the last known-good release and must stay untouched; each release gets its own branch. Do not push to `main` without the owner's word.
+- Current line: branch `v108.6` (continues `v108.5`) (version string in `source/engine/core/version.lua`). `v108.4` is the last known-good release and must stay untouched; each release gets its own branch. Do not push to `main` without the owner's word.
 - Commit and push regularly (the session Stop hook demands that uncommitted work is committed and pushed). Commit messages end with the trailers the harness gives you (`Co-Authored-By: ...`, `Claude-Session: ...`).
 - Git cannot store empty directories. Record intentionally empty scene folders in `tools/project/emptyDirectories.txt` (`python tools/build/restoreEmptyDirs.py --update`) and recreate them with `python tools/build/restoreEmptyDirs.py`. Never add marker files. The engine must never require an empty folder.
 - Archive: `python tools/build/packageProject.py --output dist` (omits `validation/` unless `--with-validation`).
@@ -131,6 +131,11 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 - **Node**: `InverseKinematics3D` (`nodes/inverseKinematics3D.lua`, registered in the manifest `nodes`). Property `type` selects the solver; per-type properties show conditionally through `visibleWhen`; bone dropdowns are built from the target model (`Schema.options` accepts a function of the target). Target/pole use `kind='node'` references. New solver = new file in `solvers/` + a type entry + conditional properties + a test.
 - Show scene `ikLab`: both hands hold a ball that moves, elbows bend toward pole hints, an arm solver switch. Keep it visually clear (verified by screenshot grids).
 - Docs: `docs/guides/animation/ik.md`. Tests: `v108_5/ik.lua`, `ikNode.lua`.
+
+### Ribbons (v108.6)
+- `Beam3D` / `Trail3D` (`nodes/effects`, shared `ribbon.lua`) are drawn by `source/engine/ribbons` (`world.ribbons`) through the particle sprite shader (`ribbonPremultiply`, `ribbonEmission`, `particleDetach` uniforms). Ends are any Node3D. Trail3D has `trailMode` Single / Dual. Image config is the common component (`texture`, `imageMode`...). Shadow proxies reuse the particle caster path (`_particleCaster`).
+- `World3D:create(class, props, parent)` ignores `props.parent` for most nodes (the Effects folder is used); pass the parent as the third argument. Ribbon nodes honour `props.parent`.
+- Docs: `docs/guides/rendering/ribbons.md`. Demo: `ribbonLab`. Tests: `v108_6/ribbons.lua`.
 
 ## 11. Plugins
 
