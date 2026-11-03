@@ -6,6 +6,7 @@ local Panel = {}
 Panel.__index = Panel
 
 local LINES = 200
+local ROW = 15 -- pixel height of one 12 px log line
 local TAGS = { log = ' ', warn = 'W', error = 'E' }
 
 function Panel.new(ui, parent)
@@ -101,9 +102,8 @@ function Panel:refresh()
             (entry.message:gsub('\n.*', ' ...'))
         )
     end
-    self.body.text = table.concat(lines, '\n')
-    local height = math.max(380, #lines * 15 + 12)
-    self.body.size = { 1, -12, 0, height }
+    self.lines = lines
+    local height = math.max(380, #lines * ROW + 12)
     self.scroll.length = height + 8
     self.status.text = self.message
         or string.format(
@@ -112,12 +112,39 @@ function Panel:refresh()
             katsa.log.count('warn'),
             katsa.log.count('error')
         )
+    self:showRows(true)
+end
+
+-- Only the rows inside the scroll window (plus a margin) are laid out. The panel keeps up to 200
+-- lines, and drawing all of them as one text node cost several milliseconds every frame while
+-- the console was open.
+function Panel:showRows(force)
+    local lines = self.lines
+    if not lines then
+        return
+    end
+    local scrollY = self.scroll.scrollY or 0
+    local windowHeight = self.scroll._windowHeight or 600
+    local first = math.max(1, math.floor(scrollY / ROW) - 1)
+    local last = math.min(#lines, first + math.ceil(windowHeight / ROW) + 3)
+    if not force and first == self.firstRow and last == self.lastRow then
+        return
+    end
+    self.firstRow, self.lastRow = first, last
+    self.body.text = table.concat(lines, '\n', first, last)
+    self.body.position = { 0, 6, 0, 4 + (first - 1) * ROW }
+    self.body.size = { 1, -12, 0, math.max(0, last - first + 1) * ROW + 12 }
 end
 
 function Panel:update()
-    if self.visible and self.dirty then
+    if not self.visible then
+        return
+    end
+    if self.dirty then
         self.dirty = false
         self:refresh()
+    else
+        self:showRows(false)
     end
 end
 
