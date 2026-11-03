@@ -41,7 +41,7 @@ function Interface.create(state)
     state.styler = styler
     styler:defineTheme('dark', UIStyler.themes.dark)
     styler:defineTheme('light', UIStyler.themes.light)
-    styler:sheet(require('scene.scripts.styles.sheet'))
+    styler:loadStyles(state.sceneRoot .. '/assets/styles')
 
     local root = make(ui, 'Frame', {
         name = 'Launcher',

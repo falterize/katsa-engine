@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.5
 
+- uiStyler: style files in a scene's `assets/styles`, multi-value styles, bare-tag selectors, `extends`, `cornerScale` (`Styler:loadStyles`, `Styler:style`). The launcher showcase now uses them.
+
 - Version bumped to v108.5; v108.4 stays as the last known-good release before the IK plugin and the following plugin updates.
 - New plugin `ik` (3D inverse kinematics; see `docs/guides/animation/ik.md`): `SkeletonModifier` base with `influence`, `priority`, `debug`; bone pose access (`IK.Skeleton`, `IK.Quat`); solvers `TwoBone` (pole, softness), `LookAt` (weighted chains, angle limit, smoothing), `Fabrik` (pole twist) and `Ccd` (step and per-joint limits). `Animator:addModifier/removeModifier` run modifiers after animation sampling and before the pose matrices are rebuilt; the bone debug overlay draws modifiers with `debug = true`. New scene `ikLab` shows all four on the XBot.
 - Focused suite: `--test-v108.5` (front-face winding reaches the driver with culling off).
