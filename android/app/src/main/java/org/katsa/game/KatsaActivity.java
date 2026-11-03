@@ -3,8 +3,11 @@ package org.katsa.game;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import org.libsdl.app.SDLActivity;
 import org.libsdl.app.SDLSurface;
@@ -17,7 +20,7 @@ import org.libsdl.app.SDLSurface;
  * Render height: phones have far more pixels than their GPUs can fill every frame (a 2460x1080
  * screen on a mid-range Mali). The surface is given a fixed, smaller size and Android scales it to
  * the screen in hardware. Set meta-data `katsa.renderHeight` in the manifest: a height in pixels
- * (default 720) or 0 for the native resolution.
+ * (default 720) or 0 for the native resolution. Portrait and landscape both work.
  */
 public class KatsaActivity extends SDLActivity {
     @Override
@@ -27,20 +30,44 @@ public class KatsaActivity extends SDLActivity {
         };
     }
 
+    private SDLSurface katsaSurface;
+
     @Override
     protected SDLSurface createSDLSurface(Context context) {
         SDLSurface surface = new SDLSurface(context);
+        // A SurfaceView with a fixed buffer size and wrap_content would be measured as big as the
+        // buffer; match_parent lets Android stretch the buffer over the whole screen.
+        surface.setLayoutParams(new RelativeLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        katsaSurface = surface;
+        applyRenderSize();
+        return surface;
+    }
+
+    /** The short side of the buffer is renderHeight pixels in either orientation. */
+    private void applyRenderSize() {
+        if (katsaSurface == null) {
+            return;
+        }
         int wanted = renderHeight();
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-        int longSide = Math.max(metrics.widthPixels, metrics.heightPixels);
-        int shortSide = Math.min(metrics.widthPixels, metrics.heightPixels);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        int shortSide = Math.min(width, height);
         if (wanted > 0 && shortSide > wanted) {
-            // The game runs in landscape: the short side is the height.
-            int width = Math.round((float) longSide * wanted / shortSide);
-            surface.getHolder().setFixedSize(width, wanted);
+            float scale = (float) wanted / shortSide;
+            katsaSurface.getHolder().setFixedSize(Math.round(width * scale), Math.round(height * scale));
+        } else {
+            // Native resolution: let the surface follow the view again.
+            katsaSurface.getHolder().setSizeFromLayout();
         }
-        return surface;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyRenderSize();
     }
 
     private int renderHeight() {
