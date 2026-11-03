@@ -1,6 +1,7 @@
 local Node = require('../core.baseNode')
 local Math = require('../../math.math3d')
 local Brightness = require('../../components.brightness')
+local Tint = require('../../components.tint')
 
 local Class = Node.define('Decal3D', 'Node3D')
 require('../../components.image').describe(Class)
@@ -22,8 +23,7 @@ function Class.mount(world, properties, parent)
         and properties.fitMode ~= 'Tile'
     properties.mode = properties.imageMode or properties.mode or 'Decal'
     properties.imageMode = properties.mode
-    properties.transparency = properties.transparency or 0
-    properties.color = properties.color or { 1, 1, 1 }
+    Tint.normalize(properties, 'Decal3D')
     properties.onTop = properties.onTop == true
     require('source.engine.components.lighting').normalize(properties, 0)
     require('source.engine.components.renderRange').normalize(properties, 500)

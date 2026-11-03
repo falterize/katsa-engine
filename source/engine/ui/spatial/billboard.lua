@@ -4,6 +4,8 @@ local UI = require('../../ui')
 local Node = require('../../nodes')
 local Validate = require('../../core.validate')
 local Brightness = require('../../components.brightness')
+local Tint = require('../../components.tint')
+local RenderRange = require('../../components.renderRange')
 
 local BillboardUI = Node.getClass('BillboardUI')
 BillboardUI.__index = BillboardUI
@@ -95,8 +97,8 @@ function BillboardUI.new(world, settings)
     settings.zIndex = settings.zIndex or 0
     settings.enabled = settings.enabled ~= false
     settings.debugEnabled = settings.debugEnabled == true
-    settings.transparency = settings.transparency or 0
-    settings.maxDistance = settings.maxDistance or 500
+    Tint.normalizeTransparency(settings, 'Adornment')
+    RenderRange.normalize(settings, 500)
     settings.interactable = settings.interactable ~= false and settings.interactive ~= false
     settings.interactive = nil
     settings.worldPosition = {}

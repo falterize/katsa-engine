@@ -42,14 +42,8 @@ function Objects.install(World3D)
             { castShadow = true, receiveShadow = true }
         )
         o.visible = o.visible ~= false
-        o.color = o.color or { 1, 1, 1, 1 }
         require('source.engine.components.renderRange').normalize(o, 0)
-        o.transparency = o.transparency or 0
-        local legacyAlpha = o.color[4] or 1
-        o.transparency = 1 - (1 - o.transparency) * legacyAlpha
-        o.color = { o.color[1], o.color[2], o.color[3] }
-        Validate.vector(o.color, 'Object.color', 3)
-        Validate.number(o.transparency, 'Object.transparency', 0, 1)
+        require('source.engine.components.tint').normalize(o, 'Object')
         if not o.geometry and not self.geometry[o.kind or 'cube'] then
             local factory = Geometry[o.kind]
             assert(type(factory) == 'function', 'Unknown geometry: ' .. tostring(o.kind))
@@ -92,9 +86,7 @@ function Objects.install(World3D)
 
     function World3D:updateObject(o, renderPose, geometryOnly)
         o._batchRevision = (o._batchRevision or 0) + 1
-        if o.color[4] ~= nil then
-            o.color = { o.color[1], o.color[2], o.color[3] }
-        end
+        require('source.engine.components.tint').stripAlpha(o)
         o._renderVisible, o._renderOpacity = o:getVisibilityState()
         if not geometryOnly then
             self:updateAppearance(o)

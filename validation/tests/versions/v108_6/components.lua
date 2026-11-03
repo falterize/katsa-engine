@@ -2,6 +2,7 @@
 local Layering = require('source.engine.components.layering')
 local RenderRange = require('source.engine.components.renderRange')
 local Brightness = require('source.engine.components.brightness')
+local Tint = require('source.engine.components.tint')
 local Tables = require('source.engine.core.tables')
 local Math = require('source.engine.math.math3d')
 local World = require('source.engine.world.world')
@@ -20,6 +21,10 @@ function Module.run(self)
     Brightness.normalize(node, 2, 'Test')
     self:check(node.brightness == 2, 'brightness takes the class default')
     self:check(not pcall(Brightness.check, -1, 'Test'), 'negative brightness is rejected')
+    local tinted = { color = { 1, 0.5, 0.25, 0.5 }, transparency = 0.5 }
+    Tint.normalize(tinted, 'Test')
+    self:check(#tinted.color == 3 and math.abs(tinted.transparency - 0.75) < 1e-9, 'a legacy colour alpha folds into transparency')
+    self:check(Tint.normalize({}, 'Test') == nil and not pcall(Tint.normalize, { transparency = 2 }, 'Test'), 'transparency outside 0..1 is rejected')
     local source = { a = { 1, { b = 2 } } }
     local copy = Tables.copy(source)
     self:check(copy.a ~= source.a and copy.a[2].b == 2, 'Tables.copy is deep')
