@@ -39,7 +39,7 @@ function ShadowDepthPass.install(Shadows)
     end
 
     function Shadows:bind(object)
-        local opaque = require('source.engine.materials.opaqueMesh').eligible(
+        local opaque = require('source.engine.graphics.materials.opaqueMesh').eligible(
             object,
             object._world and object._world._activeRenderer
         )

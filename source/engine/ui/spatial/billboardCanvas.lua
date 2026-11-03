@@ -26,7 +26,7 @@ function BillboardCanvas.install(BillboardUI)
         local rw, rh = camera and camera.width or 1280, camera and camera.height or 720
         if self.sizeMode == 'World3D' then
             if self:isA('SurfaceUI') then
-                rw, rh = require('source.engine.surfaces.faces').referenceSize(self)
+                rw, rh = require('source.engine.world.surfaces.faces').referenceSize(self)
             else
                 rw, rh = self:extentDimensions()
             end
@@ -40,7 +40,7 @@ function BillboardCanvas.install(BillboardUI)
     end
 
     function BillboardUI:extentDimensions()
-        local support = require('source.engine.surfaces.support').resolve(self)
+        local support = require('source.engine.world.surfaces.support').resolve(self)
         local d = self.supportSize
         if support and support:isA('Mesh3D') then
             require('source.engine.graphics.geometry.objectBounds').get(support)

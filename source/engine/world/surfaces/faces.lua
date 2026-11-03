@@ -1,8 +1,8 @@
-local unpack = require('../math.array').unpack
+local unpack = require('../../math.array').unpack
 -- Quad normals face local -Z. Front is the parent's local -Z bounding-box face.
-local Math = require('../math.math3d')
-local Affine = require('../math.affine')
-local Bounds = require('../graphics.geometry.objectBounds')
+local Math = require('../../math.math3d')
+local Affine = require('../../math.affine')
+local Bounds = require('../../graphics.geometry.objectBounds')
 
 local Faces = {}
 local definitions = {
@@ -20,7 +20,7 @@ end
 
 function Faces.referenceSize(node)
     local face = assert(definitions[node.face], 'Invalid surface face')
-    local parent = require('source.engine.surfaces.support').resolve(node)
+    local parent = require('source.engine.world.surfaces.support').resolve(node)
     if parent and parent:isA('Mesh3D') then
         Bounds.get(parent)
         local b = parent.geometry.bounds
@@ -32,7 +32,7 @@ function Faces.referenceSize(node)
 end
 
 function Faces.update(node, camera)
-    local parent = require('source.engine.surfaces.support').resolve(node)
+    local parent = require('source.engine.world.surfaces.support').resolve(node)
     if not parent or not parent.getWorldMatrix then
         node.drawable = false
         return
@@ -96,7 +96,7 @@ function Faces.update(node, camera)
     end
     node._surfaceLocal = Math.multiply(faceMatrix, node:getLocalMatrix(), node._surfaceLocal)
     node.matrix = Math.multiply(
-        require('source.engine.surfaces.support').frame(node, parent, true),
+        require('source.engine.world.surfaces.support').frame(node, parent, true),
         node._surfaceLocal,
         node.matrix
     )

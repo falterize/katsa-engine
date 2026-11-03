@@ -19,7 +19,7 @@ Renderer.__index = function(self, key)
         if rawget(self, '_released') or self.resources.released then
             return nil
         end
-        local source = key == 'shader' and require('source.engine.graphics.shaderSource').read(path)
+        local source = key == 'shader' and require('source.engine.graphics.shaders.shaderSource').read(path)
             or path
         local shader = self.resources:own(katsa.graphics.newShader(source))
         rawset(self, key, shader)

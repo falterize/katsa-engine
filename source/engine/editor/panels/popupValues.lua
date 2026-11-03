@@ -76,7 +76,7 @@ function PopupValues.install(Popup)
     end
 
     function Popup:nodeEditor()
-        local support = require('source.engine.surfaces.support')
+        local support = require('source.engine.world.surfaces.support')
         local modelSource = self.field.key == 'geometrySource' and self.target:isA('Collider3D')
         local offset = modelSource and 44 or 0
         if modelSource then

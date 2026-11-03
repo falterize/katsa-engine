@@ -24,6 +24,8 @@ Sections: 1 Working with the owner · 2 Repository map · 3 Code style · 4 Modu
 | Path | Content |
 | --- | --- |
 | `source/engine/` | Reusable engine services and node APIs (nodes, ui, graphics, physics, animation, editor, input, net, world ...) |
+| `source/engine/components/` | Shared property groups of nodes (image, lighting, shadowing, layering, renderRange, brightness, tint): one definition per rule |
+| `source/engine/graphics/{materials,shaders,lighting}` | Material resolution, shader layers and shader source loading, light orientation defaults |
 | `source/katsa/` | The runtime layer: graphics on GL, window, audio, filesystem, net, platform |
 | `source/game/` | Scenes (`scenes/<name>`), the common collection runtime, game data (`data/project.lua`), `sceneCatalog.lua` |
 | `source/plugins/<name>/` | Optional features: `ads`, `ik`, `pathfinding`, `uiStyler` |

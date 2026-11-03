@@ -140,7 +140,7 @@ function Resources:loadImage(source, label)
         if not opacitySource and Objects.isObject(source) and source:typeOf('FileData') then
             opacitySource = source
         end
-        require('source.engine.materials.opacity').register(value, pixels, opacitySource)
+        require('source.engine.graphics.materials.opacity').register(value, pixels, opacitySource)
     end
     if encoded then
         encoded:release()

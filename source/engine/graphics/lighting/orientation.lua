@@ -1,6 +1,6 @@
-local unpack = require('../math.array').unpack
+local unpack = require('../../math.array').unpack
 -- Convert imported ray directions to the engine's Rotation convention.
-local M = require('../math.math3d')
+local M = require('../../math.math3d')
 
 local Orientation = {}
 

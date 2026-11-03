@@ -36,7 +36,7 @@ function T:draw()
     end
     self.done = true
     local source =
-        require('source.engine.graphics.shaderSource').read('assets/shaders/engine/world.glsl')
+        require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
     local rejection =
         '// Both diffuse and GGX contributions are zero on the unlit hemisphere.\n            if(dot(normal,toward)<=0.0) continue;\n'
     local first, last = assert(source:find(rejection, 1, true))

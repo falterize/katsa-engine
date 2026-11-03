@@ -1,7 +1,7 @@
 require('validation.tests.integration.luaCompatibility')
 local Node = require('source.engine.nodes')
 local Math = require('source.engine.math.math3d')
-local Faces = require('source.engine.surfaces.faces')
+local Faces = require('source.engine.world.surfaces.faces')
 local Receivers = require('source.engine.graphics.shadows.shadowReceivers')
 
 local count = 0

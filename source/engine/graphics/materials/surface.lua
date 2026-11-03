@@ -1,7 +1,7 @@
-local readValue = require('../math.managedValue').read
-local ipairs = require('../math.array').ipairs
-local Image = require('../components.image')
-local Bounds = require('../graphics.geometry.objectBounds')
+local readValue = require('../../math.managedValue').read
+local ipairs = require('../../math.array').ipairs
+local Image = require('../../components.image')
+local Bounds = require('../geometry.objectBounds')
 
 local Surface = {}
 local scalarKeys = {
@@ -74,7 +74,7 @@ function Surface.resolve(world, object, visible, opacity)
         visible, opacity = object:getVisibilityState()
     end
     if not visible or opacity <= 0 then
-        require('source.engine.materials.blend').releaseBuffers(object)
+        require('source.engine.graphics.materials.blend').releaseBuffers(object)
         object._surfaceAppearance = nil
         return nil
     end
@@ -114,9 +114,9 @@ function Surface.resolve(world, object, visible, opacity)
     )
     local selected = active[1]
     if #active > 1 or selected and selected.transparency > 0 then
-        selected = require('source.engine.materials.blend').resolve(world, object, active)
+        selected = require('source.engine.graphics.materials.blend').resolve(world, object, active)
     else
-        require('source.engine.materials.blend').releaseBuffers(object)
+        require('source.engine.graphics.materials.blend').releaseBuffers(object)
     end
     object._surfaceAppearance = selected
     return selected

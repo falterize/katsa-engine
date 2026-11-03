@@ -3,7 +3,7 @@ local pairs = require('source.engine.math.array').pairs
 -- Constant-disabled paths remove unused uniforms and branches from the GPU program.
 -- Enabled features always retain the complete shader and its original calculations.
 local Variants = {}
-local Opaque = require('source.engine.materials.opaqueMesh')
+local Opaque = require('source.engine.graphics.materials.opaqueMesh')
 function Variants.get(renderer, object)
     local solid = Opaque.eligible(object, renderer)
     local earlyDepth = renderer.depthPrepassActive == true
@@ -54,7 +54,7 @@ function Variants.get(renderer, object)
     local shader = renderer.shaderVariants[key]
     if not shader then
         local source =
-            require('source.engine.graphics.shaderSource').read('assets/shaders/engine/world.glsl')
+            require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
         if not earlyDepth then
             source=source:gsub('// EARLY_DEPTH_BEGIN.-// EARLY_DEPTH_END','')
         end

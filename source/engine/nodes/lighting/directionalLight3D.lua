@@ -7,7 +7,7 @@ require('../../components.shadowing').describe(Class, { receive = false, cutoff 
 function Class.initialize(self)
     -- Rotation is the single orientation control. Convert old creation input once.
     if self.direction then
-        self.rotation = require('source.engine.lighting.orientation').rotation(self.direction)
+        self.rotation = require('source.engine.graphics.lighting.orientation').rotation(self.direction)
         self.direction = nil
     end
     self.color = self.color or { 255, 245, 220 }

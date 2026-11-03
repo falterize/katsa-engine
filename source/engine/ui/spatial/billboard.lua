@@ -59,7 +59,7 @@ function BillboardUI.new(world, settings)
     end
     if adornee then
         local ok, reason =
-            require('source.engine.surfaces.support').valid({ _world = world }, adornee)
+            require('source.engine.world.surfaces.support').valid({ _world = world }, adornee)
         assert(ok, reason)
     end
     rawset(settings, 'adornee', nil)
@@ -166,7 +166,7 @@ function BillboardUI.new(world, settings)
     end)
 
     node.inheritScale = settings.inheritScale == true
-    require('source.engine.surfaces.support').initialize(node, adornee)
+    require('source.engine.world.surfaces.support').initialize(node, adornee)
     node.parent = owner
     node.layers = node.layers or 1
     node.ui:bindBillboard(node)

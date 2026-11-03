@@ -9,7 +9,7 @@ function Methods:setTimeOfDay(hour)
     local elevation = math.sin((self.dayHour - 6) / 24 * math.pi * 2)
     local daylight = math.max(0, elevation)
     sun.enabled = daylight > 0.01
-    sun.rotation = require('source.engine.lighting.orientation').rotation({
+    sun.rotation = require('source.engine.graphics.lighting.orientation').rotation({
         -math.cos((self.dayHour - 6) / 24 * math.pi * 2),
         -math.max(0.05, elevation),
         0.35,

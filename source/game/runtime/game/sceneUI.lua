@@ -235,7 +235,7 @@ function Methods:buildUI()
         zIndex = 100000,
         visible = false,
     })
-    self.statistics = require('source.game.ui.statistics').new(self, self.statsLayer)
+    self.statistics = require('source.engine.debug.statistics.definitions').new(self, self.statsLayer)
     self.statsScroll, self.statsPanel = self.statistics.panel.scroll, self.statistics.panel.header
     self.toolsPanel.length = row * 44 + 16
     self:buildMixer()

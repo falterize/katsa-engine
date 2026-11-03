@@ -278,7 +278,7 @@ function PropertyWrite.install(Properties)
                     pw = parent._width or target.ui.width
                     ph = parent._height or target.ui.height
                 elseif target:isA('SurfaceUI') or target:isA('Decal3D') then
-                    pw, ph = require('source.engine.surfaces.faces').referenceSize(target)
+                    pw, ph = require('source.engine.world.surfaces.faces').referenceSize(target)
                     positive = true
                 elseif target:isA('BillboardUI') then
                     if target.sizeMode == 'World3D' then

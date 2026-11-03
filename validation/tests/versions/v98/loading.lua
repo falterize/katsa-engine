@@ -31,7 +31,7 @@ function T.new(manager)
         { 'source.engine.world.world', 'new' },
         { 'source.engine.import.models', 'load' },
         { 'source.engine.editor.workspace', 'new' },
-        { 'source.engine.materials.opacity', 'register' },
+        { 'source.engine.graphics.materials.opacity', 'register' },
     }) do
         wrap(require(entry[1]), entry[2], entry[1] .. '.' .. entry[2])
     end

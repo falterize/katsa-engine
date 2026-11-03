@@ -90,7 +90,7 @@ function RenderPreparation.install(Renderer)
                 or o._appearancePending and world.environment.shadows.enabled
             then
                 if not wire then
-                    require('source.engine.shaders.materialResolver').resolve(world, o)
+                    require('source.engine.graphics.shaders.materialResolver').resolve(world, o)
                 end
                 local deferAppearance = not wire and not world.environment.shadows.enabled
                 world:updateObject(o, true, wire or deferAppearance)
@@ -172,11 +172,11 @@ function RenderPreparation.install(Renderer)
         clear(self.surfaceReceivers)
         for _, d in ipairs(world.decals) do
             if not wire then
-                require('source.engine.shaders.materialResolver').resolve(world, d)
+                require('source.engine.graphics.shaders.materialResolver').resolve(world, d)
             end
             world:resolveLayerGroup(d)
             if wire then
-                require('source.engine.surfaces.faces').update(d, camera)
+                require('source.engine.world.surfaces.faces').update(d, camera)
             else
                 d:update(world, camera)
             end

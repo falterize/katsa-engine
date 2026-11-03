@@ -26,7 +26,7 @@ function T:draw()
     end
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    local Opacity = require('source.engine.materials.opacity')
+    local Opacity = require('source.engine.graphics.materials.opacity')
     local scene = self.manager:switch(require('source.game.runtime.game').new, 'occlusion')
     local world, renderer, camera = scene.world, scene.renderer, scene.camera
     world.environment.render.frameCache = false
@@ -216,7 +216,7 @@ function T:draw()
         capture(false, false) == capture(false, true) and not renderer.depthPrepassActive,
         'Unknown/cutout alpha retains the original render path'
     )
-    local custom = require('source.engine.graphics.material').new(
+    local custom = require('source.engine.graphics.materials.material').new(
         scene.resources,
         { fragmentCode = 'result*=vec3(1.0);' }
     )
@@ -226,7 +226,7 @@ function T:draw()
     )
     local valid, errors = katsa.graphics.validateShader(
         true,
-        require('source.engine.graphics.shaderSource').read(
+        require('source.engine.graphics.shaders.shaderSource').read(
             'assets/shaders/engine/depthPrepass.glsl'
         )
     )

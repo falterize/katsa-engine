@@ -1,1 +1,1 @@
-return require('source.engine.lighting.defaults')
+return require('source.engine.graphics.lighting.defaults')

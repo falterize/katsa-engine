@@ -122,8 +122,8 @@ function T:draw()
     w.environment.gizmos.enabled = false
     -- Establish spatial UI canvases first, then prohibit all material/light paths.
     r:draw(w, c, 1, true)
-    local materialResolver = require('source.engine.shaders.materialResolver')
-    local surface = require('source.engine.materials.surface')
+    local materialResolver = require('source.engine.graphics.shaders.materialResolver')
+    local surface = require('source.engine.graphics.materials.surface')
     local savedResolve, savedBind = materialResolver.resolve, surface.bind
     local oldLights, oldShadows, oldSky = r.lights.update, r.shadows.update, r.drawSky
     materialResolver.resolve = function()

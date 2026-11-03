@@ -2,7 +2,7 @@
 local Module = {}
 
 function Module.run(self)
-    local layers = require('source.engine.shaders.layers').new()
+    local layers = require('source.engine.graphics.shaders.layers').new()
     self:check(
         layers.names[1] == 'Default2D' and layers.names[2] == 'Default3D',
         'shader layers start with Default2D and Default3D'

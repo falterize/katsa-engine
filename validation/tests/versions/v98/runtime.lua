@@ -1,7 +1,7 @@
 local T = {}
 
 local function extra(test)
-    local Opacity = require('source.engine.materials.opacity')
+    local Opacity = require('source.engine.graphics.materials.opacity')
     local ffi = require('ffi')
     local data = katsa.image.newImageData(257, 65, 'rgba8')
     local pointer = ffi.cast('uint8_t*', data:getFFIPointer())

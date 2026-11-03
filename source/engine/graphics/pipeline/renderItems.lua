@@ -70,7 +70,7 @@ function RenderItems.install(Renderer)
             o._surfaceAppearance or o,
             o.textureImage or o.image or o.canvas
         )
-        require('source.engine.shaders.systemLayers').bind(s, o)
+        require('source.engine.graphics.shaders.systemLayers').bind(s, o)
         self:sendDecal(s, o)
         local c = o.color or white
         local t = self.tint
@@ -90,7 +90,7 @@ function RenderItems.install(Renderer)
             s:send('alphaCutoff', o._effectiveCutoff or o.alphaCutoff or 0)
         end
         require('source.engine.animation.skeleton.skinning').bind(s, o)
-        require('source.engine.materials.surface').bind(s, self.world, o)
+        require('source.engine.graphics.materials.surface').bind(s, self.world, o)
         local mesh = billboard and self.quad.mesh
             or self.occlusionMeshes and self.occlusionMeshes[o]
             or o.geometry.mesh
@@ -143,10 +143,10 @@ function RenderItems.install(Renderer)
             s:send('debugWireframe', false)
         end
         require('source.engine.components.image').bindUV(s, o._surfaceAppearance or o, o.image)
-        require('source.engine.shaders.systemLayers').bind(s, o)
+        require('source.engine.graphics.shaders.systemLayers').bind(s, o)
         self:sendDecal(s)
         require('source.engine.animation.skeleton.skinning').bind(s, o)
-        require('source.engine.materials.surface').bind(s, self.world, o)
+        require('source.engine.graphics.materials.surface').bind(s, self.world, o)
         local mesh = self.batches:upload(group)
         if s:hasUniform('instanced') then
             s:send('instanced', true)
