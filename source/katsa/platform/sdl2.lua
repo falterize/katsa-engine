@@ -345,8 +345,10 @@ end
 function Platform:getMousePosition()
     local x, y = self.rects[1], self.rects[2]
     self.sdl.SDL_GetMouseState(x, y)
+    -- getShortSide() reuses the same rects buffers, so copy the pointer position out first.
+    local px, py = x[0], y[0]
     local scale = self:getUIScale(self:getShortSide())
-    return x[0] / scale, y[0] / scale
+    return px / scale, py / scale
 end
 
 function Platform:isScancodeDown(name)
