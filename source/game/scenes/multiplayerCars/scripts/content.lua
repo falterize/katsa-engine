@@ -6,6 +6,7 @@ local CarView = require('./view.carView')
 local RenderPose = require('./game.renderPose')
 local Orbit = require('./cameras.orbit')
 local Input = require('./controller.input')
+local Pinch = require('./controller.pinch')
 local Walker = require('./walker.controller')
 local WalkerView = require('./walker.view')
 local GameServer = require('./game.gameServer')
@@ -456,49 +457,17 @@ function Session:updateInBackground(dt)
     end
 end
 
--- Two-finger pinch zooms the camera (touch screens).
-local PINCH_SCALE = 0.02
-
-local function pinchDistance(touches)
-    local a, b
-    for _, touch in pairs(touches) do
-        if not a then
-            a = touch
-        elseif not b then
-            b = touch
-        end
-    end
-    if a and b then
-        return math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2)
-    end
-end
-
+-- Two-finger pinch zooms the camera (touch screens); the rules live in controller/pinch.lua.
 function Session:pointerpressed(id, x, y)
-    if id ~= 'mouse' and not self.scene.ui:blocksWorldClick(x, y, true) then
-        self.touches = self.touches or {}
-        self.touches[id] = { x, y }
-        self.pinchLast = pinchDistance(self.touches)
-    end
+    Pinch.pressed(self, id, x, y)
 end
 
 function Session:pointermoved(id, x, y)
-    local touches = self.touches
-    if id == 'mouse' or not touches or not touches[id] then
-        return
-    end
-    touches[id][1], touches[id][2] = x, y
-    local distance = pinchDistance(touches)
-    if distance and self.pinchLast and self.client then
-        self.orbit:zoom((distance - self.pinchLast) * PINCH_SCALE)
-    end
-    self.pinchLast = distance
+    Pinch.moved(self, id, x, y)
 end
 
 function Session:pointerreleased(id)
-    if self.touches then
-        self.touches[id] = nil
-        self.pinchLast = pinchDistance(self.touches)
-    end
+    Pinch.released(self, id)
 end
 
 Session.pointercancelled = Session.pointerreleased

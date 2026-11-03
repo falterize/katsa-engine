@@ -161,7 +161,8 @@ function Platform:setMode(width, height, flags)
     local sdl = self.sdl
     local existing = self.window ~= nil
     if existing then
-        sdl.SDL_SetWindowSize(self.window, width, height)
+        local scale = self:getUIScale(select(2, self:getRawMode()))
+        sdl.SDL_SetWindowSize(self.window, width * scale, height * scale)
         if flags.borderless == nil then
             -- keep current decorations
         end
@@ -247,10 +248,34 @@ function Platform:setVSync(interval)
     self.vsync = interval
 end
 
-function Platform:getMode()
+-- Window units are SDL pixels divided by the UI scale. The scale is 1 on desktop unless
+-- KATSA_UI_SCALE (or `uiscale` in the window flags) is set; on Android it makes the logical window
+-- about ANDROID_LOGICAL_HEIGHT units tall, so buttons are finger sized. Everything above the
+-- platform (layout, pointer coordinates, graphics) works in window units, exactly as with a
+-- high-DPI display, because getDPIScale() reports the ratio of drawable pixels to window units.
+local ANDROID_LOGICAL_HEIGHT = 540
+
+function Platform:getUIScale(pixelHeight)
+    local fixed = tonumber(os.getenv('KATSA_UI_SCALE')) or (self.flags and self.flags.uiscale)
+    if fixed then
+        return math.max(0.25, fixed)
+    end
+    if Native.os() == 'Android' and pixelHeight and pixelHeight > 0 then
+        return math.min(3, math.max(1, pixelHeight / ANDROID_LOGICAL_HEIGHT))
+    end
+    return 1
+end
+
+function Platform:getRawMode()
     local w, h = self.rects[1], self.rects[2]
     self.sdl.SDL_GetWindowSize(self.window, w, h)
-    return w[0], h[0], self.flags or {}
+    return w[0], h[0]
+end
+
+function Platform:getMode()
+    local rw, rh = self:getRawMode()
+    local scale = self:getUIScale(rh)
+    return rw / scale, rh / scale, self.flags or {}
 end
 
 function Platform:getDrawableSize()
@@ -314,7 +339,8 @@ end
 function Platform:getMousePosition()
     local x, y = self.rects[1], self.rects[2]
     self.sdl.SDL_GetMouseState(x, y)
-    return x[0], y[0]
+    local scale = self:getUIScale(select(2, self:getRawMode()))
+    return x[0] / scale, y[0] / scale
 end
 
 function Platform:isScancodeDown(name)
@@ -395,16 +421,18 @@ function Platform:translate(e)
         return { 'textinput', ffi.string(e.text.text) }
     elseif t == EVENT.MOUSEMOTION then
         local touch = e.motion.which == 0xFFFFFFFF
-        self.mouseX, self.mouseY = e.motion.x, e.motion.y
-        return { 'mousemoved', e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel, touch }
+        local scale = self:getUIScale(select(2, self:getRawMode()))
+        self.mouseX, self.mouseY = e.motion.x / scale, e.motion.y / scale
+        return { 'mousemoved', self.mouseX, self.mouseY, e.motion.xrel / scale, e.motion.yrel / scale, touch }
     elseif t == EVENT.MOUSEBUTTONDOWN or t == EVENT.MOUSEBUTTONUP then
         local button = e.button.button
         local mapped = button == 1 and 1 or button == 3 and 2 or button == 2 and 3 or button
         local touch = e.button.which == 0xFFFFFFFF
+        local scale = self:getUIScale(select(2, self:getRawMode()))
         return {
             t == EVENT.MOUSEBUTTONDOWN and 'mousepressed' or 'mousereleased',
-            e.button.x,
-            e.button.y,
+            e.button.x / scale,
+            e.button.y / scale,
             mapped,
             touch,
             e.button.clicks,
