@@ -7,6 +7,8 @@ on:
     paths: ['native/**', 'tools/**', 'android/**', '.github/workflows/native.yml']
   pull_request:
     paths: ['native/**', 'tools/native/**', 'tools/build/**', 'android/**', '.github/workflows/native.yml']
+env:
+  PYTHONUNBUFFERED: '1'
 jobs:
   desktop:
     strategy:
