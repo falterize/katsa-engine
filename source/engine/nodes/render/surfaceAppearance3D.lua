@@ -1,5 +1,6 @@
 local ipairs = require('../../math.array').ipairs
 local Node = require('../core.baseNode')
+local Tint = require('../../components.tint')
 
 local C = Node.define('SurfaceAppearance3D', 'Node')
 C.propertySchema = {
@@ -42,8 +43,7 @@ function C.initialize(self)
         self[key] = self[key] or ''
     end
     self.layerGroup = self.layerGroup or 'Default'
-    self.transparency = self.transparency or 0
-    self.color = self.color or { 1, 1, 1 }
+    Tint.normalize(self, 'SurfaceAppearance3D')
     self.emissionColor = self.emissionColor or { 1, 1, 1 }
     self.emissionStrength = self.emissionStrength or 0
     self.normalScale = self.normalScale or 1

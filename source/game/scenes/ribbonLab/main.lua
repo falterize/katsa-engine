@@ -11,6 +11,7 @@ function Scene.create(scene, context)
     state.scene = scene
     context.instance = state
     scene:preparePresentation()
+    context:require('scripts.ui.interface').create(state)
     local systems = state.scene.systems
     -- Discover once at creation; order and startup are controlled by this scene.
     local entries = {}
