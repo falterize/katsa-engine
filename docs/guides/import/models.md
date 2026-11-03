@@ -15,6 +15,36 @@ Mesh names carry the instance name for the world index; use
 Static assets create no Animator. Rigid animated assets keep an internal controller;
 `model:play(index)` still works. Only skinned assets create an Animator node.
 
+## Blender files (.blend)
+
+`world:loadModel('assets/car.blend')` works like a GLB. Katsa asks the installed Blender to export
+the file (modifiers applied, animation baked, hidden objects kept) and imports the result, the same
+way Godot does. The first import takes a few seconds; the GLB is cached in the save directory
+(`blend-cache/`, keyed by the file contents), so unchanged files load instantly afterwards.
+
+- Blender 3.6 or newer is found through `KATSA_BLENDER` / `BLENDER`, `PATH`, or its usual install folder.
+- **Shipping**: players do not have Blender. `python tools/build/packageKatsa.py --source <game> --convert-blend`
+  stores `car.blend.glb` instead of `car.blend`; the runtime prefers that file. `python tools/import/blendToGlb.py car.blend`
+  makes the same file by hand. This is the only way on Android.
+- The same export settings as `tools/import/convertModel.py` apply: base color and alpha are imported,
+  extra maps go through `SurfaceAppearance3D`, vertex colors must be baked to a texture.
+
+## Collision from node names
+
+Name objects in Blender (or any DCC tool) with a suffix and `Models.instantiate` / `world:loadModel`
+builds the physics for you when the world has physics (`autoCollision = false` in the settings turns
+it off; `settings.friction`, `restitution`, `collisionGroup` and `collisionLevel` tune the bodies):
+
+| Name | Result |
+| --- | --- |
+| `wall-col` | the mesh keeps rendering and gets an exact (`Detailed`) static `Body3D` + `Collider3D` |
+| `wall-colonly` | the mesh is hidden (`visible = false`) and is used for collision only |
+
+With `-colonly`, if another mesh node is named `wall`, the collider attaches to that node and moves
+with it (`apple` + `apple-colonly`); with no such node it is an invisible collision object at its own
+place. Matching ignores letter case and Blender's `.001` copy suffix. The created bodies are listed
+in `model.collisionBodies`. Works for GLB, glTF, OBJ object names and `.blend`.
+
 ## Node3D.Transparency
 
 Range 0..1, default 0. Opacity is the product of `1-Transparency` over a node and
