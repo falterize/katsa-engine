@@ -8,6 +8,7 @@
 --   -- every frame: client:update(dt)
 local Codec = require('./codec')
 local Link = require('./link')
+local Channels = require('./channels')
 local P = require('./protocol')
 local Registry = require('./registry')
 local Remote = require('./remote')
@@ -327,7 +328,7 @@ local function sendInputs(self)
         writer:u32(seq)
         writer:value(self.pending[seq])
     end
-    send(self, writer, P.SEQUENCED)
+    send(self, writer, Channels.state())
 end
 
 local function inputTick(self)
@@ -361,7 +362,7 @@ local function sendOwnedState(self)
     if count > 0 then
         writer:u8(P.CLIENT_STATE)
         writer:u16(count)
-        self.link:send(writer:finish() .. body:finish(), P.SEQUENCED)
+        self.link:send(writer:finish() .. body:finish(), Channels.state())
     end
 end
 

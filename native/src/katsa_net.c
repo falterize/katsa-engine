@@ -112,6 +112,11 @@ KNET_API int knet_service(KNetHost* h, int timeoutMs, KNetEvent* out) {
     switch (event.type) {
     case ENET_EVENT_TYPE_CONNECT:
         out->type = 1;
+        /* ENet silently drops unreliable packets while its throttle is low, and a frame-paced
+           loopback (one RTT sample per frame, with hitches) pushes the throttle down: the server
+           sent 20 snapshots/s and the client got 2-7 for the first seconds, with 0% reported
+           loss. A zero deceleration keeps the throttle at its maximum. */
+        enet_peer_throttle_configure(event.peer, 5000, 2, 0);
         break;
     case ENET_EVENT_TYPE_DISCONNECT:
         out->type = 2;
@@ -217,6 +222,11 @@ KNET_API int knet_peer_address(KNetHost* h, int peer, char* buffer, size_t size,
 
 KNET_API int knet_connected_count(KNetHost* h) {
     return (int)h->host->connectedPeers;
+}
+
+/* 1 when connections keep ENet's unreliable-packet throttle disabled (see knet_service). */
+KNET_API int knet_unthrottled(void) {
+    return 1;
 }
 
 KNET_API void knet_set_timeout(KNetHost* h, int peer, unsigned int limit, unsigned int minimum, unsigned int maximum) {

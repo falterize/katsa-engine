@@ -27,6 +27,7 @@ int knet_stats(KNetHost* host, int peer, double* loss);
 int knet_peer_state(KNetHost* host, int peer);
 int knet_peer_address(KNetHost* host, int peer, char* buffer, size_t size, int* port);
 int knet_connected_count(KNetHost* host);
+int knet_unthrottled(void);
 void knet_set_timeout(KNetHost* host, int peer, unsigned int limit, unsigned int minimum, unsigned int maximum);
 int knet_lan_open(int port);
 void knet_lan_close(int socket);
@@ -43,6 +44,19 @@ function Binding.lib()
         assert(library.knet_init() == 0, 'Network library could not be initialized')
     end
     return library
+end
+
+-- Whether the loaded native library keeps ENet's unreliable-packet throttle off. An older library
+-- (built before the fix) loses most unreliable packets for the first seconds of a connection, so
+-- the engine sends its state packets reliably until the library is rebuilt.
+function Binding.unthrottled()
+    if Binding.throttleChecked == nil then
+        local ok, result = pcall(function()
+            return Binding.lib().knet_unthrottled() == 1
+        end)
+        Binding.throttleChecked = ok and result or false
+    end
+    return Binding.throttleChecked
 end
 
 return Binding

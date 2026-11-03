@@ -8,6 +8,7 @@
 --   -- every frame: server:update(dt)
 local Codec = require('./codec')
 local Link = require('./link')
+local Channels = require('./channels')
 local P = require('./protocol')
 local Registry = require('./registry')
 local Remote = require('./remote')
@@ -505,7 +506,7 @@ local function sendSnapshots(self, keyframe)
                 if count > 0 then
                     writer:u16(count)
                     local data = writer:finish() .. body:finish()
-                    player.link:send(data, P.SEQUENCED)
+                    player.link:send(data, Channels.state())
                     self.snapshotsSent = (self.snapshotsSent or 0) + 1
                 end
                 begin()
