@@ -29,8 +29,8 @@ project: they are packed into `.katsa` archives and fused executables with every
 | Plugin | What it adds |
 | --- | --- |
 | `pathfinding` | A* on grids, graphs and multi-floor maps, the `NavMap` node, a debug view |
-| `uiStyler` | UI style sheets, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
-| `ik` | Skeleton modifiers: TwoBone, LookAt, FABRIK and CCD solvers (`docs/guides/animation/ik.md`) |
+| `uiStyler` | UI style sheets and `assets/styles` files, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
+| `ik` | `InverseKinematics3D` node with TwoBone, CCD, FABRIK, Jacobian, Spline, LookAt and FK types (`docs/guides/animation/ik.md`) |
 
 ## Enabling a plugin in a scene
 

@@ -22,6 +22,30 @@ arm.debug = true                -- draws the chain, target and pole with the bon
 Targets and poles are **world** positions. The plugin converts them into model space
 (`model.root` transform, including scale) so rigs can be moved, rotated and scaled freely.
 
+## The `InverseKinematics3D` node
+
+Every solver is also available as one node, so rigs can be set up in the inspector. Create it under a model instance and choose `type`:
+
+```lua
+local ik = world:create('InverseKinematics3D', {
+    type = 'TwoBone',
+    rootBone = 'mixamorig:RightArm', tipBone = 'mixamorig:RightHand',   -- mid bone = the tip's parent
+    target = ball, pole = elbowHint,
+}, botRoot)
+```
+
+| `type` | Use | Settings shown |
+| --- | --- | --- |
+| `TwoBone` | arms, legs | root/mid/tip bone, target, pole, softness |
+| `CCD` | chains | root/tip bone, target, iterations, tolerance, maxStep, jointLimit |
+| `FABRIK` | chains | root/tip bone, target, pole, iterations, tolerance |
+| `Jacobian` | chains | root/tip bone, target, iterations, damping, maxStep |
+| `Spline` | tails, spines, tentacles | root/tip bone, the node's Node3D children as curve points, splineOffset |
+| `LookAt` | heads, turrets | bone, target, forward axis, maxAngle, smoothing |
+| `FK` | pose by angles | bones and euler angles (Z·Y·X) |
+
+Always shown: `type`, `influence`, `priority`, `debug`. Bone fields are dropdowns filled from the target model's bones. Fields irrelevant to the chosen type are hidden by `visibleWhen`. The `ikLab` scene shows both hands following a moving ball with bent elbows.
+
 ## Common settings
 
 | Field | Meaning |
