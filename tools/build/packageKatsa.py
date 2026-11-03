@@ -10,6 +10,9 @@
     # Game and runtime in one file
     python tools/build/packageKatsa.py --source <game folder> --host build/native/linux/katsa --output dist/Game
 
+    # .blend files converted to <name>.blend.glb with Blender (the originals are left out)
+    python tools/build/packageKatsa.py --source <game folder> --convert-blend --output dist/Game.katsa
+
     # Plain archive that carries the runtime too (what the Android APK stores as assets/game.katsa)
     python tools/build/packageKatsa.py --source <game folder> --with-runtime --output dist/game.katsa
 
@@ -60,12 +63,23 @@ def _info(name: str, directory: bool, stored: bool) -> zipfile.ZipInfo:
     return info
 
 
+def _blend_to_glb(path: Path) -> bytes:
+    import tempfile
+
+    sys.path.insert(0, str(ROOT / 'tools' / 'import'))
+    import blendToGlb
+
+    with tempfile.TemporaryDirectory() as folder:
+        return blendToGlb.convert(path, Path(folder) / 'model.glb').read_bytes()
+
+
 def write_zip(
     target: str,
     source: str | None,
     runtime: bool = False,
     with_validation: bool = False,
     runtime_only: bool = False,
+    convert_blend: bool = False,
 ):
     """Writes the archive and returns (file count, empty-directory count).
 
@@ -108,6 +122,10 @@ def write_zip(
     with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as archive:
         for name in sorted(entries):
             path, stored = entries[name]
+            if convert_blend and name.lower().endswith('.blend'):
+                # The runtime prefers `<file>.blend.glb`, so shipped games need no Blender.
+                archive.writestr(_info(name + '.glb', False, False), _blend_to_glb(path))
+                continue
             archive.writestr(_info(name, False, stored), path.read_bytes())
         for name in empty:
             archive.writestr(_info(name, True, True), b'')
@@ -121,6 +139,7 @@ def main():
     parser.add_argument('--host', type=Path, help='katsa host executable to put in front of the archive')
     parser.add_argument('--runtime-only', action='store_true', help='pack only the Lua runtime (generic katsa executable)')
     parser.add_argument('--with-runtime', action='store_true', help='add the Lua runtime to a plain archive (no host)')
+    parser.add_argument('--convert-blend', action='store_true', help='convert .blend files to .blend.glb (needs Blender)')
     parser.add_argument('--with-validation', action='store_true')
     args = parser.parse_args()
     if not args.runtime_only and args.source is None:
@@ -139,6 +158,7 @@ def main():
             runtime=fused or args.with_runtime,
             with_validation=args.with_validation,
             runtime_only=args.runtime_only,
+            convert_blend=args.convert_blend,
         )
         if fused:
             args.output.write_bytes(args.host.read_bytes() + archive_path.read_bytes())

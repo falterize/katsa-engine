@@ -8,7 +8,7 @@ local origin = { 0, 0, 0 }
 function Source.path(source, resources)
     assert(type(source) == 'string' and source ~= '', 'Enter a model path')
     local path = resources:canonical(source)
-    assert(Models.supports(path), 'Collider models support OBJ, GLB and glTF')
+    assert(Models.supports(path), 'Collider models support OBJ, GLB, glTF and .blend')
     assert(katsa.filesystem.getInfo(path, 'file'), 'Missing collider model: ' .. source)
     return path
 end

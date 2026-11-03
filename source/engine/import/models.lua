@@ -7,6 +7,7 @@ local formats = {
     obj = 'source.engine.import.obj',
     glb = 'source.engine.import.glb',
     gltf = 'source.engine.import.glb',
+    blend = 'source.engine.import.blend',
 }
 
 local function format(path)
@@ -235,6 +236,12 @@ function Models.instantiate(world, model, settings)
         model:update(0)
     end
     root.model = model
+    model.collisionBodies = require('source.engine.import.autoCollision').apply(
+        world,
+        model,
+        objects,
+        settings
+    )
     return objects, root
 end
 
