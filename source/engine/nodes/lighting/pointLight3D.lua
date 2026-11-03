@@ -2,8 +2,10 @@ local Node = require('../core.baseNode')
 
 local Class = Node.define('PointLight3D', 'Node3D')
 
+require('../../components.shadowing').describe(Class, { receive = false, cutoff = false })
+
 function Class.initialize(self)
-    self.castShadow = self.castShadow ~= false
+    require('source.engine.components.shadowing').normalize(self, { castShadow = true })
 end
 
 function Class.mount(world, properties, parent)

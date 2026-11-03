@@ -145,7 +145,7 @@ function Controls.build(lab)
         lab.emitter.collisionEnabled = not lab.emitter.collisionEnabled
     end)
     button('Unlit', function()
-        lab.emitter.unlit = not lab.emitter.unlit
+        lab.emitter.lightInfluence = lab.emitter.lightInfluence > 0 and 0 or 1
     end)
     slider('Brightness', 'Particle brightness', 0, 4, function()
         return lab.emitter.brightness
@@ -176,10 +176,10 @@ function Controls.update(lab)
         or e._controlsBlend ~= e.blendMode
         or e._controlsAttraction ~= e.attractionEnabled
         or e._controlsCollision ~= e.collisionEnabled
-        or e._controlsUnlit ~= e.unlit
+        or e._controlsInfluence ~= e.lightInfluence
     then
         lab.syncControls = false
-        e._controlsUnlit = e.unlit
+        e._controlsInfluence = e.lightInfluence
         e._controlsEnabled, e._controlsSpace, e._controlsBlend, e._controlsAttraction, e._controlsCollision =
             e.enabled, e.simulationSpace, e.blendMode, e.attractionEnabled, e.collisionEnabled
         for i, b in ipairs(lab.tabs) do
@@ -194,7 +194,7 @@ function Controls.update(lab)
             Attraction = 'Point attraction: ' .. (e.attractionEnabled and 'ON' or 'OFF'),
             Space = 'New births: ' .. e.simulationSpace,
             Collision = 'Collisions: ' .. (e.collisionEnabled and 'ON' or 'OFF'),
-            Unlit = 'Unlit: ' .. (e.unlit and 'ON' or 'OFF'),
+            Unlit = 'Unlit: ' .. (e.lightInfluence <= 0 and 'ON' or 'OFF'),
             Blend = 'Blend: ' .. e.blendMode,
             ['Move support'] = 'Move emission support +10 X',
         }

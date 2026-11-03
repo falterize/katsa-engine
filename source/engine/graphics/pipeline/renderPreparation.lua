@@ -1,3 +1,4 @@
+local Lighting = require('../../components.lighting')
 local Frustum = require('../../cameras.frustum')
 local readValue = require('../../math.managedValue').read
 local unpack = require('../../math.array').unpack
@@ -178,7 +179,7 @@ function RenderPreparation.install(Renderer)
             if d.drawable and bit.band(d.layers or 1, camera.layers or -1) ~= 0 then
                 local list = d.onTop and self.top or self.transparent
                 list[#list + 1] = d
-                if not d.unlit and not d.onTop then
+                if not Lighting.unlit(d) and not d.onTop then
                     if receivers == self.visible then
                         for i, object in ipairs(self.visible) do
                             self.surfaceReceivers[i] = object

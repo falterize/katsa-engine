@@ -220,7 +220,7 @@ function T:draw()
         position = { 0, 0, 80 },
         size = { 1, 1, 1 },
         doubleSided = true,
-        unlit = true,
+        lightInfluence = 0,
     })
     scene.demo.wall.size = { 80, 100, 6 }
     scene.demo.wall.position = { 0, 28, 10 }
@@ -263,7 +263,7 @@ function T:draw()
         position = { 100, 5, 90 },
         size = { 1, 1, 1 },
         doubleSided = true,
-        unlit = true,
+        lightInfluence = 0,
     })
     compare('Shared geometry with different instance masks')
     self:check(

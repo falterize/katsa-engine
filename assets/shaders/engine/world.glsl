@@ -82,6 +82,8 @@ uniform vec4 fogColor;
 uniform highp vec4 fogSettings;
 uniform float time;
 uniform bool unlit;
+// 1 - lightInfluence: 0 = fully lit (also when never sent), 1 = flat colour.
+uniform float lightDetach;
 uniform bool canvasTexture;
 uniform vec4 tint;
 uniform float alphaCutoff;
@@ -234,6 +236,8 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
     }
     vec3 result=(texel.rgb*lighting*(surfaceEnabled && !unlit ? 1.0-metalness : 1.0)+specular)*(unlit ? 1.0 : max(brightness,0.0))+emission;
     if(!unlit && toneMapping && systemToneMappingEnabled) result = result * exposure / (vec3(1.0) + result * exposure);
+    // lightInfluence below 1 blends toward the flat (unlit) colour; fog fades out with it as well.
+    if(!unlit) result = mix(result, texel.rgb+emission, lightDetach);
     // Shadow view (debug.shadowView): red = shadowed, green = lit, blue = shadow data not evaluated;
     // brightness shows the sun cascade (brightest = nearest, darkest = farthest).
     if(shadowDebug && !unlit) result=(debugVisibility>1.5 ? vec3(0.1,0.15,0.6) : mix(vec3(1.0,0.05,0.05),vec3(0.1,0.9,0.2),debugVisibility))*(debugCascade>0 ? 1.15-0.3*float(debugCascade) : 1.0)+result*0.0001;
@@ -245,7 +249,7 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
     highp float d=max(0.0,distanceToCamera-fogSettings.y);
     highp float fog=1.0-exp(-max(fogSettings.x,0.0)*d);
     if(fogSettings.w>0.5) fog=d/max(fogSettings.z-fogSettings.y,0.001);
-    fog=clamp(fog,0.0,fogColor.a);
+    fog=clamp(fog,0.0,fogColor.a)*(1.0-lightDetach);
     return vec4(mix(result,fogColor.rgb,fog),texel.a);
 }
 #endif

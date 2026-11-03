@@ -125,13 +125,13 @@ function T:draw()
         geometry = quad,
         position = { 0, 0, 10 },
         size = { 40, 40, 1 },
-        unlit = true,
+        lightInfluence = 0,
         color = { 0.2, 0.8, 0.9 },
         doubleSided = false,
     })
     local facingTarget = world:create(
         'Mesh3D',
-        { name = 'FacingTarget', position = { 0, 0, 25 }, size = { 4, 4, 4 }, unlit = true }
+        { name = 'FacingTarget', position = { 0, 0, 25 }, size = { 4, 4, 4 }, lightInfluence = 0 }
     )
     camera.position, camera.rotation = { 0, 0, 0 }, { 0, 0, 0 }
     for _, angle in ipairs({ 0, 180 }) do

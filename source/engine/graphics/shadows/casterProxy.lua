@@ -24,7 +24,7 @@ local function create(node)
         worldPosition = { 0, 0, 0 },
         doubleSided = true,
         castShadow = true,
-        unlit = true,
+        lightInfluence = 0,
         enabled = true,
         capacity = 0,
         isA = function()

@@ -14,7 +14,7 @@ function Particles.create(state)
         spread = 180,
         startSize = { 3, 6 },
         gravityScale = 0.1,
-        unlit = true,
+        lightInfluence = 0,
     }, state.player)
     state.trail = ui:create('ParticleEmitter2D', {
         name = 'DashTrail',
@@ -24,7 +24,7 @@ function Particles.create(state)
         lifetime = { 0.15, 0.35 },
         speed = { 0, 6 },
         startSize = { 3, 6 },
-        unlit = true,
+        lightInfluence = 0,
     }, state.player)
 end
 

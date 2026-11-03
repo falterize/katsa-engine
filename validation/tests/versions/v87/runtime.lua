@@ -38,20 +38,20 @@ local function extra(test)
             sample()
         end
     end
-    local unlit = mesh.unlit
-    mesh.unlit = false
-    exercise({ 'unlit' }, nil, {
+    local unlit = mesh.lightInfluence
+    mesh.lightInfluence = 1
+    exercise({ 'lightInfluence' }, nil, {
         function()
-            mesh.unlit = nil
+            mesh.lightInfluence = nil
         end,
         function()
-            mesh.unlit = false
+            mesh.lightInfluence = 1
         end,
         function()
-            mesh.unlit = true
+            mesh.lightInfluence = 0
         end,
         function()
-            mesh.unlit = unlit
+            mesh.lightInfluence = unlit
         end,
     })
     test:check(true, 'Direct scalar reads retain removal, false and replacement semantics')

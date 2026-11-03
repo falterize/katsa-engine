@@ -33,7 +33,7 @@ local function light(world, parent, name, x, y, z, color)
         position = { x, y, z },
         size = { 0.3, 0.14, 0.06 },
         color = color,
-        unlit = true,
+        lightInfluence = 0,
         castShadow = false,
     }, parent)
 end

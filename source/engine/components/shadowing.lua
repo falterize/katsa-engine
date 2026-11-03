@@ -1,6 +1,6 @@
--- The shadow options of nodes that draw their own geometry (particles, ribbons): defaults, schema
--- and validation in one place. Mesh3D and the lights keep their own object path, which uses the same
--- names for castShadow, receiveShadow and shadowGroup.
+-- The shadow options of every node that casts or receives shadows (Mesh3D, lights, particles,
+-- ribbons): defaults, schema and validation in one place. Nodes that draw procedural geometry
+-- (particles, ribbons) also have shadowAlphaCutoff; meshes use their material's alphaCutoff.
 local V = require('../core.validate')
 
 local Shadowing = {}
@@ -22,21 +22,41 @@ local hints = {
         .. 'the node is drawn.',
 }
 
--- Declares the four shared options on a class schema. `extra` adds fields that only matter while
--- shadows are on, so they hide together with the rest.
-function Shadowing.describe(class, extra)
+-- Fills the class defaults of an object created without them (`defaults` is a table such as
+-- { castShadow = true, receiveShadow = true }) and checks the booleans.
+function Shadowing.normalize(node, defaults)
+    for key, value in pairs(defaults) do
+        if node[key] == nil then
+            node[key] = value
+        end
+        assert(type(node[key]) == 'boolean', key .. ' must be a boolean')
+    end
+end
+
+-- Declares the shared options on a class schema. Options:
+--   receive = false   the class cannot receive shadows (lights)
+--   cutoff = false    the class has no shadowAlphaCutoff (meshes and lights)
+--   extra = { ... }   fields that only matter while the node casts shadows
+function Shadowing.describe(class, options)
+    options = options or {}
     local schema = rawget(class, 'propertySchema') or {}
     class.propertySchema = schema
     for key, hint in pairs(hints) do
-        schema[key] = schema[key] or {}
-        schema[key].hint = hint
+        if (key ~= 'receiveShadow' or options.receive ~= false)
+            and (key ~= 'shadowAlphaCutoff' or options.cutoff ~= false)
+        then
+            schema[key] = schema[key] or {}
+            schema[key].hint = hint
+        end
     end
     schema.shadowGroup.visibleWhen = function(node)
         return node.castShadow or node.receiveShadow
     end
-    schema.shadowAlphaCutoff.min, schema.shadowAlphaCutoff.max = 0, 1
-    schema.shadowAlphaCutoff.visibleWhen = { key = 'castShadow', equals = true }
-    for _, key in ipairs(extra or {}) do
+    if options.cutoff ~= false then
+        schema.shadowAlphaCutoff.min, schema.shadowAlphaCutoff.max = 0, 1
+        schema.shadowAlphaCutoff.visibleWhen = { key = 'castShadow', equals = true }
+    end
+    for _, key in ipairs(options.extra or {}) do
         schema[key] = schema[key] or {}
         schema[key].visibleWhen = { key = 'castShadow', equals = true }
     end

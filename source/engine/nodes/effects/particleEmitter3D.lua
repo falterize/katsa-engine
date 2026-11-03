@@ -53,7 +53,8 @@ C.propertySchema.useWorldGravity.hint =
     'Use Physics.gravity when present; otherwise use the emitter gravity vector. Disable to '
         .. 'author an independent field.'
 require('../../components.image').describe(C)
-require('../../components.shadowing').describe(C, { 'shadowMaxParticles' })
+require('../../components.lighting').describe(C)
+require('../../components.shadowing').describe(C, { extra = { 'shadowMaxParticles' } })
 C.propertySchema.atlasAnimation = { visibleWhen = { key = 'imageMode', equals = 'XML' } }
 C.propertySchema.atlasGrid.visibleWhen = function(node)
     return node.imageMode == 'Atlas' or node.atlasEnabled and node.imageMode == 'Decal'
@@ -100,6 +101,7 @@ for _, key in ipairs({ 'sizeCurve', 'transparencyCurve', 'startColor', 'midColor
 end
 
 function C.initialize(self)
+    require('source.engine.components.lighting').normalize(self, 0)
     local legacyQuality = self.quality
     if legacyQuality then
         local limit = ({ Low = 128, Medium = 512, High = 2048 })[legacyQuality]

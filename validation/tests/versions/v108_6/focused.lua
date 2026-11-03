@@ -14,6 +14,7 @@ function Tests:draw()
     end
     self.done = true
     require('validation.tests.versions.v108_6.ribbons').run(self)
+    require('validation.tests.versions.v108_6.lighting').run(self)
     print('PASSED ' .. self.count .. ' v108.6 focused checks')
     katsa.event.quit()
 end

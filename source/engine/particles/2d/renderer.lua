@@ -1,3 +1,4 @@
+local Lighting = require('../../components.lighting')
 local M = require('../../math.math3d')
 local Sequence = require('../../animation.sequence')
 local Visibility = require('./visibility')
@@ -52,13 +53,14 @@ function Renderer.draw(system)
                         local alpha = math.max(0, math.min(1, 1 - sample(e, 'transparency', t)))
                             * opacity
                         local brightness = e.brightness
-                        if not e.unlit then
+                        local influence = Lighting.influence(e)
+                        if influence > 0 then
                             local environment = ui.environment
                             local ambient = environment and environment.ambient or { 255, 255, 255 }
-                            brightness = brightness
-                                * (environment and environment.brightness or 1)
+                            local lit = (environment and environment.brightness or 1)
                                 * (ambient[1] + ambient[2] + ambient[3])
                                 / (3 * 255)
+                            brightness = brightness * (1 + (lit - 1) * influence)
                         end
                         batch:setColor(
                             color[1] * brightness,

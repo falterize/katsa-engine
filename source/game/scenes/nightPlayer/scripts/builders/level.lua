@@ -137,7 +137,7 @@ function NightPlayer.build(self, scene)
         position = { 0, 45, 35 },
         size = { 16, 16, 16 },
         color = { 1, 0.45, 0.1, 1 },
-        unlit = true,
+        lightInfluence = 0,
     })
     local detector = scene.world:create(
         'ClickDetector3D',
