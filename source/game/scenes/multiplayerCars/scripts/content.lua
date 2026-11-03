@@ -614,7 +614,11 @@ function Session:updateRenderPoses()
     local client = self.client
     if client then
         for netId, car in pairs(client.cars) do
-            local body = client.bodies[netId] or (self.server and self.server.bodies[netId])
+            -- Only a car this client's own physics world simulates is blended with the step alpha.
+            -- On the hosting machine the client car is a network replica, already interpolated per
+            -- frame from snapshots; blending it again made the drawn motion alternate between
+            -- half and double steps.
+            local body = client.bodies[netId]
             pose(car, body ~= nil and body.mode == 'dynamic')
         end
         for _, walker in pairs(client.walkers) do
