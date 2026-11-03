@@ -8,6 +8,7 @@ local Movement = {}
 
 function Movement.install(Input)
     function Input:update(dt)
+        self:flushHover()
         for id, c in pairs(self.captures) do
             if
                 c.node

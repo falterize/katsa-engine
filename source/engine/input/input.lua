@@ -27,6 +27,7 @@ function Input:reset()
         self.hovered.ui:pointer(self.hovered, 'leave', 0, 0, 'mouse')
     end
     self.hovered = nil
+    self.hoverX, self.hoverY = nil, nil
     self.captures = {}
     self.axisX, self.axisY, self.up, self.down = 0, 0, 0, 0
     self.joystickId = nil
