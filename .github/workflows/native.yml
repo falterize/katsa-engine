@@ -25,7 +25,7 @@ jobs:
           echo "LUAJIT_PREFIX=$HOME/lj" >> "$GITHUB_ENV"
           echo "$HOME/lj/bin" >> "$GITHUB_PATH"
       - name: Build native libraries and host
-        run: python3 tools/native/build.py ${{ matrix.target }}
+        run: tools/ci/annotate.sh build python3 tools/native/build.py ${{ matrix.target }}
       - name: System libraries for the tests
         run: |
           if [ "${{ matrix.target }}" = linux ]; then
@@ -40,16 +40,16 @@ jobs:
           KATSA_LIB_DIR: ${{ github.workspace }}/build/native/${{ matrix.target }}
         run: |
           if [ "${{ matrix.target }}" = linux ]; then
-            xvfb-run -a luajit validation/tests/katsa/run.lua 2>&1 | tee unit.log
+            tools/ci/annotate.sh 'unit tests' xvfb-run -a luajit validation/tests/katsa/run.lua | tee unit.log
           else
-            luajit validation/tests/katsa/run.lua 2>&1 | tee unit.log
+            tools/ci/annotate.sh 'unit tests' luajit validation/tests/katsa/run.lua | tee unit.log
           fi
           test "${PIPESTATUS[0]}" = 0
       - name: Show failures
         if: always()
         run: grep -E "^(FAIL|SKIP|katsa:)" unit.log || true
       - name: Package a fused executable
-        run: python3 tools/build/packageProject.py --output dist --host build/native/${{ matrix.target }}/katsa
+        run: tools/ci/annotate.sh packaging python3 tools/build/packageProject.py --output dist --host build/native/${{ matrix.target }}/katsa
       - name: Collect
         run: |
           mkdir -p out
@@ -100,10 +100,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.7' }
       - name: LuaJIT, SDL2, OpenAL Soft, katsa libraries, game archive
-        run: python3 android/prepare.py --abis arm64-v8a,x86_64
+        run: tools/ci/annotate.sh prepare python3 android/prepare.py --abis arm64-v8a,x86_64
       - name: Build the APK
         working-directory: android
-        run: gradle assembleDebug --no-daemon
+        run: ../tools/ci/annotate.sh gradle gradle assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: katsa-android-apk
