@@ -43,8 +43,7 @@ function Objects.install(World3D)
         )
         o.visible = o.visible ~= false
         o.color = o.color or { 1, 1, 1, 1 }
-        o.maxDistance = o.maxDistance or 0
-        Validate.number(o.maxDistance, 'Object.maxDistance', 0)
+        require('source.engine.components.renderRange').normalize(o, 0)
         o.transparency = o.transparency or 0
         local legacyAlpha = o.color[4] or 1
         o.transparency = 1 - (1 - o.transparency) * legacyAlpha

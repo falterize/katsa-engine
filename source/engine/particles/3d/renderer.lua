@@ -1,6 +1,7 @@
+local RenderRange = require('../../components.renderRange')
+local Layering = require('../../components.layering')
 local ipairs = require('../../math.array').ipairs
 local M = require('../../math.math3d')
-local bit = require('bit')
 
 local R = {}
 local format = {
@@ -67,7 +68,7 @@ function R.draw(system, camera, emitter)
         local order = emitter._renderOrder or {}
         emitter._renderOrder = order
         local n = 0
-        if emitter:isVisible() and bit.band(emitter.layers, camera.layers) ~= 0 then
+        if emitter:isVisible() and Layering.sees(camera, emitter) then
             for _, p in ipairs(emitter.particles) do
                 local x, y, z = p.x, p.y, p.z
                 if p.space == 'Local' then
@@ -80,7 +81,7 @@ function R.draw(system, camera, emitter)
                     + (y - camera.worldPosition[2]) ^ 2
                     + (z - camera.worldPosition[3]) ^ 2
                 if
-                    (emitter.maxDistance <= 0 or distance <= (emitter.maxDistance + size) ^ 2)
+                    RenderRange.within(emitter.maxDistance, distance, size)
                     and camera:visible(p.boundPosition, size)
                 then
                     n = n + 1

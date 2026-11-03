@@ -4,6 +4,7 @@ local Math = require('../../math.math3d')
 local Class = Node.define('Decal3D', 'Node3D')
 require('../../components.image').describe(Class)
 require('../../components.lighting').describe(Class)
+require('../../components.renderRange').describe(Class)
 Class.propertySchema.mode = {
     visibleWhen = function()
         return false
@@ -23,7 +24,7 @@ function Class.mount(world, properties, parent)
     properties.color = properties.color or { 1, 1, 1 }
     properties.onTop = properties.onTop == true
     require('source.engine.components.lighting').normalize(properties, 0)
-    properties.maxDistance = properties.maxDistance or 500
+    require('source.engine.components.renderRange').normalize(properties, 500)
     properties.zIndex = properties.zIndex or 0
     properties.atlasGrid = properties.atlasGrid or { 1, 1 }
     properties.atlasFrame = properties.atlasFrame or 0

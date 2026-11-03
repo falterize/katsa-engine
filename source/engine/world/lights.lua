@@ -1,8 +1,8 @@
+local Layering = require('../components.layering')
 local unpack = require('../math.array').unpack
 local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 local M = require('../math.math3d')
-local bit = require('bit')
 
 local Lights = {}
 Lights.__index = Lights
@@ -115,7 +115,7 @@ function Lights:update(world, camera, visible, time, dependencies)
                 l.enabled
                 and l:isVisible()
                 and (directional or l.range > 0)
-                and bit.band(l.layers or 1, camera.layers or -1) ~= 0
+                and Layering.sees(camera, l)
             then
                 if not relevant then
                     for _, o in ipairs(visible) do

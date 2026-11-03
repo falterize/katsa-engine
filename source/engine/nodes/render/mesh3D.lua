@@ -25,6 +25,7 @@ Class.propertySchema = {
 }
 
 require('../../components.lighting').describe(Class)
+require('../../components.renderRange').describe(Class)
 require('../../components.shadowing').describe(Class, { cutoff = false })
 
 function Class.initialize(self)
