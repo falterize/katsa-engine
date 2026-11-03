@@ -145,6 +145,11 @@ runtime from it and forwards stdout/stderr to logcat (`adb logcat -s katsa`).
 6. Release: set your own `applicationId` in `android/app/build.gradle`, create a keystore and a `signingConfig`,
    then `./gradlew bundleRelease` (Play Store) or `assembleRelease`.
 
+Screen size and speed: the APK renders at 720 px height and Android stretches it to the screen
+(`<meta-data android:name="katsa.renderHeight">` in `AndroidManifest.xml`; `0` = native resolution, sharper
+but much slower on mid-range GPUs). The UI is laid out in about 540 units of height, so touch targets stay
+usable on phones; `KATSA_UI_SCALE=2 luajit tools/dev/katsa.lua .` previews a scale on desktop.
+
 Notes: Jolt (3D physics) ships binaries for arm64 and arm only, so on an x86_64 emulator 3D physics
 falls back to the Oimo backend. The save directory is the app's internal storage. The Android
 template has not been built in the environment where it was written (no NDK/SDK there); the pieces

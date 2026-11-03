@@ -14,6 +14,8 @@
         android:hardwareAccelerated="true"
         android:extractNativeLibs="true"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        <!-- Render height in pixels; 0 renders at the native screen resolution. -->
+        <meta-data android:name="katsa.renderHeight" android:value="720" />
         <activity
             android:name=".KatsaActivity"
             android:exported="true"
