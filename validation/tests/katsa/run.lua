@@ -6,7 +6,7 @@ package.path = './?.lua;' .. package.path
 package.path = './?/init.lua;' .. package.path
 _G.require = require('source.katsa.core.relativeRequire').wrap(require)
 local Nat = require('source.katsa.core.native')
-Nat.addDirectory('build/native/linux')
+Nat.addDirectory('build/native/' .. ({ Windows = 'windows', Linux = 'linux', OSX = 'macos' })[Nat.os()])
 local failures, passes, skipped = 0, 0, 0
 local T = {}
 
@@ -46,7 +46,10 @@ local suites = {
 }
 for _, name in ipairs(suites) do
     local ok, err = pcall(require('validation.tests.katsa.' .. name), T)
-    if not ok then
+    if not ok and tostring(err):find('Cannot load', 1, true) then
+        -- A system library (SDL2, OpenAL) is not installed on this machine: not a code failure.
+        T.skip('suite ' .. name .. ': ' .. tostring(err):match('Cannot load %w+'))
+    elseif not ok then
         failures = failures + 1
         print('FAIL suite ' .. name .. ': ' .. tostring(err))
     end
