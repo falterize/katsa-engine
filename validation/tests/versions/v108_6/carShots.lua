@@ -58,6 +58,17 @@ function Tests:draw()
         self:view(7, 120, -12)
     elseif frame == 262 then
         self:shot('dentSide')
+        host.input.actions.keys.up = true
+        self:view(8, 150, -14)
+    elseif frame == 330 then
+        host.input.actions.keys.space = true
+        host.input.actions.keys.right = true
+    elseif frame == 372 then
+        self:shot('drift')
+    elseif frame == 374 then
+        self:view(9, 60, -35)
+    elseif frame == 380 then
+        self:shot('driftTop')
         katsa.event.quit()
     end
 end

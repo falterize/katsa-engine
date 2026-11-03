@@ -1,6 +1,7 @@
 -- The visible side of one car: a dent-able body and four wheels, driven by the model state.
 local Body = require('./carMesh')
 local CarModel = require('./carModel')
+local Skid = require('./skid')
 
 local orientation = require('../game.orientation')
 local CarAxes = require('../game.carAxes')
@@ -63,6 +64,8 @@ function CarView.new(scene, netId, model)
         self:buildProcedural(world, color)
     end
     self:buildNitro(world, model)
+    self.skid = Skid.new(world, self.root, model, netId)
+    self.origin = {}
     self:refreshDents()
     return self
 end
@@ -217,6 +220,9 @@ function CarView:update(dt)
         local offset = car.wheels[index]
         wheel.position = { offset[1], car.config.hubHeight + car.spring[index], offset[2] }
     end
+    local origin = self.origin
+    origin[1], origin[2], origin[3] = (car.rx or car.x) - up[1] * drop, (car.ry or car.y) - up[2] * drop, (car.rz or car.z) - up[3] * drop
+    self.skid:update(dt, car, origin, up)
     local burning = self.lastNitro ~= nil and car.nitro < self.lastNitro - 1e-4 and car.speed > 1
     self.lastNitro = car.nitro
     for _, flame in ipairs(self.flames or {}) do
@@ -248,6 +254,7 @@ function CarView:destroy()
         item.node:destroy()
     end
     self.debris = {}
+    self.skid:destroy()
     self.root:destroy()
 end
 

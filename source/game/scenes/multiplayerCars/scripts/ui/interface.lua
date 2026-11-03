@@ -28,7 +28,7 @@ function Menu.create(scene, callbacks)
     ui:text({
         position = { 0, 20, 0, 50 },
         size = { 1, -40, 0, 22 },
-        text = 'WASD move or drive, Space jump, Shift run or nitro, E enter / exit a car, N watch an ad for nitro',
+        text = 'WASD move or drive, Space jump / handbrake drift, Shift run or nitro, E enter / exit a car, N watch an ad for nitro',
         fontSize = 15,
         textColor = { 0.5, 0.75, 0.9 },
         align = 'left',
@@ -251,6 +251,19 @@ function Hud.create(scene, callbacks)
         backgroundColor = { 0.12, 0.3, 0.45 },
         onPress = callbacks.jump,
     }, self.root)
+    -- Hold-to-drift for phones: handbrake and brake while the finger stays on it, in a car only.
+    self.driftButton = button(ui, {
+        position = { 1, -16, 1, -150 },
+        size = { 0, 120, 0, 64 },
+        anchorPoint = { 1, 0 },
+        text = 'Drift',
+        fontSize = 20,
+        backgroundColor = { 0.45, 0.25, 0.1 },
+        onPress = callbacks.driftDown,
+        onRelease = callbacks.driftUp,
+        onCancel = callbacks.driftUp,
+    }, self.root)
+    self.driftButton.visible = false
     -- Toggle buttons: tap once to keep running / crouching, tap again to stop.
     self.runButton = button(ui, {
         position = { 1, -16, 1, -222 },
@@ -326,6 +339,7 @@ end
 function Hud:setOnFoot(onFoot)
     self.sitButton.text = onFoot and 'Enter car (E)' or 'Exit car (E)'
     self.jumpButton.visible = onFoot
+    self.driftButton.visible = not onFoot
     self.runButton.visible = onFoot
     self.crouchButton.visible = onFoot
     self.adButton.visible = not onFoot

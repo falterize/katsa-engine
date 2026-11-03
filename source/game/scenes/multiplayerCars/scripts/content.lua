@@ -91,6 +91,13 @@ function Session.new(scene)
         jump = function()
             self.jumpHeld = 0.25
         end,
+        -- The phone's hold button: true while a finger is on it.
+        driftDown = function()
+            self.driftTouch = true
+        end,
+        driftUp = function()
+            self.driftTouch = false
+        end,
         -- Toggles for phones: no need to keep a finger on the button.
         run = function()
             local input = self.scene.input
@@ -222,7 +229,13 @@ end
 function Session:input()
     local keys = self.scene.input.actions.keys
     local throttle, steer = self:moveAxes()
-    return { throttle = throttle, steer = steer, nitro = keys.lshift == true or keys.rshift == true }
+    return {
+        throttle = throttle,
+        steer = steer,
+        nitro = keys.lshift == true or keys.rshift == true,
+        -- Space brakes and drifts in a car (it jumps on foot); phones hold the Drift button.
+        handbrake = (keys.space == true or self.driftTouch == true) and self.scene.input:playing(),
+    }
 end
 
 -- Hosting adds the walker and the first cars in one frame; building every view in that frame is a

@@ -20,6 +20,7 @@ function CarEntity.create(_, args)
     car:setPose(args.x or 0, args.z or 0, args.heading or 0)
     car.nitro = args.nitro or 1
     car.pitch, car.roll = 0, 0
+    car.drift = 0
     car.impacts = {}
     car.dents = Deformation.new()
     car.dents:load(args.dents)
@@ -106,6 +107,7 @@ CarEntity.definition = {
         'speed:f32',
         'slide:f32',
         'nitro:f32',
+        'drift:f32',
         'steerAngle:f32',
         'pitch:angle',
         'roll:angle',
