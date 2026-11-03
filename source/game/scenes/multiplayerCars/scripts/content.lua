@@ -10,6 +10,7 @@ local Pinch = require('./controller.pinch')
 local Walker = require('./walker.controller')
 local WalkerView = require('./walker.view')
 local GameServer = require('./game.gameServer')
+local CarEntity = require('./game.carEntity')
 local GameClient = require('./game.gameClient')
 local AdsConfig = require('./game.adsConfig')
 local Interface = require('./ui.interface')
@@ -629,7 +630,17 @@ function Session:updateRenderPoses()
             -- frame from snapshots; blending it again made the drawn motion alternate between
             -- half and double steps.
             local body = client.bodies[netId]
-            pose(car, body ~= nil and body.mode == 'dynamic')
+            local simulated = body ~= nil and body.mode == 'dynamic'
+            -- The hosting machine draws the server's own car, not a delayed replica of it, when
+            -- the server simulates that car itself (nobody else drives it).
+            local server = self.server
+            local source = server and server.cars[netId]
+            local serverBody = server and server.bodies[netId]
+            if source and serverBody and serverBody.mode == 'dynamic' then
+                CarEntity.mirror(source, car)
+                simulated = true
+            end
+            pose(car, simulated)
         end
         for _, walker in pairs(client.walkers) do
             local own = self.walker ~= nil and walker == self.walker.model
