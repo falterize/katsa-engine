@@ -501,9 +501,13 @@ end
 
 function TextMethods:_draw2D(graphics, matrix)
     local state = graphics._state
-    local savedTransform = { unpack(state.transform) }
+    -- Saved in locals: `{ unpack(t) }` here was the single most expensive call of a UI draw
+    -- (it allocated a table and ran the slow unpack for every Text object, every frame).
+    local transform = state.transform
+    local s1, s2, s3, s4, s5, s6 =
+        transform[1], transform[2], transform[3], transform[4], transform[5], transform[6]
     for i = 1, 6 do
-        state.transform[i] = matrix[i]
+        transform[i] = matrix[i]
     end
     local savedFont = state.font
     state.font = self._font
@@ -517,9 +521,8 @@ function TextMethods:_draw2D(graphics, matrix)
         end
     end
     state.font = savedFont
-    for i = 1, 6 do
-        state.transform[i] = savedTransform[i]
-    end
+    transform[1], transform[2], transform[3], transform[4], transform[5], transform[6] =
+        s1, s2, s3, s4, s5, s6
 end
 
 return Font

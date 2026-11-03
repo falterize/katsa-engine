@@ -317,6 +317,8 @@ local glTypes
 function Methods:_bindAttributes(shader)
     local gl, E = Core.gl, Core.enum
     glTypes = glTypes or { float = E.FLOAT, byte = E.UNSIGNED_BYTE, unorm16 = E.UNSIGNED_SHORT }
+    -- The 2D batch must point its attributes again after a mesh took the locations over.
+    Core.batchAttributesValid = false
     local wanted = {}
     local function bind(location, owner, attribute, step)
         gl.glBindBuffer(E.ARRAY_BUFFER, owner._buffer)

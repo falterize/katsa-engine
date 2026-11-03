@@ -169,7 +169,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 
 ## 16. Open items (keep this list current)
 
-- Debug overlays: audit the Stats panel, F4 menu and diagnostics panel for per-frame work proportional to their content (the console had it). Idle Screen UI is ~4 ms of a 9.5 ms frame in multiplayerCars; reducing it is the next big engine win. Slow Host click (~600 ms) and first microphone open (~300 ms) could be deferred a frame behind a loading message.
+- Debug overlays: audit the Stats panel, F4 menu and diagnostics panel for per-frame work proportional to their content (the console had it). Idle Screen UI is ~3.5 ms of a 9 ms frame in multiplayerCars (pure Lua ~2 ms in the sandbox; ~63 batch flushes per UI draw). Remaining Lua hot spots: `transform.snapshot` via `push('all')`, per-node change tracking (`changeTracking`/`valueSnapshot`), `polyline` borders, `splitLines`; the F4 menu / profiler panels add ~5.5 ms Screen UI while open. Slow Host click (~600 ms) and first microphone open (~300 ms) could be deferred a frame behind a loading message.
 - Offer node representations for remaining function-only plugins (owner wants plugin features visible as nodes; `ads` excepted).
 - Lag at high TimeScale (5) mitigation; README screenshots; launcher UI last.
 
