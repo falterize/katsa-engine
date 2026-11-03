@@ -256,6 +256,23 @@ function Tests:draw()
             math.abs(model.speed) > 5 and gap < 0.5,
             ('the host draws its car at the physics pose (gap %.2f m at %.1f m/s)'):format(gap, model.speed)
         )
+    elseif frame == 475 then
+        -- A long frame runs two physics steps. The car and its collision wireframe must still be
+        -- drawn at the same interpolated pose (the drawn car used to trail by a whole step).
+        host:update(1 / 25, 1 / 25)
+        local physics = host.world.physics
+        local body = session.server.bodies[self.wall]
+        local drawn = session.client.cars[self.wall]
+        local gap = math.huge
+        for _, entry in ipairs(physics:debugPoses() or {}) do
+            if entry.raw == body.node.body.raw then
+                gap = math.sqrt((drawn.rx - entry.x) ^ 2 + (drawn.rz - entry.z) ^ 2)
+            end
+        end
+        self:check(
+            gap < 0.01,
+            ('the car is drawn at its collision pose after a two-step frame (gap %.3f m)'):format(gap)
+        )
     elseif frame == 560 then
         local model = session.server.cars[self.wall]
         self:check(

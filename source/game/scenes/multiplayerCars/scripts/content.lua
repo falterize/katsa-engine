@@ -634,7 +634,20 @@ function Session:updateRenderPoses()
             -- half and double steps.
             local body = client.bodies[netId]
             -- A car the local server simulates is read from the server (client:isMirrored).
-            pose(car, (body ~= nil and body.mode == 'dynamic') or client.client:isMirrored(netId))
+            local mirrored = client.client:isMirrored(netId)
+            if mirrored and self.server and self.server.bodies[netId] then
+                body = self.server.bodies[netId]
+            end
+            -- Simulated cars are drawn at the body's own render pose, exactly where the collision
+            -- wireframes are; the sampled blend is only a fallback.
+            if body ~= nil and body.mode == 'dynamic' and body:renderPose(car) then
+                if car._renderPose then
+                    RenderPose.clear(car)
+                    body:renderPose(car)
+                end
+            else
+                pose(car, mirrored)
+            end
         end
         for _, walker in pairs(client.walkers) do
             local own = self.walker ~= nil and walker == self.walker.model
