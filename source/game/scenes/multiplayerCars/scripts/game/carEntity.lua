@@ -35,6 +35,31 @@ function CarEntity.create(_, args)
     return car
 end
 
+-- The server drops a state a driving client reports when the car moved farther than any car could
+-- (a teleport), unless it lands at a spawn point (the client's own flip-over respawn).
+local MAX_SPEED = 90 -- m/s, far above the real top speed including nitro and crashes
+local MARGIN = 4 -- m of slack for one late update
+local RESPAWN_RADIUS = 3 -- m around a spawn point
+
+function CarEntity.validate(car, state, elapsed)
+    local position = state.position
+    if not position then
+        return true
+    end
+    local dx, dy, dz = position[1] - car.x, position[2] - car.y, position[3] - car.z
+    local allowed = MAX_SPEED * elapsed + MARGIN
+    if dx * dx + dy * dy + dz * dz <= allowed * allowed then
+        return true
+    end
+    for _, spawn in ipairs(Arena.spawns) do
+        local sx, sz = position[1] - spawn[1], position[3] - spawn[2]
+        if sx * sx + sz * sz <= RESPAWN_RADIUS * RESPAWN_RADIUS then
+            return true
+        end
+    end
+    return false, 'impossible move'
+end
+
 local function springField(name)
     return tonumber(name:match('^spring(%d)$'))
 end
@@ -67,6 +92,7 @@ CarEntity.definition = {
     create = CarEntity.create,
     get = get,
     set = set,
+    validate = CarEntity.validate,
     mirror = function(from, to)
         CarEntity.mirror(from, to)
     end,

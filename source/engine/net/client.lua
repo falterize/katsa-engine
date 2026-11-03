@@ -43,7 +43,16 @@ function Client.new(context, options)
         accumulator = 0,
         clock = 0,
         timeOffset = nil,
+        -- The delay is the buffer between the newest snapshot and the drawn moment. It adapts
+        -- between a floor of about one snapshot period and `maxInterpolationDelay` from the
+        -- measured arrival jitter (option adaptiveDelay = false keeps it fixed).
         interpolationDelay = options.interpolationDelay or 0.1,
+        maxInterpolationDelay = options.interpolationDelay or 0.1,
+        adaptiveDelay = options.adaptiveDelay ~= false,
+        -- How far past the newest snapshot an entity may be extrapolated before it holds still.
+        maxExtrapolation = options.maxExtrapolation or 0.06,
+        jitter = 0,
+        netStats = {},
         inputProvider = function()
             return {}
         end,
@@ -221,6 +230,11 @@ local function handleSnapshot(self, reader)
     local now = katsa.timer.getTime()
     local last = self.lastSnapshotAt
     self.lastSnapshotAt = now
+    if last then
+        -- Smoothed deviation of the arrival spacing from the snapshot period.
+        local period = 1 / (self.snapshotRate or 20)
+        self.jitter = self.jitter + (math.abs(now - last - period) - self.jitter) * 0.1
+    end
     if last and now - last > SLOW_SNAPSHOT_GAP then
         katsa.log.warn(
             ('Snapshot gap: %.0f ms since the previous one (server tick +%d, %.0f ms of server time)'):format(
@@ -388,8 +402,28 @@ function Client:isMirrored(netId)
     return entity ~= nil and entity.mirrored == true
 end
 
+-- Moves the delay toward what the measured jitter needs: up quickly (a starved entity freezes),
+-- down slowly (so a quiet moment does not cause the next stall).
+local function adaptDelay(self, dt)
+    if not self.adaptiveDelay then
+        return
+    end
+    local period = 1 / (self.snapshotRate or 20)
+    local floor = math.min(period * 1.25, self.maxInterpolationDelay)
+    local target =
+        math.max(floor, math.min(self.maxInterpolationDelay, period + 3 * self.jitter + 0.02))
+    local delay = self.interpolationDelay
+    if target > delay then
+        delay = math.min(target, delay + dt * 0.5)
+    else
+        delay = math.max(target, delay - dt * 0.02)
+    end
+    self.interpolationDelay = delay
+end
+
 local function interpolate(self)
     local renderTime = self:getServerTime() - self.interpolationDelay
+    local extrapolated = 0
     for _, entity in pairs(self.entities) do
         local definition = entity.definition
         if
@@ -404,8 +438,19 @@ local function interpolate(self)
                     break
                 end
             end
+            if renderTime > to.time and #buffer >= 2 then
+                -- Past the newest snapshot: continue the last movement for a moment.
+                from = buffer[#buffer - 1]
+            end
             local span = to.time - from.time
-            local t = span > 0 and math.max(0, math.min(1, (renderTime - from.time) / span)) or 1
+            local t = 1
+            if span > 0 then
+                local limit = 1 + self.maxExtrapolation / span
+                t = math.max(0, math.min(limit, (renderTime - from.time) / span))
+                if t > 1 then
+                    extrapolated = extrapolated + 1
+                end
+            end
             -- Starving: the render time is already past the newest snapshot, so the entity holds
             -- still until the next one arrives and then jumps.
             -- A parked entity sends nothing (unchanged state), so only count one that was moving.
@@ -442,6 +487,25 @@ local function interpolate(self)
             end
         end
     end
+    self.extrapolated = extrapolated
+end
+
+-- Exposed so tests can drive them without a socket.
+Client.interpolateEntities = interpolate
+Client.adaptInterpolationDelay = adaptDelay
+
+-- Network figures for a stats panel. The returned table is reused.
+function Client:getStats()
+    local stats, peer = self.netStats, self.host and self.host.server
+    stats.ping = peer and peer:getPing() or 0
+    stats.loss = peer and peer:getLoss() * 100 or 0
+    stats.snapshotsPerSecond = self.measuredRate or 0
+    stats.snapshotAge = self.lastSnapshotAt and (katsa.timer.getTime() - self.lastSnapshotAt) * 1000
+        or 0
+    stats.jitter = self.jitter * 1000
+    stats.interpolationDelay = self.interpolationDelay * 1000
+    stats.extrapolated = self.extrapolated or 0
+    return stats
 end
 
 -- Once a second: how many snapshot packets arrived. Logged as info for the first seconds after the
@@ -457,6 +521,7 @@ function Client:logRate(dt)
         return
     end
     local seconds, count = self.rateTimer, self.snapshotsReceived or 0
+    self.measuredRate = count / seconds
     self.rateTimer, self.snapshotsReceived = 0, 0
     local expected = (self.snapshotRate or 20) * seconds
     local low = count < expected * 0.75
@@ -509,6 +574,7 @@ function Client:update(dt)
                 sendOwnedState(self)
             end
         end
+        adaptDelay(self, dt)
         interpolate(self)
     end
     self.link:update(dt)

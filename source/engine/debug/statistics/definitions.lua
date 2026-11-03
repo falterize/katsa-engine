@@ -156,6 +156,18 @@ function Statistics.new(scene, parent)
     }, function(c)
         return c.scene.ui.physics2D and c.scene.ui.physics2D.stats
     end)
+    fields(definitions, 'net.', {
+        { 'ping', 'Network ping', 'ms' },
+        { 'loss', 'Network packet loss', '%' },
+        { 'snapshotsPerSecond', 'Snapshots received', '/s' },
+        { 'snapshotAge', 'Newest snapshot age', 'ms' },
+        { 'jitter', 'Snapshot arrival jitter', 'ms' },
+        { 'interpolationDelay', 'Interpolation delay', 'ms' },
+        { 'extrapolated', 'Entities extrapolated' },
+    }, function(c)
+        local provider = c.scene.netStats
+        return provider and provider()
+    end)
     fields(definitions, 'checks.', {
         { 'objects', 'Checks: meshes', 'ms' },
         { 'lights', 'Checks: point lights', 'ms' },

@@ -273,6 +273,9 @@ function Session:startClient(address, port, name)
             return self:input()
         end,
     })
+    self.scene.netStats = function()
+        return self.client == client and client.client:getStats() or nil
+    end
     client.onCarAdded = function(netId, model)
         self:queueView('car', netId, model)
     end

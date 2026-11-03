@@ -57,6 +57,8 @@ function Server.new(context, options)
         playerAdded = Signal.new(),
         playerRemoved = Signal.new(),
         ticked = Signal.new(),
+        -- (player, object, reason): a client-reported state failed the definition's validate.
+        stateRejected = Signal.new(),
     }, Server)
     self.tickDelta = 1 / self.tickRate
     self.snapshotEvery = math.max(1, math.floor(self.tickRate / self.snapshotRate + 0.5))
@@ -385,11 +387,24 @@ local function handleClientState(self, player, reader)
     for _ = 1, reader:u16() do
         local entity = self.entities[reader:u32()]
         if entity and entity.authority == player and entity.definition.clientAuthoritative then
-            Registry.apply(
-                entity.definition,
-                entity.object,
-                Registry.readState(entity.definition, reader)
-            )
+            local definition = entity.definition
+            local state = Registry.readState(definition, reader)
+            local ok, reason = true, nil
+            if definition.validate then
+                -- Seconds since the last accepted state: the longest a legal move could take.
+                ok, reason = definition.validate(
+                    entity.object,
+                    state,
+                    self.time - (entity.lastStateTime or self.time),
+                    player
+                )
+            end
+            if ok == false then
+                self.stateRejected:fire(player, entity.object, reason)
+            else
+                Registry.apply(definition, entity.object, state)
+                entity.lastStateTime = self.time
+            end
         elseif entity then
             Registry.readState(entity.definition, reader)
         else
