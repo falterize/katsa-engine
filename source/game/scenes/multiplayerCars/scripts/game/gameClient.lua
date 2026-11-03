@@ -17,6 +17,7 @@ function GameClient.new(context, options)
         port = options.port,
         name = options.name,
         simulate = options.simulate,
+        localServer = options.localServer,
     })
     local self = setmetatable({
         client = client,
