@@ -21,6 +21,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_5.carMesh').run(self)
     require('validation.tests.versions.v108_5.hoverCoalesce').run(self)
     require('validation.tests.versions.v108_5.consoleRows').run(self)
+    require('validation.tests.versions.v108_5.sceneNotice').run(self)
     print('PASSED ' .. self.count .. ' v108.5 focused checks')
     katsa.event.quit()
 end
