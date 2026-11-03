@@ -210,15 +210,29 @@ function RenderPreparation.install(Renderer)
                 end
             end
         end
+        if world.ribbons and not wire then
+            world.ribbons:prepare(camera, self.transparent)
+        end
         table.sort(self.transparent, farFirst)
         table.sort(self.top, farFirst)
         self.stats.cullingMilliseconds = (katsa.timer.getTime() - prepareStart) * 1000
-        if not wire and world.particles then
-            self.shadowObjects = require('source.engine.particles.shadows').prepare(
-                world,
-                camera,
-                self.shadowObjects
-            )
+        if not wire and (world.particles or world.ribbons) then
+            local objects = self.shadowObjects
+            if world.particles then
+                objects = require('source.engine.particles.shadows').prepare(world, camera, objects)
+            else
+                objects = objects or {}
+                for i = #objects, 1, -1 do
+                    objects[i] = nil
+                end
+                for _, object in ipairs(world.objects) do
+                    objects[#objects + 1] = object
+                end
+            end
+            if world.ribbons then
+                objects = require('source.engine.ribbons.shadows').prepare(world, camera, objects)
+            end
+            self.shadowObjects = objects
             world._shadowObjects = self.shadowObjects
         end
         if self.shadowObjects and not wire then

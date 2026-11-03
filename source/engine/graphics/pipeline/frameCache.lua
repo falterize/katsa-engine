@@ -128,6 +128,13 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
             end
         end
     end
+    if
+        (not fastReason or fastReason == 'Animation' or fastReason == 'Physics')
+        and world.ribbons
+        and world.ribbons:active()
+    then
+        fastReason = 'Particles'
+    end
     local dynamic = fastReason == 'Animation'
         or fastReason == 'Physics'
         or fastReason == 'Particles'

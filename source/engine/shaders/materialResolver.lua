@@ -97,6 +97,8 @@ function Resolver.resolve(world, object)
         keys[i] = nil
     end
     local particle = object:isA('ParticleEmitter3D')
+        or object:isA('Beam3D')
+        or object:isA('Trail3D')
     if changed or not object._shaderStackSignature then
         object._shaderStackSignature = (particle and 'particle:' or 'world:')
             .. table.concat(keys, '|')

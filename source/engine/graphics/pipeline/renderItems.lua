@@ -14,6 +14,12 @@ function RenderItems.install(Renderer)
                 + (self.world.particles.stats.rendered - before) * 2
             return
         end
+        if o.ribbonKind then
+            local before = self.world.ribbons.stats.rendered
+            self.world.ribbons:draw(self.camera, o)
+            self.stats.mainTriangles = self.stats.mainTriangles + self.world.ribbons.stats.rendered - before
+            return
+        end
         local s, g = self:bindMaterial(o), katsa.graphics
         if s:hasUniform('debugWireframe') then
             s:send('debugWireframe', wire)

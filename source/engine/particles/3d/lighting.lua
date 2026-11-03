@@ -11,8 +11,11 @@ function L.bind(shader, world, camera, emitter)
         end
     end
     local enabled = not emitter.unlit
+        and (emitter.lightInfluence == nil or emitter.lightInfluence > 0)
         and (not emitter._systemEffects or emitter._systemEffects.lighting ~= false)
     send('particleUnlit', not enabled)
+    -- Ribbons blend between unlit and lit with lightInfluence; 0 (the default) means fully lit.
+    send('particleDetach', 1 - (emitter.lightInfluence or 1))
     send('particleBrightness', emitter.brightness)
     local ambient = world.environment.ambient
     send(
@@ -35,7 +38,7 @@ function L.bind(shader, world, camera, emitter)
     local offset = 0
     if emitter.castShadow and emitter.receiveShadow then
         local largest = 0
-        for i = 1, math.min(#emitter.particles, emitter.shadowMaxParticles or 64) do
+        for i = 1, math.min(#(emitter.particles or {}), emitter.shadowMaxParticles or 64) do
             largest = math.max(largest, emitter.particles[i].size or 0)
         end
         offset = largest * 0.5 + 0.02

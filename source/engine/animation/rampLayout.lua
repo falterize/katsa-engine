@@ -18,7 +18,9 @@ function RampLayout.install(Ramp)
 
     function Ramp:isLifetime()
         local target = self:getTarget()
-        return target and target:isA('ParticleEmitter3D') and self == target.lifetimeRamp
+        return target
+            and (target:isA('ParticleEmitter3D') or target:isA('Beam3D') or target:isA('Trail3D'))
+            and self == target.lifetimeRamp
     end
 
     function Ramp:isSpatialGradient()

@@ -2,6 +2,11 @@
 
 Per-version notes. Test results and logs for each release live in Git history and tags.
 
+## v108.6
+
+- Beam3D and Trail3D (`nodes/effects`, `source/engine/ribbons`): textured ribbons between two nodes and behind a moving node, with the common image configuration (`texture`, `imageMode`, `pixelate`, tiles, atlas, XML), `textureMode` Stretch / Wrap / Static, a `RibbonRamp` (color, transparency, width), `lightEmission`, `lightInfluence`, `castShadow` / `receiveShadow`, layer groups and shader layers. Trail3D has Single mode (one node, faces the camera) and Dual mode (two nodes mark the edges); ribbon ends accept any Node3D, so no Attachment3D is needed. New scene `ribbonLab`, guide `docs/guides/rendering/ribbons.md`, quality profiles scale ribbon detail (`ribbons.detail`).
+- ParticleEmitter3D: `castShadow` / `receiveShadow` now have inspector hints and conditional shadow fields.
+
 ## v108.5
 
 - ScrollFrame: swipe inertia, elastic overscroll with spring-back, and mouse swipe only when `dragWithMouse` is on (`inertia`, `overscroll`, `bounceSpeed`, `dragWithMouse`).

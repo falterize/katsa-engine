@@ -132,6 +132,7 @@ function Receivers.cachedCollect(owner, objects, camera, settings, world)
         and (not deps.volatile or deps.meshesStable)
         and #(world.decals or {}) == 0
         and not (world.particles and #world.particles.emitters > 0)
+        and not (world.ribbons and #world.ribbons.nodes > 0)
     local cached = owner.receiverCache
     local reused = eligible
         and cached

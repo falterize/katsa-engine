@@ -5,7 +5,8 @@ function Policy.initialize(node)
     Image.initialize(node)
 end
 
-function Policy.uv(node, p, image, size)
+-- `height` defaults to `size`; ribbons map a long strip, so their two extents differ.
+function Policy.uv(node, p, image, size, height)
     local frame = node.atlasFrame or 0
     local mode = node.imageMode
     if node.atlasEnabled and mode == 'Decal' then
@@ -28,7 +29,7 @@ function Policy.uv(node, p, image, size)
         end
     end
     local iw, ih = image:getDimensions()
-    local x, y, w, h = Image.uv(node, iw, ih, size, size, frame, mode)
+    local x, y, w, h = Image.uv(node, iw, ih, size, height or size, frame, mode)
     return x, y, w, h
 end
 return Policy
