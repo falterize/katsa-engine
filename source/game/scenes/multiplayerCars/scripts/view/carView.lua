@@ -175,7 +175,10 @@ function CarView:update(dt)
         -- The car root turns by -heading (engine yaw opposes the model heading), so a wheel
         -- steering toward positive heading needs the same sign flip.
         wheel.rotation = { -self.spin, -steer, 0 }
-        wheel.visible = math.floor((car.detached or 0) / 2 ^ (index - 1)) % 2 == 0
+        local shown = math.floor((car.detached or 0) / 2 ^ (index - 1)) % 2 == 0
+        if wheel.visible ~= shown then
+            wheel.visible = shown
+        end
         local offset = car.wheels[index]
         wheel.position = { offset[1], 0.4 + car.spring[index], offset[2] }
     end

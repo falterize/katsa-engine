@@ -116,10 +116,13 @@ local function flatNormals(vertices)
     end
 end
 
+-- Copies a vertex list. The fields are spelled out: `{ unpack(vertex) }` cost ~20 us per vertex
+-- here (about 40 ms for one car), which showed up as a hitch whenever a car appeared.
 local function copyOf(rest)
     local vertices = {}
-    for index, vertex in ipairs(rest) do
-        vertices[index] = { unpack(vertex) }
+    for index = 1, #rest do
+        local v = rest[index]
+        vertices[index] = { v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8] }
     end
     return vertices
 end
@@ -145,8 +148,11 @@ local function append(into, from)
     end
 end
 
--- Returns two parts, each { geometry, rest }: `paint` (hull and roof) and `glass` (the cabin walls).
-function Body.create()
+-- The rest-pose vertex lists are identical for every car, so they are lofted once. `rest` is only
+-- ever read (deform copies from it), which makes sharing it between cars safe.
+local template
+
+local function buildTemplate()
     local hull = { top = {}, bottom = {}, sides = {}, ends = {} }
     loft(HULL, hull, { 0, 0.6, 0 })
     local cabin = { top = {}, bottom = {}, sides = {}, ends = {} }
@@ -158,8 +164,15 @@ function Body.create()
     append(paint, cabin.top)
     append(glass, cabin.sides)
     append(glass, cabin.ends)
-    return { geometry = make(paint), rest = paint },
-        { geometry = make(glass), rest = glass }
+    return { paint = paint, glass = glass }
+end
+
+-- Returns two parts, each { geometry, rest }: `paint` (hull and roof) and `glass` (the cabin walls).
+-- Every car gets its own geometry (its vertices are dented individually) over the shared rest pose.
+function Body.create()
+    template = template or buildTemplate()
+    return { geometry = make(template.paint), rest = template.paint },
+        { geometry = make(template.glass), rest = template.glass }
 end
 
 -- Re-applies the dents of `deformation` to the rest pose and uploads the result.

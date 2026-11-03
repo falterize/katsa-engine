@@ -54,6 +54,14 @@ Collider3D GeometrySource accepts live model nodes or OBJ/GLB/glTF paths. Points
 - [Console, logs and crash reports](docs/guides/development/console.md)
 - [Stats and metric history](docs/guides/development/statistics.md), including clickable plots and recent averages
 - [Runtime performance](docs/guides/development/performance.md), including JIT cache policy and open-Stats profiling
+- [Inverse kinematics (`ik` plugin, `InverseKinematics3D`)](docs/guides/animation/ik.md), [Playing and Enabled](docs/guides/animation/playback.md) and [Ramp and Tween](docs/guides/animation/rampTween.md)
+- [UIStyler plugin](docs/guides/ui/uiStyler.md), [UI modifiers](docs/guides/ui/uiModifiers.md), [shared image component](docs/guides/ui/images.md) and [ViewportFrame](docs/guides/ui/viewportFrame.md)
+- [Workspace editor](docs/guides/editor/workspace.md), [scene input actions](docs/guides/input/actions.md) and [profiling and budgets](docs/guides/performance/profiling.md)
+- [Shader2D / Shader3D](docs/guides/rendering/shaders.md), [lighting](docs/guides/rendering/lighting.md), [SurfaceUI and Decal](docs/guides/rendering/surfaces.md), [particles and shadows](docs/guides/rendering/particlesShadows.md) and [Android shader fix](docs/guides/rendering/androidShaderFix.md)
+- [Particle collisions and lighting](docs/guides/particles/collisionsLighting.md) and [particle visibility](docs/guides/particles/visibility.md)
+- [Hierarchical models and skeleton animation](docs/guides/import/hierarchy.md) and [models and surface materials](docs/guides/import/models.md)
+- [katsa runtime layer](docs/guides/katsa/platform.md), [SoundManager, AudioListener and AudioSource](docs/guides/audio/audioModules.md) and [colliders and constraints](docs/guides/physics/nodesPhysics.md)
+- [Project conventions](docs/guides/architecture/conventions.md), [node classes and naming](docs/guides/development/classSystem.md), [framework and scenes](docs/guides/development/framework.md), [public libraries](docs/guides/development/libraries.md) and [spatial transforms](docs/guides/development/spatialTransforms.md)
 
 Build an archive with `python tools/build/packageProject.py --output dist`. Project code is MIT; see [LICENSE](LICENSE) and the [asset/dependency notices](docs/guides/development/licenses.md).
 
