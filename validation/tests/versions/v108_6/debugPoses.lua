@@ -49,6 +49,30 @@ function Module.run(self)
     physics.world:debugDraw()
     body.raw._nativeOriginal.getPositionTo(body.raw, mirror)
     self:check(math.abs(mirror.y - solver.y) < 1e-6, 'the mirror returns to the solver pose afterwards')
+
+    -- poseMode: Both draws the solver pass as well, tinted, so it makes about twice the lines.
+    local camera = { project = function(_, p) return p[1] + 100, p[2] + 100 end }
+    physics.debugEnabled = true
+    physics:drawDebug(camera)
+    local lines, tints = 0, {}
+    local original = physics.debugDraw.line
+    physics.debugDraw.line = function(draw, a, b, color)
+        lines = lines + 1
+        tints[#tints + 1] = physics.debugTint ~= nil
+        return original(draw, a, b, color)
+    end
+    physics._debugSettings.poseMode = 'Render'
+    physics:drawDebug(camera)
+    local render = lines
+    lines, tints = 0, {}
+    physics._debugSettings.poseMode = 'Both'
+    physics:drawDebug(camera)
+    local tinted = 0
+    for _, flag in ipairs(tints) do
+        tinted = tinted + (flag and 1 or 0)
+    end
+    self:check(render > 0 and lines == render * 2 and tinted == render, 'Both draws the solver shapes tinted over the render shapes')
+    self:check(physics.debugTint == nil, 'the tint does not leak into later draws')
     world:release()
     resources:release()
 end

@@ -179,6 +179,9 @@ function Schema.options(target, key)
         local physics = body and body.physics or world and world.physics
         return physics and physics.collisionGroups.names
     end
+    if key == 'poseMode' then
+        return { 'Render', 'Solver', 'Both' }
+    end
     if key == 'followMode' then
         return { 'Free', 'FirstPerson', 'ThirdPerson' }
     end

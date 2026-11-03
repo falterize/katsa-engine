@@ -8,6 +8,7 @@ local fields = {
     'drawJoints',
     'drawJointLimits',
     'drawBvh',
+    'poseMode',
     'activeOnly',
     'bones',
     'wireframe',

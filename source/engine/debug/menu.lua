@@ -341,6 +341,19 @@ function Debug.new(scene)
         end, function()
             physicsDebug.enabled = not physicsDebug.enabled
         end)
+        local poseModes = { 'Render', 'Solver', 'Both' }
+        local poseButton
+        poseButton = row('Debug pose: ' .. (physicsDebug.poseMode or 'Render'), function()
+            local index = 1
+            for i, mode in ipairs(poseModes) do
+                if mode == (physicsDebug.poseMode or 'Render') then
+                    index = i
+                end
+            end
+            physicsDebug.enabled = true
+            physicsDebug.poseMode = poseModes[index % #poseModes + 1]
+            poseButton.text = 'Debug pose: ' .. physicsDebug.poseMode
+        end)
         toggle('Pause physics', function()
             return physics.paused == true
         end, function()

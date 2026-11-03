@@ -27,6 +27,7 @@ function C.initialize(self)
             drawJoints = true,
             drawJointLimits = false,
             drawBvh = false,
+            poseMode = 'Render',
         }
     self.debug.physics._settingsKind = 'PhysicsDebug'
     self.sun = nil
