@@ -506,6 +506,7 @@ local function sendSnapshots(self, keyframe)
                     writer:u16(count)
                     local data = writer:finish() .. body:finish()
                     player.link:send(data, P.SEQUENCED)
+                    self.snapshotsSent = (self.snapshotsSent or 0) + 1
                 end
                 begin()
             end
@@ -545,9 +546,32 @@ local function sendSnapshots(self, keyframe)
     end
 end
 
+-- Once a second for the first seconds a player is connected: how many snapshot packets were sent,
+-- the counterpart of the client's received count (a difference means loss or batching).
+function Server:logRate(dt)
+    if next(self.players) == nil then
+        self.rateTimer, self.rateAge = 0, 0
+        return
+    end
+    self.rateTimer = (self.rateTimer or 0) + dt
+    self.rateAge = (self.rateAge or 0) + dt
+    if self.rateTimer < 1 then
+        return
+    end
+    local seconds, count = self.rateTimer, self.snapshotsSent or 0
+    self.rateTimer, self.snapshotsSent = 0, 0
+    if self.rateAge < 12 then
+        katsa.log.log(
+            ('Server sent %d snapshot packets in %.1f s (rate %d Hz)'):format(count, seconds, self.snapshotRate),
+            'Net'
+        )
+    end
+end
+
 -- Advances the server by `dt` seconds of wall time: network, fixed ticks, snapshots.
 function Server:update(dt)
     self:poll()
+    self:logRate(dt)
     self.accumulator = math.min(self.accumulator + dt, self.tickDelta * 5)
     while self.accumulator >= self.tickDelta do
         self.accumulator = self.accumulator - self.tickDelta

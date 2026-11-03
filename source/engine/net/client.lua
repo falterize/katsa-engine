@@ -226,6 +226,7 @@ local function handleSnapshot(self, reader)
         )
     end
     self.lastSnapshotTick, self.lastSnapshotTime = tick, serverTime
+    self.snapshotsReceived = (self.snapshotsReceived or 0) + 1
     for _ = 1, reader:u16() do
         local entity = self.entities[reader:u32()]
         if not entity then
@@ -417,12 +418,46 @@ local function interpolate(self)
     end
 end
 
+-- Once a second: how many snapshot packets arrived. Logged as info for the first seconds after the
+-- connection (to compare with the server's own count) and as a warning whenever it drops far below
+-- the snapshot rate, together with ENet's loss estimate and ping.
+function Client:logRate(dt)
+    if self.state ~= 'connected' then
+        return
+    end
+    self.rateTimer = (self.rateTimer or 0) + dt
+    self.rateAge = (self.rateAge or 0) + dt
+    if self.rateTimer < 1 then
+        return
+    end
+    local seconds, count = self.rateTimer, self.snapshotsReceived or 0
+    self.rateTimer, self.snapshotsReceived = 0, 0
+    local expected = (self.snapshotRate or 20) * seconds
+    local low = count < expected * 0.75
+    if low or self.rateAge < 12 then
+        local peer = self.host and self.host.server
+        local text = ('Client received %d snapshot packets in %.1f s (expected %.0f), ENet loss %.0f%%, ping %d ms'):format(
+            count,
+            seconds,
+            expected,
+            peer and peer:getLoss() * 100 or 0,
+            peer and peer:getPing() or 0
+        )
+        if low then
+            katsa.log.warn(text, 'Net', false)
+        else
+            katsa.log.log(text, 'Net')
+        end
+    end
+end
+
 function Client:update(dt)
     if not self.host then
         return
     end
     self.clock = self.clock + dt
     self.frameDelta = dt
+    self:logRate(dt)
     local host = self.host
     for event in host:poll() do
         if event.type == 'connect' then
