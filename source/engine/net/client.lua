@@ -201,11 +201,31 @@ local function replay(self, entity, ack)
     end
 end
 
+local SLOW_SNAPSHOT_GAP = 0.15 -- seconds between two received snapshots that is worth a log line
+local STARVED_LOG = 0.1 -- seconds an entity had nothing newer than the render time
+
 local function handleSnapshot(self, reader)
-    reader:u32()
+    local tick = reader:u32()
     local serverTime = reader:f64()
     local ack = reader:u32()
     noteServerTime(self, serverTime)
+    -- Diagnostics for choppy remote motion: the wall time between snapshots and how far the server
+    -- clock jumped in that time. A gap far above the snapshot period means the data arrived late.
+    local now = katsa.timer.getTime()
+    local last = self.lastSnapshotAt
+    self.lastSnapshotAt = now
+    if last and now - last > SLOW_SNAPSHOT_GAP then
+        katsa.log.warn(
+            ('Snapshot gap: %.0f ms since the previous one (server tick +%d, %.0f ms of server time)'):format(
+                (now - last) * 1000,
+                tick - (self.lastSnapshotTick or tick),
+                (serverTime - (self.lastSnapshotTime or serverTime)) * 1000
+            ),
+            'Net',
+            false
+        )
+    end
+    self.lastSnapshotTick, self.lastSnapshotTime = tick, serverTime
     for _ = 1, reader:u16() do
         local entity = self.entities[reader:u32()]
         if not entity then
@@ -359,6 +379,28 @@ local function interpolate(self)
             end
             local span = to.time - from.time
             local t = span > 0 and math.max(0, math.min(1, (renderTime - from.time) / span)) or 1
+            -- Starving: the render time is already past the newest snapshot, so the entity holds
+            -- still until the next one arrives and then jumps.
+            -- A parked entity sends nothing (unchanged state), so only count one that was moving.
+            local moving = #buffer > 1 and not Registry.sameState(definition, from.state, to.state)
+            if moving and renderTime > to.time + 0.02 then
+                entity.starvedFor = (entity.starvedFor or 0) + self.frameDelta
+                entity.starvedPast = renderTime - to.time
+            elseif entity.starvedFor then
+                if entity.starvedFor >= STARVED_LOG then
+                    katsa.log.warn(
+                        ('Entity %d held still for %.0f ms (render time %.0f ms past the newest snapshot, %d buffered)'):format(
+                            entity.id,
+                            entity.starvedFor * 1000,
+                            (entity.starvedPast or 0) * 1000,
+                            #buffer
+                        ),
+                        'Net',
+                        false
+                    )
+                end
+                entity.starvedFor = nil
+            end
             for _, field in ipairs(definition.parsedFields) do
                 local a, b = from.state[field.name], to.state[field.name]
                 local value
@@ -380,6 +422,7 @@ function Client:update(dt)
         return
     end
     self.clock = self.clock + dt
+    self.frameDelta = dt
     local host = self.host
     for event in host:poll() do
         if event.type == 'connect' then
