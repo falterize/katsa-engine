@@ -1,30 +1,31 @@
 local Mesh = require('source.engine.composition.mesh')
 local Models = require('source.engine.import.models')
 
--- XBot in its rest pose with four IK modifiers driven by two orbiting spheres:
---   right arm  TwoBone  -> red sphere (elbow hint points outward)
---   head/neck  LookAt   -> red sphere (weighted over spine, neck and head)
---   left arm   Fabrik   -> blue sphere
---   left leg   Ccd      -> floor marker (limited joints)
+-- The XBot faces the camera and both hands follow a ball that floats in front of its chest. The
+-- elbows bend toward hint markers beside and behind the body. Four InverseKinematics3D nodes do
+-- the work: two arms (switchable between TwoBone, CCD, FABRIK and Jacobian), the head (LookAt)
+-- and a spine tilt (LookAt chain), all driven by plain scene nodes.
 local Lab = {}
 Lab.__index = Lab
 
 local PREFIX = 'mixamorig:'
+Lab.armTypes = { 'TwoBone', 'CCD', 'FABRIK', 'Jacobian' }
+
+local function distance(ax, ay, az, bx, by, bz)
+    return math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2 + (az - bz) ^ 2)
+end
 
 function Lab.new(scene)
     local IK = require('source.engine.plugins').require('ik')
-    local self = setmetatable({ scene = scene, time = 0 }, Lab)
+    local self = setmetatable({ scene = scene, time = 0, armType = 1 }, Lab)
     local world = scene.world
     world.environment.debug.gizmos.enabled = false
     world.environment.fog.enabled = false
     world.environment.sky.enabled = false
     world.environment.ambient = { 160, 175, 190 }
-    require('source.engine.plugins').require('ik')
-    scene.camera.position = { 0, 70, -110 }
-    scene.camera.rotation = { -8, 0, 0 }
     Mesh.create(world, {
         name = 'IKFloor',
-        position = { 0, -3, 40 },
+        position = { 0, -3, 0 },
         size = { 300, 6, 200 },
         surfaceAppearance = { colorMap = 'stone' },
     })
@@ -36,99 +37,131 @@ function Lab.new(scene)
     })
     world.environment.shadows.enabled = true
     self.model = Models.load('assets/models/characters/xbot.glb', scene.resources)
-    Models.instantiate(
-        world,
-        self.model,
-        { name = 'IKBot', position = { 0, 0, 40 }, rotation = { 0, 180, 0 }, scale = { 0.55, 0.55, 0.55 } }
-    )
-    local animator = self.model.animator
-    animator.debugEnabled = true
-    self.red = Mesh.create(world, {
-        name = 'RedTarget',
-        kind = 'sphere',
-        size = { 6, 6, 6 },
-        color = { 1, 0.2, 0.2, 1 },
+    local _, root = Models.instantiate(world, self.model, {
+        name = 'IKBot',
+        position = { 0, 0, 0 },
+        rotation = { 0, 180, 0 },
+        scale = { 0.55, 0.55, 0.55 },
     })
-    self.blue = Mesh.create(world, {
-        name = 'BlueTarget',
-        kind = 'sphere',
-        size = { 6, 6, 6 },
-        color = { 0.3, 0.5, 1, 1 },
-    })
-    self.floorMark = Mesh.create(world, {
-        name = 'FloorTarget',
-        kind = 'sphere',
-        size = { 5, 5, 5 },
-        color = { 0.2, 1, 0.4, 1 },
-    })
-    self.hint = Mesh.create(world, {
-        name = 'ElbowHint',
-        size = { 3, 3, 3 },
-        color = { 0.8, 0.8, 0.2, 1 },
-        position = { -45, 75, 20 },
-    })
-    local function bone(name)
-        return PREFIX .. name
+    self.root = root
+    self.model.animator.debugEnabled = true
+    -- Measure the rig once (rest pose) to place the ball, hints and camera.
+    local skeleton = IK.Skeleton.new(self.model)
+    local function worldOf(name)
+        return { skeleton:toWorld(skeleton:getPosition(PREFIX .. name)) }
     end
-    self.modifiers = {
-        arm = IK.TwoBone.new({
-            root = bone('RightArm'),
-            mid = bone('RightForeArm'),
-            tip = bone('RightHand'),
-            target = self.red,
-            pole = self.hint,
-            softness = 2,
-            debug = true,
-        }),
-        look = IK.LookAt.new({
-            bones = { bone('Spine2'), bone('Neck'), bone('Head') },
-            weights = { 0.2, 0.3, 0.5 },
-            forward = { 0, 0, 1 },
-            target = self.red,
-            maxAngle = 70,
-            speed = 8,
-            debug = true,
-        }),
-        fabrik = IK.Fabrik.new({
-            bones = { bone('LeftArm'), bone('LeftForeArm'), bone('LeftHand') },
-            target = self.blue,
-            debug = true,
-        }),
-        leg = IK.Ccd.new({
-            bones = { bone('LeftUpLeg'), bone('LeftLeg'), bone('LeftFoot') },
-            target = self.floorMark,
-            iterations = 12,
-            limits = { [bone('LeftUpLeg')] = 50, [bone('LeftLeg')] = 70 },
-            debug = true,
-        }),
+    local right, left = worldOf('RightArm'), worldOf('LeftArm')
+    local hand = worldOf('RightHand')
+    local reach = distance(right[1], right[2], right[3], hand[1], hand[2], hand[3])
+    self.reach = reach
+    self.center = {
+        (right[1] + left[1]) / 2,
+        (right[2] + left[2]) / 2 - 0.2 * reach,
+        (right[3] + left[3]) / 2 - 0.8 * reach,
     }
-    for _, modifier in pairs(self.modifiers) do
-        modifier:attach(animator)
+    local outward = right[1] > left[1] and 1 or -1
+    scene.camera.position = { 0, self.center[2] + 0.1 * reach, self.center[3] - 1.9 * reach }
+    scene.camera.rotation = { -3, 0, 0 }
+
+    self.ball = Mesh.create(world, {
+        name = 'IKBall',
+        kind = 'sphere',
+        size = { 0.4 * reach, 0.4 * reach, 0.4 * reach },
+        color = { 1, 0.25, 0.2, 1 },
+        position = self.center,
+    })
+    local function hint(name, shoulder, side)
+        return Mesh.create(world, {
+            name = name,
+            size = { 0.1 * reach, 0.1 * reach, 0.1 * reach },
+            color = { 0.9, 0.85, 0.2, 1 },
+            position = {
+                shoulder[1] + side * outward * 0.9 * reach,
+                shoulder[2] - 0.7 * reach,
+                shoulder[3] + 0.2 * reach,
+            },
+        })
     end
-    self.influence = 1
+    self.rightHint = hint('RightElbowHint', right, 1)
+    self.leftHint = hint('LeftElbowHint', left, -1)
+    self.lookTarget = Mesh.create(world, {
+        name = 'LookTarget',
+        kind = 'sphere',
+        size = { 0.05 * reach, 0.05 * reach, 0.05 * reach },
+        color = { 1, 1, 1, 1 },
+        position = self.center,
+    })
+
+    -- Each hand holds one side of the ball: the targets are children of the ball.
+    local function grip(name, side)
+        return world:create('Node3D', {
+            name = name,
+            position = { side * outward * 0.2 * reach, 0, 0 },
+        }, self.ball)
+    end
+    self.rightGrip, self.leftGrip = grip('RightGrip', 1), grip('LeftGrip', -1)
+    local function arm(side, hintNode, gripNode)
+        return world:create('InverseKinematics3D', {
+            name = side .. 'ArmIK',
+            type = 'TwoBone',
+            rootBone = PREFIX .. side .. 'Arm',
+            tipBone = PREFIX .. side .. 'Hand',
+            target = gripNode,
+            pole = hintNode,
+            softness = 0.5,
+            iterations = 16,
+            maxStep = 25,
+            debug = true,
+        }, root)
+    end
+    self.arms = {
+        arm('Right', self.rightHint, self.rightGrip),
+        arm('Left', self.leftHint, self.leftGrip),
+    }
+    self.head = world:create('InverseKinematics3D', {
+        name = 'HeadIK',
+        type = 'LookAt',
+        rootBone = PREFIX .. 'Neck',
+        tipBone = PREFIX .. 'Head',
+        target = self.lookTarget,
+        forward = { 0, 0, 1 },
+        maxAngle = 60,
+        smoothing = 8,
+        debug = true,
+    }, root)
     return self
 end
 
-function Lab:setInfluence(value)
-    self.influence = value
-    for _, modifier in pairs(self.modifiers) do
-        modifier.influence = value
+function Lab:setArmType(index)
+    self.armType = index
+    for _, node in ipairs(self.arms) do
+        node.type = Lab.armTypes[index]
     end
 end
 
-function Lab:setDebug(enabled)
-    for _, modifier in pairs(self.modifiers) do
-        modifier.debug = enabled
+function Lab:setInfluence(value)
+    for _, node in ipairs(self.arms) do
+        node.influence = value
     end
+    self.head.influence = value
+end
+
+function Lab:setDebug(enabled)
+    for _, node in ipairs(self.arms) do
+        node.debug = enabled
+    end
+    self.head.debug = enabled
 end
 
 function Lab:update(dt)
     self.time = self.time + dt
-    local t = self.time
-    -- The bot faces the camera (rotated 180 degrees), so its right arm is on the camera's left.
-    self.red.position = { -22 + math.sin(t * 0.9) * 14, 62 + math.cos(t * 0.9) * 16, 12 + math.sin(t * 0.4) * 8 }
-    self.blue.position = { 22 + math.sin(t * 0.7 + 1) * 10, 50 + math.cos(t * 1.1) * 14, 18 }
-    self.floorMark.position = { 8 + math.sin(t * 0.6) * 10, 3, 24 + math.cos(t * 0.6) * 8 }
+    local t, r, c = self.time, self.reach, self.center
+    self.ball.position = {
+        c[1] + math.sin(t * 0.9) * 0.35 * r,
+        c[2] + math.sin(t * 1.8) * 0.2 * r,
+        c[3] + math.sin(t * 0.45) * 0.12 * r,
+    }
+    self.lookTarget.position = { self.ball.position[1], c[2] + 0.55 * r, self.ball.position[3] }
     self.scene.world:updateNodes(dt)
 end
 
