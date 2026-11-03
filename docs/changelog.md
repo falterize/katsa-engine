@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.5
 
+- ScrollFrame: swipe inertia, elastic overscroll with spring-back, and mouse swipe only when `dragWithMouse` is on (`inertia`, `overscroll`, `bounceSpeed`, `dragWithMouse`).
+
 - uiStyler: style files in a scene's `assets/styles`, multi-value styles, bare-tag selectors, `extends`, `cornerScale` (`Styler:loadStyles`, `Styler:style`). The launcher showcase now uses them.
 
 - Version bumped to v108.5; v108.4 stays as the last known-good release before the IK plugin and the following plugin updates.

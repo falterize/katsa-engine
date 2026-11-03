@@ -75,3 +75,14 @@ The shared inspector exposes all new properties and direction/inset options.
 
 This API does not implement elastic overscroll, inertia, network replication or
 Roblox Content objects; these are not exposed as nonfunctional settings.
+
+## Swipe feel: inertia, elastic ends, mouse swipe
+
+| Property | Default | Meaning |
+| --- | --- | --- |
+| `inertia` | 0.6 | How far the content glides after a swipe. 0 stops dead, 1 glides long. |
+| `overscroll` | 0.25 | Rubber-band stretch past the ends, as a fraction of the window. 0 is a hard stop. |
+| `bounceSpeed` | 14 | How fast the stretch springs back (per second); shown when `overscroll` > 0. |
+| `dragWithMouse` | false | Lets the mouse swipe the content. Touch always swipes; the wheel and the scrollbar thumb work regardless. |
+
+A flung frame that reaches an end keeps its speed into the stretch and springs back. The wheel and `scrollBy` stop any glide and are always instant.

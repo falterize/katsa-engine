@@ -17,8 +17,8 @@ local function visit(node, children, state)
         sample(state, child)
         sample(state, visible)
         if visible then
-            local x = child._x - node._x - node._windowX + node.scrollX
-            local y = child._y - node._y + node.scrollY
+            local x = child._x - node._x - node._windowX + node.scrollX + (node._overX or 0)
+            local y = child._y - node._y + node.scrollY + (node._overY or 0)
             sample(state, x)
             sample(state, y)
             sample(state, child._width)
