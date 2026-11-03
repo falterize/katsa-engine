@@ -94,10 +94,15 @@ function Menu:load()
                     backgroundColor = { 0.075, 0.15, 0.23 },
                     radius = 8,
                     onPress = function()
+                        local label = 'Loading ' .. entry[1] .. '...'
                         if entry[2] == 'nodeCatalog' then
-                            self.manager:switch(require('source.game.runtime.nodeCatalog').new)
+                            self.manager:switchWithNotice(
+                                label,
+                                require('source.game.runtime.nodeCatalog').new
+                            )
                         else
-                            self.manager:switch(
+                            self.manager:switchWithNotice(
+                                label,
                                 require('source.game.runtime.application').new,
                                 entry[2]
                             )

@@ -3,6 +3,7 @@ local ipairs = require('../math.array').ipairs
 local Time = require('./time')
 local Audio = require('../audio')
 local Data = require('../persistence.data')
+local LoadNotice = require('./loadNotice')
 
 local Manager = {}
 Manager.__index = Manager
@@ -148,6 +149,22 @@ function Manager:switch(factory, ...)
     return scene
 end
 
+-- Switches scenes one frame later. The frame in between shows `label`, so building a large scene
+-- (hundreds of milliseconds inside one input handler) reads as loading and not as a frozen window.
+function Manager:switchWithNotice(label, factory, ...)
+    self.notice = { label = label, factory = factory, arguments = { ... }, frames = 0 }
+end
+
+function Manager:advanceNotice()
+    local notice = self.notice
+    notice.frames = notice.frames + 1
+    -- Frame 1 draws the notice; the switch runs at the start of frame 2.
+    if notice.frames >= 2 then
+        self.notice = nil
+        self:switch(notice.factory, unpack(notice.arguments))
+    end
+end
+
 function Manager:preload(items)
     return self.resources:preload(items)
 end
@@ -169,6 +186,9 @@ function Manager:runsInBackground()
 end
 
 function Manager:update(dt, realDt)
+    if self.notice then
+        self:advanceNotice()
+    end
     if self.drawFinishedAt then
         self.frameGapMilliseconds = (katsa.timer.getTime() - self.drawFinishedAt) * 1000
     end
@@ -215,6 +235,9 @@ function Manager:draw()
         if scene.draw then
             scene:draw()
         end
+    end
+    if self.notice then
+        LoadNotice.draw(self.notice.label)
     end
     self.drawFinishedAt = katsa.timer.getTime()
 end
