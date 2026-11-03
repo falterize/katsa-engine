@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   push:
     tags: ['v*']
+    branches: ['v108*']
+    paths: ['native/**', 'tools/**', 'android/**', '.github/workflows/native.yml']
   pull_request:
     paths: ['native/**', 'tools/native/**', 'tools/build/**', 'android/**', '.github/workflows/native.yml']
 jobs:
@@ -61,3 +63,27 @@ jobs:
         with:
           name: katsa-native-android
           path: build/native/android
+
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - name: SDK and NDK
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "cmake;3.22.1" "ndk;26.3.11579264"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.3.11579264" >> "$GITHUB_ENV"
+      - run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: LuaJIT, SDL2, OpenAL Soft, katsa libraries, game archive
+        run: python3 android/prepare.py --abis arm64-v8a,x86_64
+      - name: Build the APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: katsa-android-apk
+          path: android/app/build/outputs/apk/debug/*.apk
