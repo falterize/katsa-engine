@@ -202,7 +202,7 @@ function B.resolve(world, object, nodes)
     g.setWireframe(false)
     g.setMeshCullMode('none')
     g.setColorMask(true, true, true, true)
-    -- LÃ–VE's Add blend mode preserves destination alpha. Ping-pong RGBA instead.
+    -- The Add blend mode must preserve destination alpha. Ping-pong RGBA instead.
     g.setBlendMode('replace', 'premultiplied')
     g.setColor(1, 1, 1, 1)
     g.setShader(cache.shader)

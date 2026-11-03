@@ -55,7 +55,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 ## 5. Build, run, test
 
 - Run the dev host from the repo root: `xvfb-run -a luajit tools/dev/katsa.lua . <flags>`. `tools/dev/runTests.sh --test-v108.5 [timeout]` wraps it and prints pass/fail counts.
-- Current focused suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion; 60 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
+- Current focused suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion, car body sharing; 65 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
 - Regression suites worth running after UI/render changes: `--test-v106.8` (991 checks, must pass), `--test-v108.4`, `--test-v108.1` family. Known old failures unrelated to recent work: `--test-v105` ("Native contact bridge") and `--test-v50` (Screen UI check). Do not "fix" them blindly; compare with the last known-good branch first.
 - Probe tooling: `validation/tests/versions/v108_4/shadowProbe.lua` renders frames to `~/.local/share/Katsa/katsa-engine/tmp/<dir>/fNN.png`:
   `KATSA_SHOT=tmp/<dir> KATSA_SCENE=<scene> KATSA_FRAMES=<n> xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.4.shadow`
@@ -150,7 +150,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 
 - `katsa.net` is a separate module over the fixed-step loop; Server/Client own authority, bodies expose get/set state only. Unreliable remotes via `remote:unreliable()`; kicks via `Server:kick(player, reason)`.
 - multiplayerCars (`source/game/scenes/multiplayerCars`): cars with suspension/deformation, up to 4 seats, replication, bots following a path, chat (Enter, `[HOST]` tag), player list (Tab, host-only Kick), voice chat (push-to-talk V, μ-law codec, 3D playback), host tools in the Tab panel. Key files: `scripts/content.lua` (Session, changeCar on E, HUD), `scripts/game/{carEntity,gameClient,gameServer,voice}.lua`, `scripts/view/{carView,carMesh}.lua`. End-to-end test: `validation/tests/versions/v108_4/carsScene.lua`.
-- **Open performance issue**: the owner reports lag that starts when seated in a car. Sandbox probe (`--test-v108.5.cars`): Lua update ~1.9 ms in both phases; the difference is in **main submission** (≈60 → 76 ms on llvmpipe; draw objects 23 → 54) plus a one-time ~165 ms hitch on entering. Shadow build and UI did not grow. Suspect draw-call count of the car/world while seated; real-GPU confirmation needed. Fixes must not remove features (batch/merge meshes, reduce per-part draws, avoid per-frame allocations, avoid shadow-map invalidation churn).
+- **Open performance issue**: the owner reports lag that starts when seated in a car. Sandbox probe (`--test-v108.5.cars`): Lua update ~1.9 ms in both phases; main submission 60 -> 78 ms on llvmpipe (draw objects 23 -> 54, two cars of ~16 objects each). Measured in v108.5: (1) the one-time hitch on a car appearing was `copyOf` in `carMesh.lua` (`{ unpack(vertex) }`, ~40 ms per car) - **fixed**, the rest pose is now lofted once and shared; (2) with `renderDensity` 0.5 and MSAA 0 the two car views cost only ~4 ms of ~72, so the remaining sandbox difference is pixel fill on software GL, not draw-call count. The in-car lag on real hardware is **not reproduced** in the sandbox; ask the owner for a profiler export (F4 > Stats, F6) from a seated session before cutting draw calls further. Fixes must not remove features (batch/merge meshes, reduce per-part draws, avoid per-frame allocations, avoid shadow-map invalidation churn). Beware `{ unpack(t) }` on large vertex lists anywhere else: it is slow here.
 - Shadow map in multiplayerCars is 1024 (was 2048: 400 MB atlas redrawn each frame because cars move).
 
 ## 14. Assets, XML, images
@@ -169,8 +169,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 
 ## 16. Open items (keep this list current)
 
-- Car lag while seated (see 13) — find and cut the draw cost; confirm with the owner on hardware.
-- Document `InverseKinematics3D` thoroughly in `docs/guides/animation/ik.md` and `docs/guides/development/plugins.md` if anything is missing.
+- Car lag while seated (see 13) — the spawn hitch is fixed; the in-car lag needs a profiler export from the owner's hardware.
 - Offer node representations for remaining function-only plugins (owner wants plugin features visible as nodes; `ads` excepted).
 - Lag at high TimeScale (5) mitigation; README screenshots; launcher UI last.
 

@@ -18,6 +18,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_5.ikNode').run(self)
     require('validation.tests.versions.v108_5.uiStylerFiles').run(self)
     require('validation.tests.versions.v108_5.scrollMotion').run(self)
+    require('validation.tests.versions.v108_5.carMesh').run(self)
     print('PASSED ' .. self.count .. ' v108.5 focused checks')
     katsa.event.quit()
 end
