@@ -35,6 +35,25 @@ function Module.run(self)
     blocked.pinchLast = 400
     Pinch.moved(blocked, 3, 900, 300)
     self:check(blockedZoom() == 0, 'fingers over interactable UI do not zoom')
+
+    -- Regression: the pointer position must not be overwritten by the window size (shared buffers).
+    local ffi = require('ffi')
+    local Platform = require('source.katsa.platform.sdl2')
+    local rects = { ffi.new('int[1]'), ffi.new('int[1]') }
+    local platform = setmetatable({
+        rects = rects,
+        window = {},
+        sdl = {
+            SDL_GetMouseState = function(x, y)
+                x[0], y[0] = 37, 91
+            end,
+            SDL_GetWindowSize = function(_, w, h)
+                w[0], h[0] = 1280, 720
+            end,
+        },
+    }, { __index = Platform })
+    local mx, my = platform:getMousePosition()
+    self:check(mx == 37 and my == 91, 'mouse position is not replaced by the window size')
 end
 
 return Module

@@ -55,7 +55,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 ## 5. Build, run, test
 
 - Run the dev host from the repo root: `xvfb-run -a luajit tools/dev/katsa.lua . <flags>`. `tools/dev/runTests.sh --test-v108.5 [timeout]` wraps it and prints pass/fail counts.
-- Current focused suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion, car body sharing, hover coalescing, console rows, menu loading label, Ctrl+C, net throttle, packaging, touch zoom, auto collision, .blend import; 136 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
+- Current focused suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion, car body sharing, hover coalescing, console rows, menu loading label, Ctrl+C, net throttle, packaging, touch zoom, auto collision, .blend import; 137 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
 - Regression suites worth running after UI/render changes: `--test-v106.8` (991 checks, must pass), `--test-v108.4`, `--test-v108.1` family. Known old failures unrelated to recent work: `--test-v105` ("Native contact bridge") and `--test-v50` (Screen UI check). Do not "fix" them blindly; compare with the last known-good branch first.
 - Probe tooling: `validation/tests/versions/v108_4/shadowProbe.lua` renders frames to `~/.local/share/Katsa/katsa-engine/tmp/<dir>/fNN.png`:
   `KATSA_SHOT=tmp/<dir> KATSA_SCENE=<scene> KATSA_FRAMES=<n> xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.4.shadow`
