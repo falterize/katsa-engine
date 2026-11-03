@@ -1,3 +1,5 @@
+local Layering = require('../../components.layering')
+local RenderRange = require('../../components.renderRange')
 local Lighting = require('../../components.lighting')
 local Frustum = require('../../cameras.frustum')
 local readValue = require('../../math.managedValue').read
@@ -104,19 +106,21 @@ function RenderPreparation.install(Renderer)
             if self.maxMeshDistance > 0 then
                 limit = limit > 0 and math.min(limit, self.maxMeshDistance) or self.maxMeshDistance
             end
-            local inDistance = limit <= 0
-                or M.distanceSquared(
-                        o.worldPosition or o.position,
-                        camera.worldPosition or camera.position
-                    )
-                    <= (limit + o.radius) ^ 2
+            local inDistance = RenderRange.within(
+                limit,
+                M.distanceSquared(
+                    o.worldPosition or o.position,
+                    camera.worldPosition or camera.position
+                ),
+                o.radius
+            )
             if not inDistance then
                 self.stats.distanceCulled = self.stats.distanceCulled + 1
             end
             if
                 inDistance
                 and o._renderVisible
-                and bit.band(o.layers or 1, camera.layers or -1) ~= 0
+                and Layering.sees(camera, o)
                 and o._renderOpacity > 0
                 and (
                     o._shaderBoundsUnknown
@@ -155,7 +159,7 @@ function RenderPreparation.install(Renderer)
             if not wire and b.drawable and b:refresh() then
                 b:update(world, camera)
             end
-            b.drawable = b.drawable and bit.band(b.layers or 1, camera.layers or -1) ~= 0
+            b.drawable = b.drawable and Layering.sees(camera, b)
             if b.drawable then
                 if b.debugEnabled then
                     self.billboardDebugActive = true
@@ -176,7 +180,7 @@ function RenderPreparation.install(Renderer)
             else
                 d:update(world, camera)
             end
-            if d.drawable and bit.band(d.layers or 1, camera.layers or -1) ~= 0 then
+            if d.drawable and Layering.sees(camera, d) then
                 local list = d.onTop and self.top or self.transparent
                 list[#list + 1] = d
                 if not Lighting.unlit(d) and not d.onTop then

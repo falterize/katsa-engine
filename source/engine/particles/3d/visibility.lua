@@ -1,8 +1,9 @@
+local RenderRange = require('../../components.renderRange')
+local Layering = require('../../components.layering')
 local ipairs = require('../../math.array').ipairs
 -- Test existing particles as well as the source: world-space trails can outlive an offscreen
 -- emitter.
 local M = require('../../math.math3d')
-local bit = require('bit')
 
 local V = {}
 
@@ -14,9 +15,11 @@ function V.point(emitter, camera, x, y, z, radius)
     emitter._visibilityPosition = position
     position[1], position[2], position[3] = x, y, z
     return (
-        emitter.maxDistance <= 0
-        or M.distanceSquared(position, camera.worldPosition or camera.position)
-            <= (emitter.maxDistance + radius) ^ 2
+        RenderRange.within(
+            emitter.maxDistance,
+            M.distanceSquared(position, camera.worldPosition or camera.position),
+            radius
+        )
     ) and camera:visible(position, radius)
 end
 
@@ -25,7 +28,7 @@ function V.relevant(emitter, camera, renderPose)
         not camera
         or not emitter:isVisible()
         or emitter:getEffectiveOpacity() <= 0
-        or bit.band(emitter.layers or 1, camera.layers or -1) == 0
+        or not Layering.sees(camera, emitter)
     then
         return false
     end

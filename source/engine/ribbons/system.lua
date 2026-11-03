@@ -1,6 +1,7 @@
+local RenderRange = require('../components.renderRange')
 -- Per-World3D registry of Beam3D and Trail3D nodes. `prepare` builds each visible ribbon's centre
 -- line once per rendered frame and hands it to the transparent draw list.
-local bit = require('bit')
+local Layering = require('../components.layering')
 local Geometry = require('./geometry')
 local Source = require('./source')
 
@@ -67,7 +68,7 @@ function System:prepare(camera, list)
             node.enabled ~= false
             and node:isVisible()
             and node:getEffectiveOpacity() > 0
-            and bit.band(node.layers or 1, camera.layers or -1) ~= 0
+            and Layering.sees(camera, node)
         then
             local n = self:build(node, time)
             if n >= 2 then
@@ -79,7 +80,7 @@ function System:prepare(camera, list)
                 local position = camera.worldPosition or camera.position
                 local dx, dy, dz = cx - position[1], cy - position[2], cz - position[3]
                 if
-                    (node.maxDistance <= 0 or dx * dx + dy * dy + dz * dz <= (node.maxDistance + radius) ^ 2)
+                    RenderRange.within(node.maxDistance, dx * dx + dy * dy + dz * dz, radius)
                     and camera:visible(center, radius)
                 then
                     node._count = n

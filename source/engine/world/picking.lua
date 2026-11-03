@@ -1,7 +1,7 @@
+local Layering = require('../components.layering')
 local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 local M = require('../math.math3d')
-local bit = require('bit')
 
 local Picking = {}
 
@@ -20,7 +20,7 @@ function Picking.raycast(world, camera, x, y)
             and o.canQuery ~= false
             and o:getEffectiveOpacity() > 0
             and (o.color[4] or 1) > 0
-            and bit.band(o.layers or 1, camera.layers or -1) ~= 0
+            and Layering.sees(camera, o)
         then
             local vertices, m = o.geometry.vertices, o.combined or o.matrix
             for i = 1, #vertices, 3 do

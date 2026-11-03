@@ -8,6 +8,7 @@ local Ribbon = {}
 
 local Lighting = require('../../components.lighting')
 local Shadowing = require('../../components.shadowing')
+local RenderRange = require('../../components.renderRange')
 
 Ribbon.defaults = {
     color = { 1, 1, 1 },
@@ -41,7 +42,6 @@ local hints = {
     brightness = 'Colour multiplier applied after lighting.',
     zOffset = 'World units added to the sorting depth. Positive values draw the ribbon earlier '
         .. '(behind other transparent objects).',
-    maxDistance = 'Render cutoff distance in world units; 0 disables it.',
 }
 
 for key, value in pairs(Shadowing.defaults) do
@@ -64,6 +64,7 @@ function Ribbon.describe(class, extra)
     schema.lightEmission.min, schema.lightEmission.max = 0, 1
     require('../../components.lighting').describe(class)
     require('../../components.shadowing').describe(class)
+    RenderRange.describe(class)
     for _, key in ipairs({ 'atlasFPS', 'atlasLoop' }) do
         schema[key].visibleWhen = { key = 'atlasEnabled', equals = true }
     end
@@ -102,7 +103,7 @@ function Ribbon.validate(node)
     V.number(node.textureLength, name .. '.textureLength', 1e-4)
     V.number(node.lightEmission, name .. '.lightEmission', 0, 1)
     V.number(node.brightness, name .. '.brightness', 0)
-    V.number(node.maxDistance, name .. '.maxDistance', 0)
+    RenderRange.normalize(node, 0)
     require('source.engine.components.shadowing').validate(node, name)
     assert(
         node.textureMode == 'Stretch' or node.textureMode == 'Wrap' or node.textureMode == 'Static',
