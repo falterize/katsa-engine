@@ -127,6 +127,10 @@ function Arrangement.install(UI)
         if not node.scrollingEnabled then
             return
         end
+        if node.stopMotion then
+            node:stopMotion()
+            node._exX, node._exY, node._overX, node._overY = 0, 0, 0, 0
+        end
         local x, y = Canvas.axes(node)
         deltaX = deltaX or (x and not y and deltaY or 0)
         node.scrollX = node.scrollX + (x and deltaX or 0)

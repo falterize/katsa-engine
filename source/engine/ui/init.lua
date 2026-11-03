@@ -402,12 +402,31 @@ function UI:update(realDt, simulationDt)
     if (self.physics2D or self.particles) and self.autoUpdatePhysics ~= false then
         self:updatePhysics(sceneDt)
     end
+    if self._moving and next(self._moving) then
+        self:updateScrolling(realDt)
+    end
     if self.currentCamera then
         self.currentCamera:updateFollow()
     end
     -- Each nested viewport owns a World3D clock; the enclosing UI clock must not
     -- multiply it. Only the application's common simulation delta crosses worlds.
     require('source.engine.ui.spatial.viewportUpdate').update(self.children, sceneDt)
+end
+
+-- Scroll frames that still glide or spring back are stepped here until they settle.
+function UI:wake(node)
+    self._moving = self._moving or {}
+    self._moving[node] = true
+end
+
+function UI:updateScrolling(dt)
+    for node in pairs(self._moving) do
+        if node.destroyed or not node:hasMotion() then
+            self._moving[node] = nil
+        elseif node._scrollPointer == nil then
+            node:stepMotion(self, dt)
+        end
+    end
 end
 
 function UI:release()
