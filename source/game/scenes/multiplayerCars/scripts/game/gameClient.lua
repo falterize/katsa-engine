@@ -170,8 +170,8 @@ function GameClient:attachBody(netId, model, owned)
             for _, body in pairs(self.bodies) do
                 if body.mode == 'dynamic' then
                     body:setInput(self.input())
+                    body:step(dt)
                 end
-                body:step(dt)
             end
         end
     end
@@ -215,6 +215,13 @@ end
 
 function GameClient:update(dt)
     self.client:update(dt)
+    -- A stand-in for another player's car is placed where that car is drawn this frame, so its
+    -- collision shape and the model never part (physics steps only collide against it).
+    for _, body in pairs(self.bodies) do
+        if body.mode == 'follow' then
+            body:follow(dt)
+        end
+    end
     if Plugins.has('ads') then
         Plugins.require('ads').update(dt)
     end

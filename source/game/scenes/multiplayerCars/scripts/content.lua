@@ -3,7 +3,6 @@ local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
 local ArenaView = require('./view.arenaView')
 local CarView = require('./view.carView')
-local RenderPose = require('./game.renderPose')
 local Orbit = require('./cameras.orbit')
 local Input = require('./controller.input')
 local Pinch = require('./controller.pinch')
@@ -11,6 +10,7 @@ local Walker = require('./walker.controller')
 local WalkerView = require('./walker.view')
 local GameServer = require('./game.gameServer')
 local GameClient = require('./game.gameClient')
+local PhysicsCar = require('./game.physicsCar')
 local AdsConfig = require('./game.adsConfig')
 local Interface = require('./ui.interface')
 local Menu = Interface.Menu
@@ -613,40 +613,30 @@ function Session:watchJumps(dt)
     end
 end
 
--- Bodies simulated by this process are drawn between their last two physics steps.
-function Session:updateRenderPoses()
-    local physics = self.scene.physics
-    local alpha = physics and physics.interpolationAlpha or 1
-    local function pose(model, simulated)
-        if simulated then
-            RenderPose.sample(model)
-            RenderPose.apply(model, alpha)
-        elseif model._renderPose then
-            RenderPose.clear(model)
-        end
+-- The physics body that simulates a car in this process: the client's own driven car or, on the
+-- hosting machine, the server's car. Nil for cars drawn from network interpolation.
+function Session:simulatingBody(netId)
+    local client = self.client
+    local body = client.bodies[netId]
+    if body == nil and self.server and client.client:isMirrored(netId) then
+        body = self.server.bodies[netId]
     end
+    if body ~= nil and body.mode == 'dynamic' then
+        return body
+    end
+end
+
+-- Simulated cars are drawn at their body's render pose, the pose the collision wireframes use;
+-- every other car keeps the raw interpolated model.
+function Session:updateRenderPoses()
     local client = self.client
     if client then
         for netId, car in pairs(client.cars) do
-            -- Only a car this client's own physics world simulates is blended with the step alpha.
-            -- On the hosting machine the client car is a network replica, already interpolated per
-            -- frame from snapshots; blending it again made the drawn motion alternate between
-            -- half and double steps.
-            local body = client.bodies[netId]
-            -- A car the local server simulates is read from the server (client:isMirrored).
-            local mirrored = client.client:isMirrored(netId)
-            if mirrored and self.server and self.server.bodies[netId] then
-                body = self.server.bodies[netId]
-            end
-            -- Simulated cars are drawn at the body's own render pose, exactly where the collision
-            -- wireframes are; the sampled blend is only a fallback.
-            if body ~= nil and body.mode == 'dynamic' and body:renderPose(car) then
-                if car._renderPose then
-                    RenderPose.clear(car)
-                    body:renderPose(car)
-                end
-            else
-                pose(car, mirrored)
+            local body = self:simulatingBody(netId)
+            if body then
+                body:renderPose(car)
+            elseif car.rx then
+                PhysicsCar.clearRenderPose(car)
             end
         end
         for _, walker in pairs(client.walkers) do
@@ -657,8 +647,8 @@ function Session:updateRenderPoses()
                 walker.rx, walker.ry, walker.rz = x, y, z
                 walker.rheading, walker.rwalk, walker.rcrouch = heading, walk, crouch
             elseif walker.rx then
-                RenderPose.clear(walker)
-                walker.rwalk, walker.rcrouch = nil, nil
+                walker.rx, walker.ry, walker.rz = nil, nil, nil
+                walker.rheading, walker.rwalk, walker.rcrouch = nil, nil, nil
             end
         end
     end

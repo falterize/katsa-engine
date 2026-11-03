@@ -100,11 +100,12 @@ function DebugDrawing.install(Physics, Body3D)
         end
         katsa.graphics.push('all')
         katsa.graphics.setShader()
-        -- Render: the pose the visuals use. Solver: the newest physics step (what contacts and
-        -- queries really see). Both: the solver pass in one colour over the usual colours.
+        -- Render: the pose the visuals use, in the usual colours. Solver: the newest physics step
+        -- (what contacts and queries really see), always magenta so the two can be told apart.
+        -- Both: the two passes over each other.
         local mode = self._debugSettings.poseMode or 'Render'
         if mode == 'Solver' or mode == 'Both' then
-            self.debugTint = mode == 'Both' and SOLVER_TINT or nil
+            self.debugTint = SOLVER_TINT
             drawAt(self, nil)
             self.debugTint = nil
         end
