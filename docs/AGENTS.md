@@ -1,4 +1,182 @@
-# Project conventions
+# AGENTS.md — instructions for AI agents working on Katsa
+
+Katsa is an open source 2D/3D engine on its own **LuaJIT + OpenGL** runtime (SDL2 platform layer, `katsa.*` API). It was migrated from LÖVE, which is history now. Repository: `falterize/katsa-engine`. Read this file fully before changing anything; the rules below come from real regressions.
+
+Sections: 1 Working with the owner · 2 Repository map · 3 Code style · 4 Modules and requires · 5 Build, run, test · 6 Git and releases · 7 Rendering and GL · 8 Nodes, worlds, physics · 9 UI (ScrollFrame, uiStyler, widgets) · 10 Animation and IK · 11 Plugins · 12 Scenes and the collection runtime · 13 Multiplayer and multiplayerCars · 14 Assets, XML, images · 15 Sandbox pitfalls · 16 Open items.
+
+---
+
+## 1. Working with the owner
+
+- The owner speaks **Russian**. Reply to them in Russian. Everything written to the repository is **English**: code, comments, docs, test names, commit messages, filenames, user-facing strings. No exceptions.
+- Do not mention LÖVE anywhere except the single historical line in `README.md`.
+- Ask questions only when a wrong guess is expensive or the request is truly ambiguous. Otherwise choose the sensible default, say what you chose, and continue. "Do you have questions?" from the owner is an invitation, not an obligation.
+- Work in **batches**: when the owner lists several items, do all of them in one go instead of finishing one and stopping. Commit and push regularly.
+- Never cut functionality ("функционал движка не урезай"). Fix or improve; do not delete features to make a problem disappear. Performance work must keep every feature (e.g. quality profiles reduce cost, they do not remove effects).
+- The **launcher UI is the LAST stage** of the plan. Do not start it until the owner says so.
+- Verify instead of guessing. Earlier misdiagnoses (shadow flicker blamed on cascades, acne and the normal matrix) cost the owner many test rounds; the real cause was GL state (see 7). When a diagnosis is a hypothesis, prove it with a probe before shipping a "fix", and say plainly when something can only be verified on real hardware.
+- The sandbox renders with Mesa llvmpipe (software GL): it validates logic, shaders and images, **not** real-GPU timing, window/DPI/audio behaviour, the Windows .exe or Android. The owner verifies those. Say so when relevant.
+- Keep final answers short: what changed, what was verified, what is still open, one natural next step.
+- Plugins that add something (nodes, features) must be visible as **nodes with properties** in the inspector, except pure provider plugins such as `ads`. The IK plugin is the model: `InverseKinematics3D`.
+
+## 2. Repository map
+
+| Path | Content |
+| --- | --- |
+| `source/engine/` | Reusable engine services and node APIs (nodes, ui, graphics, physics, animation, editor, input, net, world ...) |
+| `source/katsa/` | The runtime layer: graphics on GL, window, audio, filesystem, net, platform |
+| `source/game/` | Scenes (`scenes/<name>`), the common collection runtime, game data (`data/project.lua`), `sceneCatalog.lua` |
+| `source/plugins/<name>/` | Optional features: `ads`, `ik`, `pathfinding`, `uiStyler` |
+| `assets/` | Shared models, textures, shaders (`assets/shaders/engine/*.glsl`), audio, fonts |
+| `validation/tests/` | **All** tests; versioned suites in `validation/tests/versions/vNNN/`, registry in `validation/tests/registry.lua` |
+| `native/`, `vendor/` | Project C/C++ sources / pinned third-party code (never hand-format vendor code) |
+| `tools/` | `dev/katsa.lua` (dev host), `dev/runTests.sh`, `build/`, `project/`, `import/` |
+| `docs/` | Current guides (`docs/guides/<area>/`), `architecture.md`, `changelog.md`, this file |
+
+One README in the repository root. Screenshots go to `docs/images`, never the root. Per-version notes go to `docs/changelog.md` (there is no `releases` folder).
+
+## 3. Code style
+
+- `stylua.toml` is law: four spaces, ~100 columns, single quotes. Format first-party Lua with `stylua --syntax LuaJIT` on `source/engine source/game validation/tests main.lua conf.lua` when stylua is available. Do not reformat vendor code or historical comparison fixtures.
+- Blank lines between sibling functions and logical phases. Runtime modules export named tables in this order: imports, locals, module table, helpers, functions, final export. Use explicit `create/new/build/install/register` entry points.
+- Comment non-obvious invariants, units, ownership, callback boundaries and cache invalidation. Do not narrate obvious assignments or comment every function.
+- Keep allocations out of hot loops; keep native callback lifetime and JIT safeguards.
+- Shaders keep **CRLF** line endings where the file has them (`world.glsl`). When editing with Python, open with `newline=''`; a text-mode rewrite turns the whole file into a diff.
+- Tests must be **short** and focused (a handful of checks per feature). Test descriptions are English sentences.
+
+## 4. Modules and requires
+
+- Relative requires: `require('./part')` same folder, `require('../x.y')` one up, `require('../../x')` two up; the rest is a dotted name (`'./solvers.twoBone'`). Use absolute `source.*` names only for modules more than two folders away.
+- Relative requires belong at **file top level**. Inside functions use the absolute name (each relative call inspects the stack). Never tail-call a relative require (`return (require('./part'))`).
+- Plugin manifests name modules as `./nodes.navMap`. Scene scripts are relative to the scene root; scene packages use the `scene.` prefix (`require('scene.scripts.x')`) and `scene://` for asset URLs.
+- `katsa.filesystem.getDirectoryItems/getInfo/read/load` list and read files (also from archives). Scene code gets its root from `context.root`.
+- Keep game features in `source/game`, engine services in `source/engine`, third-party artifacts in `vendor`. The core must **never** require a plugin.
+
+## 5. Build, run, test
+
+- Run the dev host from the repo root: `xvfb-run -a luajit tools/dev/katsa.lua . <flags>`. `tools/dev/runTests.sh --test-v108.5 [timeout]` wraps it and prints pass/fail counts.
+- Current focused suite: `--test-v108.5` (front-face winding, IK, InverseKinematics3D node, uiStyler style files, ScrollFrame motion; 60 checks). `--test-v108.5.cars` is a **diagnostic probe** (not a pass/fail suite) that drives multiplayerCars on foot and in a car and prints per-stage timings.
+- Regression suites worth running after UI/render changes: `--test-v106.8` (991 checks, must pass), `--test-v108.4`, `--test-v108.1` family. Known old failures unrelated to recent work: `--test-v105` ("Native contact bridge") and `--test-v50` (Screen UI check). Do not "fix" them blindly; compare with the last known-good branch first.
+- Probe tooling: `validation/tests/versions/v108_4/shadowProbe.lua` renders frames to `~/.local/share/Katsa/katsa-engine/tmp/<dir>/fNN.png`:
+  `KATSA_SHOT=tmp/<dir> KATSA_SCENE=<scene> KATSA_FRAMES=<n> xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.4.shadow`
+  Env hooks: `KATSA_CAM="x,y,z,pitch,yaw"`, `KATSA_SHADOWVIEW`, `KATSA_NORMALVIEW`. Look at the PNGs (Read tool) for anything visual; build contact sheets when comparing frames.
+- Long runs: use `timeout`, background tasks and a log file. A stray `cat` or any command waiting on stdin hangs the shell. `pkill -f` can kill your own shell if the pattern matches the command line.
+- Every feature needs: a short test in the current `validation/tests/versions/vNNN/` folder wired into `focused.lua`, an entry in `registry.lua` when it adds a flag, a docs update, and a `docs/changelog.md` line under the current version.
+- Shared physics/spatial infrastructure changes need regression tests for **both** dimensions, scene smoke tests, mixed-world lifecycle checks and current docs.
+
+## 6. Git and releases
+
+- Current line: branch `v108.5` (version string in `source/engine/core/version.lua`). `v108.4` is the last known-good release and must stay untouched; each release gets its own branch. Do not push to `main` without the owner's word.
+- Commit and push regularly (the session Stop hook demands that uncommitted work is committed and pushed). Commit messages end with the trailers the harness gives you (`Co-Authored-By: ...`, `Claude-Session: ...`).
+- Git cannot store empty directories. Record intentionally empty scene folders in `tools/project/emptyDirectories.txt` (`python tools/build/restoreEmptyDirs.py --update`) and recreate them with `python tools/build/restoreEmptyDirs.py`. Never add marker files. The engine must never require an empty folder.
+- Archive: `python tools/build/packageProject.py --output dist` (omits `validation/` unless `--with-validation`).
+- Update `docs/changelog.md` and dependency docs when changing structure. Follow the owner's requested version name.
+
+## 7. Rendering and GL
+
+- The GL state layer (`source/katsa/graphics/renderState.lua`) caches "applied" state. **A cache that claims state the driver does not have is the worst bug class here.** Example (fixed in v108.4): with culling off the front-face winding was never sent, `gl_FrontFacing` flipped intermittently and double-sided skinned meshes lost lighting. `applyCull()` now sets `glFrontFace` for every cull mode before any early return. When a rendering symptom is intermittent, suspect cached state first.
+- Skinned meshes derive the normal matrix in the vertex shader from the same model matrix as positions (`world.glsl`).
+- Debug views: F4 > *Shadow view* (green lit, red shadowed, blue not evaluated; brightness = cascade) and *Normal view* (normals as colour). Use them before theorising about shadows.
+- Shaders are written in one dialect and translated to GLSL 330 core (desktop) / GLSL ES 300 (mobile). All engine shaders must compile on both targets.
+- Quality profiles `Low/Medium/High` (`Environment:applyQualityProfile`) lower cost without removing features; `renderDensity` is the render-resolution scale; `Environment.rendering.vsync` drives vertical sync.
+- Camera3D: `projectionMode` Perspective/Orthographic, `fov`, `orthoSize`, `zoom`, `orthoNear` (default `-far`). Project/pick/cull only through `camera:project/screenRay/viewToScreen/pixelsPerUnitAt`; never divide by `camera.focal` in new code; use `camera.nearClip` for the effective near plane. Ortho cameras skip software occlusion culling.
+- Camera2D has immediate transforms and no smoothing; keep projection, inverse pointer conversion, zoom and FOV mathematically consistent.
+- Missing/empty UI images and missing model files render cached **diagnostic assets** (checker), never fatal errors from a render callback.
+
+## 8. Nodes, worlds, physics
+
+- Physics by dimension: `source/engine/physics/2d` (Box2D) and `3d` (facade + Oimo/Jolt backends); nodes in `source/engine/nodes/physics/2d|3d`. New dimension-specific classes end with `2D`/`3D`. Keep public compatibility aliases.
+- Never change the global `katsa.physics` meter per world; convert through each Physics2D instance. Dispatch contact events after the native solver unlocks; keep transactional collider replacement, constraint ownership and teardown order.
+- Advance each simulation **exactly once**. World2D updates physics from `UI:update(realDelta, simulationDelta)` unless `autoUpdatePhysics = false`; physical example scenes disable it and step Box2D in `systems/simulation.lua:update2D`, then refresh camera follow.
+- Each World2D/World3D has an independent `timeScale` (0..100). Never multiply parent and child clocks. `manager.time.scale` is a separate application override. Preserve zero-time pause semantics.
+- Spatial 2D/3D use **Y up**; screen UDim2 layout is Y down; convert at the boundary (Camera2D, spatial UI, pointer inversion, image-collider rows). Downward gravity is `{0,-1}` / `{0,-1,0}`; gravity policy lives in `engine/world/gravity.lua`.
+- Node2D/Node3D are spatial groups, not folders. Never sort authoritative `children` arrays for presentation; use the layout-order view.
+- Collider2D is physical; visuals are UINode children. Image-derived colliders are built from alpha only when inputs change; never silently substitute a convex hull. Collider3D Points are body-local; extraction copies vertices and never aliases render geometry. GeometrySource reuses the model importer registry.
+- Editor node references use the common `nodeReferences` policy; use supported editor kinds (vector/node), do not invent new field kinds.
+- Each world owns one required `Environment` node (debug, particles, lighting, shadows, sky, fog). Keep 2D and 3D Workspace debug exposure symmetric.
+- Per-fixed-step gameplay state that drives visuals goes through `engine/animation/stepValue.lua` and is sampled with the physics interpolation alpha. Camera2D follows the interpolated pose.
+- Use `currentCamera` / `setCurrentCamera`; canonical names in examples, not historical aliases.
+
+## 9. UI
+
+General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), changes call `ui:invalidate()`. Use the shared `TextBox` for editable strings/numbers (UTF-8 editing in `ui/widgets/textEditor.lua`, focus in `textFocus.lua`; consume focused typing before gameplay shortcuts; release focus on destroy). Visual nodes use the named `layerGroups` registry. Reuse `ui/widgets/collapsible` for example control panels.
+
+### ScrollFrame (v108.5)
+- Files: `ui/nodes/scrollFrame.lua`, `ui/layout/scrollCanvas.lua`, `scrollLength.lua`, `ui/scrolling/scrollBar.lua`, `UI:wake/updateScrolling` in `ui/init.lua`.
+- Properties: `inertia` (0..1, default 0.6), `overscroll` (0..1 of the window, default 0.25; 0 = hard stop), `bounceSpeed` (default 14, visible only when overscroll > 0), `dragWithMouse` (default **false**).
+- **Touch always swipes. The mouse swipes only when `dragWithMouse` is on** (pointer id `'mouse'`); wheel and scrollbar-thumb drag work regardless. Do not break this gate.
+- Model: `scrollX/scrollY` stay clamped to the canvas. The finger overshoot is kept in raw excess `_exX/_exY`; displayed stretch `_overX/_overY = limit*excess/(excess+limit)` is subtracted in `getChildOffset*`. Anything that measures child positions (`scrollLength`) adds the over-offset back. A frame with motion registers via `ui:wake(node)` and is stepped from `UI:update(realDt)` until `hasMotion()` is false. `ui:scrollBy` and the wheel stop any glide.
+- Release speed counts only if the last move was < 0.1 s ago.
+
+### uiStyler plugin
+- `source/plugins/uiStyler` (`styler.lua`). Selectors: `*`, `Class` (isA), `.tag`, `Class.tag`, `#Name`, and a **bare lowercase word = tag** (`uicorner`). Specificity: `*`0, class 1, tag 10, class+tag 11, name 100; later rules win ties.
+- Values: plain, `'$token'` from the active theme, nested tables resolved recursively, or `function(tokens, node)`. Pseudo properties: `corner = n` (+ `cornerScale`) creates a `UICorner`, `stroke = {color, thickness, transparency}` a `UIStroke`. A property the styler set is restored to its authored value once no rule sets it.
+- **Style files**: a scene keeps styles in `assets/styles/*.lua` and loads them with `styler:loadStyles(context.root .. '/assets/styles')`. A file returns a map `{ uicorner = { corner = 10, cornerScale = 0.1, backgroundColor = '$panel' } }` or a list of `{selector, values}`. One style sets many values at once. `extends = 'other'` (or a list) merges earlier styles. `styler:style(selector, values)` does the same from code; `styler:sheet(list)` replaces all rules; `setTheme` restyles every applied root.
+- Docs: `docs/guides/ui/uiStyler.md`. The `launcherShowcase` scene is the reference (`assets/styles/launcher.lua`).
+
+### Other
+- `canvasSize`, scrolling axes, scrollbar insets: see `docs/guides/ui/scrolling.md`.
+- Mobile controls: the joystick relocates away from scene UI; keep runner touch actions accessible; hide free-3D-camera controls when no active 3D camera exists.
+- Normal runtime errors keep an interactive error screen and save `last-error.txt` (ten crash-history slots); automated test modes may exit immediately.
+
+## 10. Animation and IK
+
+- `Animator` (`engine/nodes/animation/animator.lua`): `evaluate pose → modifiers → model:update(0)`. `Animator:update` rewrites **all** node TRS every pose evaluation, so anything that adjusts bones must run as a modifier (`addModifier/removeModifier`, priority-sorted, called with `process(self, step)` just before the matrix rebuild). Poses are model-space relative to `model.root`; convert with `root:getWorldMatrix()` for world targets.
+- Skeleton data: `model.nodes` 1-based, children 0-based indices, `translation/rotation{x,y,z,w}/scale`, row-major matrices with translation at 4,8,12.
+- Flipbook/sprite animation: clips live in XML (`assets/animations/player.xml` for the runner) loaded through `engine/animation/formats/flipbookXml.lua`; never duplicate frames/fps in Lua; validate manifests once at scene creation.
+
+### IK plugin (`source/plugins/ik`)
+- Core: `quat.lua` (Hamilton quaternions, shortest-arc `fromTo`), `skeleton.lua` (bone access and local/model/world rotation, `aim`, `chain`, `limitLocal`, `snapshot/blend`), `modifier.lua` (`SkeletonModifier` base: `influence`, `priority`, `debug`, `process` with influence blending, `drawDebug`).
+- Solvers (`solvers/`): `TwoBone` (law of cosines with pole, softness), `LookAt`, `Fabrik`, `Ccd` (per-joint limits), `Jacobian` (damped least squares), `Spline` (Catmull-Rom, arc-length placement), `FK` (euler Z·Y·X per bone).
+- **Node**: `InverseKinematics3D` (`nodes/inverseKinematics3D.lua`, registered in the manifest `nodes`). Property `type` selects the solver; per-type properties show conditionally through `visibleWhen`; bone dropdowns are built from the target model (`Schema.options` accepts a function of the target). Target/pole use `kind='node'` references. New solver = new file in `solvers/` + a type entry + conditional properties + a test.
+- Show scene `ikLab`: both hands hold a ball that moves, elbows bend toward pole hints, an arm solver switch. Keep it visually clear (verified by screenshot grids).
+- Docs: `docs/guides/animation/ik.md`. Tests: `v108_5/ik.lua`, `ikNode.lua`.
+
+## 11. Plugins
+
+- Layout: `source/plugins/<name>/{plugin.lua,init.lua}`. Manifest fields: `name`, `title`, `version`, `description`, `requires`, `nodes = { Name = './nodes.module' }`, `extend` (settings/methods for existing node classes), `debug` (section in `Environment.debug`). Scenes opt in with `plugins = { 'name' }` in `settings.lua`; code uses `require('source.engine.plugins').require('name')` or `Plugins.activate(world, names)`.
+- Custom node definitions (`specialNode.register`): `base`, `properties` (descriptors with `default,min,max,hint,options,visibleWhen,kind/nodeClass`), `initialize`, `update`; extra methods are copied to the class.
+- Inspector schema (`engine/editor/inspectors/schema.lua`, `schemaFields.lua`): `Schema.visible/descriptor/options/hint`; `visibleWhen` accepts `{key,equals}`, `{key,oneOf}`, `{key,present}`, a function, or an array (AND). Add new inspector keys to the class `propertySchema` and to `schemaFields.lua` groups.
+- `pathfinding` provides `NavMap` and a debug view (`Environment.debug.pathfinding`); `ads` is a provider-only plugin (rewarded video, API keys via config). Docs: `docs/guides/development/plugins.md`.
+
+## 12. Scenes and the collection runtime
+
+- Scene folder: `settings.lua`, lifecycle-only `main.lua` (system discovery/order is visible there), `assets/`, `nodes/`, `systems/`, `scripts/`. Composition lives in `scripts/content.lua`; other scripts are grouped by responsibility (builders, behaviors, lighting, animation, data, catalog); UI entry is `scripts/ui/interface.lua` or `controller.lua`. Only create categories you use.
+- Register scenes in `source/game/sceneCatalog.lua` (`{ id, path }`). Example scenes run on the **common collection runtime** (Workspace, navigation, Stats, Debug, Tools); a minimal standalone Host is only for independent games. `main.create` may call `preparePresentation`.
+- Pause menu: `source/game/runtime/pauseMenu.lua` (`attach(scene, true)` keeps time running, used by multiplayerCars).
+- Host vs Game runtime matters: collection scenes run inside the Host; check which runtime a feature needs before assuming globals.
+
+## 13. Multiplayer and multiplayerCars
+
+- `katsa.net` is a separate module over the fixed-step loop; Server/Client own authority, bodies expose get/set state only. Unreliable remotes via `remote:unreliable()`; kicks via `Server:kick(player, reason)`.
+- multiplayerCars (`source/game/scenes/multiplayerCars`): cars with suspension/deformation, up to 4 seats, replication, bots following a path, chat (Enter, `[HOST]` tag), player list (Tab, host-only Kick), voice chat (push-to-talk V, μ-law codec, 3D playback), host tools in the Tab panel. Key files: `scripts/content.lua` (Session, changeCar on E, HUD), `scripts/game/{carEntity,gameClient,gameServer,voice}.lua`, `scripts/view/{carView,carMesh}.lua`. End-to-end test: `validation/tests/versions/v108_4/carsScene.lua`.
+- **Open performance issue**: the owner reports lag that starts when seated in a car. Sandbox probe (`--test-v108.5.cars`): Lua update ~1.9 ms in both phases; the difference is in **main submission** (≈60 → 76 ms on llvmpipe; draw objects 23 → 54) plus a one-time ~165 ms hitch on entering. Shadow build and UI did not grow. Suspect draw-call count of the car/world while seated; real-GPU confirmation needed. Fixes must not remove features (batch/merge meshes, reduce per-part draws, avoid per-frame allocations, avoid shadow-map invalidation churn).
+- Shadow map in multiplayerCars is 1024 (was 2048: 400 MB atlas redrawn each frame because cars move).
+
+## 14. Assets, XML, images
+
+- Image-bearing nodes use `components/image.lua` (sampler, XML and UV policy). XML mode: `xml` visible only in XML mode, `atlasFrame` editable in Atlas/XML; XML owns grid/filter and fills `image` automatically but `image` stays an editable override. Rebind only when the manifest path or resource owner changes; rendering never creates playback or resets `atlasFrame`.
+- Invalid XML or incompatible atlas art reports diagnostics and renders a checker; it never asserts from a render callback.
+- Models: glTF accessors are read with typed arrays; preserve glTF transforms; cache successful and failed loads. Skin limits: `docs/guides/rendering/skinLimits.md`.
+- Fonts: `font` property on TextLabel/Button/TextBox resolves like image paths (`shared://fonts/test-font`); a missing file warns and falls back.
+- Save directory: `Katsa/katsa-engine` (older builds used a nested folder; leave old files alone).
+
+## 15. Sandbox pitfalls
+
+- No audio device (ALSA noise is harmless), no GPU: software GL only. Outbound network goes through an allowlist proxy; only package registries and GitHub work.
+- `jit.p` output is GL-bound and uninformative for render cost; use the engine profiler (`manager.profiler`, stages: Scene update, Node/gameplay/physics update, Cars: *, Shadow build, Main submission, Screen UI ...).
+- Windows-only behaviour (e.g. "No answer from the server" on multiplayer) needs the owner's confirmation; do not claim it fixed from the sandbox.
+
+## 16. Open items (keep this list current)
+
+- Car lag while seated (see 13) — find and cut the draw cost; confirm with the owner on hardware.
+- Document `InverseKinematics3D` thoroughly in `docs/guides/animation/ik.md` and `docs/guides/development/plugins.md` if anything is missing.
+- Offer node representations for remaining function-only plugins (owner wants plugin features visible as nodes; `ads` excepted).
+- Lag at high TimeScale (5) mitigation; README screenshots; launcher UI last.
+
+---
+
+## Appendix A. Detailed conventions (original list, kept verbatim)
 
 - Physics is categorized by dimension: `source/engine/physics/2d` contains Box2D integration and `source/engine/physics/3d` contains the 3D facade and sibling Oimo/Jolt backends. `physics/init.lua` is a compatibility entry point for 3D only; add new implementation code inside the appropriate dimension.
 - Physics nodes are grouped under `source/engine/nodes/physics/2d` and `3d`. New dimension-specific spatial, collider, body, camera and constraint classes end with `2D` or `3D`. Preserve existing public compatibility aliases.
