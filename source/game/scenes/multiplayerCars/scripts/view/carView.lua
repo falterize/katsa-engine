@@ -2,6 +2,7 @@
 local Body = require('./carMesh')
 
 local orientation = require('../game.orientation')
+local CarAxes = require('../game.carAxes')
 
 local CarView = {}
 CarView.__index = CarView
@@ -53,6 +54,7 @@ function CarView.new(scene, netId, model)
         debris = {},
         spin = 0,
         angles = {},
+        up = {},
     }, CarView)
     self.root = world:create('Node3D', { name = 'Car' .. netId })
     self.body = world:create('Mesh3D', {
@@ -158,17 +160,17 @@ end
 function CarView:update(dt)
     self:ageDebris(dt)
     local car = self.model
+    local heading, pitch, roll =
+        car.rheading or car.heading, car.rpitch or car.pitch or 0, car.rroll or car.roll or 0
+    -- The model origin sits rideHeight below the chassis center along the car's own up axis.
+    local up = CarAxes.up(heading, pitch, roll, self.up)
+    local drop = car.config.rideHeight
     self.root.position = {
-        car.rx or car.x,
-        (car.ry or car.y) - car.config.rideHeight,
-        car.rz or car.z,
+        (car.rx or car.x) - up[1] * drop,
+        (car.ry or car.y) - up[2] * drop,
+        (car.rz or car.z) - up[3] * drop,
     }
-    self.root.rotation = orientation(
-        car.rheading or car.heading,
-        car.rpitch or car.pitch or 0,
-        car.rroll or car.roll or 0,
-        self.angles
-    )
+    self.root.rotation = orientation(heading, pitch, roll, self.angles)
     self.spin = (self.spin + car.speed * dt / 0.35 * 57.3) % 360
     for index, wheel in ipairs(self.wheels) do
         local steer = index <= 2 and car.steerAngle or 0
