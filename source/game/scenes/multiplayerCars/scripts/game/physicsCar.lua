@@ -159,6 +159,8 @@ local function dot(a, b)
 end
 
 -- Applies all car forces for one physics step.
+-- A follow-mode body (the server's stand-in for a client-driven car) is placed at the latest
+-- replicated pose; client stand-ins are placed per frame by GameClient:update instead.
 function PhysicsCar:step(dt)
     if self.mode == 'follow' then
         return self:follow(dt)
@@ -361,6 +363,12 @@ function PhysicsCar:renderPose(model)
     model.rroll =
         math.deg(math.asin(math.max(-1, math.min(1, right[2] / math.max(0.2, math.cos(pitch))))))
     return true
+end
+
+-- Drops the render pose: the model is drawn raw again.
+function PhysicsCar.clearRenderPose(model)
+    model.rx, model.ry, model.rz = nil, nil, nil
+    model.rheading, model.rpitch, model.rroll = nil, nil, nil
 end
 
 -- True once the car has been upside down or far below the arena for a while.
