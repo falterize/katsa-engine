@@ -137,13 +137,19 @@ runtime from it and forwards stdout/stderr to logcat (`adb logcat -s katsa`).
    - packs the game and the Lua runtime into `android/app/src/main/assets/game.katsa`.
    Use `--abis arm64-v8a` for a quick phone build, `--game <folder>` for your own game (default: this repository).
    `armeabi-v7a` (old 32-bit phones) additionally needs `gcc -m32` support on the build machine.
-3. Build: `cd android`, `gradle wrapper --gradle-version 8.7` (once), then `./gradlew assembleDebug`. Or open the
+3. Build: `cd android`, then `./gradlew assembleDebug` (`gradlew.bat` on Windows; the Gradle wrapper is committed). Or open the
    `android/` folder in Android Studio and press Run. SDL2 and OpenAL Soft are compiled by CMake as part
    of this step (the first build takes several minutes).
 4. Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 5. After changing only game files rerun `python3 android/prepare.py --skip-deps`, then step 3.
 6. Release: set your own `applicationId` in `android/app/build.gradle`, create a keystore and a `signingConfig`,
    then `./gradlew bundleRelease` (Play Store) or `assembleRelease`.
+
+Building on Windows without WSL or GitHub: the only step that needs `make`/`gcc` is the static LuaJIT cross-build.
+Download the `katsa-android-luajit` artifact of the latest `native` workflow run, unpack it into
+`android/deps/luajit/` (so `android/deps/luajit/arm64-v8a/lib/libluajit-5.1.a` exists), then run
+`python android/prepare.py --abis arm64-v8a` and `android\gradlew.bat assembleDebug` (or press Run in Android Studio).
+`prepare.py` stops with this instruction when the libraries are missing and `make` is unavailable.
 
 Screen size and speed: the APK renders at 720 px height and Android stretches it to the screen
 (`<meta-data android:name="katsa.renderHeight">` in `AndroidManifest.xml`; `0` = native resolution, sharper

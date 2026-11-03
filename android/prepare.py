@@ -74,6 +74,12 @@ def build_luajit(abi, bin_dir):
     prefix = DEPS / 'luajit' / abi
     if (prefix / 'lib' / 'libluajit-5.1.a').is_file():
         return
+    if sys.platform == 'win32' or not shutil.which('make'):
+        sys.exit(
+            f'LuaJIT for {abi} is missing and cannot be built here (it needs make and gcc). Download the '
+            f'"katsa-android-luajit" artifact of the GitHub workflow and unpack it into {DEPS / "luajit"} '
+            f'(so that {prefix / "lib" / "libluajit-5.1.a"} exists), then run this script again.'
+        )
     source = DEPS / 'build-luajit' / abi
     shutil.rmtree(source, ignore_errors=True)
     shutil.copytree(DEPS / 'LuaJIT', source, ignore=shutil.ignore_patterns('.git'))

@@ -100,13 +100,17 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.3.11579264" >> "$GITHUB_ENV"
       - run: sudo apt-get update && sudo apt-get install -y gcc-multilib
       - uses: gradle/actions/setup-gradle@v4
-        with: { gradle-version: '8.7' }
       - name: LuaJIT, SDL2, OpenAL Soft, katsa libraries, game archive
         run: tools/ci/annotate.sh prepare python3 android/prepare.py --abis arm64-v8a,x86_64
       - name: Build the APK
         working-directory: android
-        run: ../tools/ci/annotate.sh gradle gradle assembleDebug --no-daemon
+        run: ../tools/ci/annotate.sh gradle ./gradlew assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: katsa-android-apk
           path: android/app/build/outputs/apk/debug/*.apk
+      # Static LuaJIT per ABI: lets a Windows PC build the APK without make/gcc (docs/guides/katsa/building.md).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: katsa-android-luajit
+          path: android/deps/luajit
