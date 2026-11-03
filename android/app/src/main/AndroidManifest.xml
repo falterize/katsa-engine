@@ -19,7 +19,7 @@
         <activity
             android:name=".KatsaActivity"
             android:exported="true"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="fullSensor"
             android:launchMode="singleTask"
             android:configChanges="keyboardHidden|keyboard|orientation|screenSize|smallestScreenSize|screenLayout|uiMode|density|navigation|colorMode"
             android:resizeableActivity="true">

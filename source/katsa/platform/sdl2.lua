@@ -161,7 +161,7 @@ function Platform:setMode(width, height, flags)
     local sdl = self.sdl
     local existing = self.window ~= nil
     if existing then
-        local scale = self:getUIScale(select(2, self:getRawMode()))
+        local scale = self:getUIScale(self:getShortSide())
         sdl.SDL_SetWindowSize(self.window, width * scale, height * scale)
         if flags.borderless == nil then
             -- keep current decorations
@@ -250,20 +250,26 @@ end
 
 -- Window units are SDL pixels divided by the UI scale. The scale is 1 on desktop unless
 -- KATSA_UI_SCALE (or `uiscale` in the window flags) is set; on Android it makes the logical window
--- about ANDROID_LOGICAL_HEIGHT units tall, so buttons are finger sized. Everything above the
+-- about ANDROID_LOGICAL_HEIGHT units on the short side (landscape height, portrait width), so
+-- buttons are finger sized in both orientations. Everything above the
 -- platform (layout, pointer coordinates, graphics) works in window units, exactly as with a
 -- high-DPI display, because getDPIScale() reports the ratio of drawable pixels to window units.
 local ANDROID_LOGICAL_HEIGHT = 540
 
-function Platform:getUIScale(pixelHeight)
+function Platform:getUIScale(shortSide)
     local fixed = tonumber(os.getenv('KATSA_UI_SCALE')) or (self.flags and self.flags.uiscale)
     if fixed then
         return math.max(0.25, fixed)
     end
-    if Native.os() == 'Android' and pixelHeight and pixelHeight > 0 then
-        return math.min(3, math.max(1, pixelHeight / ANDROID_LOGICAL_HEIGHT))
+    if Native.os() == 'Android' and shortSide and shortSide > 0 then
+        return math.min(3, math.max(1, shortSide / ANDROID_LOGICAL_HEIGHT))
     end
     return 1
+end
+
+function Platform:getShortSide()
+    local rw, rh = self:getRawMode()
+    return math.min(rw, rh)
 end
 
 function Platform:getRawMode()
@@ -274,7 +280,7 @@ end
 
 function Platform:getMode()
     local rw, rh = self:getRawMode()
-    local scale = self:getUIScale(rh)
+    local scale = self:getUIScale(math.min(rw, rh))
     return rw / scale, rh / scale, self.flags or {}
 end
 
@@ -339,7 +345,7 @@ end
 function Platform:getMousePosition()
     local x, y = self.rects[1], self.rects[2]
     self.sdl.SDL_GetMouseState(x, y)
-    local scale = self:getUIScale(select(2, self:getRawMode()))
+    local scale = self:getUIScale(self:getShortSide())
     return x[0] / scale, y[0] / scale
 end
 
@@ -421,14 +427,14 @@ function Platform:translate(e)
         return { 'textinput', ffi.string(e.text.text) }
     elseif t == EVENT.MOUSEMOTION then
         local touch = e.motion.which == 0xFFFFFFFF
-        local scale = self:getUIScale(select(2, self:getRawMode()))
+        local scale = self:getUIScale(self:getShortSide())
         self.mouseX, self.mouseY = e.motion.x / scale, e.motion.y / scale
         return { 'mousemoved', self.mouseX, self.mouseY, e.motion.xrel / scale, e.motion.yrel / scale, touch }
     elseif t == EVENT.MOUSEBUTTONDOWN or t == EVENT.MOUSEBUTTONUP then
         local button = e.button.button
         local mapped = button == 1 and 1 or button == 3 and 2 or button == 2 and 3 or button
         local touch = e.button.which == 0xFFFFFFFF
-        local scale = self:getUIScale(select(2, self:getRawMode()))
+        local scale = self:getUIScale(self:getShortSide())
         return {
             t == EVENT.MOUSEBUTTONDOWN and 'mousepressed' or 'mousereleased',
             e.button.x / scale,

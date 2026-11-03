@@ -19,7 +19,10 @@ function Config.apply(settings, project)
     settings.window.resizable = true
     settings.window.highdpi = true
     settings.window.depth, settings.window.stencil = 24, 8
-    settings.window.vsync = 0
+    -- Phones need vertical sync for even frame pacing (an uncapped swap loop gives 80+ FPS on
+    -- average but uneven frames, and heats the device); desktop keeps it off for benchmarks.
+    -- Environment.rendering.vsync takes this value as its default.
+    settings.window.vsync = require('source.katsa.core.native').os() == 'Android' and 1 or 0
     for key, value in pairs(window) do
         if key ~= 'width' and key ~= 'height' and key ~= 'minwidth' and key ~= 'minheight' then
             settings.window[key] = value
