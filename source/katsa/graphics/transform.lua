@@ -54,15 +54,24 @@ end
 
 -- Only the colour is edited in place; every other state table (scissor, stencil test, colour
 -- mask, canvas lists) is replaced wholesale by its setter, so the snapshot may share them.
-local function snapshot()
-    local copy = {}
+-- Stack entries are recycled: UI code pushes and pops per element, and fresh tables for every
+-- push were a large share of the per-frame garbage.
+local pool = {}
+
+local function snapshot(entry)
+    local copy, color = entry.all or {}, entry.color or {}
+    for key in pairs(copy) do
+        copy[key] = nil
+    end
     for key, value in pairs(S) do
         if key ~= 'stack' then
             copy[key] = value
         end
     end
     local c = S.color
-    copy.color = { c[1], c[2], c[3], c[4] }
+    color[1], color[2], color[3], color[4] = c[1], c[2], c[3], c[4]
+    copy.color = color
+    entry.color = color
     return copy
 end
 
@@ -71,9 +80,12 @@ function G.push(kind)
     assert(kind == 'transform' or kind == 'all', 'Invalid stack type: ' .. tostring(kind))
     assert(#S.stack < 128, 'Maximum stack depth reached (more pushes than pops?)')
     local t = S.transform
-    local entry = { transform = { t[1], t[2], t[3], t[4], t[5], t[6] } }
-    if kind == 'all' then
-        entry.all = snapshot()
+    local entry = table.remove(pool) or { transform = {} }
+    local saved = entry.transform
+    saved[1], saved[2], saved[3], saved[4], saved[5], saved[6] = t[1], t[2], t[3], t[4], t[5], t[6]
+    entry.active = kind == 'all'
+    if entry.active then
+        entry.all = snapshot(entry)
     end
     S.stack[#S.stack + 1] = entry
 end
@@ -85,7 +97,7 @@ function G.pop()
     for i = 1, 6 do
         t[i] = entry.transform[i]
     end
-    local all = entry.all
+    local all = entry.active and entry.all
     if all then
         G.setCanvasInternal(all.canvases, all.canvasOptions)
         G.setColor(all.color)
@@ -112,4 +124,5 @@ function G.pop()
         S.font = all.font
         S.pointSize = all.pointSize
     end
+    pool[#pool + 1] = entry
 end
