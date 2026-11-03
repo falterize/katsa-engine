@@ -13,7 +13,10 @@ local Modifier = require('../modifier')
 local LookAt = Modifier.extend()
 
 function LookAt.new(settings)
-    local self = setmetatable({}, LookAt)
+    return setmetatable({}, LookAt):read(settings)
+end
+
+function LookAt:read(settings)
     self:configure(settings)
     self.chain = settings.bones or { settings.bone }
     assert(self.chain[1], 'LookAt needs `bone` or `bones`')

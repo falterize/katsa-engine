@@ -183,6 +183,11 @@ function Schema.options(target, key)
         return { 'Free', 'FirstPerson', 'ThirdPerson' }
     end
     local options = Schema.descriptor(target, key).options
+    if type(options) == 'function' then
+        -- Dynamic lists (the bones of a model) may be empty: no list means a free text field.
+        options = options(target)
+        return options and #options > 0 and options or nil
+    end
     if options then
         return options
     end

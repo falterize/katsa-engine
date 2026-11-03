@@ -14,7 +14,10 @@ local Fabrik = Modifier.extend()
 local EPSILON = 1e-9
 
 function Fabrik.new(settings)
-    local self = setmetatable({}, Fabrik)
+    return setmetatable({}, Fabrik):read(settings)
+end
+
+function Fabrik:read(settings)
     self:configure(settings)
     self.chain = settings.bones
     assert(self.chain and #self.chain >= 2, 'Fabrik needs a `bones` chain of at least two bones')

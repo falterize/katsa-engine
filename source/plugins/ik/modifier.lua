@@ -36,6 +36,12 @@ function Modifier:configure(settings)
     return self
 end
 
+-- Solvers re-read their settings from a table (or a node) through `read`; the base fields are
+-- shared, subclasses extend it. `new(settings)` is just construction plus `read`.
+function Modifier:read(settings)
+    return self:configure(settings)
+end
+
 function Modifier:attach(animator)
     assert(animator and animator.addModifier, 'attach() needs an Animator')
     animator:addModifier(self)
