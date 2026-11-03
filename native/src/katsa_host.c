@@ -17,6 +17,13 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#ifdef __ANDROID__
+/* Android: this file becomes libmain.so. SDL's SDLActivity calls SDL_main (SDL.h renames main), the
+ * game archive is an APK asset that is copied once to internal storage, and stdout/stderr go to logcat. */
+#include <pthread.h>
+#include <android/log.h>
+#include <SDL.h>
+#endif
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif
@@ -26,9 +33,97 @@ static char exe_path[4096];
 static unsigned char *file_data; /* whole executable image */
 static size_t file_size;
 
+static void report(const char *message, const char *detail)
+{
+#ifdef __ANDROID__
+    __android_log_print(ANDROID_LOG_ERROR, "katsa", "%s%s", message, detail ? detail : "");
+#else
+    fprintf(stderr, "%s%s\n", message, detail ? detail : "");
+#endif
+}
+
 static uint32_t u16(const unsigned char *p) { return p[0] | (p[1] << 8); }
 static uint32_t u32(const unsigned char *p) { return p[0] | (p[1] << 8) | (p[2] << 16) | ((uint32_t)p[3] << 24); }
 
+#ifdef __ANDROID__
+#define ASSET_NAME "game.katsa"
+
+/* Lua's print and io.stderr write to the pipe; one thread forwards complete lines to logcat. */
+static void *forward_log(void *arg)
+{
+    int fd = (int)(intptr_t)arg;
+    char line[1024];
+    size_t used = 0;
+    char c;
+    while (read(fd, &c, 1) == 1) {
+        if (c == '\n' || used == sizeof line - 1) {
+            line[used] = 0;
+            __android_log_write(ANDROID_LOG_INFO, "katsa", line);
+            used = 0;
+        } else {
+            line[used++] = c;
+        }
+    }
+    return NULL;
+}
+
+static void redirect_output(void)
+{
+    int fds[2];
+    pthread_t thread;
+    if (pipe(fds) != 0) return;
+    dup2(fds[1], 1);
+    dup2(fds[1], 2);
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+    pthread_create(&thread, NULL, forward_log, (void *)(intptr_t)fds[0]);
+    pthread_detach(thread);
+}
+
+/* Compares the asset with the copy on disk without loading either into memory. */
+static int asset_matches(const char *path)
+{
+    FILE *copy = fopen(path, "rb");
+    SDL_RWops *asset = SDL_RWFromFile(ASSET_NAME, "rb");
+    unsigned char a[65536], b[65536];
+    int same = copy && asset;
+    while (same) {
+        size_t n = SDL_RWread(asset, a, 1, sizeof a);
+        if (fread(b, 1, n, copy) != n || memcmp(a, b, n) != 0) same = 0;
+        if (n < sizeof a) {
+            same = same && fread(b, 1, 1, copy) == 0;
+            break;
+        }
+    }
+    if (copy) fclose(copy);
+    if (asset) SDL_RWclose(asset);
+    return same;
+}
+
+/* The runtime reads the archive by path, so the APK asset is copied to internal storage first;
+ * an unchanged copy is kept, which makes later starts cheap. */
+static int find_exe(char *argv0)
+{
+    const char *dir = SDL_AndroidGetInternalStoragePath();
+    (void)argv0;
+    if (!dir) { report("katsa: no internal storage", NULL); return 0; }
+    snprintf(exe_path, sizeof exe_path, "%s/" ASSET_NAME, dir);
+    if (asset_matches(exe_path)) return 1;
+
+    SDL_RWops *asset = SDL_RWFromFile(ASSET_NAME, "rb");
+    FILE *copy = fopen(exe_path, "wb");
+    unsigned char chunk[65536];
+    size_t n;
+    int ok = asset && copy;
+    while (ok && (n = SDL_RWread(asset, chunk, 1, sizeof chunk)) > 0) {
+        if (fwrite(chunk, 1, n, copy) != n) ok = 0;
+    }
+    if (copy && fclose(copy) != 0) ok = 0;
+    if (asset) SDL_RWclose(asset);
+    if (!ok) report("katsa: cannot copy the game archive from assets/" ASSET_NAME, NULL);
+    return ok;
+}
+#else
 static int find_exe(char *argv0)
 {
 #ifdef _WIN32
@@ -44,6 +139,7 @@ static int find_exe(char *argv0)
     return 1;
 #endif
 }
+#endif
 
 static int load_image(void)
 {
@@ -99,8 +195,11 @@ static int host_read(lua_State *L)
 
 int main(int argc, char **argv)
 {
+#ifdef __ANDROID__
+    redirect_output();
+#endif
     if (!find_exe(argv[0]) || !load_image()) {
-        fprintf(stderr, "katsa: cannot read own executable\n");
+        report("katsa: cannot read own executable", NULL);
         return 1;
     }
     lua_State *L = luaL_newstate();
@@ -116,12 +215,12 @@ int main(int argc, char **argv)
     size_t length;
     const unsigned char *boot = zip_find("__katsa/boot.lua", &length);
     if (!boot) {
-        fprintf(stderr, "katsa: runtime not found in %s (missing __katsa/boot.lua)\n", exe_path);
+        report("katsa: runtime not found (missing __katsa/boot.lua) in ", exe_path);
         return 1;
     }
     int status = 0;
     if (luaL_loadbuffer(L, (const char *)boot, length, "=__katsa/boot.lua") || lua_pcall(L, 0, 1, 0)) {
-        fprintf(stderr, "katsa: %s\n", lua_tostring(L, -1));
+        report("katsa: ", lua_tostring(L, -1));
         status = 1;
     } else if (lua_isnumber(L, -1)) {
         status = (int)lua_tointeger(L, -1);

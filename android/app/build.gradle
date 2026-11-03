@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+
+def abis = (project.findProperty('katsaAbis') ?: 'arm64-v8a,x86_64').split(',').collect { it.trim() }
+def sdlRoot = file('../deps/SDL2')
+
+android {
+    namespace 'org.katsa.game'
+    compileSdk 34
+    // ndkVersion must match the NDK that tools/native/build.py and prepare.py use (r26 or newer).
+
+    defaultConfig {
+        applicationId 'org.katsa.game'   // change this for your own game
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+        ndk { abiFilters(*abis) }
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+            version '3.22.1'
+        }
+    }
+
+    sourceSets {
+        main {
+            // SDLActivity and friends ship with the SDL2 source tree that prepare.py downloads.
+            java.srcDirs += new File(sdlRoot, 'android-project/app/src/main/java')
+            // katsa_*.so and libjoltc.so per ABI are copied here by prepare.py.
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Replace with your own signing config before publishing; debug signing is only for tests.
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    packagingOptions {
+        jniLibs { useLegacyPackaging = true }
+    }
+}

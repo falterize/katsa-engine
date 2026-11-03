@@ -1,0 +1,8 @@
+/deps/
+/build/
+/.gradle/
+/local.properties
+/app/build/
+/app/.cxx/
+/app/src/main/jniLibs/
+/app/src/main/assets/game.katsa

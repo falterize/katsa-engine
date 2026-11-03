@@ -4,7 +4,8 @@
     python tools/native/build.py linux            # needs clang or gcc
     python tools/native/build.py windows          # needs llvm-mingw (x86_64-w64-mingw32-clang) on PATH
     python tools/native/build.py android          # needs ANDROID_NDK_HOME; builds arm64-v8a, armeabi-v7a, x86_64
-    python tools/native/build.py macos            # run on a Mac; builds a universal x86_64 + arm64 dylib
+    python tools/native/build.py macos            # run on a Mac; universal x86_64 + arm64 dylibs
+                                                  # (+ the host when LUAJIT_PREFIX is set)
 
 Output goes to build/native/<target>/. See docs/guides/katsa/building.md.
 """
@@ -50,6 +51,21 @@ LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 def build_host_linux(out):
     cc = compiler('clang', 'gcc', 'cc')
     run([cc, '-O2', '-rdynamic', '-I' + str(LUAJIT) + '/include/luajit-2.1', HOST,
+         LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
+
+
+def build_host_macos(out):
+    # LuaJIT on x86_64 macOS needs the low 4 GB free, so the executable is linked with a small
+    # page zero at a high image base. arm64 needs neither flag. The host is built for the Mac that
+    # runs the script (a static libluajit-5.1.a is single-architecture).
+    import platform
+
+    cc = compiler('clang')
+    arch = 'arm64' if platform.machine() in ('arm64', 'aarch64') else 'x86_64'
+    flags = ['-arch', arch, '-O2', '-Wl,-export_dynamic']
+    if arch == 'x86_64':
+        flags += ['-Wl,-pagezero_size,10000', '-Wl,-image_base,100000000']
+    run([cc, *flags, '-I' + str(LUAJIT) + '/include/luajit-2.1', HOST,
          LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
 
 
@@ -101,9 +117,13 @@ def build_windows(out):
 
 def build_macos(out):
     cc = compiler('clang')
+    # Oldest macOS the libraries should run on; override with MACOSX_DEPLOYMENT_TARGET.
+    os.environ.setdefault('MACOSX_DEPLOYMENT_TARGET', '10.13')
     run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.dylib'])
     build_box2d_macos(out)
     build_net(out / 'libkatsa_net.dylib', cc, ['-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64'], [], 'unix.c')
+    if os.environ.get('LUAJIT_PREFIX'):
+        build_host_macos(out)
 
 
 def build_android(out):

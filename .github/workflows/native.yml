@@ -3,26 +3,61 @@ on:
   workflow_dispatch:
   push:
     tags: ['v*']
+  pull_request:
+    paths: ['native/**', 'tools/native/**', 'tools/build/**', 'android/**', '.github/workflows/native.yml']
 jobs:
-  build:
+  desktop:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - { os: ubuntu-latest, target: linux }
           - { os: macos-latest, target: macos }
-          - { os: ubuntu-latest, target: android }
-          - { os: ubuntu-latest, target: windows }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Toolchain (Windows cross build)
-        if: matrix.target == 'windows'
-        run: sudo apt-get update && sudo apt-get install -y mingw-w64
-      - name: Build katsa_native
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+      - name: Build LuaJIT
+        run: |
+          git clone --depth 1 --branch v2.1 https://github.com/LuaJIT/LuaJIT.git "$RUNNER_TEMP/luajit"
+          make -C "$RUNNER_TEMP/luajit" -j4 PREFIX="$HOME/lj" MACOSX_DEPLOYMENT_TARGET=11.0 install
+          echo "LUAJIT_PREFIX=$HOME/lj" >> "$GITHUB_ENV"
+          echo "$HOME/lj/bin" >> "$GITHUB_PATH"
+      - name: Build native libraries and host
         run: python3 tools/native/build.py ${{ matrix.target }}
+      - name: Unit tests (no window needed)
+        run: luajit validation/tests/katsa/run.lua
+      - name: Package a fused executable
+        run: python3 tools/build/packageProject.py --output dist --host build/native/${{ matrix.target }}/katsa
+      - name: Collect
+        run: |
+          mkdir -p out
+          cp -R build/native/${{ matrix.target }}/. out/
+          cp dist/Katsa-* out/
       - uses: actions/upload-artifact@v4
         with:
-          name: katsa-native-${{ matrix.target }}
-          path: build/native/${{ matrix.target }}
+          name: katsa-${{ matrix.target }}
+          path: out
+
+  windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y mingw-w64
+      - run: python3 tools/native/build.py windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: katsa-native-windows
+          path: build/native/windows
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native libraries for every ABI
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+        run: python3 tools/native/build.py android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: katsa-native-android
+          path: build/native/android
