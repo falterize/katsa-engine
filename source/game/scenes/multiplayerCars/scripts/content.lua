@@ -596,7 +596,48 @@ function Session:updateNetwork(dt)
     profiler:finish('Cars: client', stamp)
     stamp = profiler:begin()
     self:updateRenderPoses()
+    self:watchJumps(dt)
     profiler:finish('Cars: render poses', stamp)
+end
+
+local JUMP_METERS = 2.5 -- a drawn car moving this far in one frame is a visible jump
+local JUMP_LOG_INTERVAL = 0.25
+
+-- Diagnostic for choppy cars: logs a car that jumps between two frames together with the frame
+-- time, so the console export tells a hitch (large dt) from a data problem (normal dt).
+function Session:watchJumps(dt)
+    local client = self.client
+    if not client then
+        return
+    end
+    local now = katsa.timer.getTime()
+    local last = self.jumpLast
+    if not last then
+        last = {}
+        self.jumpLast = last
+    end
+    for netId, car in pairs(client.cars) do
+        local x, z = car.rx or car.x, car.rz or car.z
+        local previous = last[netId]
+        if previous and x and z and dt < 0.1 then
+            local moved = math.sqrt((x - previous[1]) ^ 2 + (z - previous[2]) ^ 2)
+            if moved > JUMP_METERS and now - (self.jumpLogged or 0) > JUMP_LOG_INTERVAL then
+                self.jumpLogged = now
+                katsa.log.warn(
+                    ('Car %d jumped %.1f m in one frame (frame %.0f ms, server time %.2f, ping %d ms)'):format(
+                        netId,
+                        moved,
+                        dt * 1000,
+                        client.client:getServerTime(),
+                        client.client:getPing()
+                    ),
+                    'multiplayerCars',
+                    false
+                )
+            end
+        end
+        last[netId] = { x, z }
+    end
 end
 
 -- Bodies simulated by this process are drawn between their last two physics steps.
