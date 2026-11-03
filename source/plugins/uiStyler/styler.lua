@@ -12,6 +12,7 @@
 --   corner = n                   a UICorner modifier with radius n
 --   stroke = { color, thickness, transparency }   a border UIStroke
 -- A property the styler has set is restored to its authored value once no rule sets it.
+local Tables = require('source.engine.core.tables')
 local Styler = {}
 Styler.__index = Styler
 
@@ -54,17 +55,6 @@ local function matches(selector, node)
         return false
     end
     return true
-end
-
-local function copy(value)
-    if type(value) ~= 'table' then
-        return value
-    end
-    local result = {}
-    for key, item in pairs(value) do
-        result[key] = copy(item)
-    end
-    return result
 end
 
 function Styler.new(ui, options)
@@ -182,7 +172,7 @@ function Styler:resolve(value, node)
         local key = value:sub(2)
         local token = self.tokens[key]
         assert(token ~= nil, ('Unknown theme token: %s (theme %s)'):format(value, tostring(self.themeName)))
-        return copy(token)
+        return Tables.copy(token)
     elseif kind == 'function' then
         return value(self.tokens, node)
     elseif kind == 'table' then

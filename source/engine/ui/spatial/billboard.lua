@@ -3,6 +3,7 @@ local M = require('../../math.math3d')
 local UI = require('../../ui')
 local Node = require('../../nodes')
 local Validate = require('../../core.validate')
+local Brightness = require('../../components.brightness')
 
 local BillboardUI = Node.getClass('BillboardUI')
 BillboardUI.__index = BillboardUI
@@ -44,18 +45,12 @@ function BillboardUI.new(world, settings)
         end
     end
     settings.screenOffset = nil
-    settings.brightness = settings.brightness or 1
+    Brightness.normalize(settings, 1, 'Adornment')
     settings.supportSize = settings.supportSize or { 1, 1, 1 }
     Validate.vector(settings.supportSize, 'Adornment.supportSize', 3)
     for i = 1, 3 do
         assert(settings.supportSize[i] > 0, 'Adornment.supportSize must be positive')
     end
-    assert(
-        type(settings.brightness) == 'number'
-            and settings.brightness >= 0
-            and settings.brightness < math.huge,
-        'Adornment.brightness must be finite and nonnegative'
-    )
     local adornee = settings.adornee
     if type(adornee) == 'string' then
         adornee = assert(world.byName[adornee], 'Unknown legacy Adornee name: ' .. adornee)

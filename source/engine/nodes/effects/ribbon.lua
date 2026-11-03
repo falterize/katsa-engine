@@ -9,6 +9,7 @@ local Ribbon = {}
 local Lighting = require('../../components.lighting')
 local Shadowing = require('../../components.shadowing')
 local RenderRange = require('../../components.renderRange')
+local Brightness = require('../../components.brightness')
 
 Ribbon.defaults = {
     color = { 1, 1, 1 },
@@ -39,7 +40,6 @@ local hints = {
     faceCamera = 'On: the ribbon always turns its width toward the camera. Off: a flat strip that '
         .. 'keeps the orientation of its attachments.',
     lightEmission = '0 blends normally, 1 adds the colour to the scene (glow). Values between mix both.',
-    brightness = 'Colour multiplier applied after lighting.',
     zOffset = 'World units added to the sorting depth. Positive values draw the ribbon earlier '
         .. '(behind other transparent objects).',
 }
@@ -65,6 +65,7 @@ function Ribbon.describe(class, extra)
     require('../../components.lighting').describe(class)
     require('../../components.shadowing').describe(class)
     RenderRange.describe(class)
+    Brightness.describe(class)
     for _, key in ipairs({ 'atlasFPS', 'atlasLoop' }) do
         schema[key].visibleWhen = { key = 'atlasEnabled', equals = true }
     end
@@ -102,7 +103,7 @@ function Ribbon.validate(node)
     V.vector(node.color, name .. '.color', 3)
     V.number(node.textureLength, name .. '.textureLength', 1e-4)
     V.number(node.lightEmission, name .. '.lightEmission', 0, 1)
-    V.number(node.brightness, name .. '.brightness', 0)
+    Brightness.check(node.brightness, name)
     RenderRange.normalize(node, 0)
     require('source.engine.components.shadowing').validate(node, name)
     assert(

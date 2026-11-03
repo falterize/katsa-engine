@@ -54,6 +54,7 @@ C.propertySchema.useWorldGravity.hint =
         .. 'author an independent field.'
 require('../../components.image').describe(C)
 require('../../components.lighting').describe(C)
+require('../../components.brightness').describe(C)
 require('../../components.shadowing').describe(C, { extra = { 'shadowMaxParticles' } })
 C.propertySchema.atlasAnimation = { visibleWhen = { key = 'imageMode', equals = 'XML' } }
 C.propertySchema.atlasGrid.visibleWhen = function(node)

@@ -1,10 +1,12 @@
 local Node = require('../core.baseNode')
 local Math = require('../../math.math3d')
+local Brightness = require('../../components.brightness')
 
 local Class = Node.define('Decal3D', 'Node3D')
 require('../../components.image').describe(Class)
 require('../../components.lighting').describe(Class)
 require('../../components.renderRange').describe(Class)
+Brightness.describe(Class)
 Class.propertySchema.mode = {
     visibleWhen = function()
         return false
@@ -72,18 +74,12 @@ function Class.mount(world, properties, parent)
         assert(ok, reason)
     end
     rawset(properties, 'adornee', nil)
-    properties.brightness = properties.brightness or 1
+    Brightness.normalize(properties, 1, 'Decal3D')
     properties.supportSize = properties.supportSize or { 1, 1, 1 }
     require('source.engine.core.validate').vector(properties.supportSize, 'Decal3D.supportSize', 3)
     for i = 1, 3 do
         assert(properties.supportSize[i] > 0, 'Decal3D.supportSize must be positive')
     end
-    assert(
-        type(properties.brightness) == 'number'
-            and properties.brightness >= 0
-            and properties.brightness < math.huge,
-        'Decal3D.brightness must be finite and nonnegative'
-    )
     local node = Node.adopt(properties, 'Decal3D')
     require('source.engine.surfaces.support').initialize(node, reference)
     node.parent = parent
