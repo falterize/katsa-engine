@@ -6,6 +6,8 @@ local V = require('../../core.validate')
 
 local Ribbon = {}
 
+local Shadowing = require('../../components.shadowing')
+
 Ribbon.defaults = {
     color = { 1, 1, 1 },
     texture = 'assets/textures/internal/white.png',
@@ -18,10 +20,6 @@ Ribbon.defaults = {
     brightness = 1,
     zOffset = 0,
     maxDistance = 0,
-    castShadow = false,
-    receiveShadow = false,
-    shadowGroup = 'Default',
-    shadowAlphaCutoff = 0.1,
     atlasEnabled = false,
     atlasFPS = 12,
     atlasLoop = true,
@@ -45,11 +43,11 @@ local hints = {
     zOffset = 'World units added to the sorting depth. Positive values draw the ribbon earlier '
         .. '(behind other transparent objects).',
     maxDistance = 'Render cutoff distance in world units; 0 disables it.',
-    castShadow = 'Adds the ribbon to the shadow maps as an alpha tested strip.',
-    receiveShadow = 'Shadows from other objects darken the ribbon (needs lightInfluence above 0).',
-    shadowGroup = 'Layer group used to decide which lights this ribbon casts into and receives from.',
-    shadowAlphaCutoff = 'Ribbons that are more transparent than this cast no shadow.',
 }
+
+for key, value in pairs(Shadowing.defaults) do
+    Ribbon.defaults[key] = value
+end
 
 -- Declares schema entries (hints, options, conditional visibility) for a ribbon class.
 function Ribbon.describe(class, extra)
@@ -66,13 +64,7 @@ function Ribbon.describe(class, extra)
     end
     schema.lightEmission.min, schema.lightEmission.max = 0, 1
     schema.lightInfluence.min, schema.lightInfluence.max = 0, 1
-    schema.receiveShadow.visibleWhen = function(node)
-        return node.lightInfluence > 0
-    end
-    schema.shadowGroup.visibleWhen = function(node)
-        return node.castShadow or node.receiveShadow
-    end
-    schema.shadowAlphaCutoff.visibleWhen = { key = 'castShadow', equals = true }
+    require('../../components.shadowing').describe(class)
     for _, key in ipairs({ 'atlasFPS', 'atlasLoop' }) do
         schema[key].visibleWhen = { key = 'atlasEnabled', equals = true }
     end
@@ -112,6 +104,7 @@ function Ribbon.validate(node)
     V.number(node.lightInfluence, name .. '.lightInfluence', 0, 1)
     V.number(node.brightness, name .. '.brightness', 0)
     V.number(node.maxDistance, name .. '.maxDistance', 0)
+    require('source.engine.components.shadowing').validate(node, name)
     assert(
         node.textureMode == 'Stretch' or node.textureMode == 'Wrap' or node.textureMode == 'Static',
         name .. '.textureMode must be Stretch, Wrap or Static'

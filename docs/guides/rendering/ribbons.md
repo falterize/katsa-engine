@@ -59,10 +59,13 @@ frame and aged with the world's simulation time, so `timeScale` and pause apply.
   `color` multiplies it, Node3D `transparency` fades the whole ribbon.
 - **Light**: `lightEmission` 0..1 blends from normal alpha to additive glow; `lightInfluence` 0..1 (default 0)
   blends from unlit to fully lit; `brightness` scales the result. `zOffset` shifts the transparency sort.
-- **Shadows**: `castShadow` adds the ribbon to the shadow maps as an alpha tested strip, `receiveShadow`
-  darkens it with shadows (needs `lightInfluence` above 0). `shadowGroup` and `shadowAlphaCutoff` refine this.
-  `ParticleEmitter3D` has the same `castShadow`, `receiveShadow`, `shadowGroup`, `shadowMaxParticles` and
-  `shadowAlphaCutoff` options.
+- **Shadows**: the same four options as particles, from one shared component
+  (`components/shadowing.lua`): `castShadow`, `receiveShadow`, `shadowGroup` and `shadowAlphaCutoff`.
+  `castShadow` writes the ribbon into the shadow maps as an alpha tested strip, `receiveShadow` darkens it
+  with shadows (it only shows when `lightInfluence` is above 0). `shadowAlphaCutoff` is a shadow-pass-only
+  threshold: texels more transparent than it cast no shadow. It is not Mesh3D `alphaCutoff`, which is a
+  material mode that also changes how the mesh is drawn. `ParticleEmitter3D` adds `shadowMaxParticles`.
+  Both producers share `graphics/shadows/casterProxy.lua`.
 - **Layers**: `layerGroup` works like any Node3D; shader layers apply through `Shader3D` nodes exactly as for
   particles; `maxDistance` culls far ribbons.
 
