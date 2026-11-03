@@ -338,6 +338,31 @@ function PhysicsCar:readState()
     self.hasPrevious = true
 end
 
+-- Writes the pose the physics world draws this body at (interpolated between its last two steps,
+-- the same pose the collision wireframes use) into the model's r* fields. Reading the model once
+-- per frame instead would span several steps whenever a frame runs more than one.
+function PhysicsCar:renderPose(model)
+    if self.mode == 'follow' then
+        return false
+    end
+    local body = self.node.body
+    local m = body:getRenderMatrix()
+    local right, forward = self.renderRight, self.renderForward
+    if not right then
+        right, forward = {}, {}
+        self.renderRight, self.renderForward = right, forward
+    end
+    right[1], right[2], right[3] = m[1], m[5], m[9]
+    forward[1], forward[2], forward[3] = m[3], m[7], m[11]
+    model.rx, model.ry, model.rz = m[4], m[8], m[12]
+    model.rheading = math.deg(math.atan2(forward[1], forward[3])) % 360
+    local pitch = math.asin(math.max(-1, math.min(1, forward[2])))
+    model.rpitch = math.deg(pitch)
+    model.rroll =
+        math.deg(math.asin(math.max(-1, math.min(1, right[2] / math.max(0.2, math.cos(pitch))))))
+    return true
+end
+
 -- True once the car has been upside down or far below the arena for a while.
 function PhysicsCar:needsReset(dt)
     if self.mode == 'follow' then
