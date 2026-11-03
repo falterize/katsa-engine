@@ -67,6 +67,9 @@ CarEntity.definition = {
     create = CarEntity.create,
     get = get,
     set = set,
+    mirror = function(from, to)
+        CarEntity.mirror(from, to)
+    end,
     despawnWithAuthority = false, -- a car outlives its driver
     -- The driver's client owns the car's physics while someone is at the wheel; the server
     -- takes it back (authority nil) when the seat is empty.

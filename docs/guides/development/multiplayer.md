@@ -93,6 +93,17 @@ every client that knows it receives `AUTHORITY`, its `local_` flag flips and
 `client.authorityChanged` fires. `server:getAuthority(object)` reads it. A car uses this when the
 driver changes.
 
+## Hosting: a client in the server's process
+
+A hosting machine runs a `Net.Server` and a `Net.Client` in one process. Pass the server to the
+client (`Net.Client.new(context, { ..., localServer = server })`) and give an entity definition a
+`mirror(from, to)` function. Entities with that function that the server simulates itself (no
+client has authority) are copied straight from the server's object every frame: no
+`interpolationDelay`, no replica a few frames behind the bodies the server really steps. Ask
+`client:isMirrored(netId)` to know when to blend the drawn pose with the physics step; entities
+owned by other players are interpolated as usual. `mirror` must not allocate (it runs per entity
+per frame). multiplayerCars uses it for cars (`CarEntity.mirror`).
+
 ## Reference game: multiplayerCars
 
 `source/game/scenes/multiplayerCars` combines the pieces: a server-authoritative arena with one car

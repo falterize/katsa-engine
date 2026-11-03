@@ -6,6 +6,12 @@
 --   client.inputProvider = function() return { moveX = 1 } end
 --   client:connect()
 --   -- every frame: client:update(dt)
+--
+-- Hosting: pass `localServer = server` (a Net.Server running in this process). Entities whose
+-- definition has a `mirror(from, to)` function and that the server simulates itself (no client
+-- has authority) are then read straight from the server's object each frame, with no
+-- interpolation delay, instead of from a replica a fraction of a second behind the bodies the
+-- server really steps. `client:isMirrored(id)` tells the game to blend them with the physics step.
 local Codec = require('./codec')
 local Link = require('./link')
 local Channels = require('./channels')
@@ -366,11 +372,30 @@ local function sendOwnedState(self)
     end
 end
 
+-- True (after copying the server's state) when this entity is read from the local server.
+local function mirrorLocal(self, entity)
+    local server, definition = self.options.localServer, entity.definition
+    local source = server and definition.mirror and server.entities[entity.id]
+    entity.mirrored = source ~= nil and source.authority == nil
+    if entity.mirrored then
+        definition.mirror(source.object, entity.object)
+    end
+    return entity.mirrored
+end
+
+function Client:isMirrored(netId)
+    local entity = self.entities[netId]
+    return entity ~= nil and entity.mirrored == true
+end
+
 local function interpolate(self)
     local renderTime = self:getServerTime() - self.interpolationDelay
     for _, entity in pairs(self.entities) do
         local definition = entity.definition
-        if not (entity.local_ and (definition.simulate or definition.clientAuthoritative)) then
+        if
+            not mirrorLocal(self, entity)
+            and not (entity.local_ and (definition.simulate or definition.clientAuthoritative))
+        then
             local buffer = entity.buffer
             local from, to = buffer[1], buffer[#buffer]
             for index = 1, #buffer - 1 do
