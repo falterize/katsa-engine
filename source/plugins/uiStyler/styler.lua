@@ -2,6 +2,7 @@
 --
 -- Selectors (specificity in brackets; later rules win ties):
 --   '*'               every node                      [0]
+--   'uicorner'        a bare lowercase word is a tag   [10]  (style files: assets/styles)
 --   'Button'          a class (isA, so 'Frame' matches buttons too)  [1]
 --   '.primary'        a tag (node:addTag('primary'))  [10]
 --   'Button.primary'  class and tag together          [11]
@@ -23,6 +24,9 @@ local function parse(selector)
     local id = selector:match('^#([%w_%-]+)$')
     if id then
         return { name = id, specificity = 100 }
+    end
+    if selector:match('^[%l_][%w_%-]*$') then
+        return { tag = selector, specificity = 10 }
     end
     class, tag = selector:match('^([%w_]*)%.?([%w_%-]*)$')
     assert(class, 'Invalid selector: ' .. selector)
@@ -72,6 +76,7 @@ function Styler.new(ui, options)
         roots = {},
         tokens = {},
         order = 0,
+        styles = {},
     }, Styler)
 end
 
@@ -99,9 +104,73 @@ function Styler:rule(selector, properties)
     end)
 end
 
+-- Registers one style: a selector plus a table that sets several values at once, e.g.
+--   styler:style('uicorner', { corner = 10, cornerScale = 0.1, backgroundColor = '$panel' })
+-- `extends = 'other'` (or a list) merges earlier styles first; own values win.
+function Styler:style(selector, properties)
+    self.styles[selector] = properties
+    self:rule(selector, properties)
+end
+
+-- Loads every *.lua of a directory (e.g. scene assets/styles). A file returns either a map
+-- { selector = { values } } or a list { { selector, { values } }, ... }.
+function Styler:loadStyles(directory)
+    local fs = katsa.filesystem
+    local names = {}
+    for _, filename in ipairs(fs.getDirectoryItems(directory)) do
+        if filename:match('%.lua$') then
+            names[#names + 1] = filename
+        end
+    end
+    table.sort(names)
+    for _, filename in ipairs(names) do
+        local path = directory .. '/' .. filename
+        local chunk = assert(fs.load(path))
+        local data = chunk()
+        assert(type(data) == 'table', path .. ' must return a table of styles')
+        if data[1] ~= nil then
+            for _, entry in ipairs(data) do
+                self:style(entry[1], entry[2])
+            end
+        else
+            local keys = {}
+            for key in pairs(data) do
+                keys[#keys + 1] = key
+            end
+            table.sort(keys)
+            for _, key in ipairs(keys) do
+                self:style(key, data[key])
+            end
+        end
+    end
+    return self
+end
+
+-- Flattens `extends` chains into one property table.
+function Styler:expand(properties, depth)
+    assert((depth or 0) < 8, 'Style extends chain is too deep')
+    local base = properties.extends
+    if base == nil then
+        return properties
+    end
+    local merged = {}
+    for _, name in ipairs(type(base) == 'table' and base or { base }) do
+        local parent = assert(self.styles[name], 'Unknown style in extends: ' .. tostring(name))
+        for key, value in pairs(self:expand(parent, (depth or 0) + 1)) do
+            merged[key] = value
+        end
+    end
+    for key, value in pairs(properties) do
+        if key ~= 'extends' then
+            merged[key] = value
+        end
+    end
+    return merged
+end
+
 -- Replaces every rule with those of a style sheet: { { selector, properties }, ... }.
 function Styler:sheet(rules)
-    self.rules = {}
+    self.rules, self.styles = {}, {}
     for _, entry in ipairs(rules) do
         self:rule(entry[1], entry[2])
     end
@@ -154,11 +223,13 @@ end
 
 function Styler:styleNode(node)
     local record = node._styled or {}
-    local wanted, corner, stroke = {}, nil, nil
+    local wanted, corner, cornerScale, stroke = {}, nil, nil, nil
     for _, rule in ipairs(self.rules) do
         if matches(rule.selector, node) then
-            for key, value in pairs(rule.properties) do
-                if key == 'corner' then
+            for key, value in pairs(self:expand(rule.properties)) do
+                if key == 'cornerScale' then
+                    cornerScale = self:resolve(value, node)
+                elseif key == 'corner' then
                     corner = self:resolve(value, node)
                 elseif key == 'stroke' then
                     stroke = self:resolve(value, node)
@@ -181,12 +252,15 @@ function Styler:styleNode(node)
         end
     end
     node._styled = next(record) and record or nil
+    if cornerScale ~= nil and corner == nil then
+        corner = 0
+    end
     if corner ~= nil or node._styledCorner then
         self:setModifier(
             node,
             'UICorner',
             'corner',
-            corner ~= nil and { radius = { 0, corner } } or nil
+            corner ~= nil and { radius = { cornerScale or 0, corner } } or nil
         )
         node._styledCorner = corner ~= nil or nil
     end

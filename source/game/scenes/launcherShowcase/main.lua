@@ -10,6 +10,7 @@ function Scene.create(scene, context)
     local state = Content.new(scene)
     state.scene = scene
     context.instance = state
+    state.sceneRoot = context.root
     scene:preparePresentation()
     context:require('scripts.ui.interface').create(state)
     local systems = state.scene.systems

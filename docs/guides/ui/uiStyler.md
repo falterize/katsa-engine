@@ -43,3 +43,22 @@ Higher specificity wins; equal specificity: the later rule wins.
 - A property the styler set is restored to its authored value when no rule sets it any more.
 
 Theme token files are plain tables (one file per theme), so a new theme is one file with the same keys.
+
+## Style files (assets/styles)
+
+A scene keeps its styles as Lua files in `assets/styles/` and loads them in one call:
+
+```lua
+styler:loadStyles(context.root .. '/assets/styles')
+```
+
+A file returns a map (or a list of `{ selector, values }`). One style sets many values at once; a bare lowercase word is a tag selector:
+
+```lua
+return {
+    uicorner = { corner = 10, cornerScale = 0.1, backgroundColor = '$panel' },
+    card = { extends = 'uicorner', backgroundTransparency = 0.2 },
+}
+```
+
+Give a node the tag (`node:addTag('uicorner')`) and it receives every value. `extends` merges other styles first (a name or a list); own values win. `styler:style(selector, values)` registers the same thing from code.
