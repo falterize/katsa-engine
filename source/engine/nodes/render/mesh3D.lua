@@ -24,6 +24,9 @@ Class.propertySchema = {
     skinDrawCount = { readOnly = true, hint = 'Draw pieces after applying skin limits.' },
 }
 
+require('../../components.lighting').describe(Class)
+require('../../components.shadowing').describe(Class, { cutoff = false })
+
 function Class.initialize(self)
     self.maxBoneInfluences = self.maxBoneInfluences or 8
     self.bonePaletteLimit = self.bonePaletteLimit or 32

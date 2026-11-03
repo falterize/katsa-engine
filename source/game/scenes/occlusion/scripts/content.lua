@@ -65,7 +65,7 @@ function Lab.new(scene)
         visible = false,
         doubleSided = true,
         color = { 0.2, 0.8, 0.9, 1 },
-        unlit = true,
+        lightInfluence = 0,
     })
     return self
 end

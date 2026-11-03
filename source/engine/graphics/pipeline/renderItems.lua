@@ -1,7 +1,20 @@
+local Lighting = require('../../components.lighting')
 local white = { 1, 1, 1, 1 }
 local RenderItems = {}
 
 function RenderItems.install(Renderer)
+    -- `unlit` is a compile-time constant in unlit variants; `lightDetach` (1 - influence) blends the
+    -- shaded result toward the flat colour and defaults to 0 (fully lit) when it is never sent.
+    function Renderer:sendLighting(shader, o)
+        local influence = Lighting.influence(o)
+        if shader:hasUniform('unlit') then
+            shader:send('unlit', influence <= 0)
+        end
+        if shader:hasUniform('lightDetach') then
+            shader:send('lightDetach', 1 - influence)
+        end
+    end
+
     function Renderer:drawItem(o)
         if self.world.debug and self.world.debug.wireframe then
             return require('source.engine.graphics.debug.wireframe').draw(self, o)
@@ -47,12 +60,7 @@ function RenderItems.install(Renderer)
                     and (not o._systemEffects or o._systemEffects.shadows)
             )
         end
-        if s:hasUniform('unlit') then
-            s:send(
-                'unlit',
-                billboard or o.unlit or o._systemEffects and not o._systemEffects.lighting or false
-            )
-        end
+        self:sendLighting(s, o)
         if s:hasUniform('canvasTexture') then
             s:send('canvasTexture', billboard)
         end
@@ -153,9 +161,7 @@ function RenderItems.install(Renderer)
                     and (not o._systemEffects or o._systemEffects.shadows)
             )
         end
-        if s:hasUniform('unlit') then
-            s:send('unlit', o.unlit or o._systemEffects and not o._systemEffects.lighting or false)
-        end
+        self:sendLighting(s, o)
         if s:hasUniform('canvasTexture') then
             s:send('canvasTexture', false)
         end

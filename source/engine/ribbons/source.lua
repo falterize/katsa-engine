@@ -3,17 +3,15 @@
 -- (interpolated) pose, so motion stays smooth between physics steps.
 local Geometry = require('./geometry')
 local Lifetime = require('./lifetime')
+local M = require('../math.math3d')
 
 local sqrt = math.sqrt
 
 local Source = {}
 
-local function normalize(x, y, z)
-    local length = sqrt(x * x + y * y + z * z)
-    if length < 1e-9 then
-        return 0, 0, 0
-    end
-    return x / length, y / length, z / length
+local normalize = function(x, y, z)
+    local ux, uy, uz = M.unit(x, y, z)
+    return ux, uy, uz
 end
 
 local function usable(node)

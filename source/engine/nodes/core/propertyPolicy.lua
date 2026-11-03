@@ -20,7 +20,7 @@ local meshKeys = {
     'receiveShadow',
     'onTop',
     'doubleSided',
-    'unlit',
+    'lightInfluence',
     'blend',
     'alphaCutoff',
     'maxDistance',

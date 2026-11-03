@@ -1,7 +1,7 @@
 local defaults = {
     collisionGroup = 'Default',
     shadowMaxParticles = 128,
-    unlit = true,
+    lightInfluence = 0,
     brightness = 1,
     rate = 30,
     lifetime = { 1, 2 },

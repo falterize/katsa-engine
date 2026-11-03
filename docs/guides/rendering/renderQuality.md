@@ -78,3 +78,13 @@ The shadow resolution is capped, never raised, so a scene's authored map size is
 `renderDensity` is the render-resolution scale (0.5-3): 0.75 renders the 3D view at 75% of the
 window size and stretches it. `require('source.engine.graphics.quality.profiles').recommended()`
 returns `'Low'` on Intel UHD graphics and `'High'` elsewhere; nothing applies it automatically.
+
+## Light response: lightInfluence
+
+Every shaded node (Mesh3D, Decal3D, ParticleEmitter2D/3D, Beam3D, Trail3D) has one number,
+`lightInfluence`, from 0 (unlit: flat colour, no lights, shadows, fog or tone mapping) to 1 (fully lit).
+Meshes default to 1; decals, particles and ribbons default to 0. The boolean `unlit` was removed; scenes that
+still pass `unlit = true/false` when creating a node are converted once by `components/lighting.lua`.
+Renderers must read the value only through `Lighting.influence(node)` (it also forces 0 for billboards and for
+system layers without lighting). In `world.glsl`, `lightInfluence = 0` compiles the unlit variant, other values
+use the `lightDetach` uniform (1 - influence) to blend toward the flat colour.

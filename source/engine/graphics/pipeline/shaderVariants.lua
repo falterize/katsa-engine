@@ -1,3 +1,4 @@
+local Lighting = require('../../components.lighting')
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 -- Constant-disabled paths remove unused uniforms and branches from the GPU program.
@@ -18,9 +19,7 @@ function Variants.get(renderer, object)
     end
     local noLights = renderer.lights.count == 0
     local lightCount = renderer.lights.count
-    local unlit = object
-            and (object.canvas ~= nil or object.unlit or object._systemEffects and not object._systemEffects.lighting)
-        or false
+    local unlit = object and Lighting.unlit(object) or false
     local noSkin = not (object and object.skin)
     local extendedSkin = not noSkin and object.geometry.eightWeights == true
     local direct = renderer.lightLoop ~= 'Masked'

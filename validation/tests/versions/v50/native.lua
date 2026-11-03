@@ -261,7 +261,7 @@ return function(test)
         size = { 20, 20, 2 },
         color = { 0.2, 0.2, 0.2, 1 },
         texture = 'white',
-        unlit = true,
+        lightInfluence = 0,
     })
     local hidden = world:create('Mesh3D', {
         name = 'Hidden',
@@ -269,7 +269,7 @@ return function(test)
         size = { 5, 5, 5 },
         color = { 1, 0, 0, 1 },
         texture = 'white',
-        unlit = true,
+        lightInfluence = 0,
     })
 
     local function sample()

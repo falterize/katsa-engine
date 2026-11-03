@@ -36,6 +36,20 @@ function M.normalize(x, y, z)
     return x / n, y / n, z / n
 end
 
+-- Like normalize, but a zero vector stays zero and the original length is returned as well, so
+-- callers can tell a real direction from a degenerate one.
+function M.unit(x, y, z)
+    local n = math.sqrt(x * x + y * y + z * z)
+    if n < 1e-9 then
+        return 0, 0, 0, 0
+    end
+    return x / n, y / n, z / n, n
+end
+
+function M.cross(ax, ay, az, bx, by, bz)
+    return ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx
+end
+
 function M.distanceSquared(a, b)
     return (a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2 + (a[3] - b[3]) ^ 2
 end

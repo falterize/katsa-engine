@@ -83,21 +83,6 @@ function PropertyRead.install(Properties)
                 result[#result + 1] =
                     { key = key, kind = 'node', value = value, hint = Schema.hint(target, key) }
             end
-            if
-                key == 'castShadow'
-                and value == nil
-                and target.isA
-                and (target:isA('Mesh3D') or target:isA('PointLight3D'))
-            then
-                value = target:isA('Mesh3D')
-            elseif
-                key == 'receiveShadow'
-                and value == nil
-                and target.isA
-                and target:isA('Mesh3D')
-            then
-                value = true
-            end
             if target.isA and target:isA('UINode') and not target.modifier then
                 local channel = key:match('^(background)Color$')
                     or key:match('^(image)Color$')

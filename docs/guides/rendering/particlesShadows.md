@@ -8,8 +8,8 @@ live particles, raycasts per update and fixed-step catch-up. Quality is no longe
 runtime property. OffscreenBehavior Pause retains v69 visibility culling; Simulate
 permits background simulation. A draw count of zero alone does not imply no simulation.
 
-unlit=true bypasses light evaluation, so particles do not darken in shadows.
-unlit=false enables approximate sprite lighting. receiveShadow=true additionally
+lightInfluence=0 (the default, formerly unlit=true) bypasses light evaluation, so particles do not darken in shadows.
+lightInfluence above 0 enables approximate sprite lighting, blended with the flat colour. receiveShadow=true additionally
 samples enabled sun/local shadows. castShadow=true contributes alpha-tested sprite
 quads to shadow maps. shadowGroup respects world group interaction rules.
 shadowMaxParticles limits shadow geometry and shadowAlphaCutoff excludes faint pixels.

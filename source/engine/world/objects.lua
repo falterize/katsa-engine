@@ -36,6 +36,11 @@ function Objects.install(World3D)
         Validate.vector(o.rotation, 'Object.rotation', 3)
         Validate.vector(o.size, 'Object.size', 3)
         o.doubleSided = o.doubleSided == true
+        require('source.engine.components.lighting').normalize(o, 1)
+        require('source.engine.components.shadowing').normalize(
+            o,
+            { castShadow = true, receiveShadow = true }
+        )
         o.visible = o.visible ~= false
         o.color = o.color or { 1, 1, 1, 1 }
         o.maxDistance = o.maxDistance or 0

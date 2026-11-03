@@ -79,7 +79,7 @@ function Lab.new(scene)
         spread = 180,
         startSize = { 1, 2 },
         gravityScale = 0.1,
-        unlit = true,
+        lightInfluence = 0,
     }, self.body)
     self.trail = world:create('ParticleEmitter3D', {
         name = 'DashTrail',
@@ -88,7 +88,7 @@ function Lab.new(scene)
         lifetime = { 0.15, 0.35 },
         speed = { 0, 2 },
         startSize = { 1, 2 },
-        unlit = true,
+        lightInfluence = 0,
     }, self.body)
     local focus =
         world:create('Attachment3D', { name = 'CameraFocus', position = { 0, 10, 0 } }, self.body)

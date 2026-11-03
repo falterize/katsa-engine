@@ -90,7 +90,7 @@ local fields = {
     'tileSize',
     'imageOffset',
     'imageRotation',
-    'unlit',
+    'lightInfluence',
     'target',
     'thickness',
     'cornerRadius',

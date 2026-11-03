@@ -1,3 +1,4 @@
+local Lighting = require('../../components.lighting')
 local readValue = require('../../math.managedValue').read
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
@@ -31,7 +32,7 @@ local function same(a, b)
         or a._resolvedMaterial ~= b._resolvedMaterial
         or a.geometry ~= b.geometry
         or a.image ~= b.image
-        or a.unlit ~= b.unlit
+        or Lighting.influence(a) ~= Lighting.influence(b)
         or a.doubleSided ~= b.doubleSided
         or a.alphaCutoff ~= b.alphaCutoff
         or not Surface.compatible(a._surfaceAppearance, b._surfaceAppearance)

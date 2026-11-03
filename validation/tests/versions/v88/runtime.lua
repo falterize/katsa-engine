@@ -72,7 +72,7 @@ local function extra(test)
         r._frameCache.scalarNodesSkipped > 800,
         'Stable mesh, appearance and light scalar schemas skip full comparisons'
     )
-    mesh.unlit = not mesh.unlit
+    mesh.lightInfluence = mesh.lightInfluence > 0 and 0 or 1
     r:draw(w, c, 2, true)
     test:check(
         r.stats.updatedMeshes == 1,

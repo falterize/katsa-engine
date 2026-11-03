@@ -94,7 +94,7 @@ world:create('Decal', {
     face = 'Top',
     image = 'assets/textures/ui/litter.png',
     mode = 'Decal',
-    unlit = false,
+    lightInfluence = 1,
     transparency = 0,
 }, tile)
 ```
@@ -109,7 +109,7 @@ imageRotation is degrees; color is normalized RGB; transparency is 0..1.
 Transparent texels reveal the parent. See the UI layout guide for units, transform
 order and the physical repetition versus region-grid resize examples.
 
-unlit defaults true. With unlit=false the existing lights, ambient and shadow
+lightInfluence defaults to 0 (unlit; the old boolean `unlit` is still accepted when a node is created). With lightInfluence above 0 the existing lights, ambient and shadow
 receiver shader apply; lit decals contribute receiver bounds/light relevance even
 if the parent does not receive shadows. Decals do not cast separate shadows.
 onTop, visible, maxDistance, zIndex, doubleSided and local transforms follow the

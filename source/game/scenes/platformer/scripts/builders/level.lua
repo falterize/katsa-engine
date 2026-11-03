@@ -48,7 +48,7 @@ function L.build(lab)
             position = { p[1], p[2] + 24, p[3] },
             size = { 7, 7, 7 },
             color = { 0.2, 0.8, 1 },
-            unlit = true,
+            lightInfluence = 0,
         }, shader)
         lab.pickups[i] = { mesh = gem, position = p, collected = false }
     end

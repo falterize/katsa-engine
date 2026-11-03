@@ -12,17 +12,8 @@ local sqrt = math.sqrt
 
 local Geometry = {}
 
-local function cross(ax, ay, az, bx, by, bz)
-    return ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx
-end
-
-local function normalize(x, y, z)
-    local length = sqrt(x * x + y * y + z * z)
-    if length < 1e-9 then
-        return 0, 0, 0, 0
-    end
-    return x / length, y / length, z / length, length
-end
+local M = require('../math.math3d')
+local cross, normalize = M.cross, M.unit
 
 -- Any unit vector perpendicular to the (unit) direction.
 local function perpendicular(tx, ty, tz)

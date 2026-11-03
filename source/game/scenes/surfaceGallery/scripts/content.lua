@@ -72,7 +72,7 @@ function Demo.new(scene)
         name = 'Litter',
         image = 'assets/textures/ui/litter.png',
         face = 'Top',
-        unlit = false,
+        lightInfluence = 1,
     }, tile)
     local tiled = Mesh.create(world, {
         name = 'TiledSign',

@@ -1,6 +1,7 @@
 local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 local M = require('../../math.math3d')
+local Lighting = require('../../components.lighting')
 
 local L = {}
 
@@ -10,12 +11,10 @@ function L.bind(shader, world, camera, emitter)
             shader:send(name, ...)
         end
     end
-    local enabled = not emitter.unlit
-        and (emitter.lightInfluence == nil or emitter.lightInfluence > 0)
-        and (not emitter._systemEffects or emitter._systemEffects.lighting ~= false)
+    local influence = Lighting.influence(emitter)
+    local enabled = influence > 0
     send('particleUnlit', not enabled)
-    -- Ribbons blend between unlit and lit with lightInfluence; 0 (the default) means fully lit.
-    send('particleDetach', 1 - (emitter.lightInfluence or 1))
+    send('particleDetach', 1 - influence)
     send('particleBrightness', emitter.brightness)
     local ambient = world.environment.ambient
     send(
