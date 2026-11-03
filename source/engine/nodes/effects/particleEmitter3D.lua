@@ -48,17 +48,12 @@ C.propertySchema.surfaceOnly.visibleWhen =
     { key = 'shape', oneOf = { 'Box', 'Sphere', 'Disc', 'Cylinder' } }
 C.propertySchema.shapeSize.visibleWhen =
     { key = 'shape', oneOf = { 'Box', 'Sphere', 'Disc', 'Cylinder' } }
-C.propertySchema.shadowGroup.visibleWhen = function(node)
-    return node.castShadow or node.receiveShadow
-end
-for _, key in ipairs({ 'shadowMaxParticles', 'shadowAlphaCutoff' }) do
-    C.propertySchema[key].visibleWhen = { key = 'castShadow', equals = true }
-end
 C.propertySchema.gravity.visibleWhen = { key = 'useWorldGravity', equals = false }
 C.propertySchema.useWorldGravity.hint =
     'Use Physics.gravity when present; otherwise use the emitter gravity vector. Disable to '
         .. 'author an independent field.'
 require('../../components.image').describe(C)
+require('../../components.shadowing').describe(C, { 'shadowMaxParticles' })
 C.propertySchema.atlasAnimation = { visibleWhen = { key = 'imageMode', equals = 'XML' } }
 C.propertySchema.atlasGrid.visibleWhen = function(node)
     return node.imageMode == 'Atlas' or node.atlasEnabled and node.imageMode == 'Decal'
@@ -68,12 +63,7 @@ for _, key in ipairs({ 'lifetime', 'speed', 'startSize', 'startRotation', 'angul
     C.propertySchema[key].labels = { 'Min', 'Max' }
 end
 local hints = {
-    castShadow = 'Adds the live particles (up to shadowMaxParticles) to the shadow maps as alpha tested '
-        .. 'sprites.',
-    receiveShadow = 'Shadows from other objects darken the particles; needs unlit off.',
-    shadowGroup = 'Layer group deciding which lights this emitter casts into and receives from.',
     shadowMaxParticles = 'Most particles that are written into the shadow maps per frame.',
-    shadowAlphaCutoff = 'Particles that are more transparent than this cast no shadow.',
     rate = 'Births per second, controlled directly by Rate.',
     lifetime = 'Seconds: randomized Min / Max at birth.',
     speed = 'Local units per second: Min / Max at birth.',

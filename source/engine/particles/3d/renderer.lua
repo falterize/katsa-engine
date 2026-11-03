@@ -8,19 +8,7 @@ local format = {
     { 'VertexTexCoord', 'float', 2 },
     { 'VertexColor', 'float', 4 },
 }
-local corners = {
-    { -1, -1, 0, 1 },
-    { 1, -1, 1, 1 },
-    { 1, 1, 1, 0 },
-    { -1, -1, 0, 1 },
-    { 1, 1, 1, 0 },
-    {
-        -1,
-        1,
-        0,
-        0,
-    },
-}
+local corners = require('./basis').corners
 local Sequence = require('../../animation.sequence')
 
 local function sample(emitter, key, t, out)

@@ -1,10 +1,6 @@
 local defaults = {
     collisionGroup = 'Default',
-    castShadow = false,
-    receiveShadow = false,
-    shadowGroup = 'Default',
     shadowMaxParticles = 128,
-    shadowAlphaCutoff = 0.1,
     unlit = true,
     brightness = 1,
     rate = 30,
@@ -54,6 +50,9 @@ local defaults = {
     offscreenBehavior = 'Pause',
     liveCount = 0,
 }
+for key, value in pairs(require('../components.shadowing').defaults) do
+    defaults[key] = value
+end
 local enums = {
     shape = { 'Point', 'Box', 'Sphere', 'Disc', 'Cylinder' },
     simulationSpace = { 'World', 'Local' },

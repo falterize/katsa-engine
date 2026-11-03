@@ -126,7 +126,10 @@ function Module.run(self)
     self:check(beam._count == 4 and #list >= 1, 'the Low profile halves the beam segments')
     world:setQualityProfile('High')
 
-    -- Shadows.
+    -- Shadows: one shared component for ribbons and particles.
+    local Schema2 = Schema
+    self:check(Schema2.visible(beam, 'receiveShadow') and Schema2.visible(trail, 'receiveShadow'), 'receiveShadow is always listed, lit or not')
+    self:check(not Schema2.visible(beam, 'shadowAlphaCutoff'), 'shadowAlphaCutoff only shows while the node casts shadows')
     world.environment.shadows.enabled = true
     beam.attachment1 = a1
     beam.castShadow = true
@@ -141,6 +144,8 @@ function Module.run(self)
     self:check(#output == 1 and output[1].receiveShadow, 'a receiving beam is a receiver proxy')
 
     local emitter = world:create('ParticleEmitter3D', {})
+    self:check(emitter.shadowAlphaCutoff == beam.shadowAlphaCutoff, 'particles and ribbons share the shadow defaults')
+    self:check(Schema.descriptor(emitter, 'shadowAlphaCutoff').hint == Schema.descriptor(beam, 'shadowAlphaCutoff').hint, 'particles and ribbons share the shadow hints')
     self:check(emitter.castShadow == false and emitter.receiveShadow == false, 'particles keep castShadow and receiveShadow options')
     world:release()
 end

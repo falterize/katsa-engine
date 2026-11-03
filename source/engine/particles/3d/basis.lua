@@ -3,6 +3,16 @@ local M = require('../../math.math3d')
 
 local B = {}
 
+-- Two triangles of a unit quad: { x, y, u, v } per vertex, shared by the sprite pass and its shadows.
+B.corners = {
+    { -1, -1, 0, 1 },
+    { 1, -1, 1, 1 },
+    { 1, 1, 1, 0 },
+    { -1, -1, 0, 1 },
+    { 1, 1, 1, 0 },
+    { -1, 1, 0, 0 },
+}
+
 function B.resolve(emitter, p, camera, matrix)
     local right, up = camera.right, camera.up
     if emitter.orientation == 'Velocity' then
