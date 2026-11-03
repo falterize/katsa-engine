@@ -26,6 +26,13 @@ local TUNING = {
     maxLateral = 13, -- steering never asks for more sideways acceleration than this (m/s^2)
     levelStiffness = 22, -- anti-roll/pitch assist: pull toward the ground plane (1/s^2) ...
     levelDamping = 8, -- ... and damp the tilt rate (1/s)
+    handbrakeBrake = 0.75, -- handbrake deceleration as a share of the normal brake
+    driftGripRate = 2.2, -- sideways velocity removal while the handbrake is held (1/s)
+    driftGripLimit = 5.5, -- ... and the sideways acceleration the locked rear tires can hold
+    driftYawGain = 1.7, -- the handbrake lets the nose swing further than the steering asks
+    flipAfter = 0.7, -- seconds on the side or roof before the car rights itself
+    flipTorque = 38, -- righting acceleration (1/s^2) and ...
+    flipDamping = 5, -- ... spin damping (1/s) of the automatic flip
     impactSpeed = 3.5, -- sudden velocity change that counts as a collision
 }
 
@@ -190,7 +197,8 @@ function PhysicsCar:step(dt)
 
     local input = self.input
     local throttle = math.max(-1, math.min(1, input.throttle or 0))
-    local boosting = input.nitro == true and model.nitro > 0 and throttle > 0
+    local handbrake = input.handbrake == true
+    local boosting = input.nitro == true and model.nitro > 0 and throttle > 0 and not handbrake
     if boosting then
         model.nitro = math.max(0, model.nitro - config.nitroDrain * dt)
     end
@@ -260,19 +268,30 @@ function PhysicsCar:step(dt)
         else
             longitudinal = -math.max(-config.rolling, math.min(config.rolling, speed * 4))
         end
+        if handbrake and math.abs(speed) > 0.3 then
+            -- Locks the rear tires: brakes against the direction of travel.
+            longitudinal = longitudinal - (speed > 0 and 1 or -1) * config.brake * t.handbrakeBrake
+        end
         longitudinal = longitudinal - speed * config.drag
         local f = longitudinal * mass * share
         body:applyForce({ forward[1] * f, forward[2] * f, forward[3] * f })
 
         -- Lateral grip removes sideways slip, limited by what the tires can hold.
-        local wanted = -lateral * t.gripRate
-        local accel = math.max(-t.gripLimit, math.min(t.gripLimit, wanted)) * mass * share
+        local slipping = handbrake and math.abs(speed) > 4
+        local gripRate = slipping and t.driftGripRate or t.gripRate
+        local gripLimit = slipping and t.driftGripLimit or t.gripLimit
+        local wanted = -lateral * gripRate
+        local accel = math.max(-gripLimit, math.min(gripLimit, wanted)) * mass * share
         body:applyForce({ right[1] * accel, right[2] * accel, right[3] * accel })
 
         -- Steering: follow the bicycle-model yaw rate for the current speed and wheel angle.
         local target = speed / config.wheelBase * math.tan(math.rad(model.steerAngle))
         -- A turn tighter than the tires hold only throws the car sideways onto its roof.
         local cap = t.maxLateral / math.max(2, math.abs(speed))
+        if slipping then
+            target = target * t.driftYawGain
+            cap = cap * t.driftYawGain
+        end
         target = math.max(-cap, math.min(cap, target))
         local inertia = mass * (t.size[3] ^ 2 + t.size[1] ^ 2) / 12
         local torque = (target - yawRate) * t.yawGain * inertia * share
@@ -300,8 +319,48 @@ function PhysicsCar:step(dt)
             body:applyTorque({ sx * k, sy * k, sz * k })
         end
     end
+    -- Smoke and marks: how hard the rear tires slide, or lock while the handbrake brakes.
+    local slide = math.min(1, math.abs(lateral) / 6)
+    local locked = handbrake and math.abs(speed) > 2 and 0.55 or 0
+    local drift = grounded > 0 and math.max(slide, locked) or 0
+    if math.abs(speed) < 2 then
+        drift = 0
+    end
+    model.drift = approach(model.drift or 0, drift, drift > (model.drift or 0) and 6 or 3, dt)
+    self:autoFlip(dt, up, forward, grounded)
     self.boosting = boosting
     self.lastSpeed = speed
+end
+
+-- Rights a car that rests on its side or roof: after flipAfter seconds a torque turns the chassis
+-- up toward world up about its forward axis (a roof rolls over its side, never tumbles end over
+-- end) and a small lift frees the low side. Nothing is teleported, the body keeps its place.
+function PhysicsCar:autoFlip(dt, up, forward, grounded)
+    local t = self.tuning
+    local tilted = up[2] < 0.35
+    local resting = math.abs(self.model.speed) < 6 and (grounded > 0 or next(self.node.body:getContacts()) ~= nil)
+    if tilted and resting then
+        self.flippedFor = (self.flippedFor or 0) + dt
+    elseif up[2] > 0.8 then
+        self.flippedFor = 0
+    end
+    local active = (self.flippedFor or 0) > t.flipAfter and up[2] < 0.8
+    self.flipping = active
+    if not active then
+        return
+    end
+    -- Roll about the forward axis in the sense that turns `up` toward world up: the component of
+    -- up x worldUp along forward. A car lying exactly on its roof has no preferred side: roll right.
+    local sign = up[1] * forward[3] - up[3] * forward[1]
+    sign = math.abs(sign) < 0.05 and 1 or (sign > 0 and 1 or -1)
+    local mass = t.mass
+    local inertia = mass * (t.size[1] ^ 2 + t.size[2] ^ 2) / 12 * 2.5
+    local body = self.node.body
+    local w = self.angular
+    local along = w.x * forward[1] + w.y * forward[2] + w.z * forward[3]
+    local k = (sign * t.flipTorque - along * t.flipDamping) * inertia
+    body:applyTorque({ forward[1] * k, forward[2] * k, forward[3] * k })
+    body:applyForce({ 0, mass * 9.81 * 0.5, 0 })
 end
 
 -- Refreshes the replicated model from the body and queues collision impacts.
@@ -384,14 +443,13 @@ function PhysicsCar.clearRenderPose(model)
     model.rheading, model.rpitch, model.rroll = nil, nil, nil
 end
 
--- True once the car has been upside down or far below the arena for a while.
+-- True once the car has fallen far below the arena.
 function PhysicsCar:needsReset(dt)
     if self.mode == 'follow' then
         return false
     end
-    local flipped = self.axes.up[2] < 0.25 and math.abs(self.model.speed) < 3
-    self.flippedFor = flipped and (self.flippedFor or 0) + dt or 0
-    return self.flippedFor > 3 or self.model.y < -30
+    -- A flipped car rights itself (autoFlip); only leaving the map needs a respawn.
+    return self.model.y < -30
 end
 
 function PhysicsCar:respawn(x, z, heading)

@@ -7,7 +7,7 @@ or join, walk, drive, chat, talk, kick, a bot that chases players, and a damage 
 
 | Input | Action |
 | --- | --- |
-| WASD / left stick | move or drive; Space jump; Shift run / nitro |
+| WASD / left stick | move or drive; Space jump on foot, **handbrake / drift** in a car (phones: hold the *Drift* button); Shift run / nitro |
 | mouse | the cursor is captured and turns the camera until **Tab** (or the *Menu* button) frees it |
 | wheel / pinch / `+` `-` | camera zoom (the wheel scrolls UI under the cursor instead) |
 | Q | shift-lock (camera-relative facing) |
@@ -56,9 +56,13 @@ skip suspension and cost 15 % top speed each; they become rolling debris on ever
 (`view/carView.lua:shedWheel`).
 
 The body shape changes through `nodes/vehicle/deformation.lua`: up to 24 dents
-`{ x, y, z, nx, ny, nz, depth }` (depth capped at 0.55 m). `view/carMesh.lua` builds the car as
-lofted hull and cabin sections; `Body.deform` moves each vertex along the dent normals with a
-smooth falloff, so the lattice stays continuous. Dents are serialised with the entity, so everybody
+`{ x, y, z, nx, ny, nz, depth }` (depth capped at 0.7 m). `view/carModel.lua` turns the Duke 69
+(`assets/models/duke69.glb`) into nodes: Body, Hood and Trunkdoor are the tinted paint, every
+other panel and light owns a dentable copy of its vertices, the interior, steering wheel and
+suspension are rigid, and the four wheels are separate pivots. `CarModel.deform` moves each vertex
+along the dent normals with a falloff, adds a deterministic crumple and pulls the metal toward the
+dent centre; creased triangles are flat shaded. Parts a dent cannot reach are skipped
+(`Deformation:touches`). Without the GLB the car falls back to the lofted `view/carMesh.lua` hull. Dents are serialised with the entity, so everybody
 (including late joiners) sees the same shape. The driver's client reports impacts
 (`remote('impact')`); the server validates them and broadcasts the new dent list.
 
@@ -72,3 +76,25 @@ The bot (`scripts/game/bot.lua`) patrols and chases the nearest reachable human 
 park (deck, curbs, columns and a ramp, tagged `navFloor = 2`). It aims only at waypoints on its
 own floor, slows for sharp turns and on the deck, and re-plans after reversing out of a wall.
 `Environment.debug.pathfinding` (editor or F4 *Pathfinding*) is the only switch: it draws the whole map and the bot route (fed through `Pathfinding.Debug.setRoute`).
+
+
+## Model, materials and import
+
+`tools/import/fbxDump.c` (ufbx) dumps the FBX, `tools/import/fbxCarToGlb.py` builds the GLB (car
+space, +z forward, wheels renamed `Wheel_FL/FR/RL/RR` and centred on their hubs) and
+`tools/import/carMaps.py` writes the PBR maps in `assets/textures/duke`: colour, a normal map from
+each height map, roughness and metalness. `carModel.lua` gives each part group a
+`SurfaceAppearance3D` with every map it has; paint uses scalar roughness and metalness (its UVs are
+an atlas, not a tile) and the glass is a Blend material with low alpha and low roughness.
+
+## Drift, skid marks and automatic flip
+
+Holding Space (or the *Drift* button) in a car is a handbrake: the rear tires lock (braking against
+the direction of travel), sideways grip drops and the nose swings further than the steering asks.
+`PhysicsCar` writes the replicated `drift` field (0..1, from the slide speed and the locked
+tires); `view/skid.lua` draws rear-wheel smoke (`ParticleEmitter3D`, world space) and dark flat
+`Trail3D` skid marks (dual mode, world-space edge nodes, a segment per slide that ages out) on
+every machine from it.
+
+A car on its side or roof rights itself (`PhysicsCar:autoFlip`: a torque about the forward axis
+after 0.7 s plus a lift). Only falling below the arena (`y < -30`) respawns a car.

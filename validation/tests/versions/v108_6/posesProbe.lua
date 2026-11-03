@@ -121,7 +121,7 @@ function Tests:measure(host, session)
         end
         if entry and car and carBody and carBody.mode == 'dynamic' then
             local m = carBody.node.body:getRenderMatrix()
-            local lift = 1.5 - car.config.rideHeight
+            local lift = walker.SEAT_LIFT -- the capsule sits this far above the chassis centre
             local ideal = { m[4] + m[2] * lift, m[8] + m[6] * lift, m[12] + m[10] * lift }
             self:note('seatedCapsule', distance(entry, ideal))
         elseif entry and not walker:isRiding() then
@@ -197,7 +197,7 @@ function Tests:draw()
         session:changeCar()
     end
     if self.seated and frame > 215 then
-        host.input.actions.keys.w = true
+        host.input.actions.keys.up = true
     end
     local dt = phase.dt or (1 / 200 + self:random() * (1 / 25 - 1 / 200))
     host:update(dt, dt)

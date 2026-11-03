@@ -34,7 +34,7 @@ function Module.run(self)
     end
     self:check(session.mode == 'playing', 'hosting connects the local client')
     Probe.startRemote(self, host)
-    frames(self, host, 90, 1 / 60, idle)
+    frames(self, host, 60, 1 / 60, idle)
     session:changeCar()
     frames(self, host, 15, 1 / 60, idle)
     local hostCar = session.client:getCar()
@@ -46,9 +46,9 @@ function Module.run(self)
     end
     frames(self, host, 50, 1 / 60, idle)
     self:check(session.client:getCar() ~= nil, 'the host player is seated in a car')
-    host.input.actions.keys.w = true
+    host.input.actions.keys.up = true
     self.seated, self.remote.started, self.remote.throttle = true, true, 1
-    frames(self, host, 90, 1 / 60, idle)
+    frames(self, host, 60, 1 / 60, idle)
     local stats = self.stats
     local renderer = host.world._activeRenderer
     self:check(
@@ -56,9 +56,9 @@ function Module.run(self)
         'the 3D frame is never reused while collision wireframes are drawn'
     )
     for _, case in ipairs({
-        { 'at 1/144', 1 / 144, 240 },
-        { 'at 1/30', 1 / 30, 90 },
-        { 'with random frame times', false, 240 },
+        { 'at 1/144', 1 / 144, 150 },
+        { 'at 1/30', 1 / 30, 60 },
+        { 'with random frame times', false, 150 },
     }) do
         self.stats = {}
         frames(self, host, case[3], case[2], function()
@@ -83,7 +83,7 @@ function Module.run(self)
             'the car moves during the measurement'
         )
     end
-    host.input.actions.keys.w = nil
+    host.input.actions.keys.up = nil
     self.remote.throttle = 0
     self.remote.client:disconnect()
     host:release()

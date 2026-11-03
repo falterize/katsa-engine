@@ -60,6 +60,7 @@ function Vehicle.new(config, ground)
         heading = 0,
         speed = 0,
         slide = 0,
+        drift = 0, -- 0..1 rear-tire slide / lock, drives smoke and skid marks
         steerAngle = 0,
         nitro = 1,
         spring = { 0, 0, 0, 0 },
