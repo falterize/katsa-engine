@@ -8,6 +8,9 @@
 --     simulate = function(object, input, dt) end,   -- input-driven step (server and prediction)
 --     relevant = function(player, object) return true end,          -- server interest filter
 --     clientAuthoritative = false,   -- the authority client sends the state instead of input
+--     validate = function(object, newState, elapsed, player) -> false, reason   -- server: drop a
+--       client-reported state that is impossible (a teleport); `elapsed` is seconds since the last
+--       accepted state
 --     get = function(object, name) / set = function(object, name, value)   -- optional accessors
 --   }
 local Types = require('./types')

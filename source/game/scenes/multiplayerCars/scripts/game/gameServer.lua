@@ -57,6 +57,12 @@ function GameServer.new(context, options)
         self:log('%s joined (id %d)%s', player.name, player.id, player == self.hostPlayer and ' [HOST]' or '')
         self:publishHost()
     end)
+    server.stateRejected:connect(function(player, _, reason)
+        self.rejections = (self.rejections or 0) + 1
+        if self.rejections <= 5 or self.rejections % 100 == 0 then
+            self:log('rejected a state from %s (%s), %d so far', player.name, reason, self.rejections)
+        end
+    end)
     server.playerRemoved:connect(function(player)
         self:log('%s left', player.name)
         self:leaveCar(player)

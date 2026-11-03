@@ -38,6 +38,60 @@ local function codecChecks(T)
     T.check(not pcall(truncated.u32, truncated), 'netGame: truncated message raises')
 end
 
+local function interpolationChecks(T)
+    local client = Net.Client.new({}, {})
+    client:define('Mover', {
+        fields = { 'position:vec2' },
+        create = function()
+            return { position = { 0, 0 } }
+        end,
+    })
+    local object = { position = { 0, 0 } }
+    client.entities[1] = {
+        id = 1,
+        kind = 'Mover',
+        definition = client.registry:get('Mover'),
+        object = object,
+        buffer = {
+            { time = 0.7, state = { position = { 0, 0 } } },
+            { time = 0.8, state = { position = { 10, 0 } } },
+        },
+    }
+    client.timeOffset, client.clock, client.frameDelta = 0, 1.0, 1 / 60
+    client:interpolateEntities()
+    T.check(
+        math.abs(object.position[1] - 16) < 1e-6 and client.extrapolated == 1,
+        'netGame: a starved entity is extrapolated up to the limit'
+    )
+    client.clock = 5
+    client:interpolateEntities()
+    T.check(
+        math.abs(object.position[1] - 16) < 1e-6,
+        'netGame: extrapolation stops at maxExtrapolation'
+    )
+    client.clock = 0.85
+    client:interpolateEntities()
+    T.check(
+        math.abs(object.position[1] - 5) < 1e-6 and client.extrapolated == 0,
+        'netGame: a snapshot pair that brackets the render time is still interpolated'
+    )
+
+    client.snapshotRate = 20
+    for _ = 1, 4 do
+        client:adaptInterpolationDelay(1)
+    end
+    T.check(
+        math.abs(client.interpolationDelay - 0.07) < 1e-6,
+        'netGame: a quiet network lowers the delay to the snapshot period plus a margin'
+    )
+    client.jitter = 0.05
+    client:adaptInterpolationDelay(0.5)
+    T.check(
+        math.abs(client.interpolationDelay - 0.1) < 1e-6,
+        'netGame: jitter raises the delay back to its ceiling'
+    )
+end
+
 return function(T)
     local okNet = pcall(require, 'source.katsa.net')
     if not okNet then
@@ -45,6 +99,7 @@ return function(T)
     end
     katsa = katsa or require('source.katsa')
     codecChecks(T)
+    interpolationChecks(T)
 
     local random = (function()
         local seed = 12345
@@ -71,6 +126,12 @@ return function(T)
         clientAuthoritative = true,
         create = function()
             return { position = { 0, 0 } }
+        end,
+        -- The server refuses impossible reports from the owner.
+        validate = function(_, state)
+            if state.position[1] > 500 then
+                return false, 'too far'
+            end
         end,
     })
     local avatars = {}
@@ -209,6 +270,19 @@ return function(T)
         math.abs(beacon.position[1] - 77) < 0.01,
         'netGame: client-authoritative state reaches the server'
     )
+
+    local rejected = {}
+    server.stateRejected:connect(function(_, _, reason)
+        rejected[#rejected + 1] = reason
+    end)
+    ownBeacon.position[1] = 900
+    run(60)
+    T.check(
+        math.abs(beacon.position[1] - 77) < 0.01 and rejected[1] == 'too far',
+        'netGame: an impossible client state is rejected and reported'
+    )
+    ownBeacon.position[1] = 77
+    run(30)
 
     -- Handing an entity to another player (a car changing drivers).
     local shared = avatars[one.localPlayer.id]

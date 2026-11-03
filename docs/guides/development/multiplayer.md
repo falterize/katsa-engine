@@ -104,6 +104,21 @@ client has authority) are copied straight from the server's object every frame: 
 owned by other players are interpolated as usual. `mirror` must not allocate (it runs per entity
 per frame). multiplayerCars uses it for cars (`CarEntity.mirror`).
 
+## Smoothing, stats and validation
+
+- **Delay and extrapolation.** `Client` draws remote entities `interpolationDelay` seconds behind the
+  newest snapshot. The delay adapts between about 1.25 snapshot periods and the option value from
+  the measured arrival jitter (up quickly, down slowly); `adaptiveDelay = false` fixes it. When the
+  newest snapshot is older than the drawn moment the last movement is continued for at most
+  `maxExtrapolation` seconds (default 0.06) instead of freezing, then it holds.
+- **Stats.** `client:getStats()` returns ping, loss, snapshots per second, newest snapshot age,
+  jitter, delay and the number of extrapolated entities (a reused table). A scene shows them in the
+  Stats panel by setting `scene.netStats = function() return client:getStats() end`.
+- **Validation.** A client-authoritative definition may add `validate(object, newState, elapsed,
+  player)`. Return `false, reason` to drop an impossible report; `elapsed` is the time since the
+  last accepted state. The server keeps the old state and fires `server.stateRejected(player,
+  object, reason)`; the game decides what to do (log, correct, kick).
+
 ## Reference game: multiplayerCars
 
 `source/game/scenes/multiplayerCars` combines the pieces: a server-authoritative arena with one car
