@@ -11,6 +11,7 @@ local WalkerView = require('./walker.view')
 local GameServer = require('./game.gameServer')
 local GameClient = require('./game.gameClient')
 local PhysicsCar = require('./game.physicsCar')
+local CarAxes = require('./game.carAxes')
 local AdsConfig = require('./game.adsConfig')
 local Interface = require('./ui.interface')
 local Menu = Interface.Menu
@@ -486,10 +487,21 @@ function Session:updateWalker(dt, car, seat)
     self.jumpHeld = math.max(0, (self.jumpHeld or 0) - dt)
     walker.cameraYaw = math.rad(self.orbit.yaw)
     if car then
-        walker:setSeat(car.x, car.y - car.config.rideHeight + 0.5, car.z)
+        -- Seated at the pose the car is drawn at (render pose when this process simulates it).
+        local up = CarAxes.up(
+            car.rheading or car.heading,
+            car.rpitch or car.pitch or 0,
+            car.rroll or car.roll or 0,
+            self.seatUp
+        )
+        self.seatUp = up
+        walker:setSeat(car.rx or car.x, car.ry or car.y, car.rz or car.z, up[1], up[2], up[3])
         local wanted = seat == 1 and 'drive' or 'passenger'
         if walker.fsm.name ~= wanted then
             walker:enterCar(seat)
+        end
+        if walker:isRiding() then
+            walker:placeAtSeat()
         end
     elseif walker:isRiding() then
         walker:place(walker.model.x, walker.model.y + 0.5, walker.model.z)
@@ -568,7 +580,7 @@ function Session:updateNetwork(dt)
     end
     profiler:finish('Cars: client', stamp)
     stamp = profiler:begin()
-    self:updateRenderPoses()
+    self:updateRenderPoses(dt)
     self:watchJumps(dt)
     profiler:finish('Cars: render poses', stamp)
 end
@@ -628,15 +640,23 @@ end
 
 -- Simulated cars are drawn at their body's render pose, the pose the collision wireframes use;
 -- every other car keeps the raw interpolated model.
-function Session:updateRenderPoses()
+function Session:updateRenderPoses(dt)
     local client = self.client
     if client then
         for netId, car in pairs(client.cars) do
             local body = self:simulatingBody(netId)
             if body then
                 body:renderPose(car)
-            elseif car.rx then
-                PhysicsCar.clearRenderPose(car)
+            else
+                if car.rx then
+                    PhysicsCar.clearRenderPose(car)
+                end
+                -- A car another player drives is a kinematic stand-in on the hosting machine too:
+                -- it sits where the replica is drawn, like the stand-ins of joined clients.
+                local standIn = self.server and self.server.bodies[netId]
+                if standIn and standIn.mode == 'follow' then
+                    standIn:followDrawn(dt, car)
+                end
             end
         end
         for _, walker in pairs(client.walkers) do

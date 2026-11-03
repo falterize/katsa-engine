@@ -19,6 +19,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_6.ribbonInterface').run(self)
     require('validation.tests.versions.v108_6.debugPoses').run(self)
     require('validation.tests.versions.v108_6.carAxes').run(self)
+    require('validation.tests.versions.v108_6.carPoses').run(self)
     print('PASSED ' .. self.count .. ' v108.6 focused checks')
     katsa.event.quit()
 end

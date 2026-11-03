@@ -93,6 +93,14 @@ function PhysicsCar.new(world, model, netId, options)
     return self
 end
 
+-- Places a follow-mode body at the pose that is drawn this frame and keeps it there: physics
+-- steps no longer move it to the newest authoritative pose, which on the hosting machine runs
+-- the snapshot interpolation delay (about 0.1 s, metres at speed) ahead of the model.
+function PhysicsCar:followDrawn(dt, source)
+    self.drawn = true
+    self:follow(dt, source)
+end
+
 -- 'dynamic': the car is driven by forces here. 'follow': a kinematic stand-in that copies the
 -- replicated model (a car simulated by its driver's client, or another player's car seen from a
 -- client that owns one), so the owning simulation still collides with it.
@@ -101,6 +109,7 @@ function PhysicsCar:setMode(mode)
         return
     end
     self.mode = mode
+    self.drawn = nil
     if mode == 'dynamic' then
         local model = self.model
         self.node.bodyType = 'Dynamic'
@@ -117,9 +126,10 @@ function PhysicsCar:setMode(mode)
     end
 end
 
--- Moves a follow-mode body to the replicated pose.
-function PhysicsCar:follow(dt)
-    local model = self.model
+-- Moves a follow-mode body to a replicated pose: its own model, or `source` (the model that is
+-- drawn, for example the interpolated replica a hosting client shows).
+function PhysicsCar:follow(dt, source)
+    local model = source or self.model
     -- A teleported kinematic body has no velocity of its own; derive it from the pose change so
     -- characters standing on this car are carried along (Body3D:getPointVelocity reads it).
     local last = self.lastFollow
@@ -163,7 +173,10 @@ end
 -- replicated pose; client stand-ins are placed per frame by GameClient:update instead.
 function PhysicsCar:step(dt)
     if self.mode == 'follow' then
-        return self:follow(dt)
+        if not self.drawn then
+            self:follow(dt)
+        end
+        return
     end
     local t, model, config = self.tuning, self.model, self.config
     local body = self.node.body
