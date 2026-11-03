@@ -27,3 +27,15 @@ Attachment3D excludes spatial scale by default and can opt in. Body creation sup
 positive uniform scale, applied to colliders once. Live body dimensions/scale require
 a rebuild. See `spatialTransforms.md` for world/local APIs, units, shear constraints,
 keep-world reparent and migration.
+
+## Collision debug pose
+
+`Environment.debug.physics.poseMode` chooses where the 3D collision wireframes are drawn:
+
+- `Render` (default): the interpolated pose the meshes use, so shapes stay on their visuals.
+- `Solver`: the newest physics step, which contacts, raycasts and queries really use. It leads the visuals by up to one fixed step.
+- `Both`: both passes, the solver shapes in magenta over the usual colours, to see the gap.
+
+F4 > 3D Physics > "Debug pose" cycles the modes. In a hosted network game the host draws
+server-simulated entities from the server (see the multiplayer guide), so the gap is only this
+one step.

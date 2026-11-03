@@ -16,6 +16,9 @@ local hints = {
     depthPrepass = 'Automatic early depth for dense, fully opaque built-in mesh scenes with 4+ lights. Skips unknown alpha, custom materials and MSAA; preserves normal shading and depth ordering.',
     bones = 'Show skeletons in this World3D. Individual Animator.debugEnabled can also enable '
         .. 'bone lines.',
+    poseMode = 'Collision debug pose. Render: where the visuals are drawn (interpolated between '
+        .. 'physics steps). Solver: the newest physics step, which contacts and queries use. '
+        .. 'Both: solver shapes in magenta over the normal colours.',
     wireframe = 'Render geometry edges in this World3D. Skips lighting, shadow generation and '
         .. 'occlusion.',
     occlusionCulling = 'Current-camera conservative opaque triangle coverage. Fully hidden meshes and strictly covered triangles are skipped in the main pass. Hidden meshes remain eligible for shadows and other Viewports. CPU cost depends on scene layout.',

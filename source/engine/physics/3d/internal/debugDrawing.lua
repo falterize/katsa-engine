@@ -3,6 +3,8 @@ local ipairs = require('source.engine.math.array').ipairs
 local O = require('../valueTypes')
 local DebugDrawing = {}
 
+local SOLVER_TINT = { 1, 0.2, 0.85 }
+
 function DebugDrawing.install(Physics, Body3D)
     -- Visuals follow the interpolated pose, which trails the solver by up to one fixed step. The
     -- wireframes must use the same pose, otherwise fast bodies seem to drive ahead of their
@@ -75,7 +77,12 @@ function DebugDrawing.install(Physics, Body3D)
                 local ax, ay = camera:project({ a.x * u, a.y * u, a.z * u })
                 local bx, by = camera:project({ b.x * u, b.y * u, b.z * u })
                 if ax and bx then
-                    katsa.graphics.setColor(color.x, color.y, color.z, 0.9)
+                    local tint = self.debugTint
+                    if tint then
+                        katsa.graphics.setColor(tint[1], tint[2], tint[3], 0.9)
+                    else
+                        katsa.graphics.setColor(color.x, color.y, color.z, 0.9)
+                    end
                     katsa.graphics.line(ax, ay, bx, by)
                 end
             end
@@ -93,7 +100,17 @@ function DebugDrawing.install(Physics, Body3D)
         end
         katsa.graphics.push('all')
         katsa.graphics.setShader()
-        drawAt(self, self:debugPoses())
+        -- Render: the pose the visuals use. Solver: the newest physics step (what contacts and
+        -- queries really see). Both: the solver pass in one colour over the usual colours.
+        local mode = self._debugSettings.poseMode or 'Render'
+        if mode == 'Solver' or mode == 'Both' then
+            self.debugTint = mode == 'Both' and SOLVER_TINT or nil
+            drawAt(self, nil)
+            self.debugTint = nil
+        end
+        if mode ~= 'Solver' then
+            drawAt(self, self:debugPoses())
+        end
         katsa.graphics.pop()
     end
 end
