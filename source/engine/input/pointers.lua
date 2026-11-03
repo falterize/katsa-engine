@@ -8,6 +8,7 @@ local Pointers = {}
 
 function Pointers.install(Input)
     function Input:press(id, x, y)
+        self:flushHover()
         local scene = self.scene
         if self.captures[id] then
             self:cancel(id)
@@ -109,7 +110,9 @@ function Pointers.install(Input)
         local c = self.captures[id]
         if not c then
             if id == 'mouse' then
-                self:hover(x, y)
+                -- Hit-testing the UI costs 0.2-0.5 ms; a fast mouse delivers several moves per
+                -- frame, so only the newest position is resolved (see flushHover).
+                self.hoverX, self.hoverY = x, y
             end
             return
         end
@@ -200,6 +203,16 @@ function Pointers.install(Input)
             end
         end
         self.captures[id] = nil
+    end
+
+    -- Resolves the hover for the latest mouse position seen since the last flush. Called once per
+    -- frame from Input:update and before presses, so enter/leave/hover events keep their order.
+    function Input:flushHover()
+        local x, y = self.hoverX, self.hoverY
+        if x then
+            self.hoverX, self.hoverY = nil, nil
+            self:hover(x, y)
+        end
     end
 
     function Input:hover(x, y)

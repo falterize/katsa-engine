@@ -3,6 +3,8 @@ local Deadline = require('./timing.deadline')
 
 local FrameLoop = {}
 
+local SLOW_EVENTS_MS = 30
+
 function FrameLoop.run()
     if katsa.load then
         katsa.load(katsa.arg.parseGameArguments(arg), arg)
@@ -13,6 +15,7 @@ function FrameLoop.run()
     local timings = { events = 0, update = 0, draw = 0, present = 0, sleep = 0 }
     Runtime.timings = timings
     local previousStarted
+    local slowName, slowTime = 'pump', 0
     return function()
         local started = katsa.timer.getTime()
         -- Measure at the same boundary each frame. Measuring after event pumping
@@ -21,15 +24,33 @@ function FrameLoop.run()
         previousStarted = started
         if katsa.event then
             katsa.event.pump()
+            slowName, slowTime = 'pump', katsa.timer.getTime() - started
             for name, a, b, c, d, e, f in katsa.event.poll() do
                 if name == 'quit' and (not katsa.quit or not katsa.quit()) then
                     return a or 0
                 end
+                local before = katsa.timer.getTime()
                 katsa.handlers[name](a, b, c, d, e, f)
+                local spent = katsa.timer.getTime() - before
+                if spent > slowTime then
+                    slowName, slowTime = name, spent
+                end
             end
         end
         local updated = katsa.timer.getTime()
         local events = (updated - started) * 1000
+        -- A long event phase is either the OS (the pump) or one handler; say which.
+        if events > SLOW_EVENTS_MS and katsa.log then
+            katsa.log.warn(
+                ('Slow event phase: %.0f ms, longest part "%s" %.0f ms'):format(
+                    events,
+                    slowName,
+                    slowTime * 1000
+                ),
+                'Events',
+                false
+            )
+        end
         local dt = katsa.timer.step()
         if katsa.update then
             katsa.update(dt)
