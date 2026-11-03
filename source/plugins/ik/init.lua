@@ -8,7 +8,9 @@
 --   arm.debug = true                  -- chain / target / pole overlay with the bone debug view
 --
 -- Solvers: TwoBone (analytic limbs), LookAt (head/eyes/turrets, chains with weights and limits),
--- Fabrik (any chain length, optional pole), Ccd (per-joint limits). Write your own by extending
+-- Fabrik (any chain length, optional pole), Ccd (per-joint limits), Jacobian (damped least
+-- squares), Spline (chain follows a curve), FK (pose by angles). The InverseKinematics3D node
+-- (scene setting `plugins = { 'ik' }`) wraps all of them behind one `type` property. Write your own by extending
 -- IK.SkeletonModifier and implementing `bones()` and `solve(skeleton, dt)`.
 return {
     SkeletonModifier = require('./modifier'),
@@ -18,4 +20,7 @@ return {
     LookAt = require('./solvers.lookAt'),
     Fabrik = require('./solvers.fabrik'),
     Ccd = require('./solvers.ccd'),
+    Jacobian = require('./solvers.jacobian'),
+    Spline = require('./solvers.spline'),
+    FK = require('./solvers.fk'),
 }

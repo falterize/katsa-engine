@@ -13,7 +13,10 @@ local TwoBone = Modifier.extend()
 local EPSILON = 1e-6
 
 function TwoBone.new(settings)
-    local self = setmetatable({}, TwoBone)
+    return setmetatable({}, TwoBone):read(settings)
+end
+
+function TwoBone:read(settings)
     self:configure(settings)
     self.rootBone, self.midBone, self.tipBone = settings.root, settings.mid, settings.tip
     assert(self.rootBone and self.midBone and self.tipBone, 'TwoBone needs root, mid and tip bones')
@@ -74,8 +77,7 @@ function TwoBone:solve(skeleton)
     px, py, pz, length = normalize(px, py, pz)
     if length == 0 then
         -- Fully straight animation without a pole: bend perpendicular to the axis.
-        px, py, pz = normalize(0, 1, 0)
-        local dot = py * uy
+        local dot = uy
         px, py, pz = normalize(-ux * dot, 1 - uy * dot, -uz * dot)
         if px == 0 and py == 0 and pz == 0 then
             px, py, pz = 1, 0, 0

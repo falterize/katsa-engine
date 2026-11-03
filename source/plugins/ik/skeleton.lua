@@ -63,6 +63,31 @@ function Skeleton:find(name)
     return node
 end
 
+-- Names of the bones from `root` down to `tip` (following parents from the tip). Without a root
+-- the chain is just the tip.
+function Skeleton:chain(root, tip)
+    local last = self:resolve(tip)
+    local first = root and root ~= '' and self:resolve(root) or last
+    local names, node = {}, last
+    while node do
+        table.insert(names, 1, node.name)
+        if node == first then
+            return names
+        end
+        node = node.parent
+    end
+    error(('Bone %s is not an ancestor of %s'):format(tostring(first.name), tostring(last.name)))
+end
+
+function Skeleton:parentName(bone, levels)
+    local node = self:resolve(bone)
+    for _ = 1, levels or 1 do
+        node = node.parent
+        assert(node, 'Bone ' .. tostring(bone) .. ' has no such ancestor')
+    end
+    return node.name
+end
+
 -- Accepts a name or a node and returns the node.
 function Skeleton:resolve(bone)
     if type(bone) == 'string' then
@@ -190,6 +215,16 @@ function Skeleton:blend(nodes, snapshot, influence)
     for i, node in ipairs(nodes) do
         local blended = Quat.slerp(snapshot[i], node.rotation, influence, {})
         write(self, node, blended)
+    end
+end
+
+-- Keeps the local rotation of `bone` within `radians` of `base` (a local rotation quaternion).
+function Skeleton:limitLocal(bone, base, radians)
+    local node = self:resolve(bone)
+    local offset = Quat.multiply(Quat.conjugate(base, {}), node.rotation, {})
+    local deviation = Quat.angle(offset)
+    if deviation > radians then
+        write(self, node, Quat.slerp(base, node.rotation, radians / deviation, {}))
     end
 end
 

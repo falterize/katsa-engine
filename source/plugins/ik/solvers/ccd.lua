@@ -7,14 +7,18 @@
 --                limits = { Elbow = 140, Wrist = 60 } })
 --
 -- `maxStep` caps the rotation per joint per iteration (degrees); `limits` caps how far a joint's
--- local rotation may leave the animated pose (degrees, by bone name).
+-- local rotation may leave the animated pose (degrees, by bone name); `limit` applies one
+-- angle to every joint.
 local Quat = require('../quat')
 local Modifier = require('../modifier')
 
 local Ccd = Modifier.extend()
 
 function Ccd.new(settings)
-    local self = setmetatable({}, Ccd)
+    return setmetatable({}, Ccd):read(settings)
+end
+
+function Ccd:read(settings)
     self:configure(settings)
     self.chain = settings.bones
     assert(self.chain and #self.chain >= 2, 'Ccd needs a `bones` chain of at least two bones')
@@ -22,6 +26,7 @@ function Ccd.new(settings)
     self.tolerance = settings.tolerance or 0.001
     self.maxStep = settings.maxStep
     self.limits = settings.limits or {}
+    self.limit = settings.limit
     return self
 end
 
@@ -56,18 +61,9 @@ function Ccd:solve(skeleton)
                 delta = Quat.scale(delta, maxStep / angle, {})
             end
             skeleton:rotate(name, delta)
-            local limit = self.limits[name]
-            if limit then
-                local current = skeleton:getLocalRotation(name)
-                local offset = Quat.multiply(Quat.conjugate(base[i], {}), current, {})
-                local deviation = Quat.angle(offset)
-                local allowed = math.rad(limit)
-                if deviation > allowed then
-                    skeleton:setLocalRotation(
-                        name,
-                        Quat.slerp(base[i], current, allowed / deviation, {})
-                    )
-                end
+            local limit = self.limits[name] or self.limit
+            if limit and limit > 0 then
+                skeleton:limitLocal(name, base[i], math.rad(limit))
             end
         end
     end
