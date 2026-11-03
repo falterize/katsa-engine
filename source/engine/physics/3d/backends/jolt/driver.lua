@@ -3,6 +3,7 @@
 if jit then
     jit.off(true, true)
 end
+local ipairs = require('source.engine.math.array').ipairs
 local Library = require('./library')
 local Compatibility = require('../oimo.compatibility')
 local O = require('../oimo.types')
@@ -158,9 +159,26 @@ function World:setDebugDraw(draw)
     self.shadow:setDebugDraw(draw)
 end
 
-function World:debugDraw()
+World.supportsDebugPoses = true
+
+-- `poses` (optional) overrides the drawn pose of some bodies, for example with the interpolated
+-- render pose. The mirror is invalidated afterwards so the next refresh restores the solver pose.
+function World:debugDraw(poses)
     for raw in pairs(self.bodies) do
         self:refreshMirror(raw)
+    end
+    if poses then
+        for _, entry in ipairs(poses) do
+            local raw = entry.raw
+            if raw._joltPtr then
+                self.oPosition:init(entry.x, entry.y, entry.z)
+                raw._nativeOriginal.setPosition(raw, self.oPosition)
+                self.oQuat:init(entry.qx, entry.qy, entry.qz, entry.qw)
+                self.oRotation:fromQuat(self.oQuat)
+                raw._nativeOriginal.setRotation(raw, self.oRotation)
+                raw._joltMirrorEpoch, raw._joltPoseCache = nil, nil
+            end
+        end
     end
     self.shadow:debugDraw()
 end
