@@ -9,15 +9,12 @@ local function triangle(x1, y1, x2, y2, x3, y3)
     Batch.reserve(3, nil)
     local r, g, b, a = Batch.packColor()
     local t = S.transform
-    local function tx(x, y)
-        return t[1] * x + t[3] * y + t[5], t[2] * x + t[4] * y + t[6]
-    end
-    local ax, ay = tx(x1, y1)
-    local bx, by = tx(x2, y2)
-    local cx, cy = tx(x3, y3)
-    Batch.push(ax, ay, 0, 0, r, g, b, a)
-    Batch.push(bx, by, 0, 0, r, g, b, a)
-    Batch.push(cx, cy, 0, 0, r, g, b, a)
+    -- Inlined transform: a local closure here was allocated for every triangle (thousands per
+    -- frame with rounded UI corners) and made the collector run every few frames.
+    local t1, t2, t3, t4, t5, t6 = t[1], t[2], t[3], t[4], t[5], t[6]
+    Batch.push(t1 * x1 + t3 * y1 + t5, t2 * x1 + t4 * y1 + t6, 0, 0, r, g, b, a)
+    Batch.push(t1 * x2 + t3 * y2 + t5, t2 * x2 + t4 * y2 + t6, 0, 0, r, g, b, a)
+    Batch.push(t1 * x3 + t3 * y3 + t5, t2 * x3 + t4 * y3 + t6, 0, 0, r, g, b, a)
 end
 
 local function fillPolygon(points)

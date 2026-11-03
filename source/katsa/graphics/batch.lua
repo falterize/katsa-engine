@@ -195,14 +195,12 @@ local function addQuad(texture, x1, y1, x2, y2, x3, y3, x4, y4, u0, v0, u1, v1, 
     reserve(6, texture)
     local r, g, b, a = packColor()
     local t = matrix or S.transform
+    -- Inlined transform (no per-quad closure; see primitives.triangle).
     local a1, b1, c1, d1, e1, f1 = t[1], t[2], t[3], t[4], t[5], t[6]
-    local function tx(x, y)
-        return a1 * x + c1 * y + e1, b1 * x + d1 * y + f1
-    end
-    local px1, py1 = tx(x1, y1)
-    local px2, py2 = tx(x2, y2)
-    local px3, py3 = tx(x3, y3)
-    local px4, py4 = tx(x4, y4)
+    local px1, py1 = a1 * x1 + c1 * y1 + e1, b1 * x1 + d1 * y1 + f1
+    local px2, py2 = a1 * x2 + c1 * y2 + e1, b1 * x2 + d1 * y2 + f1
+    local px3, py3 = a1 * x3 + c1 * y3 + e1, b1 * x3 + d1 * y3 + f1
+    local px4, py4 = a1 * x4 + c1 * y4 + e1, b1 * x4 + d1 * y4 + f1
     push(px1, py1, u0, v0, r, g, b, a)
     push(px2, py2, u1, v0, r, g, b, a)
     push(px3, py3, u0, v1, r, g, b, a)
