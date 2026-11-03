@@ -223,6 +223,44 @@ function Session:input()
     return { throttle = throttle, steer = steer, nitro = keys.lshift == true or keys.rshift == true }
 end
 
+-- Hosting adds the walker and the first cars in one frame; building every view in that frame is a
+-- visible hitch (the character alone is ~35 ms). Views are built one per frame instead, walker
+-- first, so the new entities appear a frame or two later.
+function Session:queueView(kind, netId, model)
+    local queue = self.viewQueue or {}
+    self.viewQueue = queue
+    local entry = { kind = kind, netId = netId, model = model }
+    if kind == 'walker' then
+        table.insert(queue, 1, entry)
+    else
+        queue[#queue + 1] = entry
+    end
+end
+
+function Session:unqueueView(kind, netId)
+    local queue = self.viewQueue
+    for i = #(queue or {}), 1, -1 do
+        if queue[i].kind == kind and queue[i].netId == netId then
+            table.remove(queue, i)
+        end
+    end
+end
+
+function Session:buildQueuedView()
+    local queue = self.viewQueue
+    local entry = queue and table.remove(queue, 1)
+    if not entry then
+        return
+    end
+    if entry.kind == 'car' then
+        self.views[entry.netId] =
+            timed('car view', CarView.new, self.scene, entry.netId, entry.model)
+    else
+        self.walkerViews[entry.netId] =
+            timed('character view', WalkerView.new, self.scene, entry.netId, entry.model)
+    end
+end
+
 function Session:startClient(address, port, name)
     local client = GameClient.new({}, {
         address = address,
@@ -234,21 +272,23 @@ function Session:startClient(address, port, name)
         end,
     })
     client.onCarAdded = function(netId, model)
-        self.views[netId] = timed('car view', CarView.new, self.scene, netId, model)
+        self:queueView('car', netId, model)
     end
     client.onCarRemoved = function(netId)
+        self:unqueueView('car', netId)
         if self.views[netId] then
             self.views[netId]:destroy()
             self.views[netId] = nil
         end
     end
     client.onWalkerAdded = function(netId, model, owned)
-        self.walkerViews[netId] = timed('character view', WalkerView.new, self.scene, netId, model)
+        self:queueView('walker', netId, model)
         if owned then
             self.walker = Walker.new(self.scene.world, model)
         end
     end
     client.onWalkerRemoved = function(netId)
+        self:unqueueView('walker', netId)
         if self.walkerViews[netId] then
             self.walkerViews[netId]:destroy()
             self.walkerViews[netId] = nil
@@ -332,6 +372,7 @@ function Session:leave(message)
         self.server:stop()
         self.server = nil
     end
+    self.viewQueue = nil
     for netId, view in pairs(self.views) do
         view:destroy()
         self.views[netId] = nil
@@ -639,6 +680,7 @@ function Session:update(dt)
     local _, car, seat = self.client:getCar()
     self:updateWalker(dt, car, seat)
     self.hud:setOnFoot(car == nil)
+    self:buildQueuedView()
     for _, view in pairs(self.views) do
         view:update(dt)
     end
