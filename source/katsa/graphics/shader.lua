@@ -275,6 +275,26 @@ local function groupFlatNumbers(values, size)
     return grouped
 end
 
+local argv, argvLength = {}, 0
+-- Picks the GL entry by component count without building a lookup table per call.
+local floatUniform = {
+    function(gl) return gl.glUniform1fv end,
+    function(gl) return gl.glUniform2fv end,
+    function(gl) return gl.glUniform3fv end,
+    function(gl) return gl.glUniform4fv end,
+}
+local intUniform = {
+    function(gl) return gl.glUniform1iv end,
+    function(gl) return gl.glUniform2iv end,
+    function(gl) return gl.glUniform3iv end,
+    function(gl) return gl.glUniform4iv end,
+}
+local matrixUniform = {
+    [4] = function(gl) return gl.glUniformMatrix2fv end,
+    [9] = function(gl) return gl.glUniformMatrix3fv end,
+    [16] = function(gl) return gl.glUniformMatrix4fv end,
+}
+
 function Methods:send(name, ...)
     local entry = self._uniforms[name]
     if not entry then
@@ -289,15 +309,29 @@ function Methods:send(name, ...)
     if not info then
         error('Unsupported uniform type for ' .. name, 2)
     end
-    local args = { ... }
+    -- `argv` is reused: send runs hundreds of times per frame and must not allocate.
+    local count = select('#', ...)
+    for i = count + 1, argvLength do
+        argv[i] = nil
+    end
+    argvLength = count
+    for i = 1, count do
+        argv[i] = (select(i, ...))
+    end
     local layout = 'row'
-    if info[1] == 'matrix' and (args[1] == 'row' or args[1] == 'column') then
-        layout = table.remove(args, 1)
+    if info[1] == 'matrix' and (argv[1] == 'row' or argv[1] == 'column') then
+        layout = argv[1]
+        for i = 1, count - 1 do
+            argv[i] = argv[i + 1]
+        end
+        argv[count] = nil
+        count = count - 1
+        argvLength = count
     end
     Core.useProgram(self._program)
     if info[1] == 'sampler' then
-        for i = 1, math.min(#args, entry.count) do
-            local texture = args[i]
+        for i = 1, math.min(count, entry.count) do
+            local texture = argv[i]
             local isTexture = type(texture) == 'table'
                 and (texture._info or (texture._res and texture._res.texture))
             if isTexture then
@@ -308,25 +342,35 @@ function Methods:send(name, ...)
         end
         return
     end
-    local values = args
-    if #args == 1 and type(args[1]) == 'table' then
-        if entry.count > 1 then
-            values = args[1]
-        elseif info[2] == 1 and info[1] ~= 'matrix' then
-            values = args[1]
-        else
-            values = { args[1] }
+    local values = argv
+    if count == 1 and type(argv[1]) == 'table' then
+        if entry.count > 1 or (info[2] == 1 and info[1] ~= 'matrix') then
+            values = argv[1]
         end
     end
     -- Extra values are dropped: drivers report only the used part of an array as its size.
     local kind, comps = info[1], info[2]
+    if comps > 1 and type(values[1]) == 'number' and kind ~= 'int' and kind ~= 'bool' then
+        -- Flat numbers (a matrix or vector as plain arguments) go straight to the scratch buffer.
+        local total = math.min(math.floor(#values / comps), entry.count) * comps
+        for i = 1, total do
+            scratch[i - 1] = toNumber(values[i], name)
+        end
+        local n = total / comps
+        if kind == 'float' then
+            floatUniform[comps](gl)(entry.location, n, scratch)
+        else
+            matrixUniform[comps](gl)(entry.location, n, layout == 'row' and 1 or 0, scratch)
+        end
+        return
+    end
     values = groupFlatNumbers(values, comps)
     if #values > entry.count then
         values = { unpack(values, 1, entry.count) }
     end
     if kind == 'float' then
         local n = packComponents(entry, values, comps, scratch)
-        local fn = ({ gl.glUniform1fv, gl.glUniform2fv, gl.glUniform3fv, gl.glUniform4fv })[comps]
+        local fn = floatUniform[comps](gl)
         fn(entry.location, n, scratch)
     elseif kind == 'int' or kind == 'bool' then
         local out = 0
@@ -342,16 +386,11 @@ function Methods:send(name, ...)
                 out = out + 1
             end
         end
-        local fn = ({ gl.glUniform1iv, gl.glUniform2iv, gl.glUniform3iv, gl.glUniform4iv })[comps]
+        local fn = intUniform[comps](gl)
         fn(entry.location, #values, iscratch)
     else
         local n = packComponents(entry, values, comps, scratch)
-        local matrixUniforms = {
-            [4] = gl.glUniformMatrix2fv,
-            [9] = gl.glUniformMatrix3fv,
-            [16] = gl.glUniformMatrix4fv,
-        }
-        local fn = matrixUniforms[comps]
+        local fn = matrixUniform[comps](gl)
         fn(entry.location, n, layout == 'row' and 1 or 0, scratch)
     end
 end
