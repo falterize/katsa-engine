@@ -247,6 +247,15 @@ function Tests:draw()
             math.abs(model.heading - 90) < 3,
             'a car spawned with heading 90 faces +x (heading ' .. ('%.0f'):format(model.heading) .. ')'
         )
+    elseif frame == 470 then
+        -- The hosting machine draws the server's own car: no network delay behind the bodies.
+        local model = session.server.cars[self.wall]
+        local drawn = session.client.cars[self.wall]
+        local gap = math.sqrt((drawn.rx - model.x) ^ 2 + (drawn.rz - model.z) ^ 2)
+        self:check(
+            math.abs(model.speed) > 5 and gap < 0.5,
+            ('the host draws its car at the physics pose (gap %.2f m at %.1f m/s)'):format(gap, model.speed)
+        )
     elseif frame == 560 then
         local model = session.server.cars[self.wall]
         self:check(

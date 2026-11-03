@@ -87,6 +87,29 @@ CarEntity.definition = {
     },
 }
 
+-- Replicated scalar fields (everything except the position and the springs, which are copied
+-- by hand below), derived from the definition so the two lists cannot drift apart.
+local scalars = {}
+for _, field in ipairs(CarEntity.definition.fields) do
+    local name = field:match('^(%w+):')
+    if name ~= 'position' and not springField(name) then
+        scalars[#scalars + 1] = name
+    end
+end
+
+-- Copies the replicated state of a car model onto another model without allocating. Used on the
+-- hosting machine: its own client would otherwise show a network replica of the server's car, a
+-- fraction of a second behind the bodies the server really simulates.
+function CarEntity.mirror(from, to)
+    to.x, to.y, to.z = from.x, from.y, from.z
+    for _, name in ipairs(scalars) do
+        to[name] = from[name]
+    end
+    for index = 1, 4 do
+        to.spring[index] = from.spring[index]
+    end
+end
+
 -- Defines the car kind on a Net.Server or Net.Client. The server keeps each driver's input only
 -- for cars it simulates itself; clients interpolate cars they do not own.
 function CarEntity.define(target)
