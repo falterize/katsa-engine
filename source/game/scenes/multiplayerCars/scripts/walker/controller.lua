@@ -11,6 +11,8 @@ local Walker = {}
 Walker.__index = Walker
 
 -- The StareShooter character's tuning.
+Walker.SEAT_LIFT = 0.5 -- capsule centre above the chassis centre (m)
+
 Walker.settings = {
     walkSpeed = 5,
     runSpeed = 8,
@@ -160,16 +162,34 @@ function Walker:setRiding(on)
     self.node.canCollide = not on
 end
 
--- The seat's world position, set by the session every frame while riding.
-function Walker:setSeat(x, y, z)
-    self.seat[1], self.seat[2], self.seat[3] = x, y, z
+-- The seat: the car's chassis centre and its up axis, both at the pose the car is drawn at (the
+-- session passes the body's render pose every frame while riding). The capsule centre sits
+-- SEAT_LIFT above the chassis centre along that axis, not along world Y, so it stays on a
+-- tilted car.
+function Walker:setSeat(x, y, z, upX, upY, upZ)
+    local seat = self.seat
+    seat[1], seat[2], seat[3] = x, y, z
+    seat[4], seat[5], seat[6] = upX or 0, upY or 1, upZ or 0
 end
 
 function Walker:rideAlong()
-    self.node.position = { self.seat[1], self.seat[2] + self.settings.standingHeight / 2, self.seat[3] }
+    local seat = self.seat
+    local lift = Walker.SEAT_LIFT
+    self.node.position = {
+        seat[1] + (seat[4] or 0) * lift,
+        seat[2] + (seat[5] or 1) * lift,
+        seat[3] + (seat[6] or 0) * lift,
+    }
     self.velocity[1], self.velocity[2], self.velocity[3] = 0, 0, 0
     self.grounded, self.air = true, false
     self.walkBlend, self.crouchBlend, self.walkScale = 0, 0, 0
+end
+
+-- Moves the capsule to the seat right now. The body is teleported, which also resets its render
+-- pose, so the capsule is drawn exactly at the seat this frame instead of trailing a step behind.
+function Walker:placeAtSeat()
+    self:rideAlong()
+    self.body:sync()
 end
 
 -- Puts the walker on foot at feet position (x, y, z).

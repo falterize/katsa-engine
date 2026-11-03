@@ -4,6 +4,7 @@ local entries = {
     ['--test-v108.1'] = { module = 'validation.tests.versions.v108_1.focused', mode = 'default' },
     ['--test-v108.5.cars'] = { module = 'validation.tests.versions.v108_5.carsProbe', mode = 'default' },
     ['--test-v108.5.menu'] = { module = 'validation.tests.versions.v108_5.menuProbe', mode = 'default' },
+    ['--test-v108.6.poses'] = { module = 'validation.tests.versions.v108_6.posesProbe', mode = 'default' },
     ['--test-v108.6'] = { module = 'validation.tests.versions.v108_6.focused', mode = 'default' },
     ['--test-v108.5'] = { module = 'validation.tests.versions.v108_5.focused', mode = 'default' },
     ['--test-v108.4.shadow'] = { module = 'validation.tests.versions.v108_4.shadowProbe', mode = 'default' },
