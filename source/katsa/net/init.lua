@@ -46,6 +46,11 @@ end
 
 Net.lan = require('source.katsa.net.lan')
 
+-- True when the native library keeps ENet's unreliable-packet throttle off (see binding.lua).
+function Net.unthrottled()
+    return Binding.unthrottled()
+end
+
 function Net.shutdown()
     Binding.lib().knet_shutdown()
 end
