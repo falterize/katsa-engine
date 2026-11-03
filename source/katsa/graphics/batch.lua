@@ -39,12 +39,21 @@ end
 
 -- Sends built-in uniforms. `modelview` is the affine transform for mesh draws, nil for batched
 -- draws.
+-- Scratch buffers reused by every call: GL copies uniform data when the call is made, and
+-- ffi.new for each matrix was the main allocation of every flush and mesh draw.
+local projBuffer = ffi.new('float[16]')
+local modelBuffer = ffi.new('float[16]') -- only slots 0, 1, 4, 5, 10, 12, 13 and 15 are ever written
+local productBuffer = ffi.new('float[16]')
+local onesBuffer = ffi.new('float[4]', 1, 1, 1, 1)
+local pointSizeBuffer = ffi.new('float[1]')
+local IDENTITY = { 1, 0, 0, 1, 0, 0 }
+
 local function sendBuiltins(shader, modelview, withColor)
     local b = shader._builtin
-    local proj = ffi.new('float[16]')
+    local proj = projBuffer
     projectionInto(proj)
-    local t = modelview or { 1, 0, 0, 1, 0, 0 }
-    local model = ffi.new('float[16]')
+    local t = modelview or IDENTITY
+    local model = modelBuffer
     model[0] = t[1]
     model[1] = t[2]
     model[4] = t[3]
@@ -60,7 +69,7 @@ local function sendBuiltins(shader, modelview, withColor)
         gl.glUniformMatrix4fv(b.ProjectionMatrix, 1, 0, proj)
     end
     if b.TransformProjectionMatrix >= 0 then
-        local out = ffi.new('float[16]')
+        local out = productBuffer
         for col = 0, 3 do
             for row = 0, 3 do
                 local sum = 0
@@ -87,13 +96,15 @@ local function sendBuiltins(shader, modelview, withColor)
     if b.ConstantColor >= 0 then
         local c = S.color
         if withColor then
-            gl.glUniform4fv(b.ConstantColor, 1, ffi.new('float[4]', c[1], c[2], c[3], c[4]))
+            colorBuffer[0], colorBuffer[1], colorBuffer[2], colorBuffer[3] = c[1], c[2], c[3], c[4]
+            gl.glUniform4fv(b.ConstantColor, 1, colorBuffer)
         else
-            gl.glUniform4fv(b.ConstantColor, 1, ffi.new('float[4]', 1, 1, 1, 1))
+            gl.glUniform4fv(b.ConstantColor, 1, onesBuffer)
         end
     end
     if b.katsa_PointSize >= 0 then
-        gl.glUniform1fv(b.katsa_PointSize, 1, ffi.new('float[1]', S.pointSize))
+        pointSizeBuffer[0] = S.pointSize
+        gl.glUniform1fv(b.katsa_PointSize, 1, pointSizeBuffer)
     end
     if b.katsa_ScreenSize >= 0 then
         if target.isCanvas then
@@ -121,6 +132,12 @@ local function prepareDraw(textureObject, modelview, withColor)
     return shader
 end
 
+local offsetPosition = ffi.cast('void*', 0)
+local offsetUV = ffi.cast('void*', 8)
+local offsetColor = ffi.cast('void*', 16)
+local batchAttributes = { [0] = true, true, true }
+local attributeShader
+
 function G._flushBatch()
     local n = batch.count
     if n == 0 then
@@ -130,19 +147,23 @@ function G._flushBatch()
     prepareDraw(batch.texture, nil, false)
     gl.glBindBuffer(E.ARRAY_BUFFER, batch.vbo)
     gl.glBufferData(E.ARRAY_BUFFER, n * 20, batch.vertices, E.STREAM_DRAW)
-    gl.glVertexAttribPointer(0, 2, E.FLOAT, 0, 20, ffi.cast('void*', 0))
-    gl.glVertexAttribPointer(1, 2, E.FLOAT, 0, 20, ffi.cast('void*', 8))
-    gl.glVertexAttribPointer(2, 4, E.UNSIGNED_BYTE, 1, 20, ffi.cast('void*', 16))
-    for location = 0, 2 do
-        gl.glEnableVertexAttribArray(location)
-        gl.glVertexAttribDivisor(location, 0)
-    end
     local shader = activeShader()
-    local wanted = { [0] = true, true, true }
-    for _, location in pairs(shader._attributeLocations) do
-        gl.glVertexAttrib4f(location, 0, 0, 0, 1)
+    -- The attribute pointers describe batch.vbo's fixed layout. They stay valid until a mesh draw
+    -- re-points the same locations (Mesh:_bindAttributes clears the flag) or the shader changes.
+    if not Core.batchAttributesValid or attributeShader ~= shader then
+        gl.glVertexAttribPointer(0, 2, E.FLOAT, 0, 20, offsetPosition)
+        gl.glVertexAttribPointer(1, 2, E.FLOAT, 0, 20, offsetUV)
+        gl.glVertexAttribPointer(2, 4, E.UNSIGNED_BYTE, 1, 20, offsetColor)
+        for location = 0, 2 do
+            gl.glEnableVertexAttribArray(location)
+            gl.glVertexAttribDivisor(location, 0)
+        end
+        for _, location in pairs(shader._attributeLocations) do
+            gl.glVertexAttrib4f(location, 0, 0, 0, 1)
+        end
+        Core.batchAttributesValid, attributeShader = true, shader
     end
-    Core.setEnabledAttributes(wanted)
+    Core.setEnabledAttributes(batchAttributes)
     gl.glDrawArrays(E.TRIANGLES, 0, n)
     stats.drawcalls = stats.drawcalls + 1
     Canvas.markTargetsDirty()
