@@ -1,4 +1,5 @@
 local Lighting = require('../../components.lighting')
+local Brightness = require('../../components.brightness')
 local white = { 1, 1, 1, 1 }
 local RenderItems = {}
 
@@ -77,10 +78,7 @@ function RenderItems.install(Renderer)
             c[1], c[2], c[3], (c[4] or 1) * (o._renderOpacity or o:getEffectiveOpacity())
         if billboard or o:isA('Decal3D') then
             local brightness = o.brightness or 1
-            assert(
-                brightness >= 0 and brightness < math.huge,
-                'Adornment.brightness must be finite and nonnegative'
-            )
+            Brightness.check(brightness, 'Adornment')
             for i = 1, 3 do
                 t[i] = t[i] * brightness
             end

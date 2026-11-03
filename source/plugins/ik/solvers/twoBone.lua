@@ -7,6 +7,7 @@
 -- `softness` (model units) eases the last stretch before full extension so the knee does not
 -- snap straight. Without a pole the limb keeps the bend direction of the animation.
 local Modifier = require('../modifier')
+local Math = require('source.engine.math.math3d')
 
 local TwoBone = Modifier.extend()
 
@@ -29,11 +30,7 @@ function TwoBone:bones()
 end
 
 local function normalize(x, y, z)
-    local length = math.sqrt(x * x + y * y + z * z)
-    if length < EPSILON then
-        return 0, 0, 0, 0
-    end
-    return x / length, y / length, z / length, length
+    return Math.unit(x, y, z, EPSILON)
 end
 
 function TwoBone:solve(skeleton)

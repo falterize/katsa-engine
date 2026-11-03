@@ -3,6 +3,7 @@ local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 local Sim = require('./simulation')
 local V = require('../core.validate')
+local Brightness = require('../components.brightness')
 
 local Settings = require('./settings')
 
@@ -113,7 +114,7 @@ function S:validate(e)
     if not changed then
         return
     end
-    V.number(e.brightness, 'ParticleEmitter3D.brightness', 0)
+    Brightness.check(e.brightness, 'ParticleEmitter3D')
     for _, key in ipairs({ 'rate', 'drag', 'maxDistance', 'attractionRange', 'attractionStrength' }) do
         V.number(e[key], 'ParticleEmitter3D.' .. key, 0)
     end

@@ -9,18 +9,8 @@
 --
 -- The class itself is global, so an extension applies to every node of that class created after
 -- the plugin was first activated in this process. Adding the same plugin twice is a no-op.
+local Tables = require('../../core.tables')
 local Extensions = { list = {}, applied = {} }
-
-local function copy(value)
-    if type(value) ~= 'table' then
-        return value
-    end
-    local result = {}
-    for key, item in pairs(value) do
-        result[key] = copy(item)
-    end
-    return result
-end
 
 function Extensions.add(className, spec)
     local Node = require('source.engine.nodes.core.baseNode')
@@ -53,7 +43,7 @@ function Extensions.run(className, instance)
     for _, spec in ipairs(Extensions.list[className] or {}) do
         for key, descriptor in pairs(spec.properties or {}) do
             if rawget(instance, key) == nil and descriptor.default ~= nil then
-                instance[key] = copy(descriptor.default)
+                instance[key] = Tables.copy(descriptor.default)
             end
         end
         if spec.initialize then

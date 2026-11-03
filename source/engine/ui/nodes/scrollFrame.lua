@@ -1,4 +1,5 @@
 local Node = require('../../nodes')
+local Math = require('../../math.math3d')
 local ScrollBar = require('../scrolling.scrollBar')
 local Canvas = require('../layout.scrollCanvas')
 
@@ -152,9 +153,7 @@ local function rubber(excess, limit)
     return sign * limit * excess / (excess + limit)
 end
 
-local function clamp(value, low, high)
-    return math.max(low, math.min(high, value))
-end
+local clamp = Math.clamp
 
 -- Moves one axis by `delta` pixels, keeping the part beyond the ends as elastic excess.
 local function moveAxis(node, axis, delta)

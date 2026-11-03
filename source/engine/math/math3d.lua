@@ -38,12 +38,16 @@ end
 
 -- Like normalize, but a zero vector stays zero and the original length is returned as well, so
 -- callers can tell a real direction from a degenerate one.
-function M.unit(x, y, z)
+function M.unit(x, y, z, epsilon)
     local n = math.sqrt(x * x + y * y + z * z)
-    if n < 1e-9 then
+    if n < (epsilon or 1e-9) then
         return 0, 0, 0, 0
     end
     return x / n, y / n, z / n, n
+end
+
+function M.clamp(value, low, high)
+    return math.max(low, math.min(high, value))
 end
 
 function M.cross(ax, ay, az, bx, by, bz)

@@ -1,3 +1,4 @@
+local Tables = require('../../core.tables')
 local Array = require('../../math.array')
 local pairs = require('../../math.array').pairs
 
@@ -22,17 +23,4 @@ local palette = {
     { 0.1, 0.32, 0.45 },
 }
 
-local function copy(value)
-    if require('source.engine.math.managedValue').is(value) then
-        return value:clone()
-    end
-    if not Array.is(value) or value._node then
-        return value
-    end
-    local result = {}
-    for key, item in pairs(value) do
-        result[key] = copy(item)
-    end
-    return result
-end
 return { palette = palette, copy = copy }

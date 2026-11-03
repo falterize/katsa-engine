@@ -292,14 +292,13 @@ function World3D:addLight(l)
     l.color = l.color or { 255, 255, 255 }
     l.range = l.range or 100
     l.radius = l.radius or 5
-    l.brightness = l.brightness or 3
+    require('source.engine.components.brightness').normalize(l, 3, 'Light')
     l.enabled = l.enabled ~= false
     Validate.vector(l.position, 'Light.position', 3)
     Validate.vector(l.rotation, 'Light.rotation', 3)
     Validate.vector(l.color, 'Light.color', 3)
     Validate.number(l.range, 'Light.range', 0.001)
     Validate.number(l.radius, 'Light.radius', 0)
-    Validate.number(l.brightness, 'Light.brightness', 0)
     self.lights[#self.lights + 1] = l
     return l
 end

@@ -1,3 +1,4 @@
+local Tables = require('../../core.tables')
 local Array = require('../../math.array')
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
@@ -5,17 +6,6 @@ local pairs = require('../../math.array').pairs
 local Node = require('./baseNode')
 
 local Registry = {}
-
-local function copy(value)
-    if not Array.is(value) or value._node then
-        return value
-    end
-    local result = {}
-    for key, item in pairs(value) do
-        result[key] = copy(item)
-    end
-    return result
-end
 
 function Registry.register(world, name, definition)
     assert(
@@ -52,7 +42,7 @@ function Registry.register(world, name, definition)
     -- Validate before inserting anything: failed registration does not reserve a name.
     world.nodeTypes = world.nodeTypes or {}
     local class = Node.define(name, base, world.nodeTypes)
-    class.propertySchema = copy(properties)
+    class.propertySchema = Tables.copyAuthored(properties)
     class.scriptUpdate = definition.update or base.scriptUpdate
     for key, value in pairs(definition) do
         if key ~= 'base' and key ~= 'properties' and (key ~= 'update' or not base.update) then
@@ -64,7 +54,7 @@ function Registry.register(world, name, definition)
         node.enabled, node.visible = node.enabled ~= false, node.visible ~= false
         for key, descriptor in pairs(class.propertySchema) do
             if node[key] == nil and descriptor.default ~= nil then
-                node[key] = copy(descriptor.default)
+                node[key] = Tables.copyAuthored(descriptor.default)
             end
         end
         if initialize then
