@@ -7,7 +7,7 @@ function Effect.initialize(self)
     serial = serial + 1
     self.enabled = self.enabled ~= false
     self.volume = self.volume or 1
-    self._effectName = 'SBoxEffect' .. serial
+    self._effectName = 'SoundEffect' .. serial
     self.status = 'Not applied'
 end
 
