@@ -177,6 +177,8 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 
 ## 16. Open items (keep this list current)
 
+- multiplayerCars backlog (owner, not started): (1) wheels spin backwards when driving forward and vice versa; (2) steering and motion must be physical through the wheels: no front wheels, no turning; (3) after many hits the dented vertices drift backwards and the hood stretches into a strip (cap the accumulated offset or keep dents relative to the rest pose); (4) adapt the collision to the deformation, as a simplified shape that follows the car geometry without fine detail.
+
 - Debug overlays: audit the Stats panel, F4 menu and diagnostics panel for per-frame work proportional to their content (the console had it). Idle Screen UI is ~3.5 ms of a 9 ms frame in multiplayerCars (pure Lua ~2 ms in the sandbox; ~63 batch flushes per UI draw). Remaining Lua hot spots: `transform.snapshot` via `push('all')`, per-node change tracking (`changeTracking`/`valueSnapshot`), `polyline` borders, `splitLines`; measured in the sandbox, the F4 debug menu adds ~3 ms Screen UI while open and the F2 Workspace ~9 ms (+1.5 ms update). The first microphone open (~300 ms) still blocks one frame. `--test-shadows` fails on the baseline too (`validation/tests/integration/shadows.lua:11` indexes a missing `sun`); it is stale, do not trust it.
 - Offer node representations for remaining function-only plugins (owner wants plugin features visible as nodes; `ads` excepted).
 - Lag at high TimeScale (5) mitigation; README screenshots; launcher UI last.
