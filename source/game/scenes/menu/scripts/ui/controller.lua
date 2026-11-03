@@ -94,19 +94,7 @@ function Menu:load()
                     backgroundColor = { 0.075, 0.15, 0.23 },
                     radius = 8,
                     onPress = function()
-                        local label = 'Loading ' .. entry[1] .. '...'
-                        if entry[2] == 'nodeCatalog' then
-                            self.manager:switchWithNotice(
-                                label,
-                                require('source.game.runtime.nodeCatalog').new
-                            )
-                        else
-                            self.manager:switchWithNotice(
-                                label,
-                                require('source.game.runtime.application').new,
-                                entry[2]
-                            )
-                        end
+                        self:choose(entry[1], entry[2])
                     end,
                 }, list)
                 if i == 1 then
@@ -164,7 +152,46 @@ function Menu:load()
         textColor = { 0.5, 0.65, 0.8 },
     }, panel)
     self.menuPanel = panel
+    -- Building a large scene blocks the frame for a while, so the label is drawn first.
+    self.loadingLabel = self.ui:text({
+        position = { 0.5, 0, 0.5, 0 },
+        size = { 1, -40, 0, 48 },
+        anchorPoint = { 0.5, 0.5 },
+        textScaled = true,
+        maxTextSize = 24,
+        backgroundColor = { 0.02, 0.05, 0.09 },
+        visible = false,
+        zIndex = 200,
+    }, panel)
     self:resize(katsa.graphics.getDimensions())
+end
+
+-- Shows the loading label now and starts the scene on the second frame after this call.
+function Menu:choose(title, id)
+    if self.pending then
+        return
+    end
+    self.loadingLabel.text = 'Loading ' .. title .. '...'
+    self.loadingLabel.visible = true
+    self.pending = { id = id, frames = 0 }
+    self.ui:invalidate()
+end
+
+function Menu:update()
+    local pending = self.pending
+    if not pending then
+        return
+    end
+    pending.frames = pending.frames + 1
+    if pending.frames < 2 then
+        return
+    end
+    self.pending = nil
+    if pending.id == 'nodeCatalog' then
+        self.manager:switch(require('source.game.runtime.nodeCatalog').new)
+    else
+        self.manager:switch(require('source.game.runtime.application').new, pending.id)
+    end
 end
 
 function Menu:draw()

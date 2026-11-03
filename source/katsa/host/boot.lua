@@ -5,6 +5,15 @@
 -- host: { exe = path to the executable, args = { ... }, archive = Archive | nil (appended to exe) }
 local Boot = {}
 
+-- Exit status of a run stopped with Ctrl+C (128 + SIGINT).
+local INTERRUPTED = 130
+
+-- LuaJIT turns SIGINT into the Lua error "interrupted!". That is a request to stop, not a crash,
+-- so it must not reach the error screen or print a traceback.
+function Boot.isInterrupt(message)
+    return type(message) == 'string' and message:find('interrupted!', 1, true) ~= nil
+end
+
 local function exeDirectory(exe)
     return exe and exe:match('^(.*)[/\\][^/\\]*$') or '.'
 end
@@ -190,12 +199,19 @@ function Boot.start(host)
         loop = err
     end
     local status = 0
+    if not ok and Boot.isInterrupt(err) then
+        platform:close()
+        return INTERRUPTED
+    end
     if not ok then
         loop = katsa.errorhandler(err)
     end
     while true do
         local good, result = xpcall(loop, debug.traceback)
-        if not good then
+        if not good and Boot.isInterrupt(result) then
+            status = INTERRUPTED
+            break
+        elseif not good then
             loop = katsa.errorhandler(result)
         elseif result ~= nil then
             status = tonumber(result) or 0
