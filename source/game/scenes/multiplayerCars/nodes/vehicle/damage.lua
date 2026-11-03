@@ -43,7 +43,7 @@ function Damage:hit(impact, wheels)
     local strength = (impact.speed - Damage.MIN_SPEED) / Damage.TOUGHNESS
     for index, wheel in ipairs(wheels) do
         if not self:isDetached(index) then
-            local dx, dy, dz = impact.x - wheel[1], (impact.y or 0.4) - 0.4, impact.z - wheel[2]
+            local dx, dy, dz = impact.x - wheel[1], (impact.y or 0.315) - 0.315, impact.z - wheel[2]
             local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
             if distance < Damage.REACH then
                 self.health[index] = self.health[index] - strength * (1.2 - distance / Damage.REACH)
