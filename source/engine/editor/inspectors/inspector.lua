@@ -81,6 +81,12 @@ function Inspector.interactableBlocker(node)
 end
 
 function Inspector.install(Workspace)
+    -- Empties the property panel (the selection was replaced or destroyed).
+    function Workspace:clearInspector()
+        clear(self.properties)
+        self.propertyButtons = {}
+    end
+
     function Workspace:select(node, preserveScroll)
         local oldScroll = preserveScroll and self.properties.scrollY or 0
         self.parentPathText, self.parentPathValue = nil, nil
@@ -89,8 +95,7 @@ function Inspector.install(Workspace)
         end
         self:cancelEdit()
         self.selected = node
-        clear(self.properties)
-        self.propertyButtons = {}
+        self:clearInspector()
         self.fields = Properties.list(node._editorTarget or node)
         self.schemaSignature =
             require('source.engine.editor.inspectors.schema').signature(node._editorTarget or node)

@@ -285,8 +285,7 @@ function Workspace:update(dt)
         end
         self.selected = nil
         self:cancelEdit()
-        clear(self.properties)
-        self.propertyButtons = {}
+        self:clearInspector()
     end
     self.refreshTime = (self.refreshTime or 0) + dt
     if self.refreshTime > 0.3 then
