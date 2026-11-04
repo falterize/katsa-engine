@@ -65,7 +65,10 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
     // All sources use the same world-unit bias and slope/texel correction.
     // Projection converts that displacement into comparable depth units.
     highp float cosine = clamp(dot(normal, towardLight), 0.0, 1.0);
-    highp float slope = sqrt(max(0.0, 1.0 - cosine * cosine)) / max(cosine, 0.1);
+    // A surface turned (almost) away from the light is unlit anyway: calling it shadowed hides the
+    // acne pattern a grazing sun draws on walls, where no finite bias is enough.
+    if(dot(normal, towardLight) < 0.03) return mix(1.0, 0.0, shadowParameters.z);
+    highp float slope = sqrt(max(0.0, 1.0 - cosine * cosine)) / max(cosine, 0.04);
     highp float distance = max(p.w, shadowNear);
     highp float depthScale = directional ? directionalShadowDepthScale : shadowNear / (distance * distance);
     highp float texelDepth = directional ? directionalShadowTexelDepth[cascade]
