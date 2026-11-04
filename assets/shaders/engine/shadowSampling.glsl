@@ -92,6 +92,10 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
     if(samples == 1) visibility = step(depth, Texel(shadowAtlas, uv).r);
     else {
         int side = samples == 4 ? 2 : 3;
+        // The bias above covers a one texel offset. A wider kernel reads neighbours that sit
+        // deeper on a sloped receiver and would shadow it (acne stripes on terrain): extend the
+        // bias by the extra reach of the kernel.
+        depth -= texelDepth * slope * max(0.0, float(side - 1) * radius - 1.0);
         for(int y=0; y<3; y++) for(int x=0; x<3; x++) {
             if(x>=side || y>=side) continue;
             vec2 offset = (vec2(float(x),float(y)) - float(side-1)*0.5) * shadowTexelSize * radius;
