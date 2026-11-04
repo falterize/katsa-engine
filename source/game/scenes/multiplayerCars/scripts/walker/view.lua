@@ -59,8 +59,9 @@ function WalkerView:update(dt)
     local jumpWeight =
         math.min(1, math.max(0, self.jumpTime / 0.1), math.max(0, (duration - self.jumpTime) / 0.1))
     local ground = 1 - self.airBlend
-    local walk, crouch =
-        model.rwalk or model.walkBlend or 0, model.rcrouch or model.crouchBlend or 0
+    -- Blends of a replicated walker are extrapolated past the newest snapshot and can leave 0..1.
+    local walk = Math.clamp01(model.rwalk or model.walkBlend or 0)
+    local crouch = Math.clamp01(model.rcrouch or model.crouchBlend or 0)
     tracks.Idle.weight = ground * (1 - crouch) * (1 - walk)
     tracks.Walk.weight = ground * (1 - crouch) * walk
     tracks.Crouch.weight = ground * crouch
