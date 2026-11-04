@@ -65,10 +65,7 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
     // All sources use the same world-unit bias and slope/texel correction.
     // Projection converts that displacement into comparable depth units.
     highp float cosine = clamp(dot(normal, towardLight), 0.0, 1.0);
-    // A surface turned (almost) away from the light is unlit anyway: calling it shadowed hides the
-    // acne pattern a grazing sun draws on walls, where no finite bias is enough.
-    if(dot(normal, towardLight) < 0.03) return mix(1.0, 0.0, shadowParameters.z);
-    highp float slope = sqrt(max(0.0, 1.0 - cosine * cosine)) / max(cosine, 0.04);
+    highp float slope = sqrt(max(0.0, 1.0 - cosine * cosine)) / max(cosine, 0.1);
     highp float distance = max(p.w, shadowNear);
     highp float depthScale = directional ? directionalShadowDepthScale : shadowNear / (distance * distance);
     highp float texelDepth = directional ? directionalShadowTexelDepth[cascade]
@@ -95,10 +92,11 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
     if(samples == 1) visibility = step(depth, Texel(shadowAtlas, uv).r);
     else {
         int side = samples == 4 ? 2 : 3;
-        // The bias above covers a one texel offset. A wider kernel reads neighbours that sit
-        // deeper on a sloped receiver and would shadow it (acne stripes on terrain): extend the
-        // bias by the extra reach of the kernel.
-        depth -= texelDepth * slope * max(0.0, float(side - 1) * radius - 1.0);
+        // The bias above covers the one texel a single tap can be off. Nearest-filtered taps at
+        // +-h texels land up to h + 0.5 texels from the texel that holds the receiver, in both
+        // axes, so a sloped receiver needs bias for 1.5 * (h + 0.5) texels (2x2: 1.5, 3x3: 2.25).
+        // Without it the neighbours sit deeper than the receiver and shadow it (acne).
+        depth -= texelDepth * slope * max(0.0, 1.5 * (float(side - 1) * 0.5 * radius + 0.5) - 1.0);
         for(int y=0; y<3; y++) for(int x=0; x<3; x++) {
             if(x>=side || y>=side) continue;
             vec2 offset = (vec2(float(x),float(y)) - float(side-1)*0.5) * shadowTexelSize * radius;
