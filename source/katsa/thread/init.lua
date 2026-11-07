@@ -41,6 +41,15 @@ local function preludeSource()
     return prelude
 end
 
+-- Native library folders of this state, so workers find the same libraries.
+local function directories()
+    local list = {}
+    for _, directory in ipairs(require('source.katsa.core.native').directories) do
+        list[#list + 1] = string.format('%q', directory)
+    end
+    return '{' .. table.concat(list, ',') .. '}'
+end
+
 function Thread.isSupported()
     return Binding.load() ~= nil
 end
@@ -72,14 +81,15 @@ function Thread.spawn(options)
     }, Thread)
     local header = string.format(
         'KATSA_LIB=%q KATSA_CDEF=%q KATSA_PATH=%q KATSA_CPATH=%q KATSA_ARGS=%q '
-            .. 'KATSA_SCRIPT=%q KATSA_SCRIPT_NAME=%q KATSA_MODULES={',
+            .. 'KATSA_SCRIPT=%q KATSA_SCRIPT_NAME=%q KATSA_LIBDIRS=%s KATSA_MODULES={',
         Native.paths.Threads,
         Binding.cdef,
         package.path,
         package.cpath,
         options.args and buffer.encode(options.args) or '',
         options.script,
-        options.scriptName or name
+        options.scriptName or name,
+        directories()
     )
     local parts = { header }
     for module, source in pairs(options.modules or {}) do

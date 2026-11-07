@@ -62,6 +62,22 @@ function SharedArray.attach(handle, ctype, count)
     return wrap(library, pointer, ctype, count)
 end
 
+-- Takes over a block whose reference was handed off with giveAway() (no extra reference is added).
+function SharedArray.adopt(handle, ctype, count)
+    local library = assert(Binding.load())
+    return wrap(library, ffi.cast('void*', handle), ctype, count)
+end
+
+-- Stops this object from releasing the block when collected and returns the handle: the
+-- reference travels with the number, to be taken over by adopt() on the receiving side.
+function SharedArray:giveAway()
+    if self._guard then
+        ffi.gc(self._guard, nil)
+        rawset(self, '_guard', nil)
+    end
+    return self:getHandle()
+end
+
 -- The block's address as a number, safe to send in a message.
 function SharedArray:getHandle()
     return tonumber(ffi.cast('uintptr_t', self._handle))

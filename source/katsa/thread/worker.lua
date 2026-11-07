@@ -21,6 +21,14 @@ for name, source in pairs(KATSA_MODULES) do
     package.preload[name] = assert(loadstring(source, '=' .. name))
 end
 
+-- Workers load native libraries (image codecs ...) from the same folders as the owner.
+do
+    local Native = require('source.katsa.core.native')
+    for index = #KATSA_LIBDIRS, 1, -1 do
+        Native.addDirectory(KATSA_LIBDIRS[index])
+    end
+end
+
 -- Same relative-require support as the main state, when the module is reachable.
 do
     local ok, Relative = pcall(require, 'source.katsa.core.relativeRequire')

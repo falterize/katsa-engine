@@ -79,6 +79,19 @@ function Module.run(self)
     self:check(wait(function() return message end, 3, function() broken:poll() end) and message:find('bad script', 1, true) ~= nil, 'A failing script reports its error')
     broken:destroy()
 
+    -- Images decode on workers and match the main thread's decoder.
+    local ImageLoader = require('source.engine.actors.imageLoader')
+    local loader = ImageLoader.new(2)
+    local path = 'assets/textures/particles/atlas.png'
+    local loaded, failed
+    loader:load(path, function(ok, image) loaded = ok and image end)
+    loader:load('assets/missing.png', function(ok) failed = not ok end)
+    self:check(wait(function() return loaded and failed end, 10, function() loader:update() end), 'The image loader answers')
+    local reference = katsa.image.newImageData(path)
+    self:check(loaded and loaded:getWidth() == reference:getWidth() and loaded:getString() == reference:getString(), 'A worker decodes pixels identical to the main thread')
+    self:check(failed, 'A missing file is reported as a failure')
+    loader:destroy(2000)
+
     -- The Actor node.
     local world = require('source.engine.world.world').new(self.manager.resources:scope())
     local node = world:create('Actor', { name = 'Brain', workers = 2, autoStart = false })

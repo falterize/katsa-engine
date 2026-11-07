@@ -256,11 +256,19 @@ return function(Platform, K)
             if self.window == raw then
                 self:bind(main)
             end
+            -- Each step is logged (silently, in the history and the log file): a freeze while
+            -- closing windows then shows which call it stopped in.
+            local Log = require('source.katsa.core.log')
+            Log.write('log', 'window ' .. tostring(record.id) .. ': close, context to main', 'window', true)
             sdl.SDL_GL_MakeCurrent(main, self.context)
+            Log.write('log', 'window ' .. tostring(record.id) .. ': hide', 'window', true)
             sdl.SDL_HideWindow(raw)
             record.raw = nil
+            Log.write('log', 'window ' .. tostring(record.id) .. ': destroy', 'window', true)
             sdl.SDL_DestroyWindow(raw)
+            Log.write('log', 'window ' .. tostring(record.id) .. ': raise main', 'window', true)
             sdl.SDL_RaiseWindow(main)
+            Log.write('log', 'window ' .. tostring(record.id) .. ': closed', 'window', true)
         end
     end
 

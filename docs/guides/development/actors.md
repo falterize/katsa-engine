@@ -87,6 +87,17 @@ uses: `request`, `send`, `broadcast`, `on`, `update`, `getStats`, `destroy`. `ka
 one worker with `send`, `request`, `on`, `poll`, `stop`, `destroy`, `getState`, `getError`.
 `katsa.thread.isSupported()` tells whether the native library and the Lua C API are available.
 
+## Loading images off the main thread
+
+```lua
+local loader = require('source.engine.actors.imageLoader').new()   -- up to 4 workers
+loader:load('assets/hero.png', function(ok, image) ... end)         -- image is a katsa.image ImageData
+-- every frame: loader:update()
+```
+
+The file is read on the calling thread (archives and the save folder work); the decoding runs on a
+worker and returns through shared memory. Upload the ImageData to a texture in the callback.
+
 ## Native layer and platforms
 
 `native/src/katsa_threads.c` (pthreads / Win32 threads, condition variables, atomics) builds to
