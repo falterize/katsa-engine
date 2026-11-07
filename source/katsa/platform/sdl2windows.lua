@@ -236,13 +236,31 @@ return function(Platform, K)
         self.mainWindow = self.mainWindow or self.window
         self.window = raw
         self.sdl.SDL_GL_MakeCurrent(raw, self.context)
+        -- The interval belongs to the drawable on some drivers and to the context on others, so it
+        -- is stated at every switch: extra windows present at once, the main one follows vsync.
+        -- Otherwise each extra window's swap could wait a whole refresh and stall the frame.
+        if raw ~= self.mainWindow then
+            self.sdl.SDL_GL_SetSwapInterval(0)
+        elseif self.vsync then
+            self.sdl.SDL_GL_SetSwapInterval(self.vsync)
+        end
     end
 
     function Platform:destroyWindow(record)
         if record.raw then
+            local sdl, raw, main = self.sdl, record.raw, self.mainWindow or self.window
             self.subWindows[record.id] = nil
-            self.sdl.SDL_DestroyWindow(record.raw)
+            record.listener = nil
+            -- Never destroy the window that owns the current context or the call target, and hide
+            -- it first so no focus or z-order change is pending while it goes.
+            if self.window == raw then
+                self:bind(main)
+            end
+            sdl.SDL_GL_MakeCurrent(main, self.context)
+            sdl.SDL_HideWindow(raw)
             record.raw = nil
+            sdl.SDL_DestroyWindow(raw)
+            sdl.SDL_RaiseWindow(main)
         end
     end
 

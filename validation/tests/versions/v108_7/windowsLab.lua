@@ -21,9 +21,20 @@ function Module.run(self)
     end
     local x2 = lab.windows[1].window:getPosition()
     self:check(x1 ~= x2, 'The windows fly around the main one')
+    lab:toggleMiniGame()
+    self:check(lab.mini and lab.mini:isOpen(), 'M opens a scene in its own window')
+    for _ = 1, 3 do
+        scene:update(0.1, 0.1)
+    end
+    local mini = lab.mini
     local windows = lab.windows
     self.manager:switch(require('source.game.runtime.menu').new)
     self:check(not windows[1].window:isOpen(), 'Leaving the scene closes its windows')
+    self:check(not mini:isOpen(), 'Leaving the scene closes the mini game window')
+    for _ = 1, 3 do
+        katsa.graphics.clear(0, 0, 0, 1)
+        katsa.graphics.present()
+    end
 end
 
 return Module
