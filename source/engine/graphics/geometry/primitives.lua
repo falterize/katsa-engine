@@ -22,7 +22,9 @@ G.skinEightFormat = { unpack(G.skinFormat) }
 G.skinEightFormat[#G.skinEightFormat + 1] = { 'instanceRow1', 'float', 4 }
 G.skinEightFormat[#G.skinEightFormat + 1] = { 'instanceRow2', 'float', 4 }
 
-function G.mesh(vertices, skinned)
+-- `usage` is the mesh's update hint: 'static' (default), or 'dynamic' when the vertices change
+-- later (blend shapes, dents).
+function G.mesh(vertices, skinned, usage)
     local eightWeights = skinned and vertices[1] and #vertices[1] == 24
     local radius = 0
     for _, v in ipairs(vertices) do
@@ -33,7 +35,7 @@ function G.mesh(vertices, skinned)
             eightWeights and G.skinEightFormat or (skinned and G.skinFormat or G.format),
             vertices,
             'triangles',
-            'static'
+            usage or 'static'
         ),
         vertices = vertices,
         radius = radius,

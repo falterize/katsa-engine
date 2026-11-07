@@ -2,6 +2,8 @@ local Array = require('../math.array')
 local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 
+local BlendShapes = require('../graphics.geometry.blendShapes')
+
 local Models = {}
 local formats = {
     obj = 'source.engine.import.obj',
@@ -102,7 +104,7 @@ function Models.instantiate(world, model, settings)
         parent = settings.parent,
     }, settings.parent)
     model.root, model.world = root, world
-    local objects, partsByNode, created = {}, {}, {}
+    local objects, partsByNode, created, states = {}, {}, {}, {}
     for i, part in ipairs(model.parts) do
         if part.node then
             partsByNode[part.node] = partsByNode[part.node] or {}
@@ -135,6 +137,16 @@ function Models.instantiate(world, model, settings)
                     or (material.alphaCutoff and material.alphaCutoff > 0 and 'Mask' or 'Inherit'),
                 alphaCutoff = material.alphaCutoff,
             }, object)
+        end
+        if part.morph then
+            -- The glTF mesh's shapes are shared by every draw of its node.
+            local state = states[part.node]
+            if not state then
+                state = BlendShapes.new(world, part.morph)
+                states[part.node] = state
+            end
+            BlendShapes.attach(state, object, part.morph)
+            part.node.blendShapes = state -- the Animator drives it from glTF weights channels
         end
         objects[index] = object
         created[part] = true

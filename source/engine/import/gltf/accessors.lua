@@ -30,33 +30,54 @@ function Accessors.create(document, binary)
             return cache[index]
         end
         local a = assert(document.accessors[index + 1], 'Missing GLB accessor')
-        assert(not a.sparse, 'Sparse GLB accessors require conversion')
-        local view = assert(document.bufferViews[a.bufferView + 1], 'Missing GLB bufferView')
         local format = assert(formats[a.componentType], 'Unsupported GLB component type')
         local count = assert(components[a.type], 'Unsupported GLB accessor type')
-        local stride = view.byteStride or format[2] * count
-        local start = (view.byteOffset or 0) + (a.byteOffset or 0) + 1
-        assert(
-            (a.byteOffset or 0) + (a.count - 1) * stride + count * format[2] <= view.byteLength,
-            'GLB accessor exceeds bufferView'
-        )
-        assert(
-            start + (a.count - 1) * stride + count * format[2] - 1 <= #binary,
-            'GLB accessor exceeds binary buffer'
-        )
-        -- Components are copied into an aligned typed array (one memcpy when the view is tightly
-        -- packed, else per element) instead of unpacking every number from the string.
         local ctype = types[a.componentType]
         local size = format[2]
         local row = count * size
         local total = a.count * count
         local data = ffi.new(ctype .. '[?]', total)
-        local source = ffi.cast('const uint8_t*', binary) + (start - 1)
-        if stride == row then
-            ffi.copy(data, source, a.count * row)
-        else
-            for i = 0, a.count - 1 do
-                ffi.copy(data + i * count, source + i * stride, row)
+        -- A sparse accessor without a bufferView starts as all zeros (Blender exports shape keys
+        -- this way); with one, the sparse items replace entries of the dense data.
+        if a.bufferView then
+            local view = assert(document.bufferViews[a.bufferView + 1], 'Missing GLB bufferView')
+            local stride = view.byteStride or row
+            local start = (view.byteOffset or 0) + (a.byteOffset or 0) + 1
+            assert(
+                (a.byteOffset or 0) + (a.count - 1) * stride + row <= view.byteLength,
+                'GLB accessor exceeds bufferView'
+            )
+            assert(
+                start + (a.count - 1) * stride + row - 1 <= #binary,
+                'GLB accessor exceeds binary buffer'
+            )
+            -- Components are copied into an aligned typed array (one memcpy when the view is
+            -- tightly packed, else per element) instead of unpacking every number from the string.
+            local source = ffi.cast('const uint8_t*', binary) + (start - 1)
+            if stride == row then
+                ffi.copy(data, source, a.count * row)
+            else
+                for i = 0, a.count - 1 do
+                    ffi.copy(data + i * count, source + i * stride, row)
+                end
+            end
+        end
+        if a.sparse then
+            local sparse = a.sparse
+            local indexType = types[sparse.indices.componentType]
+            local indexSize = assert(formats[sparse.indices.componentType], 'Bad sparse index type')[2]
+            local indexView = assert(document.bufferViews[sparse.indices.bufferView + 1])
+            local valueView = assert(document.bufferViews[sparse.values.bufferView + 1])
+            local indexStart = (indexView.byteOffset or 0) + (sparse.indices.byteOffset or 0)
+            local valueStart = (valueView.byteOffset or 0) + (sparse.values.byteOffset or 0)
+            assert(indexStart + sparse.count * indexSize <= #binary, 'GLB sparse indices exceed buffer')
+            assert(valueStart + sparse.count * row <= #binary, 'GLB sparse values exceed buffer')
+            local indices = ffi.cast(indexType .. '*', ffi.cast('const uint8_t*', binary) + indexStart)
+            local values = ffi.cast('const uint8_t*', binary) + valueStart
+            for i = 0, sparse.count - 1 do
+                local target = tonumber(indices[i])
+                assert(target < a.count, 'GLB sparse index exceeds accessor')
+                ffi.copy(data + target * count, values + i * row, row)
             end
         end
         local divisor = a.normalized and divisors[a.componentType] or nil

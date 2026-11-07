@@ -271,6 +271,7 @@ function Animator:update(dt)
             end
         end
     end
+    require('source.engine.animation.skeleton.morphPose').apply(model, active)
     if self.rootMotionEnabled then
         local motionTrack
         for _, track in ipairs(active) do

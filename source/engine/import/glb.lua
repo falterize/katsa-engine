@@ -2,6 +2,7 @@ local ipairs = require('../math.array').ipairs
 local JSON = require('vendor.json')
 local Geometry = require('../graphics.geometry.primitives')
 local M = require('../math.math3d')
+local MorphTargets = require('./gltf.morphTargets')
 
 local GLB = {}
 
@@ -37,6 +38,17 @@ function GLB.load(path, resources)
     return GLB.decode(document, binary, path, resources)
 end
 
+-- Animation markers come from `animation.extras.markers`: a list of { time, name, value }, or the
+-- same list as a JSON string, which is how a Blender action custom property can carry it (the
+-- exporter writes action custom properties as animation extras).
+function GLB.markers(extras)
+    local markers = extras and extras.markers
+    if type(markers) == 'string' then
+        markers = JSON.decode(markers)
+    end
+    return markers or {}
+end
+
 function GLB.decode(document, binary, path, resources)
     assert(
         not document.extensionsRequired or #document.extensionsRequired == 0,
@@ -49,8 +61,9 @@ function GLB.decode(document, binary, path, resources)
     for meshIndex, mesh in ipairs(document.meshes or {}) do
         local parts = {}
         meshes[meshIndex] = parts
+        local shared = MorphTargets.describe(mesh)
+        parts.blendShapes = shared
         for _, primitive in ipairs(mesh.primitives) do
-            assert(not primitive.targets, 'GLB morph targets are unsupported')
             assert(not primitive.mode or primitive.mode == 4, 'GLB supports TRIANGLES only')
             assert(not primitive.extensions, 'GLB primitive extensions require conversion')
             local attrs = primitive.attributes
@@ -72,9 +85,10 @@ function GLB.decode(document, binary, path, resources)
             local indices = primitive.indices and accessor(primitive.indices)
             local count = indices and #indices or #positions
             assert(count % 3 == 0, 'GLB triangle index count must be divisible by three')
-            local vertices = {}
+            local vertices, corners = {}, {}
             for i = 1, count do
                 local index = indices and indices[i][1] + 1 or i
+                corners[i] = index
                 local p = assert(positions[index], 'GLB index exceeds position array')
                 local n = normals and normals[index]
                 local t = uv and uv[index]
@@ -122,6 +136,8 @@ function GLB.decode(document, binary, path, resources)
                 not base or not base.extensions,
                 'GLB texture transform extensions require baking'
             )
+            local morph = primitive.targets
+                and MorphTargets.read(accessor, primitive, corners, shared)
             local batches = joints
                     and require('source.engine.import.gltf.skinGeometry').build(vertices, resources)
                 or { { geometry = Geometry.mesh(Geometry.normals(vertices)) } }
@@ -132,6 +148,8 @@ function GLB.decode(document, binary, path, resources)
                 parts[#parts + 1] = {
                     geometry = batch.geometry,
                     palette = batch.palette,
+                    morph = morph
+                        and MorphTargets.part(morph, shared, batch.geometry.vertices, batch.origin),
                     material = {
                         color = pbr.baseColorFactor or { 1, 1, 1, 1 },
                         image = base and texture(base.index),
@@ -197,6 +215,7 @@ function GLB.decode(document, binary, path, resources)
                     localMatrix = n.world,
                     palette = part.palette,
                     skin = n.skin,
+                    morph = part.morph,
                 }
             end
         end
@@ -213,7 +232,7 @@ function GLB.decode(document, binary, path, resources)
             name = animation.name or ('animation' .. i),
             channels = {},
             duration = 0,
-            markers = animation.extras and animation.extras.markers or {},
+            markers = GLB.markers(animation.extras),
         }
         for _, channel in ipairs(animation.channels) do
             local sampler = animation.samplers[channel.sampler + 1]
@@ -224,12 +243,30 @@ function GLB.decode(document, binary, path, resources)
             )
             local target = channel.target.path
             assert(
-                target == 'translation' or target == 'rotation' or target == 'scale',
-                'GLB morph animation is unsupported'
+                target == 'translation'
+                    or target == 'rotation'
+                    or target == 'scale'
+                    or target == 'weights',
+                'Unsupported glTF animation target: ' .. tostring(target)
             )
             local n = assert(nodes[channel.target.node + 1], 'Invalid animated node')
-            assert(not n.matrix, 'Animated GLB node must use TRS')
+            assert(target == 'weights' or not n.matrix, 'Animated GLB node must use TRS')
             local times, values = accessor(sampler.input), accessor(sampler.output)
+            if target == 'weights' then
+                -- Morph weights come as one flat scalar stream; group it per key (per tangent
+                -- and value for CUBICSPLINE).
+                local shape = n.mesh and meshes[n.mesh + 1].blendShapes
+                assert(shape, 'GLB weights animation targets a node without morph targets')
+                local grouped = {}
+                for k = 1, #values / shape.count do
+                    local vector = {}
+                    for t = 1, shape.count do
+                        vector[t] = values[(k - 1) * shape.count + t][1]
+                    end
+                    grouped[k] = vector
+                end
+                values = grouped
+            end
             assert(
                 #values == #times * (method == 'CUBICSPLINE' and 3 or 1),
                 'GLB animation sample count mismatch'

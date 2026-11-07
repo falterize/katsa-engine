@@ -18,6 +18,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_7.explorerOrder').run(self)
     require('validation.tests.versions.v108_7.curveRange').run(self)
     require('validation.tests.versions.v108_7.rampTimeline').run(self)
+    require('validation.tests.versions.v108_7.blendShapes').run(self)
     print('PASSED ' .. self.count .. ' v108.7 focused checks')
     katsa.event.quit()
 end

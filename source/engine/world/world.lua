@@ -250,6 +250,7 @@ function World3D:updateNodes(dt)
     if self.particles then
         self.particles:update(dt)
     end
+    require('source.engine.graphics.geometry.blendShapes').flushQueue(self)
 end
 
 function World3D:invalidateRender()

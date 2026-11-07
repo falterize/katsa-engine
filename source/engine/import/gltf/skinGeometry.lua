@@ -4,7 +4,9 @@ local Geometry = require('../../graphics.geometry.primitives')
 
 local Skin = { maxPalette = 32 }
 
-function Skin.build(vertices, resources, requestedLimit)
+-- `usage` is passed to the geometry ('dynamic' for morphable meshes). Each batch also lists, per
+-- vertex, the index it had in `vertices` (`origin`), so per-vertex data can follow the split.
+function Skin.build(vertices, resources, requestedLimit, usage)
     local influences = vertices[1] and #vertices[1] == 24 and 8 or 4
     local limit = requestedLimit or Skin.maxPalette
     -- A triangle is indivisible. Retain all its joints instead of silently dropping weights.
@@ -26,19 +28,19 @@ function Skin.build(vertices, resources, requestedLimit)
     end
     assert(limit <= Skin.maxPalette, 'Triangle exceeds the GPU bone palette capacity')
     local batches = {}
-    local current, palette, lookup
+    local current, origin, palette, lookup
 
     local function reset()
-        current, palette, lookup = {}, {}, {}
+        current, origin, palette, lookup = {}, {}, {}, {}
     end
 
     local function flush()
         if #current == 0 then
             return
         end
-        local geometry = Geometry.mesh(Geometry.normals(current), true)
+        local geometry = Geometry.mesh(Geometry.normals(current), true, usage)
         resources:own(geometry.mesh)
-        batches[#batches + 1] = { geometry = geometry, palette = palette }
+        batches[#batches + 1] = { geometry = geometry, palette = palette, origin = origin }
     end
     reset()
     for i = 1, #vertices, 3 do
@@ -82,6 +84,7 @@ function Skin.build(vertices, resources, requestedLimit)
                 v[index] = lookup[v[index]] or 0
             end
             current[#current + 1] = v
+            origin[#origin + 1] = k
         end
     end
     flush()
