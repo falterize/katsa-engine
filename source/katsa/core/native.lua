@@ -6,7 +6,7 @@
 -- A library is loaded once and cached. Failure returns nil plus every attempted name.
 local ffi = require('ffi')
 
-local Native = { directories = {}, cache = {} }
+local Native = { directories = {}, cache = {}, paths = {} }
 
 local candidates = {
     SDL2 = {
@@ -38,6 +38,12 @@ local candidates = {
         Linux = { 'libkatsa_net.so' },
         OSX = { 'libkatsa_net.dylib' },
         Android = { 'libkatsa_net.so' },
+    },
+    Threads = {
+        Windows = { 'katsa_threads.dll' },
+        Linux = { 'libkatsa_threads.so' },
+        OSX = { 'libkatsa_threads.dylib' },
+        Android = { 'libkatsa_threads.so' },
     },
     Katsa = {
         Windows = { 'katsa_native.dll' },
@@ -90,7 +96,7 @@ function Native.load(name)
             tried[#tried + 1] = path
             local ok, library = pcall(ffi.load, path)
             if ok then
-                Native.cache[name] = library
+                Native.cache[name], Native.paths[name] = library, path
                 return library
             end
         end
@@ -99,7 +105,7 @@ function Native.load(name)
         tried[#tried + 1] = file
         local ok, library = pcall(ffi.load, file)
         if ok then
-            Native.cache[name] = library
+            Native.cache[name], Native.paths[name] = library, file
             return library
         end
     end

@@ -49,7 +49,8 @@ function Relative.callerPath(level)
         source and source:sub(1, 1) == '@',
         'A relative require needs a calling file (do not tail-call require)'
     )
-    return source:sub(2)
+    -- Files found through a './?.lua' search path carry a leading './'.
+    return (source:sub(2):gsub('^%./', ''))
 end
 
 -- Returns a require that also understands relative names; other names go to `base`. Results are

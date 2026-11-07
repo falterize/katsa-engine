@@ -22,6 +22,7 @@ local lazy = {
     audio = 'source.katsa.audio',
     physics = 'source.katsa.physics',
     net = 'source.katsa.net',
+    thread = 'source.katsa.thread',
 }
 
 setmetatable(katsa, {

@@ -45,6 +45,9 @@ NET_SOURCES = [NET_DIR / name for name in ('callbacks.c', 'compress.c', 'host.c'
 NET_SOURCES.append(SRC / 'katsa_net.c')
 NET_FLAGS = ['-O2', '-fvisibility=hidden', '-DHAS_SOCKLEN_T', '-I' + str(NET_DIR / 'include')]
 
+THREADS_SOURCE = SRC / 'katsa_threads.c'
+THREADS_FLAGS = ['-O2', '-fvisibility=hidden']
+
 LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 
 
@@ -102,6 +105,7 @@ def build_linux(out):
     run([cc, '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.so'])
     build_box2d_linux(out)
     build_net(out / 'libkatsa_net.so', cc, ['-shared', '-fPIC'], [], 'unix.c')
+    run([cc, '-shared', '-fPIC', *THREADS_FLAGS, THREADS_SOURCE, '-lpthread', '-o', out / 'libkatsa_threads.so'])
     if os.environ.get('LUAJIT_PREFIX'):
         build_host_linux(out)
 
@@ -111,6 +115,7 @@ def build_windows(out):
     run([cc, '-shared', *FLAGS, *SOURCES, '-o', out / 'katsa_native.dll', '-static'])
     build_box2d_windows(out)
     build_net(out / 'katsa_net.dll', cc, ['-shared'], ['-static', '-lws2_32', '-lwinmm'], 'win32.c')
+    run([cc, '-shared', *THREADS_FLAGS, THREADS_SOURCE, '-o', out / 'katsa_threads.dll', '-static'])
     if os.environ.get('LUAJIT_WIN_LIB'):
         build_host_windows(out)
 
@@ -122,6 +127,7 @@ def build_macos(out):
     run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.dylib'])
     build_box2d_macos(out)
     build_net(out / 'libkatsa_net.dylib', cc, ['-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64'], [], 'unix.c')
+    run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *THREADS_FLAGS, THREADS_SOURCE, '-o', out / 'libkatsa_threads.dylib'])
     if os.environ.get('LUAJIT_PREFIX'):
         build_host_macos(out)
 
@@ -142,6 +148,7 @@ def build_android(out):
         target.mkdir(parents=True, exist_ok=True)
         run([toolchain / (triple + '-clang' + suffix), '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', target / 'libkatsa_native.so'])
         build_net(target / 'libkatsa_net.so', toolchain / (triple + '-clang' + suffix), ['-shared', '-fPIC'], [], 'unix.c')
+        run([toolchain / (triple + '-clang' + suffix), '-shared', '-fPIC', *THREADS_FLAGS, THREADS_SOURCE, '-o', target / 'libkatsa_threads.so'])
         run([toolchain / (triple + '-clang++' + suffix), '-shared', '-fPIC', *BOX2D_FLAGS, *BOX2D_SOURCES, '-static-libstdc++', '-o', target / 'libkatsa_box2d.so'])
 
 

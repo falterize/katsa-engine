@@ -1,6 +1,7 @@
 local groups = {
     Node = { 'name', 'visible', 'enabled' },
     World3D = { 'currentCamera', 'timeScale' },
+    Actor = { 'script', 'workers', 'autoStart', 'messagesPerFrame' },
     Environment = { 'ambient', 'brightness', 'toneMapping', 'exposure' },
     ViewportFrame = { 'canvasSize', 'autoUpdate' },
     Node3D = { 'transparency', 'position', 'rotation', 'scale', 'inheritScale', 'layerGroup' },
