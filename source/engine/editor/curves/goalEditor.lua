@@ -1,4 +1,3 @@
-local Array = require('../../math.array')
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Goals = require('../../animation.rampGoals')
@@ -45,7 +44,7 @@ function Editor.choose(popup)
             button(popup, item.key, 0, 40 + (count - 1) * 38, 1, function()
                 local ok, err = pcall(popup.target.addGoal, popup.target, item.key, item.value)
                 if ok then
-                    Editor.open(popup, item.key)
+                    require('source.engine.editor.curves.sequenceEditor').open(popup, item.key)
                 else
                     popup.message.text = tostring(err)
                 end
@@ -58,7 +57,7 @@ function Editor.choose(popup)
     popup.body.length = 44 + count * 38
 end
 
-function Editor.open(popup, selected)
+function Editor.open(popup)
     clear(popup)
     popup.preferredWidth = 560
     popup.preferredHeight = 560
@@ -83,92 +82,29 @@ function Editor.open(popup, selected)
         popup.ui:text({
             position = { 0, 8, 0, 48 },
             size = { 1, -16, 0, 70 },
-            text = 'No goals yet. Add a property, then set its destination or edit its timeline.',
+            text = 'No animated properties yet. Add one, then place its points in time.',
             fontSize = 14,
         }, popup.body)
         popup.body.length = 128
         return
     end
-    selected = selected or keys[1]
-    local row = 0
-    for _, key in ipairs(keys) do
+    local Sequence = require('source.engine.animation.sequence')
+    for row, key in ipairs(keys) do
         local name = key
-        button(popup, (name == selected and '> ' or '') .. name, 0, 42 + row * 38, 0.63, function()
-            Editor.open(popup, name)
+        -- A goal is a keyframe track; one made from code with only a destination gets its track.
+        if not popup.target.bindings[name] then
+            popup.target.bindings[name] =
+                Sequence.linear(Goals.value(popup.target, name), Copy(popup.target.goals[name]))
+        end
+        button(popup, name .. '  (edit points)', 0, 42 + (row - 1) * 38, 0.63, function()
+            require('source.engine.editor.curves.sequenceEditor').open(popup, name)
         end)
-        button(popup, 'Remove', 0.63, 42 + row * 38, 0.37, function()
+        button(popup, 'Remove', 0.63, 42 + (row - 1) * 38, 0.37, function()
             popup.target:removeGoal(name)
             Editor.open(popup)
         end)
-        row = row + 1
     end
-    local y = 48 + row * 38
-    -- The binding holds the absolute values of the animation: its first point is the start and its
-    -- last point the destination. Nothing is derived from the target's current value or scaled by
-    -- a multiplier, so both ends are plain numbers the author types.
-    local binding = popup.target.bindings[selected]
-    if not binding then
-        binding = require('source.engine.animation.sequence').linear(
-            Goals.value(popup.target, selected),
-            Copy(popup.target.goals[selected])
-        )
-        popup.target.bindings[selected] = binding
-    end
-
-    -- Writes one component of a binding end (index 1 = start, #binding = destination).
-    local function set(end_, component, text)
-        local number = tonumber(text)
-        if not number or number ~= number or math.abs(number) == math.huge then
-            return false, 'Enter a finite number'
-        end
-        local point = binding[end_]
-        if component then
-            point.value[component] = number
-        else
-            point.value = number
-        end
-        popup.target.goals[selected] = Copy(binding[#binding].value)
-        popup.ui:invalidate()
-        return true
-    end
-    local sample = binding[1].value
-    local labels = Array.is(sample)
-            and (
-                selected:lower():find('color') and { 'R', 'G', 'B', 'A' }
-                or #sample == 4 and { 'Scale X', 'Offset X', 'Scale Y', 'Offset Y' }
-                or { 'X', 'Y', 'Z', 'W' }
-            )
-        or { 'Value' }
-    for _, part in ipairs({ { 'Start', 1 }, { 'Destination', #binding } }) do
-        local end_ = part[2]
-        popup.ui:text({
-            position = { 0, 8, 0, y },
-            size = { 1, -16, 0, 24 },
-            text = selected .. ' / ' .. part[1],
-            fontSize = 14,
-            align = 'left',
-        }, popup.body)
-        y = y + 28
-        local value = binding[end_].value
-        if Array.is(value) then
-            for i, v in ipairs(value) do
-                local component = i
-                popup:input(part[1] .. ' ' .. labels[i], tostring(v), y, function(text)
-                    return set(end_, component, text)
-                end)
-                y = y + 40
-            end
-        else
-            popup:input(part[1], tostring(value), y, function(text)
-                return set(end_, nil, text)
-            end)
-            y = y + 40
-        end
-    end
-    button(popup, 'Edit ' .. selected .. ' points', 0, y, 1, function()
-        require('source.engine.editor.curves.sequenceEditor').open(popup, selected)
-    end)
-    popup.body.length = y + 44
+    popup.body.length = 48 + #keys * 38
 end
 
 return Editor

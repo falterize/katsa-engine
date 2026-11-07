@@ -2,6 +2,7 @@ local Array = require('../../math.array')
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Model = require('./sequenceModel')
+local Timeline = require('../../animation.rampTimeline')
 
 local Editor = {}
 
@@ -67,44 +68,29 @@ function Editor.open(popup, property)
             Editor.open(popup)
         end
     end)
-    -- The graph sits in a ScrollFrame: value ranges wider than the window (-50..140) make it taller
-    -- and the frame scrolls vertically, so points outside the window stay reachable.
-    local VIEW = 170
-    local scroller = popup.ui:create('ScrollFrame', {
-        position = { 0, 8, 0, 84 },
-        size = { 1, -32, 0, VIEW }, -- 16 px narrower than the body: the scroll bar sits outside the graph
-        scrollingDirection = 'Y',
-        canvasSize = { 0, 0, 0, VIEW },
-        scrollBarThickness = 6,
-        verticalScrollBarInset = 'ScrollBar',
-        backgroundColor = { 0.025, 0.045, 0.07 },
-        clip = true,
-    }, popup.body)
-    graph = popup.ui:create('CurveEditor2D', {
-        position = { 0, 0, 0, 0 },
-        size = { 1, 0, 0, VIEW },
-        points = points,
-        interpolation = interpolation,
-        backgroundColor = { 0.025, 0.045, 0.07 },
-        clip = true,
-    }, scroller)
-    local function fit()
-        local height = graph:fitHeight(VIEW)
-        graph.size = { 1, 0, 0, height }
-        scroller.canvasSize = { 0, 0, 0, height }
-    end
+    local view = require('source.engine.editor.curves.curveView').create(
+        popup.ui,
+        popup.body,
+        target,
+        property,
+        points,
+        interpolation,
+        { width = 520, height = 170 }
+    )
+    graph = view.graph
+    local fit, seconds = view.fit, view.seconds
     fit()
     graph.beforePointer = function()
         return not popup.workspace.editing or popup:commitInput()
     end
     popup.graph = graph
-    for i = 0, 4 do
-        popup.ui:text({
-            position = { i / 4, 8 - 8 * i + (i == 0 and 0 or i == 4 and -40 or -20), 0, 256 },
-            size = { 0, 40, 0, 20 },
-            text = string.format('%.2f', i / 4),
-            fontSize = 11,
-        }, popup.body)
+
+    -- Point times are stored normalized; an Animated Ramp is shown and typed in seconds.
+    local function shown(time)
+        return seconds and Timeline.toSeconds(target, time) or time
+    end
+    local function timeText(time)
+        return string.format('%.4f', shown(time))
     end
     local selectedLabel = popup.ui:text({
         position = { 0, 8, 0, 280 },
@@ -118,9 +104,15 @@ function Editor.open(popup, property)
     local function refresh()
         local point = points[graph.selected]
         selectedLabel.text =
-            string.format('Point %d / %d | time %.4f', graph.selected, #points, point.time)
+            string.format(
+                'Point %d / %d | time %s%s',
+                graph.selected,
+                #points,
+                timeText(point.time),
+                seconds and ' s' or ''
+            )
         if timeInput.text then
-            timeInput.text = string.format('%.4f', point.time)
+            timeInput.text = timeText(point.time)
         end
         for i, node in ipairs(values) do
             node.text = tostring(Array.is(point.value) and point.value[i] or point.value)
@@ -133,9 +125,20 @@ function Editor.open(popup, property)
         popup.ui:invalidate()
     end
     graph.onChange = refresh
-    timeInput = popup:input('Time 0..1', tostring(points[1].time), 308, function(text)
+    timeInput = popup:input(seconds and 'Time (s)' or 'Time 0..1', timeText(points[1].time), 308, function(text)
         local ok, err = commit(function()
-            Model.time(points, graph.selected, tonumber(text))
+            local typed = tonumber(text)
+            assert(typed, 'Enter a number')
+            local time = seconds and Timeline.fromSeconds(target, typed) or typed
+            -- Typing a later time for the last point lengthens the animation.
+            if seconds and graph.selected == #points and time > 1 then
+                Timeline.setDuration(target, typed)
+                time = 1
+            end
+            Model.time(points, graph.selected, time)
+            if seconds then
+                Timeline.fit(target)
+            end
         end)
         if ok then
             refresh()
@@ -208,10 +211,11 @@ function Editor.open(popup, property)
         y = y + 40
     end
     local addTime = 0.5
-    local newTimeInput = popup:input('New time', tostring(addTime), y, function(text)
+    local newTimeInput = popup:input('New time', timeText(addTime), y, function(text)
         local v = tonumber(text)
+        v = v and (seconds and Timeline.fromSeconds(target, v) or v)
         if not v or v <= 0 or v >= 1 then
-            return false, 'Choose a time strictly between 0 and 1'
+            return false, 'Choose a time inside the animation'
         end
         addTime = v
         return true
@@ -233,7 +237,7 @@ function Editor.open(popup, property)
                     addTime = (points[i].time + points[i + 1].time) / 2
                 end
             end
-            newTimeInput.text = string.format('%.4f', addTime)
+            newTimeInput.text = timeText(addTime)
             refresh()
         end
     end)
@@ -258,7 +262,7 @@ function Editor.open(popup, property)
         for i, point in ipairs(points) do
             local index = i
             pointButtons[i] = button(
-                string.format('Point %d   t = %.4f', i, point.time),
+                string.format('Point %d   t = %s', i, timeText(point.time)),
                 0,
                 y + (i - 1) * 38,
                 1,

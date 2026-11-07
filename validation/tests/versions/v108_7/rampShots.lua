@@ -29,6 +29,7 @@ function Tests:draw()
         local Sequence = require('source.engine.animation.sequence')
         local ramp = scene.world:create('Ramp', {
             mode = 'Animated',
+            playbackTime = 4,
             bindings = { position = Sequence.linear({ -50, 0, 0 }, { 140, 0, 0 }) },
             goals = { position = { 140, 0, 0 } },
         }, (scene.demo and scene.demo.body or scene.world.root))
@@ -50,7 +51,7 @@ function Tests:draw()
         local graph, ui = self.popup.graph, self.host.ui
         ui:layout()
         local range = { graph.points[1].value[1], graph.points[2].value[1] }
-        local x = (graph._x + graph._width - 14) * ui.scale + ui.offsetX
+        local x = (graph._x + graph._width - 14 - graph._endMargin) * ui.scale + ui.offsetX
         local y = (graph._y + 40) * ui.scale + ui.offsetY
         local input = self.host.input
         local original = graph.pointer
@@ -65,9 +66,9 @@ function Tests:draw()
         end
         print('HIT', hit and hit.className, hit and hit.name, x, y, graph._x, graph._y, graph._width, graph._height)
         input:press('curve', x, y)
-        input:move('curve', x, y + 60, 0, 60)
-        input:release('curve', x, y + 60)
-        print('DRAG last point', range[2], '->', graph.points[2].value[1], 'height', graph._height)
+        input:move('curve', x + 70, y + 60, 70, 60)
+        input:release('curve', x + 70, y + 60)
+        print('DRAG last point', range[2], '->', graph.points[2].value[1], 'time', graph.points[2].time, 'duration', self.popup.target.playbackTime)
     elseif frame == 18 then
         katsa.event.quit()
     end

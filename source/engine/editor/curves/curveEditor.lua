@@ -3,6 +3,7 @@ local ipairs = require('../../math.array').ipairs
 -- A reusable graph widget edits serializable sequences, not executable callbacks.
 local Node = require('../../nodes')
 local Sequence = require('../../animation.sequence')
+local Axes = require('./curveAxes')
 
 local Curve = Node.define('CurveEditor2D', 'Frame')
 Curve.interactive = true
@@ -18,50 +19,43 @@ local function value(self, point)
     return Array.is(point.value) and point.value[self.channel] or point.value
 end
 
--- Visible value range. It always contains 0..1 and every point, with a little padding once the
--- values leave 0..1. While a point is being dragged the range is frozen (`_rangeLock`), otherwise
--- the axis would rescale under the pointer.
+-- Visible value range, frozen while a point is dragged (`_rangeLock`): otherwise the axis would
+-- rescale under the pointer.
 local function range(self)
     if self._rangeLock then
         return self._rangeLock[1], self._rangeLock[2]
     end
-    local low, high = 0, 1
-    for _, point in ipairs(self.points) do
-        local v = value(self, point)
-        low, high = math.min(low, v), math.max(high, v)
-    end
-    local pad = (high - low > 1) and (high - low) * 0.05 or 0
-    low, high = low - pad, high + pad
-    return low, math.max(low + 0.001, high)
+    return Axes.valueRange(self.points, function(point)
+        return value(self, point)
+    end)
 end
 
-local UNITS_PER_VIEW = 40 -- value units one viewport height shows before the graph scrolls
-local MAX_VIEWS = 8
-
--- Height of the graph for a viewport of `viewHeight` pixels: 0..1 curves fit it exactly, wider
--- value ranges (-50..140) grow taller and are scrolled by the ScrollFrame that holds the graph.
-function Curve:fitHeight(viewHeight)
+-- Height / width of the graph for a viewport of `view` pixels (see curveAxes). The widget keeps the
+-- time axis in `timeScale` seconds per unit of point time; nil means the fixed 0..1 axis.
+function Curve:fitHeight(view)
     local low, high = range(self)
-    return viewHeight * math.max(1, math.min(MAX_VIEWS, (high - low) / UNITS_PER_VIEW))
+    return Axes.height(view, low, high)
 end
 
--- A round grid step (1, 2, 5 x 10^n) that gives roughly `count` lines over the range.
-local function niceStep(extent, count)
-    local raw = extent / count
-    local power = 10 ^ math.floor(math.log(raw) / math.log(10))
-    local fraction = raw / power
-    return (fraction <= 1 and 1 or fraction <= 2 and 2 or fraction <= 5 and 5 or 10) * power
+function Curve:fitWidth(view)
+    local width, margin = Axes.width(view, self.timeScale)
+    self._endMargin = margin
+    return width
 end
 
--- Horizontal padding inside the widget: the end points sit clear of its edge and of the scroll bar.
-local PAD = 14
+local PAD = Axes.PADDING
+
+-- Pixels one unit of point time spans.
+local function usable(self)
+    return self._width - 2 * PAD - (self._endMargin or 0)
+end
 
 local function timeX(self, time)
-    return self._x + PAD + time * (self._width - 2 * PAD)
+    return self._x + PAD + time * usable(self)
 end
 
 local function xyTime(self, x)
-    return (x - self._x - PAD) / (self._width - 2 * PAD)
+    return (x - self._x - PAD) / usable(self)
 end
 
 local function xy(self, time, v)
@@ -88,25 +82,39 @@ local function handle(self, index, kind)
     return xy(self, h[1], value(self, a) + (value(self, b) - value(self, a)) * h[2])
 end
 
+-- Grid, value labels (kept at the visible left edge) and time labels (at the visible bottom edge),
+-- so both axes stay readable while the surrounding ScrollFrame moves the graph.
+local function drawGrid(self, g)
+    local clip = self._clip
+    local left, bottom = clip and clip[1] or self._x, clip and clip[4] or self._y + self._height
+    local low, high = range(self)
+    local step = Axes.niceStep(high - low, math.max(4, self._height / 42))
+    for v = math.ceil(low / step) * step, high, step do
+        local _, y = xy(self, 0, v)
+        local zero = v == 0
+        g.setColor(zero and 0.28 or 0.15, zero and 0.42 or 0.24, zero and 0.52 or 0.31, 1)
+        g.line(self._x, y, self._x + self._width, y)
+        g.setColor(0.5, 0.62, 0.72, 1)
+        g.print(string.format('%g', v), left + 3, y - 14)
+    end
+    local scale = self.timeScale or 1
+    local span = (self._width - 2 * PAD) / usable(self) * scale
+    local tick = Axes.niceStep(span, math.max(4, self._width / 90))
+    for seconds = 0, span, tick do
+        local x = timeX(self, seconds / scale)
+        g.setColor(0.15, 0.24, 0.31, 1)
+        g.line(x, self._y, x, self._y + self._height)
+        g.setColor(0.5, 0.62, 0.72, 1)
+        g.print(string.format('%g', seconds), x + 3, bottom - 26) -- above the scroll bar
+    end
+end
+
 function Curve:drawSelf(ui)
     Curve.base.drawSelf(self, ui)
     local g = katsa.graphics
     g.push('all')
     g.setLineWidth(1)
-    g.setColor(0.15, 0.24, 0.31, 1)
-    for i = 0, 4 do
-        local x = timeX(self, i / 4)
-        g.line(x, self._y, x, self._y + self._height)
-    end
-    local low, high = range(self)
-    local step = niceStep(high - low, math.max(4, self._height / 42))
-    for v = math.ceil(low / step) * step, high, step do
-        local _, y = xy(self, 0, v)
-        g.setColor(v == 0 and 0.28 or 0.15, v == 0 and 0.42 or 0.24, v == 0 and 0.52 or 0.31, 1)
-        g.line(self._x, y, self._x + self._width, y)
-        g.setColor(0.5, 0.62, 0.72, 1)
-        g.print(string.format('%g', v), self._x + 3, y - 14)
-    end
+    drawGrid(self, g)
     g.setColor(0.2, 0.75, 1, 1)
     local px, py
     for i = 0, 96 do
@@ -185,7 +193,9 @@ function Curve:pointer(ui, phase, x, y, id)
         local index = self.drag.index
         local point = self.points[index]
         local low, high = range(self)
-        local t = math.max(0, math.min(1, xyTime(self, x)))
+        -- Only the last point of a track that can lengthen (`onExtend`) may go past time 1.
+        local extends = index == #self.points and self.onExtend
+        local t = math.max(0, math.min(extends and (self._width - 2 * PAD) / usable(self) or 1, xyTime(self, x)))
         local v = low + (1 - (y - self._y) / self._height) * (high - low)
         if self.drag.kind then
             local a, b =
@@ -200,11 +210,14 @@ function Curve:pointer(ui, phase, x, y, id)
                 math.abs(denom) < 0.00001 and 0.5 or (v - value(self, a)) / denom,
             }
         else
-            if index > 1 and index < #self.points then
-                local previous, nextPoint = self.points[index - 1], self.points[index + 1]
-                local epsilon = math.min(0.001, (nextPoint.time - previous.time) * 0.1)
-                point.time =
-                    math.max(previous.time + epsilon, math.min(nextPoint.time - epsilon, t))
+            local previous, nextPoint = self.points[index - 1], self.points[index + 1]
+            local epsilon = 0.0005
+            local lower = previous and previous.time + epsilon or 0
+            local upper = nextPoint and nextPoint.time - epsilon or t
+            point.time = math.max(lower, math.min(upper, t))
+            if extends and point.time > 1 then
+                self.onExtend(point.time) -- rescales every point so this one lands on 1
+                point.time = 1
             end
             if Array.is(point.value) then
                 point.value[self.channel] = v
@@ -224,6 +237,9 @@ function Curve:pointer(ui, phase, x, y, id)
         end
     elseif phase == 'release' or phase == 'cancel' then
         self.drag, self._rangeLock = nil, nil
+        if self.onSettle then
+            self.onSettle()
+        end
         if self.onChange then
             self.onChange()
         end
