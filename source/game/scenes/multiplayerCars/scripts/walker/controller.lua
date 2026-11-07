@@ -11,7 +11,7 @@ local Walker = {}
 Walker.__index = Walker
 
 -- The StareShooter character's tuning.
-Walker.SEAT_LIFT = 0.5 -- capsule centre above the chassis centre (m)
+Walker.SEAT_LIFT = 0.5 -- capsule centre above the seat, or above the chassis centre without a car view (m)
 
 Walker.settings = {
     walkSpeed = 5,

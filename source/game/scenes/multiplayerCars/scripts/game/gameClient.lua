@@ -251,15 +251,22 @@ function GameClient:getPlayerId()
     return self.client.playerId
 end
 
--- NetId of the car this player rides in, with the model, or nil.
-function GameClient:getCar()
-    local id = self.client.playerId
+-- The car and seat a player sits in: netId, seat, or nil.
+function GameClient:seatOf(playerId)
     for netId, car in pairs(self.cars) do
         for index = 1, car.config.seats do
-            if car.seats[index] == id then
-                return netId, car, index
+            if car.seats[index] == playerId then
+                return netId, index
             end
         end
+    end
+end
+
+-- NetId of the car this player rides in, with the model and the seat, or nil.
+function GameClient:getCar()
+    local netId, seat = self:seatOf(self.client.playerId)
+    if netId then
+        return netId, self.cars[netId], seat
     end
 end
 

@@ -7,6 +7,7 @@ local Orbit = require('./cameras.orbit')
 local Input = require('./controller.input')
 local Pinch = require('./controller.pinch')
 local Walker = require('./walker.controller')
+local Seats = require('./game.seats')
 local WalkerView = require('./walker.view')
 local GameServer = require('./game.gameServer')
 local GameClient = require('./game.gameClient')
@@ -296,6 +297,9 @@ function Session:startClient(address, port, name)
     client.onCarRemoved = function(netId)
         self:unqueueView('car', netId)
         if self.views[netId] then
+            for _, walkerView in pairs(self.walkerViews) do
+                walkerView:detachFrom(self.views[netId].root)
+            end
             self.views[netId]:destroy()
             self.views[netId] = nil
         end
@@ -490,8 +494,21 @@ end
 
 Session.pointercancelled = Session.pointerreleased
 
+-- The car view and seat a walker view sits on, as { root, seat } (reused), or nil on foot.
+function Session:rideOf(walkerView)
+    local netId, seat = self.client:seatOf(walkerView.model.playerId)
+    local carView = netId and self.views[netId]
+    if not carView then
+        return nil
+    end
+    local ride = walkerView.ride or {}
+    walkerView.ride = ride
+    ride.root, ride.seat = carView.root, seat
+    return ride
+end
+
 -- Feeds the keys to the walker, and keeps its riding state in step with the seat the server gave.
-function Session:updateWalker(dt, car, seat)
+function Session:updateWalker(dt, car, seat, carId)
     local walker = self.walker
     if not walker then
         return
@@ -508,7 +525,16 @@ function Session:updateWalker(dt, car, seat)
             self.seatUp
         )
         self.seatUp = up
-        walker:setSeat(car.rx or car.x, car.ry or car.y, car.rz or car.z, up[1], up[2], up[3])
+        -- The capsule follows the seat the character is drawn on (hood, trunk or cabin), so the
+        -- camera tracks the rider; before the car view exists it uses the chassis centre.
+        local carView = self.views[carId]
+        if carView then
+            local at = carView.root:pointToWorldSpace(Seats.offset(seat), self.seatAt)
+            self.seatAt = at
+            walker:setSeat(at[1], at[2], at[3], up[1], up[2], up[3])
+        else
+            walker:setSeat(car.rx or car.x, car.ry or car.y, car.rz or car.z, up[1], up[2], up[3])
+        end
         local wanted = seat == 1 and 'drive' or 'passenger'
         if walker.fsm.name ~= wanted then
             walker:enterCar(seat)
@@ -732,15 +758,16 @@ function Session:update(dt)
     if pressedOnce(self, 'n', keys.n == true) then
         self:watchAd()
     end
-    local _, car, seat = self.client:getCar()
-    self:updateWalker(dt, car, seat)
-    self.hud:setOnFoot(car == nil)
-    self:buildQueuedView()
+    local carId, car, seat = self.client:getCar()
+    -- Car views first: the rider's capsule is placed on the seat at the pose they were just given.
     for _, view in pairs(self.views) do
         view:update(dt)
     end
+    self:updateWalker(dt, car, seat, carId)
+    self.hud:setOnFoot(car == nil)
+    self:buildQueuedView()
     for _, view in pairs(self.walkerViews) do
-        view:update(dt)
+        view:update(dt, self:rideOf(view))
     end
     if self.client.botRoute then
         self:updateBotRoute()

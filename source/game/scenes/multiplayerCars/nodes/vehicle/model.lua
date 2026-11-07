@@ -231,9 +231,4 @@ function Vehicle:getOccupants()
     return count
 end
 
--- Seat position in car space (x right, z forward): driver front-left, then front-right and rear.
-function Vehicle.seatOffset(index)
-    return ({ { -0.45, 0.35 }, { 0.45, 0.35 }, { -0.45, -0.55 }, { 0.45, -0.55 } })[index]
-end
-
 return Vehicle

@@ -74,7 +74,7 @@ function Tests:draw()
         self:check(self.session.mode == 'menu', 'cars scene starts at the menu')
         local ground
         for _, node in ipairs(self.host.world.root:getDescendants()) do
-            if node.name == 'GroundBody' then
+            if node.name == 'Ground' and node.className == 'Body3D' then
                 ground = node
             end
         end

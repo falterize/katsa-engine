@@ -16,6 +16,7 @@ function Module.run(self)
         jumpTime = 1,
         tracks = tracks,
         root = {},
+        rider = { release = function() end, settle = function() end },
     }, { __index = WalkerView })
     view:update(1 / 60)
     local inRange = true

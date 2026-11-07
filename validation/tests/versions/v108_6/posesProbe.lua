@@ -121,8 +121,12 @@ function Tests:measure(host, session)
         end
         if entry and car and carBody and carBody.mode == 'dynamic' then
             local m = carBody.node.body:getRenderMatrix()
-            local lift = walker.SEAT_LIFT -- the capsule sits this far above the chassis centre
-            local ideal = { m[4] + m[2] * lift, m[8] + m[6] * lift, m[12] + m[10] * lift }
+            local lift = walker.SEAT_LIFT -- the capsule sits this far above its seat
+            -- The seat on the drawn car, lifted along the chassis up axis.
+            local view = session.views[netId]
+            local _, _, seat = client:getCar()
+            local at = view.root:pointToWorldSpace(require('source.game.scenes.multiplayerCars.scripts.game.seats').offset(seat))
+            local ideal = { at[1] + m[2] * lift, at[2] + m[6] * lift, at[3] + m[10] * lift }
             self:note('seatedCapsule', distance(entry, ideal))
         elseif entry and not walker:isRiding() then
             -- On foot: the drawn model's feet against the capsule's bottom.

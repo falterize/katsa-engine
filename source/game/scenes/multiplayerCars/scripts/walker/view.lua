@@ -3,6 +3,7 @@
 local Models = require('source.engine.import.models')
 local Math = require('./math')
 local WalkerEntity = require('../game.walkerEntity')
+local Rider = require('../view.rider')
 
 local WalkerView = {}
 WalkerView.__index = WalkerView
@@ -20,12 +21,15 @@ function WalkerView.new(scene, netId, model)
         tracks = {},
     }, WalkerView)
     self.root = world:create('Node3D', { name = 'Walker' .. netId })
+    -- The pivot carries the model so a Ramp can slide it between a seat and the ground.
+    self.pivot = world:create('Node3D', { name = 'WalkerPivot' .. netId }, self.root)
+    self.rider = Rider.new(world, self.root, self.pivot)
     local asset = Models.load('scene://models/character.glb', scene.resources)
     Models.instantiate(world, asset, {
         name = 'WalkerModel' .. netId,
         rotation = { 0, 180, 0 }, -- the glTF character faces -z
         scale = { 0.65, 0.65, 0.65 },
-        parent = self.root,
+        parent = self.pivot,
     })
     self.asset = asset
     if asset.animator then
@@ -38,15 +42,28 @@ function WalkerView.new(scene, netId, model)
     return self
 end
 
-function WalkerView:update(dt)
+-- `ride` is { root = the car view's root node, seat = index } while the player sits in a car.
+function WalkerView:update(dt, ride)
     local model, tracks = self.model, self.tracks
     local state = WalkerEntity.states[model.state or 1]
-    local riding = state == 'drive' or state == 'passenger'
-    self.root.visible = not riding
-    self.root.position = { model.rx or model.x, model.ry or model.y, model.rz or model.z }
-    -- Engine yaw runs opposite to the model heading.
-    self.root.rotation = { 0, -(model.rheading or model.heading or 0), 0 }
-    if riding or not tracks.Idle then
+    local riding = ride ~= nil and (state == 'drive' or state == 'passenger')
+    if riding then
+        self.rider:board(ride.root, ride.seat)
+    else
+        self.rider:release()
+        self.root.position = { model.rx or model.x, model.ry or model.y, model.rz or model.z }
+        -- Engine yaw runs opposite to the model heading.
+        self.root.rotation = { 0, -(model.rheading or model.heading or 0), 0 }
+        self.rider:settle()
+    end
+    if not tracks.Idle then
+        return
+    end
+    if riding then
+        -- Seated: the crouch pose reads as sitting.
+        self.airBlend = 0
+        tracks.Idle.weight, tracks.Walk.weight, tracks.Fall.weight, tracks.Jump.weight = 0, 0, 0, 0
+        tracks.Crouch.weight, tracks.Crouch.speed = 1, 0
         return
     end
     self.airBlend = Math.approach(self.airBlend, model.air and 1 or 0, dt / 0.25)
@@ -68,6 +85,13 @@ function WalkerView:update(dt)
     tracks.Fall.weight = self.airBlend * (1 - jumpWeight)
     tracks.Jump.weight = self.airBlend * jumpWeight
     tracks.Walk.speed, tracks.Crouch.speed = model.walkScale or 0, model.walkScale or 0
+end
+
+-- The car this rider sits in is being destroyed: step off first, the root would go with it.
+function WalkerView:detachFrom(carRoot)
+    if self.rider.carRoot == carRoot then
+        self.rider:release(true)
+    end
 end
 
 function WalkerView:destroy()
