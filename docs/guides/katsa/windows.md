@@ -51,24 +51,59 @@ end)
 if window:isCloseRequested() then window:close() end
 ```
 
-Pass `alwaysontop = true` to keep a window above the main one (otherwise the main window can cover
-it). Every window shares the main window's OpenGL context (so textures, canvases and shaders work
-everywhere) and its pixel format. `window:draw(fn)` makes the window current, runs `fn`, presents
-it and returns to the main window; graphics state (colour, transform, scissor) is saved and
-restored, and an error inside `fn` is rethrown after the main window is restored. Call it from
-`update` or `draw` of the main scene, never while a Canvas is active. Secondary windows present
+By default a new window is **owned by the main window**: it stays above it and minimises with it,
+but never fights the other windows for the top of the z-order (several `alwaysontop` windows that
+overlap flicker over each other). Pass `alwaysontop = true` for a topmost window, or
+`owner = false` for a completely independent one. Every window shares the main window's OpenGL
+context (so textures, canvases and shaders work everywhere) and its pixel format. `window:draw(fn)`
+makes the window current, runs `fn`, presents it and returns to the main window; graphics state is
+saved and restored, and an error inside `fn` is rethrown after the main window is restored. Call it
+from `update` or `draw` of the main scene, never while a Canvas is active. Secondary windows present
 without waiting for vertical sync; the main loop paces the frame.
+
+**Cost.** Moving, resizing and presenting an OS window is a few milliseconds on Windows. Refresh
+several windows in turns (one per frame, round robin, as `windowsLab` does), skip `setPosition`
+when the position did not change, and prefer `runScene` below, which already limits itself to
+`fps` frames per second.
 
 | Call | Meaning |
 | --- | --- |
-| `katsa.window.create(w, h, flags)` | flags: `title x y resizable borderless alwaysontop hidden opacity` |
+| `katsa.window.create(w, h, flags)` | flags: `title x y resizable borderless alwaysontop owner hidden opacity fullscreen minwidth minheight` |
 | `window:draw(fn)` | Render into the window and present |
-| `setPosition(x, y)`, `getPosition()` | Raw pixel position on the desktop |
-| `setSize(w, h)`, `getSize()` | Raw pixel size |
+| `setPosition(x, y)`, `getPosition()`, `center()` | Raw pixel position on the desktop |
+| `setSize(w, h)`, `getSize()`, `setMinimumSize`, `getMinimumSize` | Raw pixel size |
+| `setBorderless(b)`, `isBorderless()` | Title bar and frame |
+| `setResizable(b)`, `isResizable()` | User resizing |
+| `setFullscreen(false/true/'exclusive')`, `isFullscreen()`, `getFullscreen()`, `toggleFullscreen()` | Per-window fullscreen |
+| `setAlwaysOnTop(b)`, `minimize()`, `maximize()`, `restore()`, `focus()`, `isFocused()`, `getDisplay()` | Window state |
 | `setTitle`, `setOpacity`, `getOpacity`, `setVisible` | Window properties |
-| `setListener(fn)` | `fn(name, ...)` gets `close`, `mousemoved`, `mousepressed`, `mousereleased`, `wheelmoved` of that window |
+| `setListener(fn)` | `fn(name, ...)` gets `close`, `focus`, `mousemoved`, `mousepressed`, `mousereleased`, `wheelmoved`, `keypressed`, `keyreleased`, `textinput` of that window |
 | `isCloseRequested()`, `close()`, `isOpen()` | Closing the button only requests; call `close()` |
+| `window:runScene(source, options)` | A whole scene in the window (below) |
 
-Keyboard and text input still go to the focused window's events through the main handlers.
+Desktop geometry for placing windows anywhere on the screen: `katsa.window.getDesktopSize()`,
+`getDisplayCount()` and `getDisplayBounds(index)` (x, y, width, height). Windows may be resized
+and moved at any time; a program that imitates a pop-up or a "virus" window that follows the
+player, jumps around the desktop or grows can simply call `setPosition` / `setSize` every frame
+(see the cost note above).
+
+## A scene in its own window
+
+```lua
+local window = katsa.window.create(640, 400, { title = 'Mini game', resizable = true })
+local second = window:runScene('platformer', { fps = 60 })
+-- second:getScene(), second:isOpen(), second:close()
+```
+
+`runScene` gives the window its own scene manager, world, renderer, UI and input, so a full second
+scene (any scene id, folder or package that works as the main scene) runs beside the main one:
+every node type works, the window's mouse, wheel and keyboard events reach that scene, it is
+re-fitted when the window is resized, and closing the window (or `second:close()`) releases the
+scene. Options: `fps` (refresh ceiling, default 60), `clearColor`, `onClose(scene)` (return `false`
+to keep the window open when the user presses its close button). All scenes share the GL context,
+so assets are loaded once per scene manager but textures and shaders are compatible. Closing the
+main scene's window quits the application and closes every window scene.
+
 The example scene `windowsLab` flies three windows around the main one (`T` toggles main window
-opacity, `Space` pauses).
+opacity, `B` the title bar, `R` resizes the windows, `M` opens a mini game in a window, `Space`
+pauses).

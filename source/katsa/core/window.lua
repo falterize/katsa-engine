@@ -135,7 +135,8 @@ function Window.fromPixels(x, y)
 end
 
 -- Creates another window on the same graphics context. flags: title, x, y, resizable, borderless,
--- alwaysontop, hidden, opacity. Returns the window, or nil and a message.
+-- alwaysontop, hidden, opacity, fullscreen, minwidth/minheight, owner (default true: the window
+-- stays above the main window without being topmost). Returns the window, or nil and a message.
 function Window.create(width, height, flags)
     assert(platform and mode.open, 'Open the main window before creating another one')
     local record, message = platform:createWindow(width, height, flags)
@@ -143,6 +144,21 @@ function Window.create(width, height, flags)
         return nil, message
     end
     return require('./subWindow').new(platform, record, flags and flags.title)
+end
+
+-- Displays: raw-pixel bounds of display `index` (0 based, the primary by default) as x, y, width,
+-- height, or nil for an unknown display. getDesktopSize() is the primary display's width, height.
+function Window.getDisplayCount()
+    return platform:getDisplayCount()
+end
+
+function Window.getDisplayBounds(index)
+    return platform:getDisplayBounds(index)
+end
+
+function Window.getDesktopSize()
+    local _, _, width, height = platform:getDisplayBounds(0)
+    return width, height
 end
 
 -- Opacity of the main window (0..1); with the `transparent` window flag the framebuffer also

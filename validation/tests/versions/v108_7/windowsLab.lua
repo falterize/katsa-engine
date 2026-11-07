@@ -16,8 +16,9 @@ function Module.run(self)
     end
     self:check(lab and #lab.windows == 3, 'windowsLab opens its three windows')
     local x1 = lab.windows[1].window:getPosition()
-    scene:update(0.5, 0.5)
-    scene:update(0.5, 0.5)
+    for _ = 1, 6 do
+        scene:update(0.5, 0.5)
+    end
     local x2 = lab.windows[1].window:getPosition()
     self:check(x1 ~= x2, 'The windows fly around the main one')
     local windows = lab.windows

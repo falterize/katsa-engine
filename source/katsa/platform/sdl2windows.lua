@@ -92,6 +92,58 @@ return function(Platform, K)
         self.sdl.SDL_SetWindowPosition(self.window, K.CENTERED, K.CENTERED)
     end
 
+    -- Native handle of a window on Windows (nil elsewhere or when SDL cannot provide it).
+    local function nativeHandle(self, raw)
+        local info = ffi.new('SDL_SysWMinfo')
+        self.sdl.SDL_GetVersion(ffi.cast('uint8_t*', info.version))
+        if self.sdl.SDL_GetWindowWMInfo(raw, info) == 0 then
+            return nil
+        end
+        return info.info.win.window
+    end
+
+    -- Makes `owner` the owner of `raw`: it stays above it, minimises with it and never fights the
+    -- other windows for the top of the z-order (unlike always-on-top, which lets every such window
+    -- flicker over the next one). Windows uses an owned window; X11 and Wayland a transient one.
+    function Platform:setOwner(raw, owner)
+        if ffi.os == 'Windows' then
+            return (pcall(function()
+                ffi.cdef('intptr_t SetWindowLongPtrW(void* window, int index, intptr_t value);')
+                local user = ffi.load('user32')
+                local parent = nativeHandle(self, owner)
+                assert(parent, 'no native handle')
+                user.SetWindowLongPtrW(nativeHandle(self, raw), -8, ffi.cast('intptr_t', parent))
+            end))
+        end
+        return (pcall(function()
+            return self.sdl.SDL_SetWindowModalFor(raw, owner) == 0
+        end))
+    end
+
+    -- Points the window calls (position, size, flags...) at `raw` without touching the GL context.
+    -- Callers restore the previous window with the same call.
+    function Platform:target(raw)
+        self.mainWindow = self.mainWindow or self.window
+        self.window = raw
+    end
+
+    -- Displays: bounds of display `index` (0 based) in raw pixels, the primary one by default.
+    function Platform:getDisplayCount()
+        return self.sdl.SDL_GetNumVideoDisplays()
+    end
+
+    function Platform:getDisplayBounds(index)
+        local rect = ffi.new('SDL_Rect')
+        if self.sdl.SDL_GetDisplayBounds(index or 0, rect) ~= 0 then
+            return nil
+        end
+        return rect.x, rect.y, rect.w, rect.h
+    end
+
+    function Platform:getDisplayIndex()
+        return self.sdl.SDL_GetWindowDisplayIndex(self.window)
+    end
+
     -- Per-pixel transparency of the main window. Linux and macOS compositors honour the alpha
     -- channel of the framebuffer by themselves; on Windows the window must be told to blend with
     -- the desktop (DWM), the way GLFW does it. Returns whether the call could be made.
@@ -107,16 +159,15 @@ return function(Platform, K)
                 void* CreateRectRgn(int left, int top, int right, int bottom);
                 int DeleteObject(void* object);
             ]])
-            local info = ffi.new('SDL_SysWMinfo')
-            self.sdl.SDL_GetVersion(ffi.cast('uint8_t*', info.version))
-            if self.sdl.SDL_GetWindowWMInfo(self.window, info) == 0 then
+            local handle = nativeHandle(self, self.window)
+            if not handle then
                 error('SDL_GetWindowWMInfo failed')
             end
             local dwm, gdi = ffi.load('dwmapi'), ffi.load('gdi32')
             -- An empty blur region switches per-pixel alpha on without blurring anything.
             local region = gdi.CreateRectRgn(0, 0, -1, -1)
             local behind = ffi.new('KatsaBlurBehind', 3, enabled and 1 or 0, region, 0)
-            dwm.DwmEnableBlurBehindWindow(info.info.win.window, behind)
+            dwm.DwmEnableBlurBehindWindow(handle, behind)
             gdi.DeleteObject(region)
         end)
         if not ok then
@@ -164,6 +215,19 @@ return function(Platform, K)
         if flags.opacity then
             sdl.SDL_SetWindowOpacity(raw, flags.opacity)
         end
+        if flags.minwidth and flags.minheight then
+            sdl.SDL_SetWindowMinimumSize(raw, flags.minwidth, flags.minheight)
+        end
+        -- Owned by the main window unless `owner = false`: it stays above it without topmost.
+        if flags.owner ~= false and not flags.alwaysontop then
+            record.owned = self:setOwner(raw, self.mainWindow or self.window)
+        end
+        if flags.fullscreen then
+            sdl.SDL_SetWindowFullscreen(
+                raw,
+                flags.fullscreen == 'exclusive' and K.FULLSCREEN or K.FULLSCREEN_DESKTOP
+            )
+        end
         return record
     end
 
@@ -197,6 +261,8 @@ return function(Platform, K)
             id = e.wheel.windowID
         elseif t == EVENT.KEYDOWN or t == EVENT.KEYUP then
             id = e.key.windowID
+        elseif t == EVENT.TEXTINPUT then
+            id = e.text.windowID
         end
         local record = id and self.subWindows[id]
         if not record then
@@ -204,22 +270,58 @@ return function(Platform, K)
         end
         local listener = record.listener
         if t == EVENT.WINDOW then
-            if e.window.event == K.WINDOW_EVENT.CLOSE then
+            local kind = e.window.event
+            if kind == K.WINDOW_EVENT.CLOSE then
                 record.closeRequested = true
                 if listener then
                     listener('close')
                 end
+            elseif kind == K.WINDOW_EVENT.FOCUS_GAINED or kind == K.WINDOW_EVENT.FOCUS_LOST then
+                record.focused = kind == K.WINDOW_EVENT.FOCUS_GAINED
+                if listener then
+                    listener('focus', record.focused)
+                end
+            elseif kind == K.WINDOW_EVENT.MINIMIZED or kind == K.WINDOW_EVENT.HIDDEN then
+                record.visible = false
+            elseif kind == K.WINDOW_EVENT.RESTORED or kind == K.WINDOW_EVENT.SHOWN then
+                record.visible = true
             end
         elseif listener then
-            if t == EVENT.MOUSEMOTION then
-                listener('mousemoved', e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel)
+            -- Pointer coordinates are in the window's own units (raw pixels / UI scale).
+            local scale = 1
+            if t ~= EVENT.KEYDOWN and t ~= EVENT.KEYUP and t ~= EVENT.TEXTINPUT then
+                local previous = self.window
+                self:target(record.raw)
+                scale = self:getUIScale(self:getShortSide())
+                self:target(previous)
+            end
+            if t == EVENT.KEYDOWN or t == EVENT.KEYUP then
+                local key, scancode = require('source.katsa.platform.sdl2keys').fromSDL(
+                    e.key.keysym.sym,
+                    e.key.keysym.scancode
+                )
+                if t == EVENT.KEYDOWN then
+                    listener('keypressed', key, scancode, e.key.repeat_ ~= 0)
+                else
+                    listener('keyreleased', key, scancode)
+                end
+            elseif t == EVENT.TEXTINPUT then
+                listener('textinput', ffi.string(e.text.text))
+            elseif t == EVENT.MOUSEMOTION then
+                listener(
+                    'mousemoved',
+                    e.motion.x / scale,
+                    e.motion.y / scale,
+                    e.motion.xrel / scale,
+                    e.motion.yrel / scale
+                )
             elseif t == EVENT.MOUSEBUTTONDOWN or t == EVENT.MOUSEBUTTONUP then
                 local button = e.button.button
                 local mapped = button == 1 and 1 or button == 3 and 2 or button == 2 and 3 or button
                 listener(
                     t == EVENT.MOUSEBUTTONDOWN and 'mousepressed' or 'mousereleased',
-                    e.button.x,
-                    e.button.y,
+                    e.button.x / scale,
+                    e.button.y / scale,
                     mapped
                 )
             elseif t == EVENT.MOUSEWHEEL then

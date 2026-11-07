@@ -192,28 +192,42 @@ function G.present()
     RenderState.applyScissor()
 end
 
--- Renders `fn` into another OS window (see katsa.window.create) and presents it. The main window
--- and its graphics state are restored afterwards, so this can run from update or draw.
-function G.drawToWindow(record, fn)
+-- Runs `fn` with another OS window (see katsa.window.create) as the render target and the window
+-- every platform call refers to, then returns to the main window and its graphics state. Nothing is
+-- presented; this also serves loading and updating a scene that lives in that window.
+function G.withWindow(record, fn)
     State.requireReady()
     State.flush()
-    assert(not S.canvases, 'drawToWindow cannot be called while a Canvas is active.')
+    assert(not S.canvases, 'withWindow cannot be called while a Canvas is active.')
     local platform = Core.platform
     local main = platform.mainWindow or platform.window
     platform:bind(record.raw)
     applyViewport()
     RenderState.applyScissor()
     G.push('all')
-    local ok, message = pcall(fn)
+    local ok, a, b = pcall(fn)
     G.pop()
     State.flush()
-    platform:swap()
+    if ok and not record.raw then
+        ok, a = false, 'The window was closed while it was being drawn'
+    end
     platform:bind(main)
     applyViewport()
     RenderState.applyScissor()
     if not ok then
-        error(message, 0)
+        error(a, 0)
     end
+    return a, b
+end
+
+-- Renders `fn` into the window and presents it. The main window and its graphics state are
+-- restored afterwards, so this can run from update or draw.
+function G.drawToWindow(record, fn)
+    G.withWindow(record, function()
+        fn()
+        State.flush()
+        Core.platform:swap()
+    end)
 end
 
 function G.reset()

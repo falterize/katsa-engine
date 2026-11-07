@@ -21,6 +21,8 @@ function Bootstrap.install(project, options)
                 Loader.open(source, nil, project.sharedAssets or 'assets')
             )
         end
+    Runtime.createScene = createScene
+    require('source.engine.scenes.windowScene').install()
     local manager
     local testRunner
     local testing = false
@@ -115,6 +117,7 @@ function Bootstrap.install(project, options)
             katsa.resize(katsa.graphics.getDimensions())
         end
         manager:update(math.min(dt, 0.1), Runtime.frameDelta or dt)
+        require('source.engine.scenes.windowScene').updateAll(dt)
         if testRunner then
             testRunner:update(dt)
         end
@@ -239,6 +242,7 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.quit()
+        require('source.engine.scenes.windowScene').closeAll()
         if manager then
             local recording = manager.profiler:stopRecording()
             if recording and #recording.rows > 0 then
