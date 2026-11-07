@@ -1,8 +1,10 @@
-local Mesh = require('source.engine.composition.mesh')
-
--- Several OS windows on one graphics context. The main window shows a spinning cube; three more
--- windows (katsa.window.create) fly around it on Lissajous paths and each draws its own panel.
---   T      toggles the main window between opaque and half transparent
+-- Several OS windows on one graphics context, and a transparent main window. The main window has no
+-- 3D content: its frame is cleared with alpha 0, so only the panel is drawn and the desktop shows
+-- through (macOS, Linux with a compositor, Windows through DWM). Three more windows
+-- (katsa.window.create) fly around it on Lissajous paths and each draws its own panel.
+--   T      toggles the whole main window between opaque and half transparent
+--   B      toggles the title bar (borderless)
+--   F11    fullscreen (every scene)
 --   Space  pauses the flight
 -- A window closed by its close button is removed; the main window ends the scene as usual.
 local Lab = {}
@@ -15,6 +17,7 @@ local PANELS = {
 }
 
 local WIDTH, HEIGHT = 260, 170
+local REFRESH = 30 -- panel refreshes per second
 
 local function drawPanel(panel, time, fps)
     local g = katsa.graphics
@@ -35,26 +38,31 @@ function Lab.new(scene)
     local self = setmetatable({ scene = scene, time = 0, windows = {}, wasDown = {} }, Lab)
     local world = scene.world
     world.environment.debug.gizmos.enabled = false
-    world.environment.sky.enabled = false
-    world.environment.ambient = { 90, 96, 110 }
-    world:create('DirectionalLight3D', {
-        name = 'Sun',
-        rotation = { 50, 30, 0 },
-        color = { 255, 240, 220 },
-        brightness = 1.1,
-    })
-    self.cube = Mesh.create(world, {
-        name = 'Cube',
-        kind = 'cube',
-        size = { 2, 2, 2 },
-        color = { 0.9, 0.8, 0.4 },
-        position = { 0, 0, 0 },
-    })
-    self.centerX, self.centerY = katsa.window.getPosition()
+    scene.clearColor = { 0, 0, 0, 0 }
+    katsa.window.setTransparent(true)
+    local ui = scene.ui
+    local card = ui:container({
+        position = { 0.5, -190, 0.5, -70 },
+        size = { 0, 380, 0, 140 },
+        backgroundColor = { 0.08, 0.1, 0.16 },
+        backgroundTransparency = 0.2,
+    }, ui.content)
+    ui:text({
+        position = { 0, 14, 0, 10 },
+        size = { 1, -28, 1, -20 },
+        text = 'Transparent main window\nT  opacity     B  title bar\nF11  fullscreen     Space  pause',
+        fontSize = 17,
+        align = 'left',
+    }, card)
+    local x, y = katsa.window.getPosition()
     local width, height = katsa.window.getMode()
-    self.centerX, self.centerY = self.centerX + width / 2, self.centerY + height / 2
+    self.centerX, self.centerY = x + width / 2, y + height / 2
     for _, panel in ipairs(PANELS) do
-        local window = katsa.window.create(WIDTH, HEIGHT, { title = panel.title, resizable = false })
+        local window = katsa.window.create(WIDTH, HEIGHT, {
+            title = panel.title,
+            resizable = false,
+            alwaysontop = true, -- otherwise the main window covers them
+        })
         if window then
             self.windows[#self.windows + 1] = { window = window, panel = panel }
         else
@@ -81,10 +89,19 @@ function Lab:update(dt)
         self.opaque = self.opaque == false
         katsa.window.setOpacity(self.opaque and 1 or 0.5)
     end
+    if self:pressed('b') then
+        katsa.window.setBorderless(not katsa.window.isBorderless())
+    end
     if not self.paused then
         self.time = self.time + dt
     end
-    self.cube.rotation = { self.time * 30, self.time * 50, 0 }
+    -- Moving and presenting an OS window costs a few milliseconds each, so the panels refresh at
+    -- 30 Hz instead of every frame of the main window.
+    self.accumulated = (self.accumulated or 0) + dt
+    if self.accumulated < 1 / REFRESH then
+        return
+    end
+    self.accumulated = 0
     local fps = katsa.timer.getFPS()
     for index = #self.windows, 1, -1 do
         local entry = self.windows[index]
@@ -111,6 +128,8 @@ function Lab:release()
     end
     self.windows = {}
     katsa.window.setOpacity(1)
+    katsa.window.setTransparent(false)
+    self.scene.clearColor = nil
 end
 
 return Lab

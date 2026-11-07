@@ -151,8 +151,14 @@ function Bootstrap.install(project, options)
     -- The OS resize loop (dragging a window edge) blocks the frame loop; the platform calls this
     -- to re-fit the scenes and draw one frame at the new size.
     if katsa.platform and katsa.platform.onLiveResize then
+        local lastWidth, lastHeight
         katsa.platform:onLiveResize(function(w, h)
-            katsa.resize(w, h)
+            if w ~= lastWidth or h ~= lastHeight then
+                lastWidth, lastHeight = w, h
+                katsa.resize(w, h)
+            end
+            -- The game keeps running while the window is held: one frame of update and draw.
+            katsa.update(math.min(katsa.timer.step(), 0.1))
             katsa.graphics.origin()
             katsa.graphics.clear(katsa.graphics.getBackgroundColor())
             katsa.draw()
@@ -203,6 +209,16 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.keypressed(key)
+        -- F11 toggles fullscreen in every scene (desktop only; Alt+Enter does too).
+        if
+            key == 'f11'
+            or key == 'return' and (katsa.keyboard.isDown('lalt') or katsa.keyboard.isDown('ralt'))
+        then
+            if katsa.window.toggleFullscreen then
+                katsa.window.toggleFullscreen()
+            end
+            return
+        end
         manager:dispatch('keypressed', key)
     end
 

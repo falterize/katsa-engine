@@ -4,7 +4,9 @@ function Game:draw()
     self.statsLayer.visible = self.showStats
     if not self.world.activeCamera then
         self.ui.backgroundCanvas = nil
-        katsa.graphics.clear(0.03, 0.04, 0.06, 1)
+        -- A scene can set `clearColor` (alpha 0 shows the desktop through a transparent window).
+        local clear = self.clearColor or { 0.03, 0.04, 0.06, 1 }
+        katsa.graphics.clear(clear[1], clear[2], clear[3], clear[4])
         self.statistics:sample()
         self.ui:draw()
         require('source.engine.graphics.debug.orientation').draw(self)

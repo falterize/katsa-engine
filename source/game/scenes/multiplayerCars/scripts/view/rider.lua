@@ -12,7 +12,13 @@ local SNAP_DISTANCE = 6 -- a walker further than this (just spawned, teleported)
 
 -- `root` is the walker view's root node, `pivot` the child that carries the model.
 function Rider.new(world, root, pivot)
-    return setmetatable({ world = world, root = root, pivot = pivot, home = root.parent }, Rider)
+    return setmetatable({
+        world = world,
+        root = root,
+        pivot = pivot,
+        home = root.parent,
+        createdAt = katsa.timer.getTime(),
+    }, Rider)
 end
 
 local function wrap(angle)
@@ -52,7 +58,10 @@ function Rider:board(carRoot, seat)
         return
     end
     local target = Seats.offset(seat)
+    -- A view that appears already seated (a player who joined mid-ride) is not animated; one that
+    -- has been around when the player boards is.
     local first = self.carRoot == nil and not self.placed
+        and katsa.timer.getTime() - self.createdAt < 0.25
     self.root:setParent(carRoot, { keepWorldTransform = true })
     self.pivot.position = { 0, 0, 0 }
     self.carRoot, self.seat, self.placed = carRoot, seat, true

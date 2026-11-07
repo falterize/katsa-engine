@@ -9,7 +9,7 @@ function Module.run(self)
     local lab = state and state.windows and state or nil
     if not lab then
         for _, value in pairs(scene) do
-            if type(value) == 'table' and value.windows and value.cube then
+            if type(value) == 'table' and value.windows and value.pressed then
                 lab = value
             end
         end

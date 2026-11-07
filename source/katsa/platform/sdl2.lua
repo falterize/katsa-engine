@@ -92,6 +92,14 @@ uint32_t SDL_GetWindowID(SDL_Window* window);
 void SDL_HideWindow(SDL_Window* window);
 void SDL_ShowWindow(SDL_Window* window);
 void SDL_RaiseWindow(SDL_Window* window);
+void SDL_SetWindowBordered(SDL_Window* window, int bordered);
+void SDL_SetWindowResizable(SDL_Window* window, int resizable);
+void SDL_SetWindowAlwaysOnTop(SDL_Window* window, int onTop);
+void SDL_GetWindowMinimumSize(SDL_Window* window, int* w, int* h);
+void SDL_GetVersion(uint8_t* version);
+typedef struct { uint8_t major, minor, patch; } SDL_version;
+typedef struct { SDL_version version; int subsystem; union { struct { void* window; void* hdc; void* hinstance; } win; uint8_t dummy[64]; } info; } SDL_SysWMinfo;
+int SDL_GetWindowWMInfo(SDL_Window* window, SDL_SysWMinfo* info);
 void SDL_free(void* memory);
 char* SDL_GetPrefPath(const char* org, const char* app);
 const char* SDL_GetPlatform(void);
@@ -138,6 +146,9 @@ local WINDOW_EVENT = {
 
 local Platform = {}
 Platform.__index = Platform
+
+local MODAL_AFTER_MS = 30 -- a poll call longer than this is the OS running its own move/size loop
+local MODAL_FRAME_MS = 8 -- at most one frame per this many ms from inside that loop
 
 local function sdlError(sdl)
     return ffi.string(sdl.SDL_GetError())
@@ -219,8 +230,9 @@ function Platform:setMode(width, height, flags)
     sdl.SDL_GL_SetAttribute(ATTR.MULTISAMPLEBUFFERS, (flags.msaa or 0) > 0 and 1 or 0)
     sdl.SDL_GL_SetAttribute(ATTR.MULTISAMPLESAMPLES, flags.msaa or 0)
     sdl.SDL_GL_SetAttribute(ATTR.FRAMEBUFFER_SRGB, flags.srgb and 1 or 0)
-    -- A transparent window needs destination alpha; every window shares this pixel format.
-    sdl.SDL_GL_SetAttribute(ATTR.ALPHA, flags.transparent and 8 or 0)
+    -- Destination alpha is on unless `transparent = false`, so a window can be made transparent
+    -- later without recreating its context; every window shares this pixel format.
+    sdl.SDL_GL_SetAttribute(ATTR.ALPHA, flags.transparent == false and 0 or 8)
     local windowFlags = bit.bor(WINDOW_OPENGL, WINDOW_SHOWN)
     if flags.highdpi ~= false then
         windowFlags = bit.bor(windowFlags, WINDOW_ALLOW_HIGHDPI)
@@ -261,6 +273,9 @@ function Platform:setMode(width, height, flags)
     end
     self.flags = flags
     self:setVSync(flags.vsync == nil and 1 or flags.vsync)
+    if flags.transparent then
+        self:setTransparent(true)
+    end
     return true
 end
 
@@ -574,22 +589,25 @@ function Platform:poll()
         -- SDL calls event watches from inside SDL_PollEvent too; `polling` tells those deliveries
         -- (the frame loop handles them) from the ones sent while the OS runs its own resize loop.
         self.polling = true
+        self.pollStarted = sdl.SDL_GetTicks()
         while sdl.SDL_PollEvent(event) ~= 0 do
             local translated = self:translate(event)
             if translated then
                 self.polling = false
                 return translated
             end
+            self.pollStarted = sdl.SDL_GetTicks()
         end
         self.polling = false
         return nil
     end
 end
 
--- While the user drags a window edge, Windows (and macOS) run a modal loop that keeps the frame
--- loop from polling events: the UI would keep the old size until the button is released. SDL
--- still reports the new size to an event watch on the main thread, so `handler(width, height)` is
--- called there to re-fit and redraw the window.
+-- While the user drags a window edge or its title bar, Windows (and macOS) run a modal loop inside
+-- SDL_PollEvent that keeps the frame loop from running: the UI would keep the old size and the game
+-- would freeze until the button is released. SDL still reports the window events to an event watch
+-- on the main thread, so `handler(width, height, resized)` is called there to run and draw a frame.
+-- A poll call that has lasted longer than a normal one (see MODAL_AFTER_MS) is such a loop.
 function Platform:onLiveResize(handler)
     if self.liveResizeWatch then
         self.liveResizeHandler = handler
@@ -597,14 +615,20 @@ function Platform:onLiveResize(handler)
     end
     self.liveResizeHandler = handler
     self.liveResizeWatch = ffi.cast('SDL_EventFilter', function(_, event)
-        local sized = event.type == EVENT.WINDOW
-            and (
-                event.window.event == WINDOW_EVENT.SIZE_CHANGED
-                or event.window.event == WINDOW_EVENT.RESIZED
-            )
-        if sized and not self.polling and not self.liveResizing then
+        local kind = event.type == EVENT.WINDOW and event.window.event
+        local sized = kind == WINDOW_EVENT.SIZE_CHANGED or kind == WINDOW_EVENT.RESIZED
+        local moved = kind == WINDOW_EVENT.MOVED or kind == WINDOW_EVENT.EXPOSED
+        local now = self.sdl.SDL_GetTicks()
+        local modal = not self.polling or now - (self.pollStarted or now) > MODAL_AFTER_MS
+        if
+            (sized or moved)
+            and modal
+            and not self.liveResizing
+            and now - (self.lastModalFrame or 0) >= MODAL_FRAME_MS
+        then
             self.liveResizing = true
             local ok, message = pcall(self.liveResizeHandler, self:getMode())
+            self.lastModalFrame = self.sdl.SDL_GetTicks()
             self.liveResizing = false
             if not ok then
                 io.stderr:write('Live resize failed: ', tostring(message), '\n')
@@ -634,6 +658,8 @@ require('./sdl2windows')(Platform, {
     BORDERLESS = WINDOW_BORDERLESS,
     RESIZABLE = WINDOW_RESIZABLE,
     ALWAYS_ON_TOP = WINDOW_ALWAYS_ON_TOP,
+    FULLSCREEN = WINDOW_FULLSCREEN,
+    FULLSCREEN_DESKTOP = WINDOW_FULLSCREEN_DESKTOP,
     HIGHDPI = WINDOW_ALLOW_HIGHDPI,
     CENTERED = CENTERED,
     EVENT = EVENT,

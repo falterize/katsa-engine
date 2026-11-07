@@ -21,6 +21,7 @@ Orbit.settings = {
     speedFovFrom = 12, -- m/s where the widening starts
     speedFovTo = 40, -- m/s where it is complete
     fovRate = 3, -- how quickly the field of view follows (1/s)
+    transition = 0.7, -- seconds the camera glides when switching between on foot and the car
 }
 
 function Orbit.new(scene, camera)
@@ -77,6 +78,19 @@ function Orbit:setMode(mode, heading)
         self.yaw = heading % 360
     end
     self.idle = 0
+    -- Glide from wherever the camera is now to the new view instead of cutting. A switch before
+    -- the first frame has nothing to glide from.
+    local camera = self.camera
+    if self.hasPose then
+        self.transition = {
+            elapsed = 0,
+            x = camera.position[1],
+            y = camera.position[2],
+            z = camera.position[3],
+            pitch = camera.rotation[1],
+            yaw = camera.rotation[2],
+        }
+    end
 end
 
 local function shortest(from, to)
@@ -86,6 +100,7 @@ end
 -- Driving: swing behind the car after a pause, and widen the view with speed.
 function Orbit:follow(dt, heading, speed)
     local s = self.settings
+    self.dt = dt
     self.idle = self.idle + dt
     speed = math.abs(speed or 0)
     if heading and self.idle > s.recenterDelay and speed > 2 then
@@ -128,11 +143,27 @@ function Orbit:update(px, py, pz)
             end
         end
     end
+    local pitchOut, yawOut = self.pitch, self.yaw
+    local glide = self.transition
+    if glide then
+        glide.elapsed = glide.elapsed + (self.dt or 0)
+        local t = math.min(1, glide.elapsed / self.settings.transition)
+        local k = t * t * (3 - 2 * t) -- smoothstep: eases in and out
+        finish[1] = glide.x + (finish[1] - glide.x) * k
+        finish[2] = glide.y + (finish[2] - glide.y) * k
+        finish[3] = glide.z + (finish[3] - glide.z) * k
+        pitchOut = glide.pitch + (pitchOut - glide.pitch) * k
+        yawOut = glide.yaw + shortest(glide.yaw, yawOut) * k
+        if t >= 1 then
+            self.transition = nil
+        end
+    end
     local position = camera.position
     position[1], position[2], position[3] = finish[1], finish[2], finish[3]
     camera.position = position
     -- A tiny pitch clamp keeps a valid camera basis at the source's +/-90 limits.
-    camera.rotation = { math.max(-89.99, math.min(89.99, self.pitch)), self.yaw, 0 }
+    camera.rotation = { math.max(-89.99, math.min(89.99, pitchOut)), yawOut, 0 }
+    self.hasPose = true
 end
 
 return Orbit

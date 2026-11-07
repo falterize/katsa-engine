@@ -23,6 +23,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_7.mouse').run(self)
     require('validation.tests.versions.v108_7.windows').run(self)
     require('validation.tests.versions.v108_7.windowsLab').run(self)
+    require('validation.tests.versions.v108_7.orbitGlide').run(self)
     print('PASSED ' .. self.count .. ' v108.7 focused checks')
     katsa.event.quit()
 end

@@ -25,6 +25,97 @@ return function(Platform, K)
         return x[0], y[0]
     end
 
+    -- Window state of the main window, in raw pixels, with the names of Godot's DisplayServer.
+    function Platform:setSize(width, height)
+        self.sdl.SDL_SetWindowSize(self.window, width, height)
+    end
+
+    function Platform:getMinimumSize()
+        local w, h = ffi.new('int[1]'), ffi.new('int[1]')
+        self.sdl.SDL_GetWindowMinimumSize(self.window, w, h)
+        return w[0], h[0]
+    end
+
+    local function hasFlag(self, flag)
+        return require('bit').band(self.sdl.SDL_GetWindowFlags(self.window), flag) ~= 0
+    end
+
+    function Platform:isBordered()
+        return not hasFlag(self, K.BORDERLESS)
+    end
+
+    function Platform:setBordered(bordered)
+        self.sdl.SDL_SetWindowBordered(self.window, bordered and 1 or 0)
+    end
+
+    function Platform:isResizable()
+        return hasFlag(self, K.RESIZABLE)
+    end
+
+    function Platform:setResizable(resizable)
+        self.sdl.SDL_SetWindowResizable(self.window, resizable and 1 or 0)
+    end
+
+    function Platform:isFullscreen()
+        return hasFlag(self, K.FULLSCREEN)
+    end
+
+    -- mode: false (windowed), true or 'desktop' (borderless at desktop size), 'exclusive'.
+    function Platform:setFullscreen(mode)
+        local flag = 0
+        if mode == 'exclusive' then
+            flag = K.FULLSCREEN
+        elseif mode then
+            flag = K.FULLSCREEN_DESKTOP
+        end
+        return self.sdl.SDL_SetWindowFullscreen(self.window, flag) == 0
+    end
+
+    -- SDL_SetWindowAlwaysOnTop needs SDL 2.0.16; older libraries keep the creation-time flag only.
+    function Platform:setAlwaysOnTop(onTop)
+        local ok = pcall(function()
+            self.sdl.SDL_SetWindowAlwaysOnTop(self.window, onTop and 1 or 0)
+        end)
+        return ok
+    end
+
+    function Platform:center()
+        self.sdl.SDL_SetWindowPosition(self.window, K.CENTERED, K.CENTERED)
+    end
+
+    -- Per-pixel transparency of the main window. Linux and macOS compositors honour the alpha
+    -- channel of the framebuffer by themselves; on Windows the window must be told to blend with
+    -- the desktop (DWM), the way GLFW does it. Returns whether the call could be made.
+    function Platform:setTransparent(enabled)
+        self.transparent = enabled
+        if ffi.os ~= 'Windows' then
+            return true
+        end
+        local ok, message = pcall(function()
+            ffi.cdef([[
+                typedef struct { uint32_t flags; int enable; void* region; int transition; } KatsaBlurBehind;
+                int DwmEnableBlurBehindWindow(void* window, const KatsaBlurBehind* behind);
+                void* CreateRectRgn(int left, int top, int right, int bottom);
+                int DeleteObject(void* object);
+            ]])
+            local info = ffi.new('SDL_SysWMinfo')
+            self.sdl.SDL_GetVersion(ffi.cast('uint8_t*', info.version))
+            if self.sdl.SDL_GetWindowWMInfo(self.window, info) == 0 then
+                error('SDL_GetWindowWMInfo failed')
+            end
+            local dwm, gdi = ffi.load('dwmapi'), ffi.load('gdi32')
+            -- An empty blur region switches per-pixel alpha on without blurring anything.
+            local region = gdi.CreateRectRgn(0, 0, -1, -1)
+            local behind = ffi.new('KatsaBlurBehind', 3, enabled and 1 or 0, region, 0)
+            dwm.DwmEnableBlurBehindWindow(info.info.win.window, behind)
+            gdi.DeleteObject(region)
+        end)
+        if not ok then
+            io.stderr:write('Transparent window unavailable: ', tostring(message), '\n')
+        end
+        return ok
+    end
+
     -- Creates another window on the main OpenGL context. flags: title, x, y, resizable,
     -- borderless, alwaysontop, hidden. Returns a record { raw, id, listener } or nil, message.
     function Platform:createWindow(width, height, flags)

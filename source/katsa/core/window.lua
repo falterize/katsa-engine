@@ -163,6 +163,63 @@ function Window.getPosition()
     return platform:getPosition()
 end
 
+-- Window state of the main window, named after Godot's DisplayServer. Sizes are raw pixels.
+function Window.setSize(width, height)
+    platform:setSize(width, height)
+end
+
+function Window.getSize()
+    return platform:getRawMode()
+end
+
+function Window.getMinimumSize()
+    return platform:getMinimumSize()
+end
+
+-- The title bar and frame; false gives a borderless window.
+function Window.setBorderless(borderless)
+    platform:setBordered(not borderless)
+end
+
+function Window.isBorderless()
+    return not platform:isBordered()
+end
+
+function Window.setResizable(resizable)
+    platform:setResizable(resizable)
+end
+
+function Window.isResizable()
+    return platform:isResizable()
+end
+
+-- mode: false/true or 'desktop' (borderless at desktop size) / 'exclusive'.
+function Window.setFullscreen(mode)
+    return platform:setFullscreen(mode)
+end
+
+function Window.isFullscreen()
+    return platform:isFullscreen()
+end
+
+function Window.toggleFullscreen()
+    Window.setFullscreen(not Window.isFullscreen())
+    return Window.isFullscreen()
+end
+
+function Window.setAlwaysOnTop(onTop)
+    return platform:setAlwaysOnTop(onTop)
+end
+
+function Window.center()
+    platform:center()
+end
+
+-- Lets the desktop show through where the frame is cleared with alpha 0 (see guides/katsa/windows).
+function Window.setTransparent(enabled)
+    return platform:setTransparent(enabled)
+end
+
 function Window.close()
     if platform and platform.window then
         platform:close()

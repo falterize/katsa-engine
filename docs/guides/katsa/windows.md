@@ -2,21 +2,42 @@
 
 ## Transparent main window
 
-Pass `transparent = true` in the window flags (`conf.lua` or `katsa.window.setMode` at the first
-call). The framebuffer then keeps destination alpha, so a frame cleared with alpha 0
-(`katsa.graphics.clear(0, 0, 0, 0)`) shows the desktop behind it where the OS compositor allows.
-Combine with `borderless = true` for an overlay-style window and `alwaysontop = true` to keep it on
-top.
+The framebuffer always has destination alpha (set `transparent = false` in the first window flags
+to drop it). Turn transparency on at any time and clear the frame with alpha 0:
 
 ```lua
-katsa.window.setMode(800, 600, { borderless = true, transparent = true, alwaysontop = true })
-katsa.window.setOpacity(0.8)   -- the whole window, 0..1
+katsa.window.setTransparent(true)               -- Windows: DWM blends with the desktop
+katsa.window.setBorderless(true)                -- overlay look, no title bar
+katsa.window.setAlwaysOnTop(true)
+katsa.window.setOpacity(0.8)                    -- the whole window, 0..1, independent of the above
+-- in a scene: scene.clearColor = { 0, 0, 0, 0 } on a camera-free scene, or
+-- katsa.graphics.setBackgroundColor(0, 0, 0, 0) in a plain katsa program
 ```
 
-Limits: per-pixel transparency is up to the compositor. It works on macOS and on Linux with a
-compositing window manager. On Windows an OpenGL window shows the alpha channel only through DWM
-tricks that are not implemented, so there `setOpacity` (whole window) is the reliable tool. Verify on
-your target system; the development sandbox has no compositor.
+`setTransparent` is the GLFW technique on Windows (`DwmEnableBlurBehindWindow` with an empty blur
+region); macOS and Linux compositors use the framebuffer alpha without help. It needs a compositor
+and cannot be verified in the development sandbox: confirm on the target system. If nothing shows,
+`setOpacity` (the whole window) always works.
+
+## Size, borders, fullscreen (Godot's DisplayServer names)
+
+| Call | Meaning |
+| --- | --- |
+| `setSize(w, h)`, `getSize()` | Window size in **pixels** |
+| `getMinimumSize()`, `setMode(w, h, { minwidth, minheight })` | Minimum size |
+| `setBorderless(b)`, `isBorderless()` | Hide / show the title bar and frame |
+| `setResizable(b)`, `isResizable()` | Resizing by the user |
+| `setFullscreen(false / true / 'exclusive')`, `isFullscreen()`, `toggleFullscreen()` | Fullscreen |
+| `setAlwaysOnTop(b)`, `center()`, `setPosition(x, y)`, `getPosition()` | Placement |
+
+**F11** (and Alt+Enter) toggles fullscreen in every scene; remove the check in
+`source/engine/scenes/bootstrap.lua` (`katsa.keypressed`) to disable it, or call
+`katsa.window.toggleFullscreen()` from your own key handler.
+
+While the user holds the title bar or an edge, Windows and macOS stop the normal frame loop. The
+engine now keeps updating and drawing from SDL's event watch during that time (at most one frame
+per 8 ms, and only while the OS loop is running), so the game no longer freezes. Extra windows made
+by `window:draw` are redrawn in those frames too.
 
 ## More windows
 
@@ -30,7 +51,8 @@ end)
 if window:isCloseRequested() then window:close() end
 ```
 
-Every window shares the main window's OpenGL context (so textures, canvases and shaders work
+Pass `alwaysontop = true` to keep a window above the main one (otherwise the main window can cover
+it). Every window shares the main window's OpenGL context (so textures, canvases and shaders work
 everywhere) and its pixel format. `window:draw(fn)` makes the window current, runs `fn`, presents
 it and returns to the main window; graphics state (colour, transform, scissor) is saved and
 restored, and an error inside `fn` is rethrown after the main window is restored. Call it from

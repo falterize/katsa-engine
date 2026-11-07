@@ -23,6 +23,18 @@ function Module.run(self)
     window:setOpacity(0.5)
     self:check(window:getOpacity() <= 1, 'Window opacity can be set')
     window:close()
+    -- The main window's state in pixels (the SDL window under Xvfb has no manager, so only the
+    -- values that SDL itself keeps are compared).
+    local win = katsa.window
+    win.setSize(640, 400)
+    local w, h = win.getSize()
+    self:check(w == 640 and h == 400, 'setSize / getSize work in pixels')
+    win.setBorderless(true)
+    self:check(win.isBorderless(), 'The title bar can be removed')
+    win.setBorderless(false)
+    self:check(not win.isBorderless(), 'The title bar can be restored')
+    self:check(win.isFullscreen() == false and type(win.toggleFullscreen) == 'function', 'Fullscreen is queryable and togglable')
+    self:check(win.setTransparent(true) ~= nil, 'Transparency can be requested')
     self:check(not window:isOpen() and not pcall(window.draw, window, function() end), 'A closed window rejects drawing')
 end
 
