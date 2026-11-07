@@ -98,6 +98,10 @@ loader:load('assets/hero.png', function(ok, image) ... end)         -- image is 
 The file is read on the calling thread (archives and the save folder work); the decoding runs on a
 worker and returns through shared memory. Upload the ImageData to a texture in the callback.
 
+`SoundLoader` (`source/engine/actors/soundLoader.lua`) does the same for sounds: `load(path, cb)` gives a
+`katsa.sound` SoundData. It matters most for large WAV files, which are decoded sample by sample in
+Lua, and for long Ogg Vorbis tracks.
+
 ## Native layer and platforms
 
 `native/src/katsa_threads.c` (pthreads / Win32 threads, condition variables, atomics) builds to

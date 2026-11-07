@@ -107,6 +107,10 @@ local function sourceString(source)
         end
         return content
     end
+    -- Long strings and strings with NUL bytes are encoded file contents.
+    if type(source) == 'string' then
+        return source
+    end
     return source:getString()
 end
 

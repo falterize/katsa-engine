@@ -92,6 +92,17 @@ function Module.run(self)
     self:check(failed, 'A missing file is reported as a failure')
     loader:destroy(2000)
 
+    -- Sounds decode on workers too (WAV here; Ogg Vorbis takes the same path).
+    local SoundLoader = require('source.engine.actors.soundLoader')
+    local sounds = SoundLoader.new(1)
+    local wav = 'assets/audio/effects/stereoChime.wav'
+    local heard
+    sounds:load(wav, function(ok, sound) heard = ok and sound end)
+    self:check(wait(function() return heard end, 10, function() sounds:update() end), 'The sound loader answers')
+    local expected = katsa.sound.newSoundData(wav)
+    self:check(heard and heard:getString() == expected:getString() and heard:getSampleRate() == expected:getSampleRate() and heard:getChannelCount() == 2, 'A worker decodes samples identical to the main thread')
+    sounds:destroy(2000)
+
     -- The Actor node.
     local world = require('source.engine.world.world').new(self.manager.resources:scope())
     local node = world:create('Actor', { name = 'Brain', workers = 2, autoStart = false })
