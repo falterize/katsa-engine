@@ -18,7 +18,7 @@ function BlendShapes.new(world, shared)
     for t = 1, shared.count do
         values[t] = shared.defaults[t]
     end
-    return setmetatable({
+    local self = setmetatable({
         world = world,
         names = shared.names,
         defaults = shared.defaults,
@@ -27,6 +27,16 @@ function BlendShapes.new(world, shared)
         draws = {},
         dirty = true,
     }, BlendShapes)
+    -- The inspector edits weights through this table: `proxy[index]` reads and writes a value.
+    self.proxy = setmetatable({}, {
+        __index = function(_, index)
+            return type(index) == 'number' and values[index] or nil
+        end,
+        __newindex = function(_, index, value)
+            self:set(index, value)
+        end,
+    })
+    return self
 end
 
 -- Gives `object` a private dynamic copy of the imported geometry and links it to the state.
@@ -43,7 +53,35 @@ function BlendShapes.attach(state, object, morph)
     state.world.resources:own(geometry.mesh)
     object.geometry = geometry
     object.blendShapes = state
-    state.draws[#state.draws + 1] = { object = object, geometry = geometry, morph = morph, rows = rows }
+    state.draws[#state.draws + 1] =
+        { object = object, owner = object, geometry = geometry, morph = morph, rows = rows }
+    object._morph, object._morphGeometry = morph, geometry
+    state.dirty = true
+    state:queue()
+end
+
+-- Skin limits (Mesh3D.maxBoneInfluences / bonePaletteLimit) may replace a skinned mesh's geometry
+-- by several palette batches. `batches` is that list (nil when the whole mesh is drawn again) and
+-- `pieces` the extra Mesh3D objects, so every new draw keeps following the weights.
+function BlendShapes.resplit(state, owner, batches, pieces)
+    for i = #state.draws, 1, -1 do
+        if state.draws[i].owner == owner then
+            table.remove(state.draws, i)
+        end
+    end
+    local MorphTargets = require('source.engine.import.gltf.morphTargets')
+    local function add(object, geometry, morph)
+        object.blendShapes = state
+        state.draws[#state.draws + 1] =
+            { object = object, owner = owner, geometry = geometry, morph = morph, rows = geometry.vertices }
+    end
+    if batches then
+        for i, batch in ipairs(batches) do
+            add(i == 1 and owner or pieces[i - 1], batch.geometry, MorphTargets.slice(owner._morph, batch.origin))
+        end
+    else
+        add(owner, owner._morphGeometry, owner._morph)
+    end
     state.dirty = true
     state:queue()
 end
@@ -135,7 +173,7 @@ function BlendShapes:flush()
                 row[6], row[7], row[8] = nx, ny, nz
             end
             draw.geometry.mesh:setVertices(rows)
-            draw.geometry.revision = draw.geometry.revision + 1
+            draw.geometry.revision = (draw.geometry.revision or 0) + 1
             draw.geometry.radius = math.sqrt(radius) -- culling follows the morphed extent
             draw.object._batchRevision = (draw.object._batchRevision or 0) + 1
         end

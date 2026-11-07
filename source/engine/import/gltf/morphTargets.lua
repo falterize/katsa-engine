@@ -87,4 +87,42 @@ function MorphTargets.part(data, shared, vertices, origin)
     return part
 end
 
+-- A part's morph data restricted to `origin` (origin[i] = index in `part` of the new i-th vertex),
+-- used when skin limits split a draw into several batches.
+function MorphTargets.slice(part, origin)
+    local n = #origin
+    local result = {
+        _assetGeometry = true,
+        names = part.names,
+        defaults = part.defaults,
+        count = part.count,
+        n = n,
+        basePosition = ffi.new('float[?]', n * 3),
+        baseNormal = ffi.new('float[?]', n * 3),
+        positions = {},
+        normals = {},
+    }
+    local function copy(from, to)
+        for i = 1, n do
+            local source, target = origin[i] * 3 - 3, i * 3 - 3
+            for c = 0, 2 do
+                to[target + c] = from[source + c]
+            end
+        end
+    end
+    copy(part.basePosition, result.basePosition)
+    copy(part.baseNormal, result.baseNormal)
+    for t = 1, part.count do
+        result.positions[t] = ffi.new('float[?]', n * 3)
+        copy(part.positions[t], result.positions[t])
+        if part.normals[t] then
+            result.normals[t] = ffi.new('float[?]', n * 3)
+            copy(part.normals[t], result.normals[t])
+        else
+            result.normals[t] = false
+        end
+    end
+    return result
+end
+
 return MorphTargets

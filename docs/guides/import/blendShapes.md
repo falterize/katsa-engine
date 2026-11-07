@@ -44,10 +44,17 @@ value set from code, so scripts and clips can control different shapes of the sa
 - Cost is proportional to `vertices x active shapes` on the CPU plus one vertex upload per changed
   mesh per frame; shapes with weight 0 are skipped.
 
+## Inspector
+
+Select a mesh with shapes in the Workspace: every shape appears as a number row `blend: <name>`
+under the other properties; editing it sets the weight for all draws of that glTF mesh.
+
+## Skin limits
+
+`maxBoneInfluences` / `bonePaletteLimit` may split a skinned mesh into several palette draws. The
+new draws are re-sliced from the original shape data (`BlendShapes.resplit`), so the shapes keep
+following the weights after a split and when the limits are relaxed again.
+
 ## Limits
 
 - Tangent deltas are ignored (the engine has no normal maps on imported meshes).
-- If skin limits (`maxBoneInfluences`, `bonePaletteLimit`) force a skinned mesh to be re-split, the
-  new draws keep the shape at the moment of the split instead of following later weights; the
-  defaults do not re-split.
-- Shape values are not shown in the inspector yet; drive them from code or animation.

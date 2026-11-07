@@ -77,7 +77,12 @@ local function rebuild(owner, state, influences, palette)
     -- Always rebuild from the immutable imported mesh, never from a previously reduced variant.
     local batches
     if influences < (state.geometry.eightWeights and 8 or 4) or palette < #state.skin.palette then
-        batches = SkinGeometry.build(vertices(state, influences), owner._world.resources, palette)
+        batches = SkinGeometry.build(
+            vertices(state, influences),
+            owner._world.resources,
+            palette,
+            owner.blendShapes and 'dynamic' or nil
+        )
     end
     release(owner, state)
     owner.geometry, owner.skin = state.geometry, state.skin
@@ -102,6 +107,14 @@ local function rebuild(owner, state, influences, palette)
     end
     owner.effectiveBonePaletteLimit = batches and largest or #state.skin.palette
     owner.skinDrawCount = batches and #batches or 1
+    if owner.blendShapes then
+        require('source.engine.graphics.geometry.blendShapes').resplit(
+            owner.blendShapes,
+            owner,
+            batches,
+            state.pieces
+        )
+    end
     state.influences, state.palette = influences, palette
     owner.shadowRevision = (owner.shadowRevision or 0) + 1
 end

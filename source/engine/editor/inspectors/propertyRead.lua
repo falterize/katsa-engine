@@ -219,6 +219,7 @@ function PropertyRead.install(Properties)
                 end
             end
         end
+        require('source.engine.editor.inspectors.blendShapeRows').append(target, result)
         return result
     end
 end
