@@ -99,53 +99,128 @@ local function garageBoxes()
     return boxes
 end
 
--- Static physics for the terrain and obstacles. Skipped when the scene has no Jolt world.
-function ArenaView.buildPhysics(scene)
-    local world = scene.world
-    if not world.physics then
-        return false
-    end
-    local ok, problem = pcall(function()
-        world:create('Body3D', {
-            name = 'GroundBody',
-            bodyType = 'Static',
+-- Every static piece of the arena once: the terrain, the walls, the pillars and the car park.
+-- A piece is a Body3D (when the world has physics) that owns its visible Mesh3D as a child, so the
+-- Explorer shows `Wall1 > Wall1Visual` instead of two unrelated lists. `visual` describes the mesh
+-- (`properties` for Mesh3D, `surfaceAppearance` for its material).
+local function statics()
+    local pieces = {
+        {
+            name = 'Ground',
+            position = { 0, 0, 0 },
             size = { 1, 1, 1 },
-            collider = groundCollider(),
-        })
-        for _, box in ipairs(garageBoxes()) do
-            world:create('Body3D', {
-                name = box[1] .. 'Body',
-                bodyType = 'Static',
-                position = box[2],
-                size = box[3],
-                rotation = box[4],
-                navFloor = box[6],
-            })
+            collider = groundCollider,
+            visual = {
+                geometry = groundGeometry,
+                color = { 1, 1, 1 },
+                surfaceAppearance = { colorMap = 'scene://textures/grass.png', roughness = 1 },
+            },
+        },
+    }
+    local height = 3
+    for index, obstacle in ipairs(Arena.obstacles) do
+        local base = Arena.ground(obstacle.x, obstacle.z)
+        if obstacle.kind == 'box' then
+            pieces[#pieces + 1] = {
+                name = 'Wall' .. index,
+                position = { obstacle.x, base + height / 2, obstacle.z },
+                size = { obstacle.halfX * 2, height, obstacle.halfZ * 2 },
+                visual = { kind = 'cube', color = { 0.55, 0.5, 0.45 } },
+            }
+        else
+            local diameter = obstacle.radius * 2
+            pieces[#pieces + 1] = {
+                name = 'Pillar' .. index,
+                position = { obstacle.x, base + 1, obstacle.z },
+                size = { diameter, diameter, diameter },
+                collider = function()
+                    return { shape = 'Sphere', radius = obstacle.radius }
+                end,
+                visual = { kind = 'sphere', color = { 0.6, 0.35, 0.3 } },
+            }
         end
-        for index, obstacle in ipairs(Arena.obstacles) do
-            local height = 3
-            if obstacle.kind == 'box' then
-                world:create('Body3D', {
-                    name = 'WallBody' .. index,
-                    bodyType = 'Static',
-                    position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + height / 2, obstacle.z },
-                    size = { obstacle.halfX * 2, height, obstacle.halfZ * 2 },
-                })
-            else
-                world:create('Body3D', {
-                    name = 'PillarBody' .. index,
-                    bodyType = 'Static',
-                    position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + 1, obstacle.z },
-                    size = { obstacle.radius * 2, obstacle.radius * 2, obstacle.radius * 2 },
-                    collider = { shape = 'Sphere', radius = obstacle.radius },
-                })
+    end
+    for _, box in ipairs(garageBoxes()) do
+        pieces[#pieces + 1] = {
+            name = box[1],
+            position = box[2],
+            size = box[3],
+            rotation = box[4],
+            navFloor = box[6],
+            visual = { kind = 'cube', color = box[5] },
+        }
+    end
+    return pieces
+end
+
+-- Creates the Mesh3D of a piece. Under its Body3D the mesh sits at the body's origin; without
+-- physics it takes the piece's own transform.
+local function createVisual(world, piece, parent)
+    local visual = piece.visual
+    local properties = {
+        name = piece.name .. 'Visual',
+        kind = visual.kind,
+        geometry = visual.geometry and visual.geometry(),
+        color = visual.color,
+        size = piece.size,
+        surfaceAppearance = visual.surfaceAppearance,
+    }
+    if properties.geometry then
+        properties.size = nil -- the terrain geometry is authored in world units
+    end
+    if parent.className == 'Node3D' then
+        properties.name = piece.name
+        properties.position, properties.rotation = piece.position, piece.rotation
+    end
+    return require('source.engine.composition.mesh').create(world, properties, parent)
+end
+
+local function createBody(world, piece, parent)
+    return world:create('Body3D', {
+        name = piece.name,
+        bodyType = 'Static',
+        position = piece.position,
+        size = piece.size,
+        rotation = piece.rotation,
+        navFloor = piece.navFloor,
+        collider = piece.collider and piece.collider(),
+    }, parent)
+end
+
+-- Builds the arena pieces; `visuals` adds the meshes. Physics-only callers (tests, a headless
+-- server) pass false. Returns whether the bodies could be created.
+local function buildStatics(scene, visuals)
+    local world = scene.world
+    local pieces = statics()
+    local arena = world:create('Node3D', { name = 'Arena' })
+    local bodies = false
+    if world.physics then
+        bodies = pcall(function()
+            for _, piece in ipairs(pieces) do
+                local body = createBody(world, piece, arena)
+                if visuals then
+                    createVisual(world, piece, body)
+                    piece.visualDone = true
+                end
+            end
+        end)
+        if not bodies then
+            katsa.log.warn('multiplayerCars: terrain physics unavailable')
+        end
+    end
+    if visuals and not bodies then
+        for _, piece in ipairs(pieces) do
+            if not piece.visualDone then
+                createVisual(world, piece, arena)
             end
         end
-    end)
-    if not ok then
-        katsa.log.warn('multiplayerCars: terrain physics unavailable: ' .. tostring(problem))
     end
-    return ok
+    return bodies
+end
+
+-- Static physics for the terrain and obstacles. Skipped when the scene has no Jolt world.
+function ArenaView.buildPhysics(scene)
+    return buildStatics(scene, false)
 end
 
 function ArenaView.build(scene)
@@ -166,43 +241,7 @@ function ArenaView.build(scene)
     shadows.enabled, shadows.resolution, shadows.distance = true, 1024, 60
     shadows.fadeDistance, shadows.near = 12, 0.05
     shadows.bias, shadows.normalBias = 0.001, 0.015
-    require('source.engine.composition.mesh').create(world, {
-        name = 'Ground',
-        geometry = groundGeometry(),
-        color = { 1, 1, 1 },
-        surfaceAppearance = { colorMap = 'scene://textures/grass.png', roughness = 1 },
-        position = { 0, 0, 0 },
-    })
-    for index, obstacle in ipairs(Arena.obstacles) do
-        if obstacle.kind == 'box' then
-            world:create('Mesh3D', {
-                name = 'Wall' .. index,
-                kind = 'cube',
-                position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + 1.5, obstacle.z },
-                size = { obstacle.halfX * 2, 3, obstacle.halfZ * 2 },
-                color = { 0.55, 0.5, 0.45 },
-            })
-        else
-            world:create('Mesh3D', {
-                name = 'Pillar' .. index,
-                kind = 'sphere',
-                position = { obstacle.x, Arena.ground(obstacle.x, obstacle.z) + 1, obstacle.z },
-                size = { obstacle.radius * 2, obstacle.radius * 2, obstacle.radius * 2 },
-                color = { 0.6, 0.35, 0.3 },
-            })
-        end
-    end
-    for _, box in ipairs(garageBoxes()) do
-        world:create('Mesh3D', {
-            name = box[1],
-            kind = 'cube',
-            position = box[2],
-            size = box[3],
-            rotation = box[4],
-            color = box[5],
-        })
-    end
-    ArenaView.buildPhysics(scene)
+    buildStatics(scene, true)
     world:create('DirectionalLight3D', {
         name = 'Sun',
         direction = { 0.5, -0.75, -0.43301266 },
