@@ -31,6 +31,16 @@ function Model.insert(points, time, interpolation)
     end
 end
 
+-- Adds a point at time 1 (the end) holding the last value; the caller has lengthened the animation
+-- first, so the previous last point is before 1.
+function Model.append(points)
+    local last = points[#points]
+    assert(last.time < 1 - 0.0001, 'Lengthen the animation before appending a point')
+    points[#points + 1] = { time = 1, value = Copy(last.value) }
+    last.outgoing = nil
+    return #points
+end
+
 function Model.time(points, index, time)
     assert(finite(time) and time >= 0 and time <= 1, 'Time must be a finite number within 0..1')
     local previous, nextPoint = points[index - 1], points[index + 1]

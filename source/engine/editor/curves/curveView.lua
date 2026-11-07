@@ -34,7 +34,10 @@ function CurveView.create(ui, parent, ramp, property, points, interpolation, vie
     if seconds then
         -- The last point may be dragged past the end: that lengthens the animation.
         graph.onExtend = function(time)
-            Timeline.setDuration(ramp, ramp.playbackTime * time)
+            Timeline.setDuration(
+                ramp,
+                math.min(Timeline.MAX_DURATION, ramp.playbackTime * time)
+            )
         end
         -- When the last point settles earlier, the animation ends there.
         graph.onSettle = function()

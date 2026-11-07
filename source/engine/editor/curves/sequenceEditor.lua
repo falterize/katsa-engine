@@ -132,7 +132,7 @@ function Editor.open(popup, property)
             local time = seconds and Timeline.fromSeconds(target, typed) or typed
             -- Typing a later time for the last point lengthens the animation.
             if seconds and graph.selected == #points and time > 1 then
-                Timeline.setDuration(target, typed)
+                Timeline.setDuration(target, math.min(typed, Timeline.MAX_DURATION + 1))
                 time = 1
             end
             Model.time(points, graph.selected, time)
@@ -221,7 +221,7 @@ function Editor.open(popup, property)
         return true
     end)
     y = y + 42
-    button('+ Add point', 0, 42, 0.5, function()
+    button('+ Add point', 0, 42, 0.34, function()
         if popup.workspace.editing and not popup:commitInput() then
             return
         end
@@ -241,7 +241,22 @@ function Editor.open(popup, property)
             refresh()
         end
     end)
-    button('Delete selected', 0.5, 42, 0.5, function()
+    -- Appends a point after the last one and lengthens the animation to reach it.
+    button('+ Add at end', 0.34, 42, 0.33, function()
+        if not seconds then
+            popup.message.text = 'This timeline is fixed at 0..1; add points inside it'
+            return
+        end
+        local ok = commit(function()
+            local step = math.max(0.5, target.playbackTime * 0.25)
+            Timeline.setDuration(target, target.playbackTime + step)
+            graph.selected = Model.append(points)
+        end)
+        if ok then
+            refresh()
+        end
+    end)
+    button('Delete selected', 0.67, 42, 0.33, function()
         if
             commit(function()
                 Model.remove(points, graph.selected)

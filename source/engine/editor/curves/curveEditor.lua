@@ -214,11 +214,9 @@ function Curve:pointer(ui, phase, x, y, id)
             local epsilon = 0.0005
             local lower = previous and previous.time + epsilon or 0
             local upper = nextPoint and nextPoint.time - epsilon or t
+            -- The last point may sit past 1 while dragged (the axis is frozen, so the pointer keeps
+            -- its meaning); the animation is lengthened once, on release.
             point.time = math.max(lower, math.min(upper, t))
-            if extends and point.time > 1 then
-                self.onExtend(point.time) -- rescales every point so this one lands on 1
-                point.time = 1
-            end
             if Array.is(point.value) then
                 point.value[self.channel] = v
             else
@@ -237,6 +235,10 @@ function Curve:pointer(ui, phase, x, y, id)
         end
     elseif phase == 'release' or phase == 'cancel' then
         self.drag, self._rangeLock = nil, nil
+        local last = self.points[#self.points]
+        if self.onExtend and last.time > 1 then
+            self.onExtend(last.time) -- rescales every point so this one lands on 1
+        end
         if self.onSettle then
             self.onSettle()
         end

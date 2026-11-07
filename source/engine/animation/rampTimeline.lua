@@ -8,6 +8,9 @@ local pairs = require('../math.array').pairs
 local Timeline = {}
 
 local MIN_DURATION = 0.0001
+-- An hour: far beyond any authored animation, and small enough that the editor's graph (120 px
+-- per second) stays a sane size.
+Timeline.MAX_DURATION = 3600
 
 -- True when the Ramp's tracks are authored in seconds.
 function Timeline.usesSeconds(ramp)
@@ -44,6 +47,7 @@ end
 function Timeline.setDuration(ramp, seconds)
     assert(Timeline.usesSeconds(ramp), 'Only an Animated Ramp has a time axis in seconds')
     assert(type(seconds) == 'number' and seconds >= MIN_DURATION, 'Duration must be positive')
+    assert(seconds <= Timeline.MAX_DURATION, 'An animation can last at most 3600 seconds')
     local factor = ramp.playbackTime / seconds
     if factor ~= 1 then
         for _, points in pairs(ramp.bindings) do
