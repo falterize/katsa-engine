@@ -61,6 +61,9 @@ local function polyline(points, closed)
 end
 
 function G.line(...)
+    if select('#', ...) == 4 and type(...) == 'number' then
+        return G.segment(...) -- the common two-point call: no temporary tables
+    end
     State.requireReady()
     local points = { ... }
     if type(points[1]) == 'table' then
@@ -76,6 +79,22 @@ function G.line(...)
     assert(#points >= 4, 'Need at least two vertices to draw a line')
     Batch.setBatchTexture(nil)
     polyline(points, false)
+end
+
+-- One straight segment of the current line width, without the temporary tables of G.line (debug
+-- wireframes draw tens of thousands of them per frame). No joins: a single segment has none.
+function G.segment(x1, y1, x2, y2)
+    local dx, dy = x2 - x1, y2 - y1
+    local length = math.sqrt(dx * dx + dy * dy)
+    if length <= 0 then
+        return
+    end
+    State.requireReady()
+    Batch.setBatchTexture(nil)
+    local half = S.lineWidth * 0.5
+    local nx, ny = -dy / length * half, dx / length * half
+    triangle(x1 + nx, y1 + ny, x1 - nx, y1 - ny, x2 + nx, y2 + ny)
+    triangle(x2 + nx, y2 + ny, x1 - nx, y1 - ny, x2 - nx, y2 - ny)
 end
 
 function G.polygon(mode, ...)

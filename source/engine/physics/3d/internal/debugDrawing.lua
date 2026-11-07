@@ -72,24 +72,42 @@ function DebugDrawing.install(Physics, Body3D)
             local draw = O.DebugDraw.new()
             draw.wireframe = true
             self.debugDraw = draw
+            -- Scratch points: the solver calls these callbacks for every wireframe edge, so
+            -- nothing here may allocate.
+            local pa, pb, pc = { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }
+            local function project(point, v)
+                local u = self.units
+                point[1], point[2], point[3] = v.x * u, v.y * u, v.z * u
+                return self.debugCamera:project(point)
+            end
+            local function paint(color)
+                local tint = self.debugTint or color
+                local r, g, b = tint[1] or tint.x, tint[2] or tint.y, tint[3] or tint.z
+                katsa.graphics.setColor(r, g, b, 0.9)
+            end
             draw.line = function(_, a, b, color)
-                local u, camera = self.units, self.debugCamera
-                local ax, ay = camera:project({ a.x * u, a.y * u, a.z * u })
-                local bx, by = camera:project({ b.x * u, b.y * u, b.z * u })
+                local ax, ay = project(pa, a)
+                local bx, by = project(pb, b)
                 if ax and bx then
-                    local tint = self.debugTint
-                    if tint then
-                        katsa.graphics.setColor(tint[1], tint[2], tint[3], 0.9)
-                    else
-                        katsa.graphics.setColor(color.x, color.y, color.z, 0.9)
-                    end
-                    katsa.graphics.line(ax, ay, bx, by)
+                    paint(color)
+                    katsa.graphics.segment(ax, ay, bx, by)
                 end
             end
+            -- Each corner is projected once and shared by its two edges.
             draw.triangle = function(_, a, b, c, _, _, _, color)
-                draw:line(a, b, color)
-                draw:line(b, c, color)
-                draw:line(c, a, color)
+                local ax, ay = project(pa, a)
+                local bx, by = project(pb, b)
+                local cx, cy = project(pc, c)
+                paint(color)
+                if ax and bx then
+                    katsa.graphics.segment(ax, ay, bx, by)
+                end
+                if bx and cx then
+                    katsa.graphics.segment(bx, by, cx, cy)
+                end
+                if cx and ax then
+                    katsa.graphics.segment(cx, cy, ax, ay)
+                end
             end
             self.world:setDebugDraw(draw)
         end
