@@ -76,6 +76,7 @@ end
 --       Settings and methods added to existing node classes (see nodes/core/extensions.lua).
 --   debug = { key = 'pathfinding', title = 'Pathfinding', defaults = { enabled = false, ... },
 --             draw = 'source.plugins.pathfinding.debug' }
+--       (or a list of such tables for several independent sections)
 --       A section `Environment.debug.<key>` seeded from `defaults`, listed in the editor and the
 --       debug menu. When `enabled` is true the module's `draw(world, camera, settings)` runs
 --       after the 3D scene each frame.
@@ -106,8 +107,8 @@ function Plugins.activate(world, names)
                 spec.plugin = name
                 require('source.engine.nodes.core.extensions').add(className, spec)
             end
-            local debug = info.debug
-            if debug then
+            local sections = info.debug and (info.debug.key and { info.debug } or info.debug) or {}
+            for _, debug in ipairs(sections) do
                 local settings = world.environment.debug[debug.key] or {}
                 for key, value in pairs(debug.defaults or {}) do
                     if settings[key] == nil then

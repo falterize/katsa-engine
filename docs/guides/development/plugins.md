@@ -51,7 +51,7 @@ its node types, debug sections or editor entries. `Plugins.require` alone only l
 
 ```lua
 return {
-    name = 'pathfinding', title = 'Pathfinding', version = '1.1.0',
+    name = 'pathfinding', title = 'Pathfinding', version = '1.2.0',
     description = '...', requires = {},
 
     -- 1. New node types, registered like world:registerNodeType (module returns the definition).
@@ -60,11 +60,14 @@ return {
     -- 2. Settings and methods added to EXISTING node classes.
     extend = { Body3D = './extensions.body3D' },
 
-    -- 3. A debug section: Environment.debug.<key>, drawn after the 3D scene when enabled.
+    -- 3. Debug sections: Environment.debug.<key>, drawn after the 3D scene when enabled.
+    --    One table, or a list of tables for independent switches (pathfinding has two).
     debug = {
-        key = 'pathfinding', title = 'Pathfinding',
-        defaults = { enabled = false, drawCells = true, drawLinks = true, drawPaths = true, drawDistance = 80 },
-        draw = './debug',
+        { key = 'pathfinding', title = 'Pathfinding grid',
+          defaults = { enabled = false, drawCells = true, drawLinks = true, drawDistance = 40 },
+          draw = './debug' },
+        { key = 'pathfindingPaths', title = 'Pathfinding paths',
+          defaults = { enabled = false }, draw = './pathsDebug' },
     },
 }
 ```

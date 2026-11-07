@@ -490,31 +490,33 @@ function GameServer:addDent(netId, car, impact, now)
     end
 end
 
--- Sends the bot's current route (flat x, z pairs plus its goal) a few times a second so clients
--- can draw it for debugging.
+-- Sends the current route of every bot (flat x, y, z triples plus its position) a few times a
+-- second so clients can draw them for debugging.
 function GameServer:broadcastBotPath(now)
-    local bot = self.bot
-    if not bot or (self.lastPathSend or -1) + 0.4 > now then
+    if next(self.bots) == nil or (self.lastPathSend or -1) + 0.4 > now then
         return
     end
     self.lastPathSend = now
-    local flat = {}
-    local path = bot.path
-    if path then
-        -- Packets are small; the nearest points are the useful ones.
-        for index = path.index, math.min(#path.points, path.index + 39) do
-            local point = path.points[index]
-            flat[#flat + 1], flat[#flat + 2], flat[#flat + 3] = point[1], point[2], point[3]
+    for netId, bot in pairs(self.bots) do
+        local flat = {}
+        local path = bot.path
+        if path then
+            -- Packets are small; the nearest points are the useful ones.
+            for index = path.index, math.min(#path.points, path.index + 39) do
+                local point = path.points[index]
+                flat[#flat + 1], flat[#flat + 2], flat[#flat + 3] = point[1], point[2], point[3]
+            end
         end
+        local car = self.cars[netId]
+        self.server:remote('botPath'):fireAll(
+            bot.mode or 'patrol',
+            car and car.x or 0,
+            car and car.z or 0,
+            flat,
+            car and car.y or 0,
+            netId
+        )
     end
-    local car = self.cars[self.botId]
-    self.server:remote('botPath'):fireAll(
-        bot.mode or 'patrol',
-        car and car.x or 0,
-        car and car.z or 0,
-        flat,
-        car and car.y or 0
-    )
 end
 
 function GameServer:onTick(dt)

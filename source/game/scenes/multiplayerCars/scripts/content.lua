@@ -179,24 +179,30 @@ function Session.new(scene)
     return self
 end
 
--- Debug markers for the bot's route: small spheres on the terrain, plus one on the bot.
--- The bot's route (replicated by the server) goes to the pathfinding plugin's debug view, so it is
--- drawn with the NavMap and follows the one switch Environment.debug.pathfinding.
+-- The routes of every bot (replicated by the server) go to the pathfinding plugin's debug view and
+-- follow the switch Environment.debug.pathfindingPaths. A route disappears with its bot's car.
 function Session:updateBotRoute()
-    local route = self.client and self.client.botRoute
-    if route == self.fedRoute then
-        return
+    local client = self.client
+    local Debug = require('source.plugins.pathfinding').Debug
+    self.fedRoutes = self.fedRoutes or {}
+    for netId, route in pairs(client.botRoutes) do
+        if not client.cars[netId] and netId ~= 0 then
+            client.botRoutes[netId], self.fedRoutes[netId] = nil, nil
+            Debug.setRoute(self.scene.world, 'bot' .. netId, nil)
+        elseif route ~= self.fedRoutes[netId] then
+            self.fedRoutes[netId] = route
+            local points = {}
+            for index = 1, #route.points - 2, 3 do
+                points[#points + 1] =
+                    { route.points[index], route.points[index + 1], route.points[index + 2] }
+            end
+            Debug.setRoute(self.scene.world, 'bot' .. netId, {
+                points = points,
+                goal = { route.x, (route.y or 0) - 1.5, route.z },
+                goalColor = route.mode == 'chase' and { 1, 0.2, 0.2 } or { 0.2, 1, 0.4 },
+            })
+        end
     end
-    self.fedRoute = route
-    local points = {}
-    for index = 1, #route.points - 2, 3 do
-        points[#points + 1] = { route.points[index], route.points[index + 1], route.points[index + 2] }
-    end
-    require('source.plugins.pathfinding').Debug.setRoute(self.scene.world, 'bot', {
-        points = points,
-        goal = { route.x, (route.y or 0) - 1.5, route.z },
-        goalColor = route.mode == 'chase' and { 1, 0.2, 0.2 } or { 0.2, 1, 0.4 },
-    })
 end
 
 -- --host [port], --connect address[:port], --name Name
@@ -784,7 +790,7 @@ function Session:update(dt)
     for _, proxy in pairs(self.walkerProxies) do
         proxy:update()
     end
-    if self.client.botRoute then
+    if next(self.client.botRoutes) then
         self:updateBotRoute()
     end
     local walker = self.client.ownWalker

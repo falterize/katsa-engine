@@ -1,6 +1,7 @@
--- Pathfinding debug view: the cells of every baked NavMap (one color per floor), the links
--- between floors and the most recent routes with their waypoints. Drawn after the 3D scene when
--- `Environment.debug.pathfinding.enabled` is on.
+-- Pathfinding debug views, drawn after the 3D scene. This module is the grid view: the cells of
+-- every baked NavMap (one color per floor) and the links between floors, shown while
+-- `Environment.debug.pathfinding.enabled` is on. The routes are a separate switch,
+-- `Environment.debug.pathfindingPaths.enabled` (see pathsDebug.lua).
 local Debug = {}
 
 local FLOOR_COLORS = { { 0.2, 0.8, 0.4 }, { 0.3, 0.6, 1 }, { 1, 0.7, 0.2 }, { 0.9, 0.4, 0.9 } }
@@ -232,13 +233,13 @@ end
 
 -- Routes reported by games (a server's bot, for example) drawn with the NavMap routes:
 -- `route = { points = { {x, y, z}, ... }, goal = { x, y, z }, color = { r, g, b } }`, or nil to
--- remove it. Only drawn while `Environment.debug.pathfinding` is enabled with `drawPaths`.
+-- remove it. Drawn while `Environment.debug.pathfindingPaths` is enabled.
 function Debug.setRoute(world, key, route)
     world.navRoutes = world.navRoutes or {}
     world.navRoutes[key] = route
 end
 
-local function drawRoutes(world, camera)
+function Debug.drawRoutes(world, camera)
     for _, route in pairs(world.navRoutes or {}) do
         local color = route.color or { 1, 0.9, 0.2 }
         local previous
@@ -272,16 +273,21 @@ end
 function Debug.draw(world, camera, settings)
     katsa.graphics.push('all')
     katsa.graphics.setShader()
-    if settings.drawPaths then
-        drawRoutes(world, camera)
-    end
     eachMap(world, function(node)
         if settings.drawCells or settings.drawLinks then
             Debug.drawMap(node.map, camera, settings)
         end
-        if settings.drawPaths then
-            Debug.drawPaths(node, camera)
-        end
+    end)
+    katsa.graphics.pop()
+end
+
+-- The routes view: recent paths of every NavMap and every reported route.
+function Debug.drawAllPaths(world, camera)
+    katsa.graphics.push('all')
+    katsa.graphics.setShader()
+    Debug.drawRoutes(world, camera)
+    eachMap(world, function(node)
+        Debug.drawPaths(node, camera)
     end)
     katsa.graphics.pop()
 end

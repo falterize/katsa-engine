@@ -126,8 +126,10 @@ function GameClient.new(context, options)
             end
         end
     end)
-    client:remote('botPath'):onClient(function(mode, x, z, flat, y)
-        self.botRoute = { mode = mode, x = x, y = y, z = z, points = flat }
+    -- One route per bot, keyed by the bot car's net id.
+    self.botRoutes = {}
+    client:remote('botPath'):onClient(function(mode, x, z, flat, y, netId)
+        self.botRoutes[netId or 0] = { mode = mode, x = x, y = y, z = z, points = flat }
     end)
     client:remote('dents'):onClient(function(netId, list, detached)
         local car = self.cars[netId]
