@@ -70,3 +70,20 @@ raw `void position()` / `void effect()` style.
 `validation/tests/katsa/run.lua` runs 109 checks: translator unit tests, plus every project shader compiled and
 linked on both targets (included libraries and material hooks are exempt). Fifty-one shader variants produced
 by the engine during `katsa . --test` were also compiled once on both targets without errors.
+
+## katsa.mouse
+
+Love2D-style pointer API (window units, the same as `getPosition`):
+
+| Call | Meaning |
+| --- | --- |
+| `getPosition()`, `getX()`, `getY()` | Pointer position |
+| `setPosition(x, y)`, `setX(x)`, `setY(y)` | Warp the pointer (needs pointer focus) |
+| `isDown(button, ...)` | Button state, 1 left, 2 right, 3 middle |
+| `setRelativeMode(on)`, `getRelativeMode()` | Captured pointer; `mousemoved` carries `dx, dy` |
+| `setVisible(on)`, `isVisible()` | Cursor visibility (really queried) |
+| `setGrabbed(on)`, `isGrabbed()` | Confine the pointer to the window |
+| `getSystemCursor(name)`, `setCursor(cursor)`, `getCursor()` | System cursors: `arrow ibeam wait crosshair waitarrow sizenwse sizenesw sizewe sizens sizeall no hand`; `setCursor(nil)` restores the arrow |
+
+Callbacks `mousepressed`, `mousereleased`, `mousemoved(x, y, dx, dy, istouch)` and `wheelmoved`
+match Love2D. Custom image cursors (`newCursor`) are not implemented yet.

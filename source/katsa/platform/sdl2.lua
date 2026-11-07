@@ -89,7 +89,14 @@ char* SDL_GetPrefPath(const char* org, const char* app);
 const char* SDL_GetPlatform(void);
 int SDL_GetNumVideoDisplays(void);
 void SDL_SetHint(const char* name, const char* value);
-void SDL_ShowCursor(int toggle);
+int SDL_ShowCursor(int toggle);
+void SDL_WarpMouseInWindow(SDL_Window* window, int x, int y);
+void SDL_SetWindowGrab(SDL_Window* window, int grabbed);
+int SDL_GetWindowGrab(SDL_Window* window);
+typedef struct SDL_Cursor SDL_Cursor;
+SDL_Cursor* SDL_CreateSystemCursor(int id);
+void SDL_SetCursor(SDL_Cursor* cursor);
+void SDL_FreeCursor(SDL_Cursor* cursor);
 int SDL_GetCPUCount(void);
 const uint8_t* SDL_GetKeyboardState(int* numkeys);
 ]])
@@ -370,6 +377,52 @@ end
 
 function Platform:setCursorVisible(visible)
     self.sdl.SDL_ShowCursor(visible and 1 or 0)
+end
+
+function Platform:isCursorVisible()
+    return self.sdl.SDL_ShowCursor(-1) == 1 -- -1 only queries
+end
+
+-- Moves the pointer; x, y are in the same units getMousePosition returns.
+function Platform:setMousePosition(x, y)
+    local scale = self:getUIScale(self:getShortSide())
+    self.sdl.SDL_WarpMouseInWindow(self.window, math.floor(x * scale + 0.5), math.floor(y * scale + 0.5))
+end
+
+function Platform:setMouseGrab(grabbed)
+    self.sdl.SDL_SetWindowGrab(self.window, grabbed and 1 or 0)
+end
+
+function Platform:getMouseGrab()
+    return self.sdl.SDL_GetWindowGrab(self.window) ~= 0
+end
+
+-- SDL_SystemCursor ids by Love2D's cursor names.
+local SYSTEM_CURSORS = {
+    arrow = 0, ibeam = 1, wait = 2, crosshair = 3, waitarrow = 4, sizenwse = 5, sizenesw = 6,
+    sizewe = 7, sizens = 8, sizeall = 9, no = 10, hand = 11,
+}
+
+-- Returns an SDL cursor that is freed with the platform's other resources; nil for unknown names.
+function Platform:getSystemCursor(name)
+    local id = SYSTEM_CURSORS[name]
+    if not id then
+        return nil
+    end
+    self.cursors = self.cursors or {}
+    if not self.cursors[name] then
+        local cursor = self.sdl.SDL_CreateSystemCursor(id)
+        if cursor == nil then
+            return nil
+        end
+        self.cursors[name] = ffi.gc(cursor, self.sdl.SDL_FreeCursor)
+    end
+    return self.cursors[name]
+end
+
+function Platform:setCursor(cursor)
+    self.activeCursor = cursor
+    self.sdl.SDL_SetCursor(cursor)
 end
 
 function Platform:setTextInput(enabled)
