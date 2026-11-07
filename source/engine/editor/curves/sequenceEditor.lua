@@ -67,21 +67,40 @@ function Editor.open(popup, property)
             Editor.open(popup)
         end
     end)
-    graph = popup.ui:create('CurveEditor2D', {
+    -- The graph sits in a ScrollFrame: value ranges wider than the window (-50..140) make it taller
+    -- and the frame scrolls vertically, so points outside the window stay reachable.
+    local VIEW = 170
+    local scroller = popup.ui:create('ScrollFrame', {
         position = { 0, 8, 0, 84 },
-        size = { 1, -16, 0, 170 },
+        size = { 1, -32, 0, VIEW }, -- 16 px narrower than the body: the scroll bar sits outside the graph
+        scrollingDirection = 'Y',
+        canvasSize = { 0, 0, 0, VIEW },
+        scrollBarThickness = 6,
+        verticalScrollBarInset = 'ScrollBar',
+        backgroundColor = { 0.025, 0.045, 0.07 },
+        clip = true,
+    }, popup.body)
+    graph = popup.ui:create('CurveEditor2D', {
+        position = { 0, 0, 0, 0 },
+        size = { 1, 0, 0, VIEW },
         points = points,
         interpolation = interpolation,
         backgroundColor = { 0.025, 0.045, 0.07 },
         clip = true,
-    }, popup.body)
+    }, scroller)
+    local function fit()
+        local height = graph:fitHeight(VIEW)
+        graph.size = { 1, 0, 0, height }
+        scroller.canvasSize = { 0, 0, 0, height }
+    end
+    fit()
     graph.beforePointer = function()
         return not popup.workspace.editing or popup:commitInput()
     end
     popup.graph = graph
     for i = 0, 4 do
         popup.ui:text({
-            position = { i / 4, i == 0 and 0 or i == 4 and -40 or -20, 0, 256 },
+            position = { i / 4, 8 - 8 * i + (i == 0 and 0 or i == 4 and -40 or -20), 0, 256 },
             size = { 0, 40, 0, 20 },
             text = string.format('%.2f', i / 4),
             fontSize = 11,
@@ -106,6 +125,7 @@ function Editor.open(popup, property)
         for i, node in ipairs(values) do
             node.text = tostring(Array.is(point.value) and point.value[i] or point.value)
         end
+        fit()
         if property then
             target.goals[property] =
                 require('source.engine.animation.bindings').copy(points[#points].value)

@@ -103,59 +103,69 @@ function Editor.open(popup, selected)
         row = row + 1
     end
     local y = 48 + row * 38
+    -- The binding holds the absolute values of the animation: its first point is the start and its
+    -- last point the destination. Nothing is derived from the target's current value or scaled by
+    -- a multiplier, so both ends are plain numbers the author types.
     local binding = popup.target.bindings[selected]
-    local value = popup.target.goals[selected] or binding[#binding].value
+    if not binding then
+        binding = require('source.engine.animation.sequence').linear(
+            Goals.value(popup.target, selected),
+            Copy(popup.target.goals[selected])
+        )
+        popup.target.bindings[selected] = binding
+    end
 
-    local function set(component, text)
+    -- Writes one component of a binding end (index 1 = start, #binding = destination).
+    local function set(end_, component, text)
         local number = tonumber(text)
         if not number or number ~= number or math.abs(number) == math.huge then
             return false, 'Enter a finite number'
         end
-        local goal = Copy(popup.target.goals[selected] or binding[#binding].value)
+        local point = binding[end_]
         if component then
-            goal[component] = number
+            point.value[component] = number
         else
-            goal = number
+            point.value = number
         end
-        popup.target.goals[selected] = goal
-        if binding then
-            binding[#binding].value = Copy(goal)
-        end
+        popup.target.goals[selected] = Copy(binding[#binding].value)
         popup.ui:invalidate()
         return true
     end
-    popup.ui:text({
-        position = { 0, 8, 0, y },
-        size = { 1, -16, 0, 24 },
-        text = selected .. ' / destination',
-        fontSize = 14,
-        align = 'left',
-    }, popup.body)
-    y = y + 28
-    if Array.is(value) then
-        local labels = selected:lower():find('color') and { 'R', 'G', 'B', 'A' }
-            or #value == 4 and { 'Scale X', 'Offset X', 'Scale Y', 'Offset Y' }
-            or { 'X', 'Y', 'Z', 'W' }
-        for i, v in ipairs(value) do
-            local component = i
-            popup:input(labels[i], tostring(v), y, function(text)
-                return set(component, text)
+    local sample = binding[1].value
+    local labels = Array.is(sample)
+            and (
+                selected:lower():find('color') and { 'R', 'G', 'B', 'A' }
+                or #sample == 4 and { 'Scale X', 'Offset X', 'Scale Y', 'Offset Y' }
+                or { 'X', 'Y', 'Z', 'W' }
+            )
+        or { 'Value' }
+    for _, part in ipairs({ { 'Start', 1 }, { 'Destination', #binding } }) do
+        local end_ = part[2]
+        popup.ui:text({
+            position = { 0, 8, 0, y },
+            size = { 1, -16, 0, 24 },
+            text = selected .. ' / ' .. part[1],
+            fontSize = 14,
+            align = 'left',
+        }, popup.body)
+        y = y + 28
+        local value = binding[end_].value
+        if Array.is(value) then
+            for i, v in ipairs(value) do
+                local component = i
+                popup:input(part[1] .. ' ' .. labels[i], tostring(v), y, function(text)
+                    return set(end_, component, text)
+                end)
+                y = y + 40
+            end
+        else
+            popup:input(part[1], tostring(value), y, function(text)
+                return set(end_, nil, text)
             end)
             y = y + 40
         end
-    else
-        popup:input('Value', tostring(value), y, function(text)
-            return set(nil, text)
-        end)
-        y = y + 40
     end
     button(popup, 'Edit ' .. selected .. ' points', 0, y, 1, function()
-        if not popup.target.bindings[selected] then
-            popup.target.bindings[selected] = require('source.engine.animation.sequence').linear(
-                Goals.value(popup.target, selected),
-                Copy(popup.target.goals[selected])
-            )
-        end
         require('source.engine.editor.curves.sequenceEditor').open(popup, selected)
     end)
     popup.body.length = y + 44

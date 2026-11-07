@@ -18,18 +18,55 @@ local function value(self, point)
     return Array.is(point.value) and point.value[self.channel] or point.value
 end
 
+-- Visible value range. It always contains 0..1 and every point, with a little padding once the
+-- values leave 0..1. While a point is being dragged the range is frozen (`_rangeLock`), otherwise
+-- the axis would rescale under the pointer.
 local function range(self)
+    if self._rangeLock then
+        return self._rangeLock[1], self._rangeLock[2]
+    end
     local low, high = 0, 1
     for _, point in ipairs(self.points) do
-        low = math.min(low, value(self, point))
-        high = math.max(high, value(self, point))
+        local v = value(self, point)
+        low, high = math.min(low, v), math.max(high, v)
     end
+    local pad = (high - low > 1) and (high - low) * 0.05 or 0
+    low, high = low - pad, high + pad
     return low, math.max(low + 0.001, high)
+end
+
+local UNITS_PER_VIEW = 40 -- value units one viewport height shows before the graph scrolls
+local MAX_VIEWS = 8
+
+-- Height of the graph for a viewport of `viewHeight` pixels: 0..1 curves fit it exactly, wider
+-- value ranges (-50..140) grow taller and are scrolled by the ScrollFrame that holds the graph.
+function Curve:fitHeight(viewHeight)
+    local low, high = range(self)
+    return viewHeight * math.max(1, math.min(MAX_VIEWS, (high - low) / UNITS_PER_VIEW))
+end
+
+-- A round grid step (1, 2, 5 x 10^n) that gives roughly `count` lines over the range.
+local function niceStep(extent, count)
+    local raw = extent / count
+    local power = 10 ^ math.floor(math.log(raw) / math.log(10))
+    local fraction = raw / power
+    return (fraction <= 1 and 1 or fraction <= 2 and 2 or fraction <= 5 and 5 or 10) * power
+end
+
+-- Horizontal padding inside the widget: the end points sit clear of its edge and of the scroll bar.
+local PAD = 14
+
+local function timeX(self, time)
+    return self._x + PAD + time * (self._width - 2 * PAD)
+end
+
+local function xyTime(self, x)
+    return (x - self._x - PAD) / (self._width - 2 * PAD)
 end
 
 local function xy(self, time, v)
     local low, high = range(self)
-    return self._x + time * self._width, self._y + (1 - (v - low) / (high - low)) * self._height
+    return timeX(self, time), self._y + (1 - (v - low) / (high - low)) * self._height
 end
 
 local function handle(self, index, kind)
@@ -58,10 +95,17 @@ function Curve:drawSelf(ui)
     g.setLineWidth(1)
     g.setColor(0.15, 0.24, 0.31, 1)
     for i = 0, 4 do
-        local x = self._x + self._width * i / 4
-        local y = self._y + self._height * i / 4
+        local x = timeX(self, i / 4)
         g.line(x, self._y, x, self._y + self._height)
+    end
+    local low, high = range(self)
+    local step = niceStep(high - low, math.max(4, self._height / 42))
+    for v = math.ceil(low / step) * step, high, step do
+        local _, y = xy(self, 0, v)
+        g.setColor(v == 0 and 0.28 or 0.15, v == 0 and 0.42 or 0.24, v == 0 and 0.52 or 0.31, 1)
         g.line(self._x, y, self._x + self._width, y)
+        g.setColor(0.5, 0.62, 0.72, 1)
+        g.print(string.format('%g', v), self._x + 3, y - 14)
     end
     g.setColor(0.2, 0.75, 1, 1)
     local px, py
@@ -119,7 +163,7 @@ function Curve:pointer(ui, phase, x, y, id)
             end
         end
         if not best then
-            local t = math.max(0.001, math.min(0.999, (x - self._x) / self._width))
+            local t = math.max(0.001, math.min(0.999, xyTime(self, x)))
             for _, point in ipairs(self.points) do
                 if math.abs(point.time - t) < 0.005 then
                     return
@@ -132,6 +176,7 @@ function Curve:pointer(ui, phase, x, y, id)
             )
         end
         self.selected = best
+        self._rangeLock = { range(self) }
         if self.onChange then
             self.onChange()
         end
@@ -140,7 +185,7 @@ function Curve:pointer(ui, phase, x, y, id)
         local index = self.drag.index
         local point = self.points[index]
         local low, high = range(self)
-        local t = math.max(0, math.min(1, (x - self._x) / self._width))
+        local t = math.max(0, math.min(1, xyTime(self, x)))
         local v = low + (1 - (y - self._y) / self._height) * (high - low)
         if self.drag.kind then
             local a, b =
@@ -178,7 +223,7 @@ function Curve:pointer(ui, phase, x, y, id)
             self.onChange()
         end
     elseif phase == 'release' or phase == 'cancel' then
-        self.drag = nil
+        self.drag, self._rangeLock = nil, nil
         if self.onChange then
             self.onChange()
         end
