@@ -145,7 +145,6 @@ local fields = {
     'filterSamples',
     'maxActiveLights',
     'selectionHz',
-    'density',
     'offset',
     'maxOpacity',
     'endDistance',

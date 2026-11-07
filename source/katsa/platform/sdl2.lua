@@ -67,6 +67,8 @@ int SDL_GL_SetAttribute(int attr, int value);
 int SDL_GL_SetSwapInterval(int interval);
 void* SDL_GL_GetProcAddress(const char* proc);
 void SDL_GL_SwapWindow(SDL_Window* window);
+typedef int (*SDL_EventFilter)(void* userdata, SDL_Event* event);
+void SDL_AddEventWatch(SDL_EventFilter filter, void* userdata);
 int SDL_PollEvent(SDL_Event* event);
 int SDL_WaitEventTimeout(SDL_Event* event, int timeout);
 uint32_t SDL_GetTicks(void);
@@ -498,14 +500,48 @@ end
 function Platform:poll()
     local sdl, event = self.sdl, self.event
     return function()
+        -- SDL calls event watches from inside SDL_PollEvent too; `polling` tells those deliveries
+        -- (the frame loop handles them) from the ones sent while the OS runs its own resize loop.
+        self.polling = true
         while sdl.SDL_PollEvent(event) ~= 0 do
             local translated = self:translate(event)
             if translated then
+                self.polling = false
                 return translated
             end
         end
+        self.polling = false
         return nil
     end
+end
+
+-- While the user drags a window edge, Windows (and macOS) run a modal loop that keeps the frame
+-- loop from polling events: the UI would keep the old size until the button is released. SDL
+-- still reports the new size to an event watch on the main thread, so `handler(width, height)` is
+-- called there to re-fit and redraw the window.
+function Platform:onLiveResize(handler)
+    if self.liveResizeWatch then
+        self.liveResizeHandler = handler
+        return
+    end
+    self.liveResizeHandler = handler
+    self.liveResizeWatch = ffi.cast('SDL_EventFilter', function(_, event)
+        local sized = event.type == EVENT.WINDOW
+            and (
+                event.window.event == WINDOW_EVENT.SIZE_CHANGED
+                or event.window.event == WINDOW_EVENT.RESIZED
+            )
+        if sized and not self.polling and not self.liveResizing then
+            self.liveResizing = true
+            local ok, message = pcall(self.liveResizeHandler, self:getMode())
+            self.liveResizing = false
+            if not ok then
+                io.stderr:write('Live resize failed: ', tostring(message), '\n')
+            end
+        end
+        return 0
+    end)
+    self.sdl.SDL_AddEventWatch(self.liveResizeWatch, nil)
 end
 
 function Platform:close()

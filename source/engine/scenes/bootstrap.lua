@@ -148,6 +148,18 @@ function Bootstrap.install(project, options)
         end
     end
 
+    -- The OS resize loop (dragging a window edge) blocks the frame loop; the platform calls this
+    -- to re-fit the scenes and draw one frame at the new size.
+    if katsa.platform and katsa.platform.onLiveResize then
+        katsa.platform:onLiveResize(function(w, h)
+            katsa.resize(w, h)
+            katsa.graphics.origin()
+            katsa.graphics.clear(katsa.graphics.getBackgroundColor())
+            katsa.draw()
+            katsa.graphics.present()
+        end)
+    end
+
     function katsa.touchpressed(id, x, y)
         manager:dispatch('pointerpressed', id, x, y)
     end

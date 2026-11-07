@@ -2,6 +2,12 @@
 
 Per-version notes. Test results and logs for each release live in Git history and tags.
 
+## v108.7
+
+- Inspector: fog `density` was listed twice in `propertyPolicy.lua`, so it appeared as two rows; the duplicate is gone. Test: `v108_7/inspector.lua` (no repeated key in the policy list).
+- Shadows: black dots on smooth hills (multiplayerCars) came from using the interpolated shading normal for the slope bias and normal offset; near the terminator it disagrees with the faceted surface stored in the depth map. `world.glsl` now derives the facet normal from `dFdx/dFdy(worldPosition)` (oriented to the shading normal) and passes it to the shadow functions; lighting still uses the shading normal. Verified at Medium, High and default quality.
+- Window: the UI follows a window resize while it is being dragged. `Platform:onLiveResize` installs an SDL event watch, because on Windows and macOS the modal resize loop blocks the frame loop and the UI kept the old size until release. Sandbox check `--test-v108.7.resize` (the UI matches the window two frames after a resize); the modal-loop behaviour itself needs confirmation on Windows.
+
 ## v108.6
 
 - Beam3D and Trail3D (`nodes/effects`, `source/engine/ribbons`): textured ribbons between two nodes and behind a moving node, with the common image configuration (`texture`, `imageMode`, `pixelate`, tiles, atlas, XML), `textureMode` Stretch / Wrap / Static, a `RibbonRamp` (color, transparency, width), `lightEmission`, `lightInfluence`, `castShadow` / `receiveShadow`, layer groups and shader layers. Trail3D has Single mode (one node, faces the camera) and Dual mode (two nodes mark the edges); ribbon ends accept any Node3D, so no Attachment3D is needed. New scene `ribbonLab`, guide `docs/guides/rendering/ribbons.md`, quality profiles scale ribbon detail (`ribbons.detail`).

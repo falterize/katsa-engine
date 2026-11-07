@@ -161,6 +161,11 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
     }
     highp vec3 normal=normalize(worldNormal);
     if (!gl_FrontFacing) normal=-normal;
+    // Shadow slope and offset use the true facet normal: the interpolated shading normal of a smooth
+    // mesh disagrees with the depth-map surface near the terminator and produces acne there.
+    highp vec3 facet=cross(dFdx(worldPosition),dFdy(worldPosition));
+    highp vec3 shadowNormal=dot(facet,facet)>0.0 ? normalize(facet) : normal;
+    if (dot(shadowNormal,normal)<0.0) shadowNormal=-shadowNormal;
     float roughness=1.0,metalness=0.0,occlusion=1.0;
     vec3 emission=vec3(0.0),f0=vec3(.04),specular=vec3(0.0);
     vec3 viewDirection=normalize(cameraPosition-worldPosition);
@@ -204,7 +209,7 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
             if(dot(normal,toward)<=0.0) continue;
             float visibility=1.0;
             if(receiveShadow && shadowWeight>0.0 && lightShadowData[i].x>=0.0) {
-                visibility=mix(1.0,directionalVisibility(i,normal,toward),shadowWeight*shadowLightFade[i]);
+                visibility=mix(1.0,directionalVisibility(i,shadowNormal,toward),shadowWeight*shadowLightFade[i]);
                 debugVisibility=min(debugVisibility,visibility);
             }
             if(surfaceEnabled)specular+=lightColor[i].rgb*lightColor[i].w*visibility*preparedMaterialSpecular(normal,toward,viewDirection,f0,specularTerms);
@@ -227,7 +232,7 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
             int side = lightShadowData[i].y > 0.5 ? pointShadowFace(worldPosition-shadowLightPosition[i].xyz) : 0;
             int face = int(lightShadowData[i].x)+side;
             if((int(lightShadowData[i].z) & (1 << side)) != 0) {
-                visibility = mix(1.0,shadowVisibility(face, localShadowProjection(i,side,normal), normal, toward, false, 0),shadowWeight*shadowLightFade[i]);
+                visibility = mix(1.0,shadowVisibility(face, localShadowProjection(i,side,shadowNormal), shadowNormal, toward, false, 0),shadowWeight*shadowLightFade[i]);
                 debugVisibility=min(debugVisibility,visibility);
             }
         }
