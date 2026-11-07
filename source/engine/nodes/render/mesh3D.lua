@@ -46,6 +46,17 @@ function Class:getBlendShapeCount()
     return self.blendShapes and self.blendShapes.count or 0
 end
 
+-- A new table { [1] = 'Smile', [2] = 'Wide' }: index to shape name, in glTF target order.
+function Class:getBlendShapes()
+    local list = {}
+    if self.blendShapes then
+        for index, name in ipairs(self.blendShapes.names) do
+            list[index] = name
+        end
+    end
+    return list
+end
+
 function Class:getBlendShapeName(index)
     return self.blendShapes and self.blendShapes.names[index]
 end

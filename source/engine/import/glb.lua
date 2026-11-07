@@ -38,15 +38,26 @@ function GLB.load(path, resources)
     return GLB.decode(document, binary, path, resources)
 end
 
--- Animation markers come from `animation.extras.markers`: a list of { time, name, value }, or the
--- same list as a JSON string, which is how a Blender action custom property can carry it (the
--- exporter writes action custom properties as animation extras).
+-- Animation markers come from `animation.extras.markers`: a list of { name, value, time } or
+-- { name, value, keyframe }, or the same list as a JSON string, which is how a Blender action
+-- custom property can carry it (the exporter writes action custom properties as animation
+-- extras). `time` is in seconds; `keyframe` (alias `frame`) is a frame number converted with the
+-- optional extras `fps` (default 24, Blender's default) and `frameStart` (default 0).
 function GLB.markers(extras)
     local markers = extras and extras.markers
     if type(markers) == 'string' then
         markers = JSON.decode(markers)
     end
-    return markers or {}
+    local fps, start = extras and extras.fps or 24, extras and extras.frameStart or 0
+    assert(type(fps) == 'number' and fps > 0, 'Animation extras.fps must be positive')
+    local result = {}
+    for i, marker in ipairs(markers or {}) do
+        local frame = marker.keyframe or marker.frame
+        local time = marker.time or frame and (frame - start) / fps
+        assert(type(time) == 'number', 'Animation marker needs time or keyframe')
+        result[i] = { time = time, name = marker.name, value = marker.value }
+    end
+    return result
 end
 
 function GLB.decode(document, binary, path, resources)

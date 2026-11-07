@@ -110,7 +110,9 @@ end)
 From Blender: the glTF exporter writes **action custom properties** as `animation.extras`, but it does
 not export timeline markers by itself. Add an action custom property named `markers` holding the
 list as a JSON string, for example `[{"time":0.25,"name":"Footstep","value":"Left"}]`; the importer
-accepts a real list or that string. Times are in seconds.
+accepts a real list or that string. A marker has `time` (seconds) or `keyframe` (a frame number,
+alias `frame`); keyframes use the action custom properties `fps` (default 24) and `frameStart`
+(default 0): `time = (keyframe - frameStart) / fps`.
 
 Markers cross playback intervals in either direction and across loops. A very large
 single update dispatches at most 64 occurrences per marker. Attachment3D under Bone3D

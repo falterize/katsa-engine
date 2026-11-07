@@ -16,6 +16,7 @@ local face = objects[1]
 face:getBlendShapeCount()              -- number of shapes, 0 for a mesh without any
 face:findBlendShapeByName('Smile')     -- 1-based index, or nil
 face:getBlendShapeName(1)              -- 'Smile'
+face:getBlendShapes()                  -- { [1] = 'Smile', [2] = 'Wide' } (a fresh table)
 face:setBlendShapeValue('Smile', 0.7)  -- weight, usually 0..1 (values outside extrapolate)
 face:getBlendShapeValue('Smile')
 ```

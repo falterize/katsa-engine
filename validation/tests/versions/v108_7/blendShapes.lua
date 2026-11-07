@@ -89,6 +89,16 @@ function Module.run(self)
             and face:findBlendShapeByName('Frown') == nil,
         'Shape key names reach the mesh with Godot-style lookup'
     )
+    local list = face:getBlendShapes()
+    self:check(#list == 2 and list[1] == 'Smile' and list[2] == 'Wide', 'getBlendShapes lists index to name')
+    local markers = GLB.markers({
+        fps = 30,
+        markers = '[{"name":"A","time":0.5},{"name":"B","keyframe":15,"value":"x"}]',
+    })
+    self:check(
+        markers[1].time == 0.5 and markers[2].time == 0.5 and markers[2].value == 'x',
+        'Markers accept seconds or keyframe numbers from a JSON string'
+    )
     face:setBlendShapeValue('Smile', 0.5)
     face:setBlendShapeValue(2, 1)
     world:updateNodes(0)
