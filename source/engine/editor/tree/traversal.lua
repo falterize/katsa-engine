@@ -4,14 +4,39 @@ local Tree = {}
 local materials = setmetatable({}, { __mode = 'kv' })
 local bodies = setmetatable({}, { __mode = 'kv' })
 
+-- Explorer order under a World: its Environment, then nested World2D nodes, then everything
+-- else in authored order. Only this view is reordered; `children` stays authoritative.
+local function worldRank(child)
+    if child:isA('Environment') then
+        return 1
+    end
+    return child:isA('World2D') and 2 or 3
+end
+
+local function orderWorldChildren(result)
+    local ordered = {}
+    for rank = 1, 3 do
+        for _, child in ipairs(result) do
+            if worldRank(child) == rank then
+                ordered[#ordered + 1] = child
+            end
+        end
+    end
+    return ordered
+end
+
 local function children(node)
     local result = {}
     -- World-space UI keeps its internal settings Environment on the host; it is plumbing, not content.
     local hostsUI = node.ui ~= nil and (node:isA('BillboardUI') or node:isA('SurfaceUI'))
+    local isWorld = node.isA ~= nil and (node:isA('World3D') or node:isA('World2D'))
     for _, child in ipairs(node.children or {}) do
         if not (hostsUI and child._environmentOwner and child:isA('Environment')) then
             result[#result + 1] = child
         end
+    end
+    if isWorld then
+        result = orderWorldChildren(result)
     end
     if node.material and node.material.uniforms then
         local child = materials[node]

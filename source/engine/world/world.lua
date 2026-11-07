@@ -78,19 +78,14 @@ function World3D.new(resources, lighting, options)
     self.directionalLights = {}
     self.surfaceQuad = Geometry.quad()
     resources:own(self.surfaceQuad.mesh)
-    self.folders = {}
-    for _, name in ipairs({
-        'Geometry',
-        'Lights',
-        'Cameras',
-        'Billboards',
-        'Physics',
-        'Effects',
-        'Audio',
-        'Scripts',
-    }) do
-        self.folders[name] = Node.new('Folder', { name = name }, self.root)
-    end
+    -- Historical category names (`folders.Geometry`, `folders.Lights` ...) all resolve to the world
+    -- root: nodes live directly under the World, exactly as the scene composes them, and the
+    -- Explorer shows no organizational folders.
+    self.folders = setmetatable({}, {
+        __index = function()
+            return self.root
+        end,
+    })
     self.root._world = self
     self.nodeTree = NodeTree.new(self.root)
     self.root._nodeTree = self.nodeTree

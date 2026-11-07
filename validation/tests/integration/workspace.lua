@@ -70,9 +70,9 @@ return function(test, scene)
     )
     parent:destroy()
     test:check(
-        scene.world.objects[1].parent == scene.world.folders.Geometry
-            and scene.camera.parent == scene.world.folders.Cameras,
-        'World3D nodes use category folders'
+        scene.world.objects[1].parent == scene.world.root
+            and scene.camera.parent == scene.world.root,
+        'World3D nodes sit directly under the world root, without category folders'
     )
     scene.debugOverlay.visible = true
     local bx, by = scene.ui:position(scene.debugButton)

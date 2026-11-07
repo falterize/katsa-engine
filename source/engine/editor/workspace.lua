@@ -207,9 +207,6 @@ function Workspace.new(scene)
             children = {},
         }
     end
-    for _, folder in pairs(scene.world.folders) do
-        self.collapsed[folder] = true
-    end
     self:resize()
     self:refreshTree()
     return self
