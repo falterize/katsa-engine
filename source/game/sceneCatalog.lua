@@ -27,6 +27,7 @@ local Catalog = {
         { id = 'modelLab', path = 'source/game/scenes/modelLab' },
         { id = 'ikLab', path = 'source/game/scenes/ikLab' },
         { id = 'ribbonLab', path = 'source/game/scenes/ribbonLab' },
+        { id = 'windowsLab', path = 'source/game/scenes/windowsLab' },
         { id = 'nodes', path = 'source/game/scenes/nodes' },
         { id = 'collisionBox', path = 'source/game/scenes/collisionBox' },
         { id = 'surfaceGallery', path = 'source/game/scenes/surfaceGallery' },

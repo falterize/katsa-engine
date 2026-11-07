@@ -134,6 +134,35 @@ function Window.fromPixels(x, y)
     return x / scale, y and y / scale or nil
 end
 
+-- Creates another window on the same graphics context. flags: title, x, y, resizable, borderless,
+-- alwaysontop, hidden, opacity. Returns the window, or nil and a message.
+function Window.create(width, height, flags)
+    assert(platform and mode.open, 'Open the main window before creating another one')
+    local record, message = platform:createWindow(width, height, flags)
+    if not record then
+        return nil, message
+    end
+    return require('./subWindow').new(platform, record, flags and flags.title)
+end
+
+-- Opacity of the main window (0..1); with the `transparent` window flag the framebuffer also
+-- keeps alpha, so a background cleared with alpha 0 shows the desktop where the compositor allows.
+function Window.setOpacity(opacity)
+    return platform:setOpacity(opacity)
+end
+
+function Window.getOpacity()
+    return platform:getOpacity()
+end
+
+function Window.setPosition(x, y)
+    platform:setPosition(x, y)
+end
+
+function Window.getPosition()
+    return platform:getPosition()
+end
+
 function Window.close()
     if platform and platform.window then
         platform:close()

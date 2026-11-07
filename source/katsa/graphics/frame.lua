@@ -192,6 +192,30 @@ function G.present()
     RenderState.applyScissor()
 end
 
+-- Renders `fn` into another OS window (see katsa.window.create) and presents it. The main window
+-- and its graphics state are restored afterwards, so this can run from update or draw.
+function G.drawToWindow(record, fn)
+    State.requireReady()
+    State.flush()
+    assert(not S.canvases, 'drawToWindow cannot be called while a Canvas is active.')
+    local platform = Core.platform
+    local main = platform.mainWindow or platform.window
+    platform:bind(record.raw)
+    applyViewport()
+    RenderState.applyScissor()
+    G.push('all')
+    local ok, message = pcall(fn)
+    G.pop()
+    State.flush()
+    platform:swap()
+    platform:bind(main)
+    applyViewport()
+    RenderState.applyScissor()
+    if not ok then
+        error(message, 0)
+    end
+end
+
 function G.reset()
     G.origin()
     G.setColor(1, 1, 1, 1)

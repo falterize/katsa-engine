@@ -84,6 +84,14 @@ void SDL_SetTextInputRect(const SDL_Rect* rect);
 char* SDL_GetClipboardText(void);
 int SDL_SetClipboardText(const char* text);
 int SDL_OpenURL(const char* url);
+int SDL_SetWindowOpacity(SDL_Window* window, float opacity);
+int SDL_GetWindowOpacity(SDL_Window* window, float* opacity);
+void SDL_GetWindowPosition(SDL_Window* window, int* x, int* y);
+void SDL_SetWindowPosition(SDL_Window* window, int x, int y);
+uint32_t SDL_GetWindowID(SDL_Window* window);
+void SDL_HideWindow(SDL_Window* window);
+void SDL_ShowWindow(SDL_Window* window);
+void SDL_RaiseWindow(SDL_Window* window);
 void SDL_free(void* memory);
 char* SDL_GetPrefPath(const char* org, const char* app);
 const char* SDL_GetPlatform(void);
@@ -106,6 +114,7 @@ local WINDOW_FULLSCREEN, WINDOW_OPENGL, WINDOW_SHOWN, WINDOW_HIDDEN = 0x1, 0x2, 
 local WINDOW_BORDERLESS, WINDOW_RESIZABLE, WINDOW_MINIMIZED = 0x10, 0x20, 0x40
 local WINDOW_MAXIMIZED, WINDOW_INPUT_FOCUS, WINDOW_ALLOW_HIGHDPI = 0x80, 0x200, 0x2000
 local WINDOW_FULLSCREEN_DESKTOP = 0x1001
+local WINDOW_ALWAYS_ON_TOP = 0x8000
 local CENTERED = 0x2FFF0000
 
 local ATTR = {
@@ -210,6 +219,8 @@ function Platform:setMode(width, height, flags)
     sdl.SDL_GL_SetAttribute(ATTR.MULTISAMPLEBUFFERS, (flags.msaa or 0) > 0 and 1 or 0)
     sdl.SDL_GL_SetAttribute(ATTR.MULTISAMPLESAMPLES, flags.msaa or 0)
     sdl.SDL_GL_SetAttribute(ATTR.FRAMEBUFFER_SRGB, flags.srgb and 1 or 0)
+    -- A transparent window needs destination alpha; every window shares this pixel format.
+    sdl.SDL_GL_SetAttribute(ATTR.ALPHA, flags.transparent and 8 or 0)
     local windowFlags = bit.bor(WINDOW_OPENGL, WINDOW_SHOWN)
     if flags.highdpi ~= false then
         windowFlags = bit.bor(windowFlags, WINDOW_ALLOW_HIGHDPI)
@@ -219,6 +230,9 @@ function Platform:setMode(width, height, flags)
     end
     if flags.borderless then
         windowFlags = bit.bor(windowFlags, WINDOW_BORDERLESS)
+    end
+    if flags.alwaysontop then
+        windowFlags = bit.bor(windowFlags, WINDOW_ALWAYS_ON_TOP)
     end
     if flags.fullscreen then
         windowFlags = bit.bor(
@@ -234,6 +248,7 @@ function Platform:setMode(width, height, flags)
         self.window = nil
         return nil, 'Could not create window: ' .. sdlError(sdl)
     end
+    self.windowID = sdl.SDL_GetWindowID(self.window)
     self.context = sdl.SDL_GL_CreateContext(self.window)
     if self.context == nil then
         local reason = sdlError(sdl)
@@ -472,6 +487,9 @@ local loveButtons = { 1, 3, 2, 4, 5 } -- SDL left, middle, right, x1, x2 -> kats
 -- Translates one SDL event to a katsa event table, or nil for events katsa ignores.
 function Platform:translate(e)
     local t = e.type
+    if self.subWindows and self:routeSubWindowEvent(e) then
+        return nil
+    end
     if t == EVENT.QUIT then
         return { 'quit' }
     elseif t == EVENT.KEYDOWN or t == EVENT.KEYUP then
@@ -608,5 +626,18 @@ function Platform:close()
     end
     self.sdl.SDL_Quit()
 end
+
+-- Extra windows and per-window opacity (see sdl2windows.lua).
+require('./sdl2windows')(Platform, {
+    OPENGL = WINDOW_OPENGL,
+    SHOWN = WINDOW_SHOWN,
+    BORDERLESS = WINDOW_BORDERLESS,
+    RESIZABLE = WINDOW_RESIZABLE,
+    ALWAYS_ON_TOP = WINDOW_ALWAYS_ON_TOP,
+    HIGHDPI = WINDOW_ALLOW_HIGHDPI,
+    CENTERED = CENTERED,
+    EVENT = EVENT,
+    WINDOW_EVENT = WINDOW_EVENT,
+})
 
 return Platform
