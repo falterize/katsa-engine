@@ -33,7 +33,7 @@ function Module.run(self)
     self:check(win.isBorderless(), 'The title bar can be removed')
     win.setBorderless(false)
     self:check(not win.isBorderless(), 'The title bar can be restored')
-    self:check(win.isFullscreen() == false and type(win.toggleFullscreen) == 'function', 'Fullscreen is queryable and togglable')
+    self:check(win.isFullscreen() == false and win.getFullscreen() == false and type(win.toggleFullscreen) == 'function', 'Fullscreen is queryable and togglable')
     self:check(win.setTransparent(true) ~= nil, 'Transparency can be requested')
     self:check(not window:isOpen() and not pcall(window.draw, window, function() end), 'A closed window rejects drawing')
 end

@@ -1,4 +1,4 @@
--- The pathfinding debug view is two independent sections: the grid and the routes.
+-- The pathfinding debug view is one section with grid and route switches.
 local Plugins = require('source.engine.plugins')
 
 local Module = {}
@@ -8,11 +8,10 @@ function Module.run(self)
     Plugins.activate(world, { 'pathfinding' })
     local debug = world.environment.debug
     self:check(
-        debug.pathfinding and debug.pathfindingPaths and debug.pathfinding.drawPaths == nil,
-        'The grid and the routes are separate debug sections'
+        debug.pathfinding and debug.pathfinding.drawPaths == true and not debug.pathfindingPaths,
+        'Pathfinding is one debug section with a drawPaths property'
     )
-    local sections = Plugins.debugSections(world)
-    self:check(#sections == 2 and sections[1].drawer ~= sections[2].drawer, 'Each section has its own drawer')
+    self:check(#Plugins.debugSections(world) == 1, 'The plugin adds a single debug row')
     local Debug = require('source.plugins.pathfinding').Debug
     Debug.setRoute(world, 'bot1', { points = { { 0, 0, 0 } } })
     Debug.setRoute(world, 'bot2', { points = { { 1, 0, 1 } } })

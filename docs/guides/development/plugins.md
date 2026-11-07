@@ -61,14 +61,11 @@ return {
     extend = { Body3D = './extensions.body3D' },
 
     -- 3. Debug sections: Environment.debug.<key>, drawn after the 3D scene when enabled.
-    --    One table, or a list of tables for independent switches (pathfinding has two).
-    debug = {
-        { key = 'pathfinding', title = 'Pathfinding grid',
-          defaults = { enabled = false, drawCells = true, drawLinks = true, drawDistance = 40 },
-          draw = './debug' },
-        { key = 'pathfindingPaths', title = 'Pathfinding paths',
-          defaults = { enabled = false }, draw = './pathsDebug' },
-    },
+    --    One table (its defaults are the section's properties), or a list of tables.
+    debug = { key = 'pathfinding', title = 'Pathfinding',
+              defaults = { enabled = false, drawCells = true, drawLinks = true,
+                           drawPaths = true, drawDistance = 40 },
+              draw = './debug' },
 }
 ```
 

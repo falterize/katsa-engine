@@ -180,7 +180,7 @@ function Session.new(scene)
 end
 
 -- The routes of every bot (replicated by the server) go to the pathfinding plugin's debug view and
--- follow the switch Environment.debug.pathfindingPaths. A route disappears with its bot's car.
+-- follow the switch Environment.debug.pathfinding.drawPaths (with enabled). A route disappears with its bot's car.
 function Session:updateBotRoute()
     local client = self.client
     local Debug = require('source.plugins.pathfinding').Debug

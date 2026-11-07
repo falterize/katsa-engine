@@ -27,7 +27,7 @@ and cannot be verified in the development sandbox: confirm on the target system.
 | `getMinimumSize()`, `setMode(w, h, { minwidth, minheight })` | Minimum size |
 | `setBorderless(b)`, `isBorderless()` | Hide / show the title bar and frame |
 | `setResizable(b)`, `isResizable()` | Resizing by the user |
-| `setFullscreen(false / true / 'exclusive')`, `isFullscreen()`, `toggleFullscreen()` | Fullscreen |
+| `setFullscreen(false / true / 'exclusive')`, `isFullscreen()`, `getFullscreen()` (false / 'desktop' / 'exclusive'), `toggleFullscreen()` | Fullscreen |
 | `setAlwaysOnTop(b)`, `center()`, `setPosition(x, y)`, `getPosition()` | Placement |
 
 **F11** (and Alt+Enter) toggles fullscreen in every scene; remove the check in

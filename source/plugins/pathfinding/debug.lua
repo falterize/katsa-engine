@@ -1,7 +1,6 @@
 -- Pathfinding debug views, drawn after the 3D scene. This module is the grid view: the cells of
--- every baked NavMap (one color per floor) and the links between floors, shown while
--- `Environment.debug.pathfinding.enabled` is on. The routes are a separate switch,
--- `Environment.debug.pathfindingPaths.enabled` (see pathsDebug.lua).
+-- every baked NavMap (one color per floor), the links between floors and the routes, shown while
+-- `Environment.debug.pathfinding.enabled` is on; drawCells / drawLinks / drawPaths pick the parts.
 local Debug = {}
 
 local FLOOR_COLORS = { { 0.2, 0.8, 0.4 }, { 0.3, 0.6, 1 }, { 1, 0.7, 0.2 }, { 0.9, 0.4, 0.9 } }
@@ -233,7 +232,7 @@ end
 
 -- Routes reported by games (a server's bot, for example) drawn with the NavMap routes:
 -- `route = { points = { {x, y, z}, ... }, goal = { x, y, z }, color = { r, g, b } }`, or nil to
--- remove it. Drawn while `Environment.debug.pathfindingPaths` is enabled.
+-- remove it. Drawn while `Environment.debug.pathfinding.drawPaths` is on.
 function Debug.setRoute(world, key, route)
     world.navRoutes = world.navRoutes or {}
     world.navRoutes[key] = route
@@ -273,21 +272,17 @@ end
 function Debug.draw(world, camera, settings)
     katsa.graphics.push('all')
     katsa.graphics.setShader()
+    local grid = settings.drawCells or settings.drawLinks
+    if settings.drawPaths ~= false then
+        Debug.drawRoutes(world, camera)
+    end
     eachMap(world, function(node)
-        if settings.drawCells or settings.drawLinks then
+        if grid then
             Debug.drawMap(node.map, camera, settings)
         end
-    end)
-    katsa.graphics.pop()
-end
-
--- The routes view: recent paths of every NavMap and every reported route.
-function Debug.drawAllPaths(world, camera)
-    katsa.graphics.push('all')
-    katsa.graphics.setShader()
-    Debug.drawRoutes(world, camera)
-    eachMap(world, function(node)
-        Debug.drawPaths(node, camera)
+        if settings.drawPaths ~= false then
+            Debug.drawPaths(node, camera)
+        end
     end)
     katsa.graphics.pop()
 end

@@ -60,6 +60,15 @@ return function(Platform, K)
         return hasFlag(self, K.FULLSCREEN)
     end
 
+    -- false, 'desktop' or 'exclusive'. SDL's desktop flag includes the exclusive bit.
+    function Platform:getFullscreen()
+        local flags = require('bit').band(self.sdl.SDL_GetWindowFlags(self.window), K.FULLSCREEN_DESKTOP)
+        if flags == K.FULLSCREEN_DESKTOP then
+            return 'desktop'
+        end
+        return flags ~= 0 and 'exclusive' or false
+    end
+
     -- mode: false (windowed), true or 'desktop' (borderless at desktop size), 'exclusive'.
     function Platform:setFullscreen(mode)
         local flag = 0

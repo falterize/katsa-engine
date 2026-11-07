@@ -202,6 +202,11 @@ function Window.isFullscreen()
     return platform:isFullscreen()
 end
 
+-- The current mode: false, 'desktop' or 'exclusive' (truthy whenever fullscreen is on).
+function Window.getFullscreen()
+    return platform:getFullscreen()
+end
+
 function Window.toggleFullscreen()
     Window.setFullscreen(not Window.isFullscreen())
     return Window.isFullscreen()
