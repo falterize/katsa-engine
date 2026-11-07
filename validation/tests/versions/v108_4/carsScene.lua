@@ -541,6 +541,14 @@ function Tests:draw()
             'the lost wheel replicates: hidden on the car and rolling away as debris'
         )
     elseif frame == 710 then
+        local proxies, solid = 0, 0
+        for _, proxy in pairs(self.session.walkerProxies) do
+            proxies = proxies + 1
+            solid = solid + (proxy.node.canCollide and 1 or 0)
+        end
+        self:check(proxies == 1, 'the connected player has a collision proxy')
+        local _, remoteCar = self.remote.client:getCar()
+        self:check((solid == 1) == (remoteCar == nil), 'the proxy is solid only while its player is on foot')
         -- Chat and the player list: Enter frees the cursor and opens the input, Tab lists players.
         local input, social = session.scene.input, session.social
         local captured = input.captureWanted

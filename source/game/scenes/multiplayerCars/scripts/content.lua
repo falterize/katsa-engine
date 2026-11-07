@@ -9,6 +9,7 @@ local Pinch = require('./controller.pinch')
 local Walker = require('./walker.controller')
 local Seats = require('./game.seats')
 local WalkerView = require('./walker.view')
+local WalkerProxy = require('./walker.proxy')
 local GameServer = require('./game.gameServer')
 local GameClient = require('./game.gameClient')
 local PhysicsCar = require('./game.physicsCar')
@@ -52,6 +53,7 @@ function Session.new(scene)
             scene = scene,
             views = {},
             walkerViews = {},
+            walkerProxies = {},
             held = {},
             mode = 'menu',
             lanTimer = 0,
@@ -308,10 +310,16 @@ function Session:startClient(address, port, name)
         self:queueView('walker', netId, model)
         if owned then
             self.walker = Walker.new(self.scene.world, model)
+        elseif self.scene.world.physics then
+            self.walkerProxies[netId] = WalkerProxy.new(self.scene.world, netId, model)
         end
     end
     client.onWalkerRemoved = function(netId)
         self:unqueueView('walker', netId)
+        if self.walkerProxies[netId] then
+            self.walkerProxies[netId]:destroy()
+            self.walkerProxies[netId] = nil
+        end
         if self.walkerViews[netId] then
             self.walkerViews[netId]:destroy()
             self.walkerViews[netId] = nil
@@ -403,6 +411,10 @@ function Session:leave(message)
     for netId, view in pairs(self.walkerViews) do
         view:destroy()
         self.walkerViews[netId] = nil
+    end
+    for netId, proxy in pairs(self.walkerProxies) do
+        proxy:destroy()
+        self.walkerProxies[netId] = nil
     end
     if self.walker then
         self.walker:destroy()
@@ -768,6 +780,9 @@ function Session:update(dt)
     self:buildQueuedView()
     for _, view in pairs(self.walkerViews) do
         view:update(dt, self:rideOf(view))
+    end
+    for _, proxy in pairs(self.walkerProxies) do
+        proxy:update()
     end
     if self.client.botRoute then
         self:updateBotRoute()
