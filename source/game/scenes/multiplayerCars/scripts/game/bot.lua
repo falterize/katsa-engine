@@ -21,6 +21,7 @@ function Bot.new(car, options)
     return setmetatable({
         car = car,
         nav = options.nav or Arena.buildNav(Pathfinding),
+        planner = options.planner, -- RemotePlanner: route searches run on worker threads
         sightRadius = options.sightRadius or 45,
         replanEvery = options.replan or 0.5,
         random = function()
@@ -68,7 +69,31 @@ function Bot:findTarget(cars)
                     -- A route search per car per tick was the bulk of the bot cost, so the answer
                     -- is kept for one replan period.
                     local route = self.routes[other]
-                    if not route or self.clock - route.at >= self.replanEvery then
+                    if self.planner then
+                        -- The worker answers a frame or two later; until then the previous answer
+                        -- (initially "not reachable") stands.
+                        if not route then
+                            route = { at = -math.huge, ok = false }
+                            self.routes[other] = route
+                        end
+                        if not route.pending and self.clock - route.at >= self.replanEvery then
+                            route.pending = true
+                            self.planner:findPath(
+                                car.x,
+                                car.y - 0.6,
+                                car.z,
+                                other.x,
+                                other.y - 0.6,
+                                other.z,
+                                function(path)
+                                    route.pending = false
+                                    route.at = self.clock
+                                    route.ok = path ~= nil and path.length < self.sightRadius * 2
+                                    route.path = path
+                                end
+                            )
+                        end
+                    elseif not route or self.clock - route.at >= self.replanEvery then
                         local path =
                             nav:findPath(car.x, car.y - 0.6, car.z, other.x, other.y - 0.6, other.z)
                         route = {
@@ -105,8 +130,26 @@ end
 function Bot:plan(x, y, z, fresh)
     local car = self.car
     -- `fresh` is a route found a moment ago for this very target: use it instead of searching again.
-    self.path = fresh or self.nav:findPath(car.x, car.y - 0.6, car.z, x, y - 0.6, z)
     self.sinceReplan = 0
+    if fresh then
+        self.path = fresh
+    elseif self.planner then
+        -- The car keeps its current route (or drives straight at the goal) until the worker
+        -- answers; only one search per bot is in flight, and an answer for an old goal is dropped.
+        if not self.searching then
+            self.searching = true
+            self.searchId = (self.searchId or 0) + 1
+            local id = self.searchId
+            self.planner:findPath(car.x, car.y - 0.6, car.z, x, y - 0.6, z, function(path)
+                self.searching = false
+                if id == self.searchId and path then
+                    self.path = path
+                end
+            end)
+        end
+    else
+        self.path = self.nav:findPath(car.x, car.y - 0.6, car.z, x, y - 0.6, z)
+    end
 end
 
 -- Aims at the farthest upcoming waypoint that is still on this floor and within a short look-ahead,
@@ -134,7 +177,11 @@ function Bot:think(cars, dt)
         self.mode, self.target = 'chase', target
         if self.sinceReplan >= self.replanEvery or not self.path then
             local route = self.routes[target]
-            local fresh = route and route.at == self.clock and route.path or nil
+            local fresh = route
+                and route.path
+                and (self.planner and self.clock - route.at < self.replanEvery or route.at == self.clock)
+                and route.path
+                or nil
             self:plan(target.x, target.y, target.z, fresh)
         end
         goalX, goalZ = target.x, target.z
@@ -148,7 +195,7 @@ function Bot:think(cars, dt)
             self.patrolPoint = point
             self.path = nil
         end
-        if not self.path or self.path:isFinished() then
+        if (not self.path or self.path:isFinished()) and not self.searching then
             self:plan(point[1], Arena.ground(point[1], point[2]) + 0.6, point[2])
         end
         goalX, goalZ = point[1], point[2]

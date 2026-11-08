@@ -136,6 +136,7 @@ end
 -- Moves a follow-mode body to a replicated pose: its own model, or `source` (the model that is
 -- drawn, for example the interpolated replica a hosting client shows).
 function PhysicsCar:follow(dt, source)
+    self:syncCollision()
     local model = source or self.model
     -- A teleported kinematic body has no velocity of its own; derive it from the pose change so
     -- characters standing on this car are carried along (Body3D:getPointVelocity reads it).
@@ -153,6 +154,71 @@ function PhysicsCar:follow(dt, source)
     self.node.position = { model.x, model.y, model.z }
     self.node.rotation = { angles[1], angles[2], angles[3] }
     self.node.body:sync()
+end
+
+-- The collision hull follows the dents without fine detail: the chassis box becomes three boxes
+-- along the car whose faces are pulled in by how far the dents push the panel at the face centre.
+-- Sections that were never touched stay exactly the original box. Rebuilt only when the dents
+-- change (the signature is cheap: a few numbers per dent), through the transactional setCollider.
+local SECTIONS = 3
+local MIN_EXTENT = 0.3
+
+function PhysicsCar:hullFor(dents)
+    local t, config = self.tuning, self.config
+    local hw, hh, hl = t.size[1] * 0.5, t.size[2] * 0.5, t.size[3] * 0.5
+    local lift = config.rideHeight -- dent space is measured from the ground plane
+    local step = 2 * hl / SECTIONS
+    local children = {}
+    for section = 1, SECTIONS do
+        local z0 = -hl + (section - 1) * step
+        local z1 = z0 + step
+        local zc = (z0 + z1) * 0.5
+        local ox = dents:offsetAt(hw, lift, zc)
+        local right = math.max(0, -ox)
+        ox = dents:offsetAt(-hw, lift, zc)
+        local left = math.max(0, ox)
+        local _, oy = dents:offsetAt(0, lift + hh, zc)
+        local top = math.max(0, -oy)
+        if section == SECTIONS then
+            local _, _, oz = dents:offsetAt(0, lift, hl)
+            z1 = z1 - math.max(0, -oz)
+        elseif section == 1 then
+            local _, _, oz = dents:offsetAt(0, lift, -hl)
+            z0 = z0 + math.max(0, oz)
+        end
+        local x0, x1 = -hw + left, hw - right
+        local y0, y1 = -hh, hh - top
+        x1 = math.max(x1, x0 + MIN_EXTENT)
+        y1 = math.max(y1, y0 + MIN_EXTENT)
+        z1 = math.max(z1, z0 + MIN_EXTENT)
+        children[section] = {
+            shape = 'Box',
+            size = { x1 - x0, y1 - y0, z1 - z0 },
+            position = { (x0 + x1) * 0.5, (y0 + y1) * 0.5, (z0 + z1) * 0.5 },
+        }
+    end
+    return { shape = 'Compound', children = children }
+end
+
+function PhysicsCar:syncCollision()
+    local dents = self.model.dents
+    if not dents then
+        return
+    end
+    local signature = #dents.dents
+    for _, dent in ipairs(dents.dents) do
+        signature = signature + dent.depth * 7 + dent.radius
+    end
+    if signature == self.hullSignature then
+        return
+    end
+    if signature == 0 and self.hullSignature == nil then
+        self.hullSignature = 0
+        return
+    end
+    self.hullSignature = signature
+    self.node.body:setCollider(self:hullFor(dents))
+    self.hullRevision = (self.hullRevision or 0) + 1
 end
 
 function PhysicsCar:setInput(input)
@@ -179,6 +245,7 @@ end
 -- A follow-mode body (the server's stand-in for a client-driven car) is placed at the latest
 -- replicated pose; client stand-ins are placed per frame by GameClient:update instead.
 function PhysicsCar:step(dt)
+    self:syncCollision()
     if self.mode == 'follow' then
         if not self.drawn then
             self:follow(dt)

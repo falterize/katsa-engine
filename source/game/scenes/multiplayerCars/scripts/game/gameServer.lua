@@ -110,6 +110,10 @@ end
 
 function GameServer:stop()
     self.server:stop()
+    if self.planner then
+        self.planner:destroy()
+        self.planner = nil
+    end
     local physics = self.options.world and self.options.world.physics
     if physics and physics.beforeStep ~= nil then
         physics.beforeStep = self.previousBeforeStep
@@ -121,6 +125,9 @@ function GameServer:stop()
 end
 
 function GameServer:update(dt)
+    if self.planner then
+        self.planner:update()
+    end
     self.server:update(dt)
 end
 
@@ -173,6 +180,24 @@ function GameServer:buildNav(Pathfinding)
     return Arena.buildNav(Pathfinding)
 end
 
+-- Bot route searches run on a worker thread (an Actor pool) when the platform has threads, so
+-- the A* of several bots stays off the frame. Without threads the planner searches inline.
+-- options.workers = false keeps every search on the main thread.
+function GameServer:startPlanner()
+    if self.planner or self.options.workers == false then
+        return
+    end
+    local ok, planner = pcall(function()
+        return Plugins.require('pathfinding').RemotePlanner.new(self.nav, { size = 1, name = 'bots' })
+    end)
+    if ok and planner:isThreaded() then
+        self.planner = planner
+    elseif ok then
+        self:log('bot routes search on the main thread: %s', tostring(planner.failure))
+        planner:destroy()
+    end
+end
+
 -- Adds a bot car. `point` is { x, z, heading }; the arena's last spawn point by default. The
 -- first bot stays `self.bot` / `self.botId` (the one clients draw the debug route of).
 function GameServer:spawnBot(point)
@@ -180,7 +205,12 @@ function GameServer:spawnBot(point)
     local model, netId =
         self:spawnCar({ x = point[1], z = point[2], heading = point[3], bot = true })
     self.nav = self.nav or self:buildNav(Plugins.require('pathfinding'))
-    local bot = Bot.new(model, { nav = self.nav, sightRadius = self.options.sightRadius })
+    self:startPlanner()
+    local bot = Bot.new(model, {
+        nav = self.nav,
+        planner = self.planner,
+        sightRadius = self.options.sightRadius,
+    })
     self.bots[netId] = bot
     if not self.bot then
         self.bot, self.botId = bot, netId

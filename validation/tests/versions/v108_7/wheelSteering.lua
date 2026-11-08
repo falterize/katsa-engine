@@ -52,6 +52,20 @@ function Tests:draw()
     self:check(whole > 20, 'A car with all wheels turns when steered')
     self:check(noFront < whole * 0.25, 'A car without front wheels cannot turn')
     self:check(noRearDistance < wholeDistance * 0.5, 'A car without rear wheels is not driven')
+    -- A front hit pulls the hull's nose in: the collider follows the dents in three boxes.
+    local Session = getmetatable(self.host.demo).__index
+    local model = self.host.package:require('scripts.game.carEntity').create(nil, { x = -12, z = -40, heading = 0 })
+    local body = Session.PhysicsCar.new(self.host.world, model, 93)
+    body:step(1 / 60)
+    local count = #body.node.body.shapes
+    model.dents:addImpact({ x = 0, y = 0.6, z = 2.5, nx = 0, ny = 0, nz = -1, speed = 14 })
+    body:step(1 / 60)
+    local shapes = body.node.body.shapes
+    local hull = body:hullFor(model.dents)
+    self:check(count == 1 and #shapes == 3, 'Dents split the collider into a simplified three-box hull')
+    self:check(hull.children[3].size[3] < 5.1 / 3 - 0.05, 'The nose section is shorter after a front hit')
+    self:check(math.abs(hull.children[1].size[3] - 5.1 / 3) < 1e-6, 'An untouched section keeps its size')
+    body:destroy()
     print('PASSED ' .. self.count .. ' v108.7 wheel steering checks')
     katsa.event.quit()
 end

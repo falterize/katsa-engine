@@ -102,6 +102,7 @@ function Layered:link(levelA, ax, az, levelB, bx, bz, cost)
     self.portals[b] = self.portals[b] or {}
     table.insert(self.portals[a], { b, weight })
     table.insert(self.portals[b], { a, weight })
+    self.linkCount = (self.linkCount or 0) + 1
 end
 
 -- The floor an agent at (x, y, z) stands on: the free cell column whose height is closest to y.
@@ -226,6 +227,82 @@ function Layered:findPath(x0, y0, z0, x1, y1, z1, options)
     local path = Path.new(points, cost * self.cellSize)
     path.levels = levels
     return path
+end
+
+-- Changes whenever the baked cells, weights or portals change; a copy on another thread compares
+-- it to know when to refresh.
+function Layered:version()
+    local total = (self.revision or 0) + (self.linkCount or 0)
+    for _, grid in ipairs(self.levels) do
+        total = total + (grid.revision or 0)
+    end
+    return total
+end
+
+-- Plain data (numbers, strings, tables) that rebuilds this map with Layered.fromSnapshot, for
+-- worker threads that search routes off the main thread. Blocked cells are one '0'/'1' string
+-- per floor.
+function Layered:snapshot()
+    local first = self.levels[1]
+    local data = {
+        width = self.width,
+        height = self.height,
+        cellSize = self.cellSize,
+        origin = { first.originX, first.originY },
+        diagonal = first.diagonal,
+        cornerCutting = first.cornerCutting,
+        blocked = {},
+        weights = {},
+        heights = {},
+        portals = {},
+    }
+    for level, grid in ipairs(self.levels) do
+        local bits = {}
+        for index = 1, self.count do
+            bits[index] = grid.blocked[index] and '1' or '0'
+        end
+        data.blocked[level] = table.concat(bits)
+        local weights = {}
+        for index, weight in pairs(grid.weights) do
+            weights[#weights + 1] = { index, weight }
+        end
+        data.weights[level] = weights
+        data.heights[level] = self.heights[level]
+    end
+    for id, list in pairs(self.portals) do
+        local copy = {}
+        for position, portal in ipairs(list) do
+            copy[position] = { portal[1], portal[2] }
+        end
+        data.portals[#data.portals + 1] = { id, copy }
+    end
+    return data
+end
+
+function Layered.fromSnapshot(data)
+    local self = Layered.new(data.width, data.height, {
+        levels = #data.blocked,
+        cellSize = data.cellSize,
+        origin = data.origin,
+        diagonal = data.diagonal,
+        cornerCutting = data.cornerCutting,
+    })
+    for level, grid in ipairs(self.levels) do
+        local bits = data.blocked[level]
+        for index = 1, self.count do
+            if bits:byte(index) == 49 then
+                grid.blocked[index] = true
+            end
+        end
+        for _, entry in ipairs(data.weights[level]) do
+            grid.weights[entry[1]] = entry[2]
+        end
+        self.heights[level] = data.heights[level]
+    end
+    for _, entry in ipairs(data.portals) do
+        self.portals[entry[1]] = entry[2]
+    end
+    return self
 end
 
 -- String pulling inside each floor; floor changes are always kept.

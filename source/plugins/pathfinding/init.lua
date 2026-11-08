@@ -14,4 +14,5 @@ return {
     Path = require('source.plugins.pathfinding.path'),
     Debug = require('source.plugins.pathfinding.debug'),
     AStar = require('source.plugins.pathfinding.astar'),
+    RemotePlanner = require('source.plugins.pathfinding.remote'),
 }
