@@ -132,15 +132,22 @@ function Lab:update(dt)
         self.vsyncOff = not self.vsyncOff
         katsa.window.setVSync(self.vsyncOff and 0 or 1)
     end
-    if self.status then
-        self.status.text = string.format(
-            'moves: %s (%.1f ms)  transparency: %s\npanels: %s  vsync: %s',
+    -- The label is rewritten only when its text changes, at most four times a second: a label
+    -- that changes every frame redraws the whole interface every frame.
+    self.statusAge = (self.statusAge or 1) + dt
+    if self.status and self.statusAge >= 0.25 then
+        local text = string.format(
+            'moves: %s (%.0f ms)  transparency: %s\npanels: %s  vsync: %s',
             MODES[self.modeIndex or 1],
             self.moveCost or 0,
             self.flat and 'off' or 'on',
             self.free and 'free' or 'owned',
             self.vsyncOff and 'off' or 'on'
         )
+        if text ~= self.status.text then
+            self.status.text = text
+        end
+        self.statusAge = 0
     end
     if self:pressed('m') then
         self:toggleMiniGame()
