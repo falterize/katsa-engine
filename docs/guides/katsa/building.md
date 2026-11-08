@@ -34,7 +34,7 @@ architecture**: a `.dll` never works on Linux, an arm64 `.so` never on x86_64.
 
 | Library | Built by this repository? | Where to get it |
 | --- | --- | --- |
-| katsa_native, katsa_box2d, katsa_net | **Yes**: `python tools/native/build.py <target>` | Output in `build/native/<target>/`; or the `katsa-*` artifacts of the GitHub workflow `native.yml` (Actions tab) |
+| katsa_native, katsa_box2d, katsa_net, katsa_threads | **Yes**: `python tools/native/build.py <target> [library ...]` | Output in `build/native/<target>/`; or the `katsa-*` artifacts of the GitHub workflow `native.yml` (Actions tab) |
 | SDL2 | No | Windows: `SDL2-2.30.x-win32-x64.zip` and Mac: `SDL2-2.30.x.dmg` from <https://github.com/libsdl-org/SDL/releases> (take `SDL2.dll` / `SDL2.framework/Versions/A/SDL2`). Linux: package `libsdl2-2.0-0` (apt) / `SDL2` (dnf, pacman) / `sdl2` (brew). Android: built from source by `android/prepare.py` |
 | OpenAL Soft | No | Windows: `soft_oal.dll` (or `OpenAL32.dll`) from the `bin/Win64` folder of the zip at <https://openal-soft.org/#downloads>. Linux: `libopenal1` (apt) / `openal-soft`. macOS: `brew install openal-soft` and use its `libopenal.1.dylib`. Android: built from source by `android/prepare.py` |
 | FreeType | No, optional (the built-in font renderer in `katsa_native` is used when absent) | Linux `libfreetype6`; Windows/macOS: any recent build |
@@ -47,6 +47,27 @@ architecture**: a `.dll` never works on Linux, an arm64 `.so` never on x86_64.
 Git. Put `katsa_native.dll`, `katsa_box2d.dll`, `katsa_net.dll`, `SDL2.dll` and `soft_oal.dll`
 into `lib/` in the repository root. Without `katsa_native.dll` the start fails with
 `Cannot load Katsa; tried: ...`; without `SDL2.dll` with `Cannot load SDL2; tried: ...`.
+
+### Building only some libraries
+
+`build.py` builds every library of a target by default. Name libraries after the target to build only
+those, for example after changing one source file:
+
+```
+python tools/native/build.py windows katsa_net             # only katsa_net.dll
+python tools/native/build.py windows net threads           # katsa_ prefix and .c suffix are optional
+python tools/native/build.py linux host                    # only the host (needs LUAJIT_PREFIX)
+```
+
+Known names: `katsa_native`, `katsa_box2d`, `katsa_net`, `katsa_threads`, `host`. Run `python
+tools/native/build.py` without arguments for the full help.
+
+### Source layout
+
+`native/src/` has one folder per library: `native/` (files, images, Vorbis, fonts), `box2d/`, `net/`,
+`threads/` and `host/`; `common/export.h` holds the export macro they share. Each folder starts with
+a header or file comment that lists its files and the conventions (units, ownership, threads).
+Third-party code stays in `vendor/`.
 
 ## Three outputs and how to package them
 
@@ -121,7 +142,7 @@ run by the author on real hardware.
 
 ## Step by step: Android (.apk)
 
-The project template is the folder `android/` (Gradle + SDL2). `libmain.so` is `katsa_host.c`; at
+The project template is the folder `android/` (Gradle + SDL2). `libmain.so` is the host (`native/src/host`); at
 start it copies `assets/game.katsa` to internal storage (only when it changed), runs the Lua
 runtime from it and forwards stdout/stderr to logcat (`adb logcat -s katsa`).
 

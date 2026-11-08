@@ -1,7 +1,7 @@
 # Builds the three libraries that Gradle cannot take prebuilt:
 #   libSDL2.so    window, GL ES context, input, SDLActivity glue (source in android/deps/SDL2)
 #   libopenal.so  OpenAL Soft (source in android/deps/openal-soft)
-#   libmain.so    the Katsa host (native/src/katsa_host.c) linked with a static LuaJIT
+#   libmain.so    the Katsa host (native/src/host/*.c) linked with a static LuaJIT
 # katsa_native, katsa_box2d and katsa_net come from tools/native/build.py android (jniLibs).
 cmake_minimum_required(VERSION 3.18)
 project(katsa_android C CXX)
@@ -35,7 +35,12 @@ add_subdirectory("${KATSA_DEPS}/openal-soft" "${CMAKE_CURRENT_BINARY_DIR}/openal
 set_target_properties(OpenAL PROPERTIES VERSION "" SOVERSION "")
 
 # --- Katsa host -> libmain.so -------------------------------------------------------------------
-add_library(main SHARED "${KATSA_ROOT}/native/src/katsa_host.c")
+set(KATSA_HOST "${KATSA_ROOT}/native/src/host")
+add_library(main SHARED
+    "${KATSA_HOST}/main.c"
+    "${KATSA_HOST}/android.c"
+    "${KATSA_HOST}/archive.c"
+    "${KATSA_HOST}/image.c")
 target_include_directories(main PRIVATE
     "${KATSA_DEPS}/SDL2/include"
     "${KATSA_LUAJIT}/include/luajit-2.1")

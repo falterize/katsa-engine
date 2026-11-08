@@ -1,16 +1,34 @@
 #!/usr/bin/env python3
-"""Builds the katsa_native shared library for one target.
+"""Builds Katsa's native libraries for one target.
 
-    python tools/native/build.py linux            # needs clang or gcc
-    python tools/native/build.py windows          # needs llvm-mingw (x86_64-w64-mingw32-clang) on PATH
-    python tools/native/build.py android          # needs ANDROID_NDK_HOME; builds arm64-v8a, armeabi-v7a, x86_64
-    python tools/native/build.py macos            # run on a Mac; universal x86_64 + arm64 dylibs
-                                                  # (+ the host when LUAJIT_PREFIX is set)
+    python tools/native/build.py <target> [library ...]
 
-Output goes to build/native/<target>/. See docs/guides/katsa/building.md.
+Targets:
+    linux     needs clang or gcc
+    windows   needs llvm-mingw (x86_64-w64-mingw32-clang) or mingw-w64 gcc on PATH
+    android   needs ANDROID_NDK_HOME; builds arm64-v8a, armeabi-v7a and x86_64
+    macos     run on a Mac; universal x86_64 + arm64 dylibs
+
+Libraries (all of them when none is named):
+    katsa_native   UTF-8 files, image/audio/font decoding (native/src/native/*.c)
+    katsa_box2d    Box2D bridge (katsa_box2d.cpp + vendor/box2d)
+    katsa_net      ENet bridge (katsa_net.c + vendor/enet)
+    katsa_threads  OS threads, channels and shared arrays for actors (katsa_threads.c)
+    host           the katsa executable (native/src/host/*.c); built only when named or when
+                   LUAJIT_PREFIX (linux, macos) / LUAJIT_WIN_LIB (windows) is set
+
+A library may be named as `katsa_net`, `net`, `katsa_net.c` or `--katsa_net.c`; a file of
+katsa_native (`font.c`, `image`, ...) selects katsa_native. Examples:
+
+    python tools/native/build.py windows                      # everything
+    python tools/native/build.py windows katsa_net threads    # only these two DLLs
+
+Output goes to build/native/<target>/ (android: build/native/android/<abi>/).
+See docs/guides/katsa/building.md.
 """
 import os
 import pathlib
+import platform
 import shutil
 import subprocess
 import sys
@@ -18,13 +36,38 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SRC = ROOT / 'native' / 'src'
 VENDOR = ROOT / 'vendor'
-SOURCES = [SRC / 'katsa_native.c', SRC / 'katsa_vorbis_impl.c', SRC / 'katsa_font_impl.c']
-FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(VENDOR / 'stb'), '-I' + str(SRC)]
+LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 
+# Source lists and flags per library -------------------------------------------------------------
+
+NATIVE_SOURCES = sorted((SRC / 'native').glob('*.c'))
+NATIVE_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(VENDOR / 'stb'), '-I' + str(SRC)]
+
+BOX2D_SOURCES = sorted((VENDOR / 'box2d' / 'Box2D').rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
+BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(VENDOR / 'box2d'), '-std=c++11']
+
+ENET = VENDOR / 'enet'
+NET_SOURCES = [
+    ENET / name
+    for name in ('callbacks.c', 'compress.c', 'host.c', 'list.c', 'packet.c', 'peer.c', 'protocol.c')
+] + [SRC / 'katsa_net.c']
+NET_FLAGS = ['-O2', '-fvisibility=hidden', '-DHAS_SOCKLEN_T', '-I' + str(ENET / 'include')]
+
+THREADS_SOURCES = [SRC / 'katsa_threads.c']
+THREADS_FLAGS = ['-O2', '-fvisibility=hidden']
+
+# android.c compiles to nothing off Android; Android builds the host with CMake instead.
+HOST_SOURCES = sorted((SRC / 'host').glob('*.c'))
+
+LIBRARIES = ['katsa_native', 'katsa_box2d', 'katsa_net', 'katsa_threads', 'host']
+
+
+# Helpers ----------------------------------------------------------------------------------------
 
 def run(command):
-    print(' '.join(str(part) for part in command))
-    subprocess.run([str(part) for part in command], check=True)
+    command = [str(part) for part in command]
+    print(' '.join(command))
+    subprocess.run(command, check=True)
 
 
 def compiler(*names):
@@ -35,133 +78,185 @@ def compiler(*names):
     sys.exit('No compiler found; tried: ' + ', '.join(names))
 
 
-HOST = SRC / 'katsa_host.c'
-BOX2D_DIR = VENDOR / 'box2d' / 'Box2D'
-BOX2D_SOURCES = sorted(BOX2D_DIR.rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
-BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(VENDOR / 'box2d'), '-std=c++11']
+class Toolchain:
+    """How one target compiles and names a shared library.
 
-NET_DIR = VENDOR / 'enet'
-NET_SOURCES = [NET_DIR / name for name in ('callbacks.c', 'compress.c', 'host.c', 'list.c', 'packet.c', 'peer.c', 'protocol.c')]
-NET_SOURCES.append(SRC / 'katsa_net.c')
-NET_FLAGS = ['-O2', '-fvisibility=hidden', '-DHAS_SOCKLEN_T', '-I' + str(NET_DIR / 'include')]
+    cc / cxx    C and C++ compilers
+    shared      flags that make a shared library
+    prefix      file name prefix ('lib' everywhere except Windows)
+    extension   '.so', '.dll' or '.dylib'
+    static      link flags that bundle the compiler runtime into the library
+    cxx_static  the same for C++ libraries
+    """
 
-THREADS_SOURCE = SRC / 'katsa_threads.c'
-THREADS_FLAGS = ['-O2', '-fvisibility=hidden']
+    def __init__(self, cc, cxx, shared, prefix, extension, static, cxx_static):
+        self.cc, self.cxx = cc, cxx
+        self.shared = shared
+        self.prefix, self.extension = prefix, extension
+        self.static, self.cxx_static = static, cxx_static
 
-LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
-
-
-def build_host_linux(out):
-    cc = compiler('clang', 'gcc', 'cc')
-    run([cc, '-O2', '-rdynamic', '-I' + str(LUAJIT) + '/include/luajit-2.1', HOST,
-         LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
-
-
-def build_host_macos(out):
-    # LuaJIT on x86_64 macOS needs the low 4 GB free, so the executable is linked with a small
-    # page zero at a high image base. arm64 needs neither flag. The host is built for the Mac that
-    # runs the script (a static libluajit-5.1.a is single-architecture).
-    import platform
-
-    cc = compiler('clang')
-    arch = 'arm64' if platform.machine() in ('arm64', 'aarch64') else 'x86_64'
-    flags = ['-arch', arch, '-O2', '-Wl,-export_dynamic']
-    if arch == 'x86_64':
-        flags += ['-Wl,-pagezero_size,10000', '-Wl,-image_base,100000000']
-    run([cc, *flags, '-I' + str(LUAJIT) + '/include/luajit-2.1', HOST,
-         LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
+    def library(self, out, name):
+        return out / (self.prefix + name + self.extension)
 
 
-def build_host_windows(out):
-    cc = compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc')
-    inc = os.environ.get('LUAJIT_WIN_INCLUDE', LUAJIT + '/include/luajit-2.1')
-    lib = os.environ.get('LUAJIT_WIN_LIB')
-    if not lib:
-        sys.exit('Set LUAJIT_WIN_LIB to a Windows libluajit-5.1.a (see docs/guides/katsa/building.md)')
-    run([cc, '-O2', '-I' + inc, HOST, lib, '-static', '-mwindows' if os.environ.get('KATSA_GUI') else '-mconsole', '-o', out / 'katsa.exe'])
+def linux_toolchain():
+    return Toolchain(
+        compiler('clang', 'gcc', 'cc'),
+        lambda: compiler('clang++', 'g++', 'c++'),
+        ['-shared', '-fPIC'], 'lib', '.so', [], ['-static-libstdc++'],
+    )
 
 
-def build_box2d_linux(out):
-    cxx = compiler('clang++', 'g++', 'c++')
-    run([cxx, '-shared', '-fPIC', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'libkatsa_box2d.so', '-static-libstdc++'])
+def windows_toolchain():
+    return Toolchain(
+        compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc'),
+        lambda: compiler('x86_64-w64-mingw32-clang++', 'x86_64-w64-mingw32-g++'),
+        ['-shared'], '', '.dll', ['-static'], ['-static'],
+    )
 
 
-def build_box2d_windows(out):
-    cxx = compiler('x86_64-w64-mingw32-clang++', 'x86_64-w64-mingw32-g++')
-    run([cxx, '-shared', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'katsa_box2d.dll', '-static'])
-
-
-def build_box2d_macos(out):
-    cxx = compiler('clang++')
-    run([cxx, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *BOX2D_FLAGS, *BOX2D_SOURCES, '-o', out / 'libkatsa_box2d.dylib'])
-
-
-def build_net(out, cc, extra, library, platform_source):
-    run([cc, *extra, *NET_FLAGS, *NET_SOURCES, NET_DIR / platform_source, *library, '-o', out])
-
-
-def build_linux(out):
-    cc = compiler('clang', 'gcc', 'cc')
-    run([cc, '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.so'])
-    build_box2d_linux(out)
-    build_net(out / 'libkatsa_net.so', cc, ['-shared', '-fPIC'], [], 'unix.c')
-    run([cc, '-shared', '-fPIC', *THREADS_FLAGS, THREADS_SOURCE, '-lpthread', '-o', out / 'libkatsa_threads.so'])
-    if os.environ.get('LUAJIT_PREFIX'):
-        build_host_linux(out)
-
-
-def build_windows(out):
-    cc = compiler('x86_64-w64-mingw32-clang', 'x86_64-w64-mingw32-gcc')
-    run([cc, '-shared', *FLAGS, *SOURCES, '-o', out / 'katsa_native.dll', '-static'])
-    build_box2d_windows(out)
-    build_net(out / 'katsa_net.dll', cc, ['-shared'], ['-static', '-lws2_32', '-lwinmm'], 'win32.c')
-    run([cc, '-shared', *THREADS_FLAGS, THREADS_SOURCE, '-o', out / 'katsa_threads.dll', '-static'])
-    if os.environ.get('LUAJIT_WIN_LIB'):
-        build_host_windows(out)
-
-
-def build_macos(out):
-    cc = compiler('clang')
+def macos_toolchain():
     # Oldest macOS the libraries should run on; override with MACOSX_DEPLOYMENT_TARGET.
     os.environ.setdefault('MACOSX_DEPLOYMENT_TARGET', '10.13')
-    run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *FLAGS, *SOURCES, '-lm', '-o', out / 'libkatsa_native.dylib'])
-    build_box2d_macos(out)
-    build_net(out / 'libkatsa_net.dylib', cc, ['-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64'], [], 'unix.c')
-    run([cc, '-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64', *THREADS_FLAGS, THREADS_SOURCE, '-o', out / 'libkatsa_threads.dylib'])
-    if os.environ.get('LUAJIT_PREFIX'):
-        build_host_macos(out)
+    universal = ['-dynamiclib', '-arch', 'x86_64', '-arch', 'arm64']
+    return Toolchain(
+        compiler('clang'), lambda: compiler('clang++'), universal, 'lib', '.dylib', [], [],
+    )
 
 
-def build_android(out):
+# One function per library; each takes the toolchain, the output folder and the target name. ----
+
+def build_native(tc, out, target):
+    libs = [] if target == 'windows' else ['-lm']
+    run([tc.cc, *tc.shared, *NATIVE_FLAGS, *NATIVE_SOURCES, *libs, *tc.static,
+         '-o', tc.library(out, 'katsa_native')])
+
+
+def build_box2d(tc, out, target):
+    run([tc.cxx(), *tc.shared, *BOX2D_FLAGS, *BOX2D_SOURCES, *tc.cxx_static,
+         '-o', tc.library(out, 'katsa_box2d')])
+
+
+def build_net(tc, out, target):
+    if target == 'windows':
+        platform_source, libs = ENET / 'win32.c', ['-static', '-lws2_32', '-lwinmm']
+    else:
+        platform_source, libs = ENET / 'unix.c', []
+    run([tc.cc, *tc.shared, *NET_FLAGS, *NET_SOURCES, platform_source, *libs,
+         '-o', tc.library(out, 'katsa_net')])
+
+
+def build_threads(tc, out, target):
+    libs = {'linux': ['-lpthread'], 'windows': ['-static']}.get(target, [])
+    run([tc.cc, *tc.shared, *THREADS_FLAGS, *THREADS_SOURCES, *libs,
+         '-o', tc.library(out, 'katsa_threads')])
+
+
+def build_host(tc, out, target, required):
+    """The executable links LuaJIT statically and exports its C API for katsa_threads."""
+    if target == 'windows':
+        lib = os.environ.get('LUAJIT_WIN_LIB')
+        if not lib:
+            if required:
+                sys.exit('Set LUAJIT_WIN_LIB to a Windows libluajit-5.1.a '
+                         '(see docs/guides/katsa/building.md)')
+            return
+        include = os.environ.get('LUAJIT_WIN_INCLUDE', LUAJIT + '/include/luajit-2.1')
+        subsystem = '-mwindows' if os.environ.get('KATSA_GUI') else '-mconsole'
+        run([tc.cc, '-O2', '-I' + include, *HOST_SOURCES, lib, '-static', subsystem,
+             '-o', out / 'katsa.exe'])
+        return
+    if not os.environ.get('LUAJIT_PREFIX'):
+        if required:
+            sys.exit('Set LUAJIT_PREFIX to the LuaJIT install that has lib/libluajit-5.1.a')
+        return
+    flags = ['-O2', '-rdynamic']
+    if target == 'macos':
+        # LuaJIT on x86_64 macOS needs the low 4 GB free, so the executable is linked with a small
+        # page zero at a high image base. arm64 needs neither flag. The host is built for the Mac
+        # that runs the script (a static libluajit-5.1.a is single-architecture).
+        arch = 'arm64' if platform.machine() in ('arm64', 'aarch64') else 'x86_64'
+        flags = ['-arch', arch, '-O2', '-Wl,-export_dynamic']
+        if arch == 'x86_64':
+            flags += ['-Wl,-pagezero_size,10000', '-Wl,-image_base,100000000']
+    run([tc.cc, *flags, '-I' + LUAJIT + '/include/luajit-2.1', *HOST_SOURCES,
+         LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
+
+
+BUILDERS = {
+    'katsa_native': build_native,
+    'katsa_box2d': build_box2d,
+    'katsa_net': build_net,
+    'katsa_threads': build_threads,
+}
+
+
+# Targets ----------------------------------------------------------------------------------------
+
+def build_desktop(toolchain, out, target, names, host_named):
+    for name in names:
+        if name == 'host':
+            build_host(toolchain, out, target, host_named)
+        else:
+            BUILDERS[name](toolchain, out, target)
+
+
+def build_android(out, names):
     ndk = os.environ.get('ANDROID_NDK_HOME') or os.environ.get('ANDROID_NDK_ROOT')
     if not ndk:
         sys.exit('Set ANDROID_NDK_HOME to your NDK directory')
     host = {'linux': 'linux-x86_64', 'darwin': 'darwin-x86_64', 'win32': 'windows-x86_64'}[sys.platform]
-    toolchain = pathlib.Path(ndk) / 'toolchains' / 'llvm' / 'prebuilt' / host / 'bin'
+    bin_dir = pathlib.Path(ndk) / 'toolchains' / 'llvm' / 'prebuilt' / host / 'bin'
     suffix = '.cmd' if sys.platform == 'win32' else ''
-    for abi, triple in {
+    abis = {
         'arm64-v8a': 'aarch64-linux-android24',
         'armeabi-v7a': 'armv7a-linux-androideabi24',
         'x86_64': 'x86_64-linux-android24',
-    }.items():
-        target = out / abi
-        target.mkdir(parents=True, exist_ok=True)
-        run([toolchain / (triple + '-clang' + suffix), '-shared', '-fPIC', *FLAGS, *SOURCES, '-lm', '-o', target / 'libkatsa_native.so'])
-        build_net(target / 'libkatsa_net.so', toolchain / (triple + '-clang' + suffix), ['-shared', '-fPIC'], [], 'unix.c')
-        run([toolchain / (triple + '-clang' + suffix), '-shared', '-fPIC', *THREADS_FLAGS, THREADS_SOURCE, '-o', target / 'libkatsa_threads.so'])
-        run([toolchain / (triple + '-clang++' + suffix), '-shared', '-fPIC', *BOX2D_FLAGS, *BOX2D_SOURCES, '-static-libstdc++', '-o', target / 'libkatsa_box2d.so'])
+    }
+    for abi, triple in abis.items():
+        target_dir = out / abi
+        target_dir.mkdir(parents=True, exist_ok=True)
+        cc = bin_dir / (triple + '-clang' + suffix)
+        cxx = bin_dir / (triple + '-clang++' + suffix)
+        toolchain = Toolchain(cc, lambda cxx=cxx: cxx, ['-shared', '-fPIC'], 'lib', '.so', [],
+                              ['-static-libstdc++'])
+        for name in names:
+            if name != 'host':  # Android runs the engine from its own activity, not this host.
+                BUILDERS[name](toolchain, target_dir, 'android')
 
 
-TARGETS = {'linux': build_linux, 'windows': build_windows, 'macos': build_macos, 'android': build_android}
+TOOLCHAINS = {'linux': linux_toolchain, 'windows': windows_toolchain, 'macos': macos_toolchain}
+TARGETS = ['linux', 'windows', 'macos', 'android']
+
+
+def library_name(argument):
+    """'--katsa_net.c', 'katsa_net.c', 'katsa_net' and 'net' all mean katsa_net."""
+    name = argument.lstrip('-')
+    for ending in ('.cpp', '.c'):
+        if name.endswith(ending):
+            name = name[: -len(ending)]
+    if name in ('native', 'filesystem', 'image', 'audio', 'font', 'core'):
+        name = 'katsa_native'  # these sources are part of katsa_native
+    if not name.startswith('katsa_') and name != 'host':
+        name = 'katsa_' + name
+    if name not in LIBRARIES:
+        sys.exit('Unknown library: ' + argument + '\nKnown: ' + ', '.join(LIBRARIES))
+    return name
 
 
 def main():
-    if len(sys.argv) != 2 or sys.argv[1] not in TARGETS:
+    if len(sys.argv) < 2 or sys.argv[1] not in TARGETS:
         sys.exit(__doc__)
-    out = ROOT / 'build' / 'native' / sys.argv[1]
+    target = sys.argv[1]
+    requested = [library_name(argument) for argument in sys.argv[2:]]
+    names = [name for name in LIBRARIES if not requested or name in requested]
+    out = ROOT / 'build' / 'native' / target
     out.mkdir(parents=True, exist_ok=True)
-    TARGETS[sys.argv[1]](out)
-    print('Built into', out)
+    if target == 'android':
+        build_android(out, names)
+    else:
+        build_desktop(TOOLCHAINS[target](), out, target, names, 'host' in requested)
+    print('Built ' + ', '.join(names) + ' into', out)
 
 
 if __name__ == '__main__':

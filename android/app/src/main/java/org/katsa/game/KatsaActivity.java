@@ -14,7 +14,7 @@ import org.libsdl.app.SDLSurface;
 
 /**
  * The whole app is SDL's activity. SDL loads the libraries in order and calls SDL_main from the last
- * one (libmain.so, built from native/src/katsa_host.c). The Lua runtime then opens SDL2, OpenAL and
+ * one (libmain.so, built from native/src/host). The Lua runtime then opens SDL2, OpenAL and
  * the katsa_* libraries again with dlopen; the loader returns the copies loaded here.
  *
  * Render height: phones have far more pixels than their GPUs can fill every frame (a 2460x1080
