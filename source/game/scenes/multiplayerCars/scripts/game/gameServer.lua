@@ -184,7 +184,7 @@ end
 -- the A* of several bots stays off the frame. Without threads the planner searches inline.
 -- options.workers = false keeps every search on the main thread.
 function GameServer:startPlanner()
-    if self.planner or self.options.workers == false then
+    if self.planner or self.plannerFailure or self.options.workers == false then
         return
     end
     local ok, planner = pcall(function()
@@ -193,7 +193,8 @@ function GameServer:startPlanner()
     if ok and planner:isThreaded() then
         self.planner = planner
     elseif ok then
-        self:log('bot routes search on the main thread: %s', tostring(planner.failure))
+        self.plannerFailure = tostring(planner.failure)
+        self:log('bot routes search on the main thread: %s', self.plannerFailure)
         planner:destroy()
     end
 end

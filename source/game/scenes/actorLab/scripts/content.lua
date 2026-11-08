@@ -134,6 +134,12 @@ function Lab:update(dt)
         if self.job then
             text = ('Workers: %d of %d ranges done...'):format(CHUNKS - self.job.left, CHUNKS)
         end
+        if not self.actor:isThreaded() then
+            text = text
+                .. '\nNo worker threads here: the script runs on the main thread ('
+                .. tostring(self.actor:getFallbackReason()):sub(1, 80)
+                .. ')'
+        end
         if self.lastPong then
             text = text .. '\n' .. self.lastPong
         end

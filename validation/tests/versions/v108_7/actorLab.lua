@@ -32,6 +32,10 @@ function Tests:draw()
         katsa.timer.sleep(0.004)
     end
     if self.frame == 1 then
+        if os.getenv('KATSA_NO_THREADS') then
+            local Binding = require('source.katsa.thread.binding')
+            Binding.load = function() return nil, 'forced for the test' end
+        end
         self.host = require('source.game.runtime.application').new(self.manager, 'actorLab')
         self.host:load()
         self.lab = self.host.demo

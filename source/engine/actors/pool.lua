@@ -7,6 +7,7 @@
 --
 -- `size` defaults to the CPU count minus one (the main thread keeps a core), at least 1.
 local Thread = require('source.katsa.thread')
+local InlineWorker = require('./inlineWorker')
 
 local Pool = {}
 Pool.__index = Pool
@@ -20,14 +21,28 @@ function Pool.new(options)
     local size = options.size or Pool.defaultSize()
     assert(size >= 1 and size == math.floor(size), 'Pool size must be a positive integer')
     local self = setmetatable({ workers = {}, outstanding = {}, handlers = {}, nextWorker = 1 }, Pool)
+    -- Without worker threads the same contract runs on the calling thread (InlineWorker), so a
+    -- scene that uses Actors still works; `threaded` and `fallbackReason` tell which one it got.
+    local library, reason = Thread.isSupported(), nil
+    if not library then
+        local _, why = require('source.katsa.thread.binding').load()
+        reason = tostring(why or 'worker threads are unavailable')
+    end
+    self.threaded, self.fallbackReason = library, reason
     for index = 1, size do
-        local worker = Thread.spawn({
+        local spawnOptions = {
             script = options.script,
             scriptName = options.scriptName,
             name = (options.name or 'actor') .. index,
             args = options.args,
             modules = options.modules,
-        })
+        }
+        local worker
+        if library then
+            worker = Thread.spawn(spawnOptions)
+        else
+            worker = InlineWorker.new(spawnOptions)
+        end
         worker.index = index
         self.outstanding[index] = 0
         worker.onError = function(message)
@@ -115,6 +130,7 @@ function Pool:getStats()
     for index, worker in ipairs(self.workers) do
         stats[index] = {
             state = worker:getState(),
+            threaded = self.threaded,
             outstanding = self.outstanding[index],
             queued = worker:getPending(true),
             sent = worker.sent,

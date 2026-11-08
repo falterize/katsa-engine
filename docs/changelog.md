@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Actors without worker threads: `ActorPool` falls back to `InlineWorker` (the same contract on the calling thread, jobs run in 4 ms slices from `poll`) when the native thread library or the Lua C API is unavailable, so scenes using the Actor node (`actorLab`) still load. `Actor:isThreaded()/getFallbackReason()`, a log warning with the reason, and the actorLab and multiplayerCars HUD lines show why. Tests: `v108_7/actor.lua`, `--test-v108.7.actorlab` (`KATSA_NO_THREADS=1` forces the fallback).
+- Menu: a scene that fails to start now shows "Could not load <scene>: <error>" instead of "Loading ..." forever. Test: `v108_5/menuAndInterrupt.lua`.
 - Actor node: the first update of the node tree called `start()` again and restarted workers that `autoStart` had launched, silently dropping every request issued before that frame. `start()` without a script now keeps running workers. `script` and `modules` paths accept `scene://` and `shared://`. Test: `v108_7/actor.lua`.
 - New example scene `actorLab`: the same heavy job on the main thread and on Actor workers, with request/send/answer buttons. Test: `--test-v108.7.actorlab`. Guide: `docs/guides/development/actors.md`.
 - multiplayerCars: the host HUD line shows where bot route searches run (worker thread with a search count, or the main thread).

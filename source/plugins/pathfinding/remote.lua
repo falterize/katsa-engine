@@ -39,12 +39,16 @@ function RemotePlanner.new(nav, options)
         return self
     end
     local ok, pool = pcall(function()
-        local Thread = require('source.katsa.thread')
-        if not Thread.isSupported() then
-            error('threads are not supported on this platform', 0)
-        end
         local Pool = require('source.engine.actors.pool')
-        return Pool.new({ script = SCRIPT, size = options.size or 1, name = options.name or 'route' })
+        local created =
+            Pool.new({ script = SCRIPT, size = options.size or 1, name = options.name or 'route' })
+        if not created.threaded then
+            -- Searching in a pool that runs on this thread would only add copies: search inline.
+            local reason = created.fallbackReason
+            created:destroy()
+            error(reason, 0)
+        end
+        return created
     end)
     if ok then
         self.pool = pool

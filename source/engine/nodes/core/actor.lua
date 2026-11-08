@@ -91,6 +91,14 @@ function Actor:start(source)
         args = self.args,
         modules = modules,
     })
+    if not self._pool.threaded then
+        -- Not an error: the platform has no worker threads, so the script runs on the main thread
+        -- in short slices. Say why once, so a missing native library is easy to spot.
+        katsa.log.write(
+            'warn',
+            ('Actor %s runs on the main thread: %s'):format(tostring(self.name), self._pool.fallbackReason)
+        )
+    end
     self._pool.onError = function(message, worker)
         self.lastError = message
         local world = self._world
@@ -117,6 +125,16 @@ end
 
 function Actor:isRunning()
     return self._pool ~= nil
+end
+
+-- False when the platform has no worker threads and the script runs on the main thread.
+function Actor:isThreaded()
+    return self._pool ~= nil and self._pool.threaded == true
+end
+
+-- Why the workers run on the main thread (nil when they are real threads).
+function Actor:getFallbackReason()
+    return self._pool and self._pool.fallbackReason
 end
 
 local function pool(self)

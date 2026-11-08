@@ -24,6 +24,18 @@ function Module.run(self)
     menu:update()
     self:check(switched[1] == 'multiplayerCars', 'the scene starts on the next frame')
 
+    -- A scene that fails to start must not leave "Loading ..." on screen forever.
+    menu.manager.switch = function()
+        return nil, 'source/x.lua:5: boom\nstack traceback:'
+    end
+    menu:choose('Broken', 'broken')
+    menu:update()
+    menu:update()
+    self:check(
+        menu.loadingLabel.text == 'Could not load broken: source/x.lua:5: boom',
+        'a scene that fails to start is reported in the menu instead of loading forever'
+    )
+
     self:check(Boot.isInterrupt('source/x.lua:27: interrupted!'), 'LuaJIT interrupt is recognised')
     self:check(not Boot.isInterrupt('source/x.lua:27: attempt to index nil'), 'errors are not')
 end

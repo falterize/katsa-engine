@@ -838,6 +838,11 @@ function Session:routeInfo()
     if planner then
         return ('  -  bot routes: worker (%d searches, %d waiting)'):format(planner.searches, planner.pending)
     end
+    local why = server.plannerFailure
+    if why then
+        why = why:gsub('%s+', ' ')
+        return '  -  bot routes: main thread (' .. why:sub(1, 90) .. ')'
+    end
     return '  -  bot routes: main thread'
 end
 

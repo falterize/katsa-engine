@@ -118,6 +118,33 @@ function Module.run(self)
     self:check(wait(function() return square and got end, 5, function() node:update() end), 'The Actor node runs a script on workers')
     self:check(square == 144 and got == 'hi', 'The node delivers results and worker messages')
     self:check(#node:getStats() == 2 and node:isRunning(), 'The node reports per-worker stats')
+    -- Without worker threads the same pool contract runs on the calling thread.
+    local Binding = require('source.katsa.thread.binding')
+    local realLoad = Binding.load
+    Binding.load = function()
+        return nil, 'forced for the test'
+    end
+    local inline = Pool.new({
+        size = 2,
+        name = 'inline',
+        args = { base = 5 },
+        script = [[
+            Actor.on('add', function(d) return Actor.args.base + d.n end)
+            Actor.on('boom', function() error('inline failure') end)
+            Actor.on('ping', function(d) Actor.send('pong', { n = d.n + 1 }) end)
+        ]],
+    })
+    Binding.load = realLoad
+    local sum, failed, pong
+    inline:on('pong', function(data) pong = data.n end)
+    inline:request('add', { n = 2 }, function(ok, value) sum = ok and value end)
+    inline:request('boom', {}, function(ok, message) failed = not ok and message end)
+    inline:send('ping', { n = 41 })
+    self:check(not inline.threaded and inline.fallbackReason:find('forced', 1, true), 'A pool without threads reports why')
+    self:check(wait(function() return sum and failed and pong end, 5, function() inline:update() end), 'The inline fallback answers requests, errors and messages')
+    self:check(sum == 7 and tostring(failed):find('inline failure', 1, true) and pong == 42, 'Inline answers match what a thread returns')
+    inline:destroy()
+
     -- The node tree calls start() on the first update; that must not restart running workers.
     local running = node._pool
     node:start()

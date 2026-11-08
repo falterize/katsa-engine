@@ -187,10 +187,19 @@ function Menu:update()
         return
     end
     self.pending = nil
+    local scene, failure
     if pending.id == 'nodeCatalog' then
-        self.manager:switch(require('source.game.runtime.nodeCatalog').new)
+        scene, failure = self.manager:switch(require('source.game.runtime.nodeCatalog').new)
     else
-        self.manager:switch(require('source.game.runtime.application').new, pending.id)
+        scene, failure = self.manager:switch(require('source.game.runtime.application').new, pending.id)
+    end
+    if not scene and failure then
+        -- The scene did not start: stay in the menu and say why instead of showing "Loading..."
+        -- forever. The full error is in the error journal and the log.
+        local first = tostring(failure):match('[^\n]+') or 'unknown error'
+        self.loadingLabel.text = ('Could not load %s: %s'):format(pending.id, first:sub(1, 160))
+        self.loadingLabel.visible = true
+        self.ui:invalidate()
     end
 end
 
