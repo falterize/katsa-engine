@@ -154,14 +154,17 @@ def build_threads(tc, out, target):
 
 
 def build_host(tc, out, target, required):
-    """The executable links LuaJIT statically and exports its C API for katsa_threads."""
+    """The executable links LuaJIT statically and exports its C API for katsa_threads.
+
+    Returns True when it was built; without the LuaJIT variable it is skipped (an error only
+    when the host was named explicitly)."""
     if target == 'windows':
         lib = os.environ.get('LUAJIT_WIN_LIB')
         if not lib:
             if required:
                 sys.exit('Set LUAJIT_WIN_LIB to a Windows libluajit-5.1.a '
                          '(see docs/guides/katsa/building.md)')
-            return
+            return False
         include = os.environ.get('LUAJIT_WIN_INCLUDE', LUAJIT + '/include/luajit-2.1')
         subsystem = '-mwindows' if os.environ.get('KATSA_GUI') else '-mconsole'
         # katsa_threads finds lua_* with GetProcAddress on the executable (LuaJIT's ffi.C), so
@@ -170,11 +173,11 @@ def build_host(tc, out, target, required):
         exports = '-Wl,--export-all-symbols'
         run([tc.cc, '-O2', '-I' + include, *HOST_SOURCES, lib, '-static', subsystem, exports,
              '-o', out / 'katsa.exe'])
-        return
+        return True
     if not os.environ.get('LUAJIT_PREFIX'):
         if required:
             sys.exit('Set LUAJIT_PREFIX to the LuaJIT install that has lib/libluajit-5.1.a')
-        return
+        return False
     flags = ['-O2', '-rdynamic']
     if target == 'macos':
         # LuaJIT on x86_64 macOS needs the low 4 GB free, so the executable is linked with a small
@@ -186,6 +189,7 @@ def build_host(tc, out, target, required):
             flags += ['-Wl,-pagezero_size,10000', '-Wl,-image_base,100000000']
     run([tc.cc, *flags, '-I' + LUAJIT + '/include/luajit-2.1', *HOST_SOURCES,
          LUAJIT + '/lib/libluajit-5.1.a', '-lm', '-ldl', '-o', out / 'katsa'])
+    return True
 
 
 BUILDERS = {
@@ -199,11 +203,19 @@ BUILDERS = {
 # Targets ----------------------------------------------------------------------------------------
 
 def build_desktop(toolchain, out, target, names, host_named):
+    """Builds the named libraries and returns the names actually built."""
+    built = []
     for name in names:
         if name == 'host':
-            build_host(toolchain, out, target, host_named)
+            if build_host(toolchain, out, target, host_named):
+                built.append(name)
+            else:
+                variable = 'LUAJIT_WIN_LIB' if target == 'windows' else 'LUAJIT_PREFIX'
+                print('Skipped host: ' + variable + ' is not set')
         else:
             BUILDERS[name](toolchain, out, target)
+            built.append(name)
+    return built
 
 
 def build_android(out, names):
@@ -271,9 +283,10 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     if target == 'android':
         build_android(out, names)
+        built = [name for name in names if name != 'host']
     else:
-        build_desktop(TOOLCHAINS[target](), out, target, names, 'host' in requested)
-    print('Built ' + ', '.join(names) + ' into', out)
+        built = build_desktop(TOOLCHAINS[target](), out, target, names, 'host' in requested)
+    print('Built ' + ', '.join(built) + ' into', out)
 
 
 if __name__ == '__main__':
