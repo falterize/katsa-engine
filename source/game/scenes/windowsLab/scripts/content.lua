@@ -25,8 +25,10 @@ local REDRAW = 12 -- repaints per second of every panel (their motion runs every
 local SIZES = { { 260, 170 }, { 340, 220 }, { 180, 120 } }
 local MINI_GAME = 'platformer'
 -- Moving an OS window costs several milliseconds on Windows (measured: about 6 ms each), so by
--- default only as many windows are moved per frame as fit the budget, the longest waiting first.
-local MOVE_BUDGET_MS = 5
+-- default window moves may use MOVE_SHARE of the wall time (a credit that fills every frame and
+-- pays for each move), the longest waiting window first. The frame rate stays up; the panels move
+-- a little less often when moves are slow.
+local MOVE_SHARE = 0.3
 local MODES = { 'budget', 'all', 'batch' }
 
 local function drawPanel(panel, time, fps, width, height)
@@ -155,7 +157,7 @@ function Lab:serveWindows(dt)
     end
     local profiler = self.scene.manager and self.scene.manager.profiler
     local clock = katsa.timer.getTime
-    -- Moves are limited by a time budget per frame (see MOVE_BUDGET_MS) and the panels' content is
+    -- Moves are limited by a time budget per frame (see MOVE_SHARE) and the panels' content is
     -- repainted round robin at REDRAW per second: presenting a window costs a context switch and
     -- a swap, which on Windows is several milliseconds.
     local moveStart = clock()
@@ -177,7 +179,7 @@ function Lab:serveWindows(dt)
         return (a.moved or 0) < (b.moved or 0)
     end)
     local batch = {}
-    local moved = 0
+    self.credit = math.min((self.credit or 0) + dt * 1000 * MOVE_SHARE, 12)
     for _, entry in ipairs(due) do
         local width, height = entry.window:getSize()
         local panel = entry.panel
@@ -188,12 +190,12 @@ function Lab:serveWindows(dt)
             if mode == 'batch' then
                 entry.x, entry.y, entry.moved = x, y, self.moveCount
                 batch[#batch + 1] = { entry.window, x, y }
-            elseif mode == 'all' or moved == 0 or (clock() - moveStart) * 1000 < MOVE_BUDGET_MS then
+            elseif mode == 'all' or self.credit > 0 then
                 local started = clock()
                 entry.x, entry.y, entry.moved = x, y, self.moveCount
                 entry.window:setPosition(x, y)
-                moved = moved + 1
                 local cost = (clock() - started) * 1000
+                self.credit = self.credit - cost
                 self.moveCost = (self.moveCost or cost) * 0.9 + cost * 0.1
             end
         end
