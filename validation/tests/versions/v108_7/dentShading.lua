@@ -71,6 +71,21 @@ function Module.run(self)
         'A corner shared by smooth polygons gets one blended normal'
     )
 
+    -- A gently curved panel (normals a fraction of a degree off the face normal, like the Duke 69
+    -- hood) is smooth, and a triangle sharing a corner with it is smooth as well.
+    local lean = math.rad(0.4)
+    local gentle = {
+        vertex(0, 0, 0, math.sin(lean), 0, math.cos(lean)),
+        vertex(1, 0, 0, 0, 0, 1),
+        vertex(0, 1, 0, 0, 0, 1),
+        vertex(1, 0, 0, 0, 0, 1),
+        vertex(1, 1, 0, 0, 0, 1),
+        vertex(0, 1, 0, 0, 0, 1),
+    }
+    local gentleSmooth = CarModel.analyseShading(gentle)
+    self:check(gentleSmooth[1] == true, 'A polygon bent by less than a degree is still smooth')
+    self:check(gentleSmooth[2] == true, 'A polygon sharing corners with a smooth one is smooth')
+
     -- Repeated hits at one spot never push a point farther than the displacement limit.
     local stacked = Deformation.new({ maxDents = 40 })
     for _ = 1, 30 do

@@ -16,6 +16,8 @@ local entries = {
     ['--test-v108.7.menusearch'] = { module = 'validation.tests.versions.v108_7.menuSearch', mode = 'default' },
     ['--test-v108.7.botmemory'] = { module = 'validation.tests.versions.v108_7.botMemoryProbe', mode = 'default' },
     ['--test-v108.7.timescale'] = { module = 'validation.tests.versions.v108_7.timeScaleProbe', mode = 'default' },
+    ['--test-v108.7.hood'] = { module = 'validation.tests.versions.v108_7.hoodShots', mode = 'default' },
+    ['--test-v108.7.shading'] = { module = 'validation.tests.versions.v108_7.shadingProbe', mode = 'default' },
     ['--test-v108.7.overlays'] = { module = 'validation.tests.versions.v108_7.overlayProbe', mode = 'default' },
     ['--test-v108.7.navprobe'] = { module = 'validation.tests.versions.v108_7.navWorkerProbe', mode = 'default' },
     ['--test-v108.7.steering'] = { module = 'validation.tests.versions.v108_7.wheelSteering', mode = 'default' },

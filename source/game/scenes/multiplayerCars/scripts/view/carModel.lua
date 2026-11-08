@@ -53,12 +53,23 @@ local function dentable(rest, radius)
     }
 end
 
--- Which authored polygons are shaded smooth. A triangle is smooth when its vertex normals differ
--- from its face normal (Blender "Shade Smooth"); flat polygons carry the face normal itself. The
--- flag and the smoothing groups (vertices that share a position and an authored normal) are read
--- once from the rest pose, so a dent keeps every polygon's authored shading.
+-- Which authored polygons are shaded smooth. A triangle is smooth when a vertex normal differs
+-- from its face normal (Blender "Shade Smooth"); flat polygons carry the face normal itself, to
+-- float precision. The test must be that fine: a gently curved panel such as the hood bends its
+-- normals by well under a degree per triangle, and a coarser limit (the first version used 3.6
+-- degrees) took more than half of its triangles for flat ones, which a dent then re-shaded as
+-- visible facets. A triangle that shares a corner (position and normal) with a smooth one is smooth
+-- as well. The flags and the smoothing groups (corners that share a position and an authored
+-- normal) are read once from the rest pose, so a dent keeps every polygon's authored shading.
+local FLAT_COS = 0.999999
+
+local function cornerKey(v)
+    return string.format('%.4f,%.4f,%.4f|%.2f,%.2f,%.2f', v[1], v[2], v[3], v[6], v[7], v[8])
+end
+
 local function analyseShading(rest)
     local smooth, group, ids, count = {}, {}, {}, 0
+    local smoothKeys, keys = {}, {}
     for first = 1, #rest - 2, 3 do
         local a, b, c = rest[first], rest[first + 1], rest[first + 2]
         local ux, uy, uz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
@@ -71,22 +82,40 @@ local function analyseShading(rest)
             for i = 0, 2 do
                 local v = rest[first + i]
                 -- Either winding: compare the axis, not the facing.
-                if math.abs(nx * v[6] + ny * v[7] + nz * v[8]) < 0.998 then
+                if math.abs(nx * v[6] + ny * v[7] + nz * v[8]) < FLAT_COS then
                     round = true
                 end
             end
         end
-        smooth[(first - 1) / 3 + 1] = round
+        local tri = (first - 1) / 3 + 1
+        smooth[tri] = round
+        keys[tri] = { cornerKey(a), cornerKey(b), cornerKey(c) }
         if round then
-            for i = 0, 2 do
-                local v = rest[first + i]
-                local key = string.format('%.4f,%.4f,%.4f|%.2f,%.2f,%.2f', v[1], v[2], v[3], v[6], v[7], v[8])
+            for i = 1, 3 do
+                smoothKeys[keys[tri][i]] = true
+            end
+        end
+    end
+    -- Corners shared with a smooth triangle make a triangle smooth too.
+    for tri = 1, #rest / 3 do
+        if not smooth[tri] then
+            for i = 1, 3 do
+                if smoothKeys[keys[tri][i]] then
+                    smooth[tri] = true
+                end
+            end
+        end
+    end
+    for tri = 1, #rest / 3 do
+        if smooth[tri] then
+            for i = 1, 3 do
+                local key = keys[tri][i]
                 local id = ids[key]
                 if not id then
                     count = count + 1
                     id, ids[key] = count, count
                 end
-                group[first + i] = id
+                group[(tri - 1) * 3 + i] = id
             end
         end
     end
