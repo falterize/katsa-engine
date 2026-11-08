@@ -18,6 +18,7 @@ local TUNING = {
     wheelRadius = 0.315,
     restLength = 0.435, -- spring length with no load (rest height = 0.1 + 0.435 + 0.315 = 0.85)
     droop = 0.15, -- extra ray length so a wheel can hang below its rest position
+    groundCos = 0.5, -- a wheel ray only finds ground whose normal is within 60 degrees of the chassis up
     gravityScale = 1.8, -- a heavier feel than real gravity: no floating over bumps and ramps
     stiffness = 58000, -- N/m per wheel
     damping = 7000, -- N*s/m per wheel
@@ -296,6 +297,14 @@ function PhysicsCar:step(dt)
         rb[1], rb[2], rb[3] = mx - up[1] * rayLength, my - up[2] * rayLength, mz - up[3] * rayLength
         local gone = math.floor((model.detached or 0) / 2 ^ (i - 1)) % 2 == 1
         local hit = not gone and body.physics:raycast(ra, rb, self.filter, self.hit) or nil
+        if hit then
+            -- A wall is not ground. A wheel pushed into one by a dented-in hull would otherwise
+            -- find the wall face under its ray and the spring would lift the car up the wall.
+            local normal = hit.normal
+            if normal[1] * up[1] + normal[2] * up[2] + normal[3] * up[3] < t.groundCos then
+                hit = nil
+            end
+        end
         local length = t.restLength + t.droop
         self.grounded[i] = false
         if hit then

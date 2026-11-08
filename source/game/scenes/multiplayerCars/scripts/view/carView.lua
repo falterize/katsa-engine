@@ -160,8 +160,12 @@ function CarView:shedWheel(index)
     local z = car.z + rz * offset[1] + fz * offset[2]
     local y = car.y - car.config.rideHeight + car.config.hubHeight + 0.1
     local world = self.scene.world
+    -- A repaired car can lose the same wheel again while the first one still rolls around (debris
+    -- lives 25 s), and object names are unique, so every lost wheel gets a number of its own.
+    self.shedCount = (self.shedCount or 0) + 1
+    local label = self.netId .. '_' .. index .. '_' .. self.shedCount
     local debris = world:create('Body3D', {
-        name = 'LostWheel' .. self.netId .. '_' .. index,
+        name = 'LostWheel' .. label,
         bodyType = 'Dynamic',
         position = { x, y, z },
         size = { WHEEL_RADIUS * 2, WHEEL_RADIUS * 2, WHEEL_RADIUS * 2 },
@@ -175,7 +179,7 @@ function CarView:shedWheel(index)
     if source then
         -- The loose wheel is the model's own wheel, with its tire texture.
         local mesh = world:create('Mesh3D', {
-            name = 'LostWheel' .. self.netId .. '_' .. index .. 'Mesh',
+            name = 'LostWheel' .. label .. 'Mesh',
             geometry = source.geometry,
             color = source.material.color,
         }, debris)
@@ -184,8 +188,8 @@ function CarView:shedWheel(index)
         end
     else
         local tire, rim = Body.wheelGeometry(WHEEL_RADIUS, WHEEL_WIDTH)
-        world:create('Mesh3D', { name = 'LostTire' .. self.netId .. '_' .. index, geometry = tire, color = { 0.06, 0.06, 0.07 } }, debris)
-        world:create('Mesh3D', { name = 'LostRim' .. self.netId .. '_' .. index, geometry = rim, color = { 0.78, 0.8, 0.84 } }, debris)
+        world:create('Mesh3D', { name = 'LostTire' .. label, geometry = tire, color = { 0.06, 0.06, 0.07 } }, debris)
+        world:create('Mesh3D', { name = 'LostRim' .. label, geometry = rim, color = { 0.78, 0.8, 0.84 } }, debris)
     end
     local side = offset[1] < 0 and -1 or 1
     debris.body:setVelocity({

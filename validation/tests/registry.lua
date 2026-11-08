@@ -17,6 +17,7 @@ local entries = {
     ['--test-v108.7.botmemory'] = { module = 'validation.tests.versions.v108_7.botMemoryProbe', mode = 'default' },
     ['--test-v108.7.timescale'] = { module = 'validation.tests.versions.v108_7.timeScaleProbe', mode = 'default' },
     ['--test-v108.7.hood'] = { module = 'validation.tests.versions.v108_7.hoodShots', mode = 'default' },
+    ['--test-v108.7.wallclimb'] = { module = 'validation.tests.versions.v108_7.wallClimb', mode = 'default' },
     ['--test-v108.7.shading'] = { module = 'validation.tests.versions.v108_7.shadingProbe', mode = 'default' },
     ['--test-v108.7.overlays'] = { module = 'validation.tests.versions.v108_7.overlayProbe', mode = 'default' },
     ['--test-v108.7.navprobe'] = { module = 'validation.tests.versions.v108_7.navWorkerProbe', mode = 'default' },
