@@ -65,6 +65,7 @@ void SDL_GL_DeleteContext(SDL_GLContext context);
 int SDL_GL_MakeCurrent(SDL_Window* window, SDL_GLContext context);
 int SDL_GL_SetAttribute(int attr, int value);
 int SDL_GL_SetSwapInterval(int interval);
+int SDL_GL_GetSwapInterval(void);
 void* SDL_GL_GetProcAddress(const char* proc);
 void SDL_GL_SwapWindow(SDL_Window* window);
 typedef int (*SDL_EventFilter)(void* userdata, SDL_Event* event);
@@ -506,9 +507,35 @@ local buttonNames = { 'l', 'm', 'r', 'x1', 'x2' }
 local loveButtons = { 1, 3, 2, 4, 5 } -- SDL left, middle, right, x1, x2 -> katsa 1, 3, 2 ...
 
 -- Translates one SDL event to a katsa event table, or nil for events katsa ignores.
+-- The id of the window an event was raised for, or nil for events that have none.
+function Platform:windowIdOf(e)
+    local t = e.type
+    if t == EVENT.WINDOW then
+        return e.window.windowID
+    elseif t == EVENT.KEYDOWN or t == EVENT.KEYUP then
+        return e.key.windowID
+    elseif t == EVENT.TEXTINPUT then
+        return e.text.windowID
+    elseif t == EVENT.MOUSEMOTION then
+        return e.motion.windowID
+    elseif t == EVENT.MOUSEBUTTONDOWN or t == EVENT.MOUSEBUTTONUP then
+        return e.button.windowID
+    elseif t == EVENT.MOUSEWHEEL then
+        return e.wheel.windowID
+    end
+    return nil
+end
+
 function Platform:translate(e)
     local t = e.type
     if self.subWindows and self:routeSubWindowEvent(e) then
+        return nil
+    end
+    -- Whatever is left must belong to the main window. Events of a window that was just closed
+    -- (its HIDDEN, FOCUS_LOST, CLOSE...) still arrive after its record is gone; taken as the main
+    -- window's they turned the game "unfocused and hidden" (a frozen scene) or even quit it.
+    local owner = self:windowIdOf(e)
+    if owner and owner ~= 0 and owner ~= self.sdl.SDL_GetWindowID(self.mainWindow or self.window) then
         return nil
     end
     if t == EVENT.QUIT then
@@ -588,16 +615,57 @@ function Platform:translate(e)
     return nil
 end
 
+local SLOW_POLL_MS = 100 -- a single frame's SDL_PollEvent calls beyond this are logged with a breakdown
+
+local function eventName(key)
+    local kind, window = key % 256, math.floor(key / 256)
+    for name, value in pairs(WINDOW_EVENT) do
+        if value == kind and window == EVENT.WINDOW then
+            return 'window.' .. name
+        end
+    end
+    return 'event ' .. window .. (kind > 0 and ('.' .. kind) or '')
+end
+
+-- Writes what SDL delivered during a slow poll: a message storm from the extra windows shows up
+-- here as thousands of one kind (MOVED, EXPOSED...), a driver stall as few events and many ms.
+local function reportSlowPoll(self, spent)
+    local rows = {}
+    for key, count in pairs(self.pollCounts) do
+        rows[#rows + 1] = { key = key, count = count }
+    end
+    table.sort(rows, function(a, b)
+        return a.count > b.count
+    end)
+    local parts = {}
+    for index = 1, math.min(5, #rows) do
+        parts[index] = eventName(rows[index].key) .. ' x' .. rows[index].count
+    end
+    require('source.katsa.core.log').write(
+        'warn',
+        ('Slow SDL poll: %d ms in %d events (%s)'):format(spent, self.pollEvents, table.concat(parts, ', ')),
+        'window',
+        true
+    )
+end
+
 -- Iterator over translated events currently queued by the OS.
 function Platform:poll()
     local sdl, event = self.sdl, self.event
     self:flushClosedWindows()
+    self.pollCounts, self.pollEvents, self.pollSpent = {}, 0, 0
     return function()
         -- SDL calls event watches from inside SDL_PollEvent too; `polling` tells those deliveries
         -- (the frame loop handles them) from the ones sent while the OS runs its own resize loop.
         self.polling = true
         self.pollStarted = sdl.SDL_GetTicks()
-        while sdl.SDL_PollEvent(event) ~= 0 do
+        while true do
+            local before = sdl.SDL_GetTicks()
+            local pending = sdl.SDL_PollEvent(event) ~= 0
+            self.pollSpent = self.pollSpent + (sdl.SDL_GetTicks() - before)
+            if not pending then
+                break
+            end
             local translated = self:translate(event)
             if translated then
                 self.polling = false
@@ -606,6 +674,9 @@ function Platform:poll()
             self.pollStarted = sdl.SDL_GetTicks()
         end
         self.polling = false
+        if self.pollSpent >= SLOW_POLL_MS then
+            reportSlowPoll(self, self.pollSpent)
+        end
         return nil
     end
 end
@@ -623,6 +694,12 @@ function Platform:onLiveResize(handler)
     self.liveResizeHandler = handler
     self.liveResizeWatch = ffi.cast('SDL_EventFilter', function(_, event)
         local kind = event.type == EVENT.WINDOW and event.window.event
+        local counts = self.pollCounts
+        if counts and self.polling then
+            local key = event.type * 256 + (kind or 0)
+            counts[key] = (counts[key] or 0) + 1
+            self.pollEvents = self.pollEvents + 1
+        end
         local sized = kind == WINDOW_EVENT.SIZE_CHANGED or kind == WINDOW_EVENT.RESIZED
         local moved = kind == WINDOW_EVENT.MOVED or kind == WINDOW_EVENT.EXPOSED
         -- Only the main window's own moves and resizes count. Events of the extra windows, and the

@@ -19,7 +19,7 @@ local PANELS = {
 }
 
 local WIDTH, HEIGHT = 260, 170
-local REFRESH = 30 -- refreshes per second of every panel
+local REDRAW = 12 -- repaints per second of every panel (their motion runs every frame)
 local SIZES = { { 260, 170 }, { 340, 220 }, { 180, 120 } }
 local MINI_GAME = 'platformer'
 
@@ -120,37 +120,49 @@ function Lab:serveWindows(dt)
     if not self.paused then
         self.time = self.time + dt
     end
-    -- Moving and presenting an OS window costs several milliseconds on Windows, so the panels are
-    -- served one per tick, round robin, instead of all in one frame: the cost is spread over
-    -- frames and no frame takes three windows' worth.
     local count = #self.windows
     if count == 0 then
         return
     end
+    local profiler = self.scene.manager and self.scene.manager.profiler
+    local clock = katsa.timer.getTime
+    -- Motion is cheap (one window move) and runs every frame for every panel, so it stays smooth
+    -- at any frame rate. Presenting a window's content costs a context switch and a swap, which on
+    -- Windows is several milliseconds, so the panels are repainted round robin at REDRAW per second.
+    local moveStart = clock()
+    for index = #self.windows, 1, -1 do
+        local entry = self.windows[index]
+        if entry.window:isCloseRequested() then
+            entry.window:close()
+            table.remove(self.windows, index)
+        else
+            local width, height = entry.window:getSize()
+            local panel = entry.panel
+            local angle = self.time * panel.speed + panel.phase
+            local x = math.floor(self.centerX + math.cos(angle) * panel.radius[1] - width / 2)
+            local y = math.floor(self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2)
+            if x ~= entry.x or y ~= entry.y then
+                entry.x, entry.y = x, y
+                entry.window:setPosition(x, y)
+            end
+        end
+    end
+    local drawStart = clock()
+    count = #self.windows
     self.accumulated = (self.accumulated or 0) + dt
-    if self.accumulated < 1 / (REFRESH * count) then
-        return
+    if count > 0 and self.accumulated >= 1 / (REDRAW * count) then
+        self.accumulated = 0
+        self.cursor = (self.cursor or 0) % count + 1
+        local entry = self.windows[self.cursor]
+        local width, height = entry.window:getSize()
+        entry.window:draw(function()
+            drawPanel(entry.panel, self.time, katsa.timer.getFPS(), width, height)
+        end)
     end
-    self.accumulated = 0
-    self.cursor = (self.cursor or 0) % count + 1
-    local entry = self.windows[self.cursor]
-    local window, panel = entry.window, entry.panel
-    if window:isCloseRequested() then
-        window:close()
-        table.remove(self.windows, self.cursor)
-        return
+    if profiler then
+        profiler:sample('Windows: move', (drawStart - moveStart) * 1000)
+        profiler:sample('Windows: draw', (clock() - drawStart) * 1000)
     end
-    local width, height = window:getSize()
-    local angle = self.time * panel.speed + panel.phase
-    local x = math.floor(self.centerX + math.cos(angle) * panel.radius[1] - width / 2)
-    local y = math.floor(self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2)
-    if x ~= entry.x or y ~= entry.y then
-        entry.x, entry.y = x, y
-        window:setPosition(x, y)
-    end
-    window:draw(function()
-        drawPanel(panel, self.time, katsa.timer.getFPS(), width, height)
-    end)
 end
 
 -- A second scene in its own window: its own world, UI, input and update loop.

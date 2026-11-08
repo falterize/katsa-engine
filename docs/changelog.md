@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Windows (fix for the freeze after leaving a scene with extra windows): events of a window that was already closed (its HIDDEN, FOCUS_LOST, CLOSE) were taken as main-window events, which marked the game unfocused and hidden (frozen scene, no clicks) or could quit it. `Platform:translate` now drops every event whose window is not the main one. Test: `v108_7/closedWindowEvents.lua`.
+- Windows: extra windows get a taskbar button (`WS_EX_APPWINDOW`; option `taskbar = false` opts out), so they appear in the taskbar hover list. The swap interval is queried on a window switch and only set when it differs. Slow SDL polls (>= 100 ms) are logged with the event kinds that arrived. New profiler stages: `Windows: move`, `Windows: draw` (windowsLab) and `Window scenes`.
+- windowsLab: panel motion runs every frame for every panel; their content is repainted round robin at 12 Hz.
 - windowsLab: the panel motion lives in `Lab:updateInBackground` (and `update`), so the windows keep orbiting while the main window is unfocused without running the whole scene in the background; `runInBackground` is gone. Needs confirmation on Windows.
 - Platform: `setTransparent` declared its DWM types on every call and the second call (made when a scene restores the opaque window) failed on the redefinition; the declarations are now made once.
 - multiplayerCars: a bot kept one route search per other-floor car per tick (the bulk of `Cars: bot`, up to 12 ms per frame in the x5 profile); the result is now kept for one replan period and reused by the chase plan. Test: `v108_7/botRoutes.lua`; probe `--test-v108.7.rev` (UI revision and node counts).

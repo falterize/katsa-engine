@@ -117,7 +117,9 @@ function Bootstrap.install(project, options)
             katsa.resize(katsa.graphics.getDimensions())
         end
         manager:update(math.min(dt, 0.1), Runtime.frameDelta or dt)
+        local windowsStart = manager.profiler:begin()
         require('source.engine.scenes.windowScene').updateAll(dt)
+        manager.profiler:finish('Window scenes', windowsStart)
         if testRunner then
             testRunner:update(dt)
         end

@@ -120,6 +120,34 @@ return function(Platform, K)
         end))
     end
 
+    -- An owned window has no taskbar button, and the taskbar's hover list shows only windows with
+    -- one. WS_EX_APPWINDOW gives it a button (grouped under the game's icon); the window is hidden
+    -- and shown once because Windows reads the style when a window becomes visible. Windows only:
+    -- other platforms list every window already.
+    function Platform:setTaskbar(raw, enabled)
+        if ffi.os ~= 'Windows' then
+            return true
+        end
+        return (pcall(function()
+            if not self.userStyleDeclared then
+                ffi.cdef([[
+                    intptr_t GetWindowLongPtrW(void* window, int index);
+                    intptr_t SetWindowLongPtrW(void* window, int index, intptr_t value);
+                ]])
+                self.userStyleDeclared = true
+            end
+            local user = ffi.load('user32')
+            local handle = nativeHandle(self, raw)
+            assert(handle, 'no native handle')
+            local style = tonumber(user.GetWindowLongPtrW(handle, -20))
+            local bit = require('bit')
+            style = enabled and bit.bor(style, 0x40000) or bit.band(style, bit.bnot(0x40000))
+            self.sdl.SDL_HideWindow(raw)
+            user.SetWindowLongPtrW(handle, -20, ffi.cast('intptr_t', style))
+            self.sdl.SDL_ShowWindow(raw)
+        end))
+    end
+
     -- Points the window calls (position, size, flags...) at `raw` without touching the GL context.
     -- Callers restore the previous window with the same call.
     function Platform:target(raw)
@@ -233,6 +261,10 @@ return function(Platform, K)
         if flags.owner ~= false and not flags.alwaysontop then
             record.owned = self:setOwner(raw, self.mainWindow or self.window)
         end
+        -- Every extra window gets a taskbar button unless `taskbar = false`.
+        if flags.taskbar ~= false and not flags.hidden then
+            self:setTaskbar(raw, true)
+        end
         if flags.fullscreen then
             sdl.SDL_SetWindowFullscreen(
                 raw,
@@ -250,10 +282,11 @@ return function(Platform, K)
         -- The interval belongs to the drawable on some drivers and to the context on others, so it
         -- is stated at every switch: extra windows present at once, the main one follows vsync.
         -- Otherwise each extra window's swap could wait a whole refresh and stall the frame.
-        if raw ~= self.mainWindow then
-            self.sdl.SDL_GL_SetSwapInterval(0)
-        elseif self.vsync then
-            self.sdl.SDL_GL_SetSwapInterval(self.vsync)
+        local wanted = raw ~= self.mainWindow and 0 or self.vsync
+        -- Setting the interval can stall the driver, so it is only set when the query says the
+        -- current drawable does not have it yet.
+        if wanted and math.abs(self.sdl.SDL_GL_GetSwapInterval()) ~= math.abs(wanted) then
+            self.sdl.SDL_GL_SetSwapInterval(wanted)
         end
     end
 
