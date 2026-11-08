@@ -94,10 +94,10 @@ function PointCollider.build(node, body)
     local kind = Level.kind(node.collisionLevel)
     assert(kind ~= 'trimesh' or body.bodyType == 'Static', 'Trimesh points require a Static Body3D')
     local triangles = points
-    -- Exact triangles and the voxel analysis of Multiple Convex need the surface; a bare point
-    -- cloud only has a hull, so Multiple Convex falls back to one simplified hull for it.
-    local indexed = node.indices and (kind == 'trimesh' or kind == 'multiple')
-    if indexed then
+    -- Trimesh and Multiple Convex read the surface, so they need triangles: indexed, or a soup.
+    -- The other levels only need the hull of the points.
+    local surface = kind == 'trimesh' or kind == 'multiple'
+    if surface and node.indices then
         assert(#node.indices % 3 == 0, 'Triangle indices require triples')
         triangles = {}
         for i, index in Array.ipairs(node.indices) do
@@ -108,12 +108,12 @@ function PointCollider.build(node, body)
             triangles[i] = points[index]
         end
     end
-    if kind == 'trimesh' then
+    if surface then
         assert(
             #triangles >= 3 and #triangles % 3 == 0,
-            'Trimesh points require indexed triangles or a triangle-soup list'
+            node.collisionLevel .. ' points require indexed triangles or a triangle-soup list'
         )
-    elseif not indexed then
+    else
         -- Geometry.build consumes a render-style triangle list; hull points may have
         -- any count. Padding with duplicates preserves the hull and bounding box.
         triangles = {}
@@ -124,14 +124,9 @@ function PointCollider.build(node, body)
             triangles[#triangles + 1] = points[#points]
         end
     end
-    local source = node
-    if kind == 'multiple' and not indexed then
-        source = setmetatable({ collisionLevel = 'Simplified Convex' }, { __index = node })
-    end
-    local descriptor = Geometry.build(source, body, {
+    return Geometry.build(node, body, {
         { geometry = { vertices = triangles }, frame = M.identity() },
     })
-    return descriptor
 end
 
 return PointCollider

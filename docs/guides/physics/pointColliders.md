@@ -85,7 +85,7 @@ collider.points[4][2] = 3
 `points` accepts nested XYZ coordinates or a flat XYZ list; `vertices` is accepted
 when points is absent. The Bounding Box level makes a box, Single Convex builds a
 convex hull, Simplified Convex a hull with at most `hullPoints` vertices, Multiple Convex
-needs triangle topology (without it it behaves as Simplified Convex), and Trimesh makes
+needs triangle topology, and Trimesh makes
 the thin triangular-prism approximation for static geometry. Coplanar Single Convex points receive the same thin extrusion as
 mesh-derived convex geometry. Degenerate point clouds are rejected.
 

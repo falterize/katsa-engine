@@ -1,7 +1,6 @@
 local ipairs = require('source.engine.math.array').ipairs
 local Math = require('source.engine.math.math3d')
 local Level = require('source.engine.physics.3d.collisionLevel')
-local Decomposition = require('source.engine.physics.3d.decomposition')
 local ModelCollider = {}
 
 function ModelCollider.install(Physics, Body3D)
@@ -36,21 +35,8 @@ function ModelCollider.install(Physics, Body3D)
         if kind == 'convex' then
             return { shape = 'Convex', vertices = points }
         end
-        if kind == 'simplified' then
-            return { shape = 'Convex', vertices = Decomposition.simplify(points) or points }
-        end
-        if kind == 'multiple' then
-            local soup = {}
-            for _, v in ipairs(object.geometry.vertices) do
-                soup[#soup + 1] =
-                    { v[1] * object.size[1], v[2] * object.size[2], v[3] * object.size[3] }
-            end
-            local children = {}
-            for _, hull in ipairs(Decomposition.decompose(soup)) do
-                children[#children + 1] = { shape = 'Convex', vertices = hull }
-            end
-            return { shape = 'Compound', children = children }
-        end
+        -- Simplified and Multiple Convex are built by the collider builder (modelCollider.lua).
+        assert(kind == 'trimesh', 'Physics.modelCollider builds Bounding Box, Single Convex and Trimesh')
         local children = {}
         local vertices = object.geometry.vertices
         -- Static surface collision: one thin convex triangular prism per render triangle.

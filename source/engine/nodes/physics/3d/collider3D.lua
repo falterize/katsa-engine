@@ -22,9 +22,9 @@ Class.propertySchema = {
     },
     collisionLevel = {
         options = Level.names,
-        hint = 'Trimesh: exact triangles (static bodies). Single Convex: one hull per mesh. '
-            .. 'Simplified Convex: one hull per mesh with few vertices. Multiple Convex: several '
-            .. 'hulls that follow a concave model (cars, rooms, arches). Bounding Box: one box.',
+        hint = 'Trimesh: exact triangles (static bodies). Single Convex: one hull for the whole source. '
+            .. 'Simplified Convex: one hull with few vertices. Multiple Convex: several hulls that '
+            .. 'follow a concave model (cars, rooms, arches). Bounding Box: one box.',
         visibleWhen = { key = 'shape', oneOf = { 'Geometry', 'Points' } },
     },
     maxTriangles = {

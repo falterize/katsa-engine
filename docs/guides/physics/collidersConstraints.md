@@ -3,8 +3,8 @@
 Collider3D is a child of Body3D. Use shape="Geometry", geometrySource pointing to
 one Mesh3D, a whole Node3D model, or a model file path, and
 collisionLevel="Trimesh", "Single Convex", "Simplified Convex", "Multiple Convex" or
-"Bounding Box" (see `collisionLevels.md`). Bounding Box creates a box for each mesh; Single
-Convex a hull per mesh; Trimesh thin triangle prisms and requires a Static body; Multiple
+"Bounding Box" (see `collisionLevels.md`). Bounding Box creates one box for the whole source; Single
+Convex one hull; Trimesh thin triangle prisms and requires a Static body; Multiple
 Convex cuts a concave model into several hulls. maxTriangles bounds the work. Skinned models
 use bind geometry, not live GPU vertex deformation. Source transforms and geometry
 changes rebuild cached shapes; stable geometry reuses them. Status reports invalid

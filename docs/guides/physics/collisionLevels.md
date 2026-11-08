@@ -5,12 +5,16 @@ A `Collider3D` with `shape = 'Geometry'` (a model file or a part of a model) or 
 | Level | What it builds | Use for |
 | --- | --- | --- |
 | `Trimesh` | One thin prism per triangle (Static bodies only). Exact, expensive. | Level geometry |
-| `Single Convex` | One convex hull per mesh part. | Rocks, props that are already convex |
-| `Simplified Convex` | One hull per part, reduced to `hullPoints` vertices. | Cheap dynamic bodies |
+| `Single Convex` | One convex hull for the whole source. | Rocks, props that are already convex |
+| `Simplified Convex` | One hull for the whole source, reduced to `hullPoints` vertices. | Cheap dynamic bodies |
 | `Multiple Convex` | The whole model cut into up to `maxHulls` nearly convex hulls. Concave shapes (an L, a car body, a chair) keep their hollows. | Dynamic bodies that must be accurate |
 | `Bounding Box` | One box. Default. | Anything that only needs a volume |
 
 The 3D levels replace the old `Simple`, `Convex` and `Detailed` names (`Bounding Box`, `Single Convex`, `Trimesh`); the old names are rejected with an error that lists the valid ones. `Collider2D` keeps its own `Simple` / `Convex` / `Detailed` image levels.
+
+The source is one shape, as in Godot: a model file or node subtree with several meshes gets one hull, one box or one set of pieces for all of them (`Trimesh` keeps every triangle). Select a single part, or give each part its own `Collider3D`, for per-part shapes.
+
+A `Shape = 'Points'` collider follows the same levels. `Trimesh` and `Multiple Convex` read the surface, so they need `indices` or a triangle soup; the other levels only need the points.
 
 ## Multiple Convex
 

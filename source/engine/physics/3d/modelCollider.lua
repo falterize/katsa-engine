@@ -133,6 +133,9 @@ local function bake(node, parts)
     return baked
 end
 
+-- One collision shape for the whole source, as in Godot: a model with several meshes gets one
+-- hull / one box / one set of pieces, not one per mesh. (Select a part, or give each part its own
+-- Collider3D, for per-part shapes.)
 function Builder.build(node, body, parts)
     local Physics = require('source.engine.physics')
     local kind = Level.kind(node.collisionLevel)
@@ -140,53 +143,39 @@ function Builder.build(node, body, parts)
         kind ~= 'trimesh' or body.bodyType == 'Static',
         'Trimesh model collision requires a Static Body3D'
     )
-    local baked = bake(node, parts)
-    local children = {}
-    local function add(descriptor)
-        if descriptor.shape == 'Compound' then
-            for _, d in ipairs(descriptor.children) do
-                children[#children + 1] = d
-            end
-        else
-            children[#children + 1] = descriptor
+    local soup = {}
+    for _, vertices in ipairs(bake(node, parts)) do
+        for _, v in ipairs(vertices) do
+            soup[#soup + 1] = v
         end
     end
+    local descriptor
     if kind == 'multiple' then
-        -- Several hulls for the whole model: it may be concave, and the pieces share one budget.
-        local soup = {}
-        for _, vertices in ipairs(baked) do
-            for _, v in ipairs(vertices) do
-                soup[#soup + 1] = v
-            end
-        end
-        local hulls = Decomposition.decompose(soup, {
+        local children = {}
+        for _, hull in ipairs(Decomposition.decompose(soup, {
             maxHulls = node.maxHulls,
             hullPoints = node.hullPoints,
             concavity = node.concavity,
             resolution = node.resolution,
-        })
-        for _, hull in ipairs(hulls) do
+        })) do
             children[#children + 1] = { shape = 'Convex', vertices = hull }
         end
+        descriptor = { shape = 'Compound', children = children }
+    elseif kind == 'simplified' then
+        local hull = Decomposition.simplify(soup, node.hullPoints)
+        assert(hull, 'Convex collider requires distinct points')
+        descriptor = { shape = 'Convex', vertices = hull }
     else
-        for _, vertices in ipairs(baked) do
-            if kind == 'simplified' then
-                local hull = Decomposition.simplify(vertices, node.hullPoints)
-                assert(hull, 'Convex collider requires distinct points')
-                add({ shape = 'Convex', vertices = hull })
-            else
-                if kind == 'convex' then
-                    vertices = thickened(vertices)
-                end
-                add(
-                    Physics.modelCollider(
-                        { geometry = { vertices = vertices }, size = { 1, 1, 1 } },
-                        PHYSICS_LEVEL[kind]
-                    )
-                )
-            end
+        if kind == 'convex' then
+            soup = thickened(soup)
         end
+        descriptor = Physics.modelCollider(
+            { geometry = { vertices = soup }, size = { 1, 1, 1 } },
+            PHYSICS_LEVEL[kind]
+        )
     end
+    -- Always a compound, so the body treats every level alike.
+    local children = descriptor.shape == 'Compound' and descriptor.children or { descriptor }
     return {
         shape = 'Compound',
         children = children,
