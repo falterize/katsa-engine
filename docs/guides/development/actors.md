@@ -114,8 +114,9 @@ Lua, and for long Ogg Vorbis tracks.
 
 ## Native layer and platforms
 
-`native/src/katsa_threads.c` (pthreads / Win32 threads, condition variables, atomics) builds to
-`libkatsa_threads.so` / `katsa_threads.dll` / `libkatsa_threads.dylib` with `tools/native/build.py`.
+`native/src/threads/` (pthreads / Win32 threads, condition variables, atomics; `threads.h` lists the
+files and the thread-safety rules) builds to `libkatsa_threads.so` / `katsa_threads.dll` /
+`libkatsa_threads.dylib` with `tools/native/build.py <target> threads`.
 It does not link Lua: at start-up the process hands it `luaL_newstate`, `lua_pcall` and the few other
 entry points through `ffi.C`, so **the host executable must export the Lua C API** (the dev
 `luajit` does; the shipped `katsa_host` links LuaJIT statically with `-rdynamic` on Linux, and on
@@ -126,3 +127,7 @@ Rules that keep it fast and safe: send **jobs** (coarse messages) rather than th
 ones; a worker is cooperative, so a handler must return in reasonable time for `stop` to take effect
 (an unresponsive worker is detached and frees itself when it ends); never touch scene nodes from a
 worker, compute with plain data and apply the result in the main-thread callback.
+
+After changing `native/src/threads`, run `sh validation/native/threadsStress.sh` on Linux: it
+builds a stress test with ThreadSanitizer and AddressSanitizer (hundreds of actors destroyed at
+random moments) and must report `races=0` and no ASan errors.

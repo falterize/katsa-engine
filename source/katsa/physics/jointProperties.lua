@@ -11,7 +11,7 @@ local squareDown = Scale.squareDown
 local pair = Binding.pair
 local alive = Object.alive
 
--- Scalar property codes are shared with katsa_box2d.cpp (kb2_joint_get/set).
+-- Scalar property codes are shared with native/src/box2d/bridge.h (JointProperty, kb2_joint_get/set).
 local function install(Joint)
     local function prop(name, what, convert, restore, setter)
         Joint['get' .. name] = function(self)

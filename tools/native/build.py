@@ -12,8 +12,8 @@ Targets:
 Libraries (all of them when none is named):
     katsa_native   UTF-8 files, image/audio/font decoding (native/src/native/*.c)
     katsa_box2d    Box2D bridge (native/src/box2d/*.cpp + vendor/box2d)
-    katsa_net      ENet bridge (katsa_net.c + vendor/enet)
-    katsa_threads  OS threads, channels and shared arrays for actors (katsa_threads.c)
+    katsa_net      ENet bridge (native/src/net/*.c + vendor/enet)
+    katsa_threads  OS threads, message queues and shared memory for actors (native/src/threads/*.c)
     host           the katsa executable (native/src/host/*.c); built only when named or when
                    LUAJIT_PREFIX (linux, macos) / LUAJIT_WIN_LIB (windows) is set
 
@@ -50,11 +50,12 @@ ENET = VENDOR / 'enet'
 NET_SOURCES = [
     ENET / name
     for name in ('callbacks.c', 'compress.c', 'host.c', 'list.c', 'packet.c', 'peer.c', 'protocol.c')
-] + [SRC / 'katsa_net.c']
-NET_FLAGS = ['-O2', '-fvisibility=hidden', '-DHAS_SOCKLEN_T', '-I' + str(ENET / 'include')]
+] + sorted((SRC / 'net').glob('*.c'))
+NET_FLAGS = ['-O2', '-fvisibility=hidden', '-DHAS_SOCKLEN_T', '-I' + str(ENET / 'include'),
+             '-I' + str(SRC)]
 
-THREADS_SOURCES = [SRC / 'katsa_threads.c']
-THREADS_FLAGS = ['-O2', '-fvisibility=hidden']
+THREADS_SOURCES = sorted((SRC / 'threads').glob('*.c'))
+THREADS_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(SRC)]
 
 # android.c compiles to nothing off Android; Android builds the host with CMake instead.
 HOST_SOURCES = sorted((SRC / 'host').glob('*.c'))
@@ -233,8 +234,10 @@ TARGETS = ['linux', 'windows', 'macos', 'android']
 # `build.py windows font.c` builds katsa_native. File names shared by several libraries are
 # left out on purpose.
 FILE_LIBRARIES = {
-    'katsa_native': ('native', 'core', 'filesystem', 'image', 'audio', 'font'),
+    'katsa_native': ('native', 'core', 'filesystem', 'audio', 'font'),
     'katsa_box2d': ('box2d', 'bridge', 'world', 'body', 'shape', 'fixture', 'contact', 'joint'),
+    'katsa_net': ('net', 'lan'),
+    'katsa_threads': ('threads', 'platform', 'queue', 'actor', 'shared'),
 }
 
 

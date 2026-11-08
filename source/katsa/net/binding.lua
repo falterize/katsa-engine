@@ -1,4 +1,4 @@
--- FFI declarations for katsa_net (flat API over ENet; see native/src/katsa_net.c).
+-- FFI declarations for katsa_net (flat API over ENet; see native/src/net).
 local ffi = require('ffi')
 local Native = require('source.katsa.core.native')
 

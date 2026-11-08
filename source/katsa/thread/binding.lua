@@ -1,4 +1,4 @@
--- FFI declarations of katsa_threads (see native/src/katsa_threads.c) and the loader.
+-- FFI declarations of katsa_threads (see native/src/threads) and the loader.
 --
 -- The native library does not link Lua. It is handed the Lua C API entry points of the running
 -- process (kt_init): the dev host's luajit executable exports them, and the shipped host exports
