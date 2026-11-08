@@ -4,6 +4,11 @@
 local ffi = require('ffi')
 
 return function(Platform, K)
+    -- Quiet entries (history and log file only) for window events that need to be traceable.
+    local function log(message)
+        require('source.katsa.core.log').write('log', message, 'window', true)
+    end
+
     -- Window opacity (0..1, the whole window) of the main window.
     function Platform:setOpacity(opacity)
         return self.sdl.SDL_SetWindowOpacity(self.window, math.max(0, math.min(1, opacity))) == 0
@@ -179,6 +184,18 @@ return function(Platform, K)
         end))
     end
 
+    -- user32's window style accessors (declared once; ffi.cdef raises on a repeated type).
+    function Platform:userStyles()
+        if not self.userStyleDeclared then
+            ffi.cdef([[
+                intptr_t GetWindowLongPtrW(void* window, int index);
+                intptr_t SetWindowLongPtrW(void* window, int index, intptr_t value);
+            ]])
+            self.userStyleDeclared = true
+        end
+        return ffi.load('user32')
+    end
+
     -- An owned window has no taskbar button, and the taskbar's hover list shows only windows with
     -- one. WS_EX_APPWINDOW gives it a button (grouped under the game's icon); the window is hidden
     -- and shown once because Windows reads the style when a window becomes visible. Windows only:
@@ -188,14 +205,7 @@ return function(Platform, K)
             return true
         end
         return (pcall(function()
-            if not self.userStyleDeclared then
-                ffi.cdef([[
-                    intptr_t GetWindowLongPtrW(void* window, int index);
-                    intptr_t SetWindowLongPtrW(void* window, int index, intptr_t value);
-                ]])
-                self.userStyleDeclared = true
-            end
-            local user = ffi.load('user32')
+            local user = self:userStyles()
             local handle = nativeHandle(self, raw)
             assert(handle, 'no native handle')
             local style = tonumber(user.GetWindowLongPtrW(handle, -20))
@@ -261,12 +271,26 @@ return function(Platform, K)
             if not handle then
                 error('SDL_GetWindowWMInfo failed')
             end
+            -- A layered window (SDL makes one whenever the opacity is not exactly 1) ignores the
+            -- per-pixel alpha that DWM would apply, so the layered style goes while the window is
+            -- fully opaque.
+            local user = self:userStyles()
+            local bit = require('bit')
+            local style = tonumber(user.GetWindowLongPtrW(handle, -20))
+            if enabled and bit.band(style, 0x80000) ~= 0 and self:getOpacity() >= 1 then
+                user.SetWindowLongPtrW(handle, -20, ffi.cast('intptr_t', bit.band(style, bit.bnot(0x80000))))
+            end
             local dwm, gdi = ffi.load('dwmapi'), ffi.load('gdi32')
             -- An empty blur region switches per-pixel alpha on without blurring anything.
             local region = gdi.CreateRectRgn(0, 0, -1, -1)
             local behind = ffi.new('KatsaBlurBehind', 3, enabled and 1 or 0, region, 0)
-            dwm.DwmEnableBlurBehindWindow(handle, behind)
+            local result = dwm.DwmEnableBlurBehindWindow(handle, behind)
             gdi.DeleteObject(region)
+            -- Written to the log: this is the one place to look when the window stays opaque.
+            log(('transparent window %s: DwmEnableBlurBehindWindow = 0x%08x'):format(
+                enabled and 'on' or 'off',
+                bit.band(result, 0xffffffff)
+            ))
         end)
         if not ok then
             io.stderr:write('Transparent window unavailable: ', tostring(message), '\n')
@@ -349,9 +373,6 @@ return function(Platform, K)
         end
     end
 
-    local function log(message)
-        require('source.katsa.core.log').write('log', message, 'window', true)
-    end
 
     -- Destroys an SDL window that no record owns any more. Each step is logged (silently, in the
     -- history and the log file): a freeze while closing windows shows which call it stopped in.
