@@ -6,6 +6,10 @@ local Fields = require('./schemaFields')
 local groups, enum = Fields.groups, Fields.enum
 
 function Schema.keys(target, fallback)
+    local pluginKeys = require('source.engine.plugins').settingsKeys[target]
+    if pluginKeys then
+        return pluginKeys
+    end
     if target._settingsKind == 'Particles' then
         return { 'wind', 'maxParticles', 'collisionBudget', 'fixedDelta', 'maxSteps' }
     end

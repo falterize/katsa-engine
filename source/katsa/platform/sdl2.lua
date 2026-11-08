@@ -591,6 +591,7 @@ end
 -- Iterator over translated events currently queued by the OS.
 function Platform:poll()
     local sdl, event = self.sdl, self.event
+    self:flushClosedWindows()
     return function()
         -- SDL calls event watches from inside SDL_PollEvent too; `polling` tells those deliveries
         -- (the frame loop handles them) from the ones sent while the OS runs its own resize loop.
@@ -624,8 +625,18 @@ function Platform:onLiveResize(handler)
         local kind = event.type == EVENT.WINDOW and event.window.event
         local sized = kind == WINDOW_EVENT.SIZE_CHANGED or kind == WINDOW_EVENT.RESIZED
         local moved = kind == WINDOW_EVENT.MOVED or kind == WINDOW_EVENT.EXPOSED
+        -- Only the main window's own moves and resizes count. Events of the extra windows, and the
+        -- ones SDL raises synchronously from calls the game itself makes (setPosition, setSize,
+        -- fullscreen) arrive outside a poll, and running a frame from inside those would re-enter
+        -- the game's update in the middle of itself.
+        if
+            (sized or moved)
+            and event.window.windowID ~= self.sdl.SDL_GetWindowID(self.mainWindow or self.window)
+        then
+            return 0
+        end
         local now = self.sdl.SDL_GetTicks()
-        local modal = not self.polling or now - (self.pollStarted or now) > MODAL_AFTER_MS
+        local modal = self.polling and now - (self.pollStarted or now) > MODAL_AFTER_MS
         if
             (sized or moved)
             and modal

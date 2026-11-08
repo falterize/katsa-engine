@@ -116,6 +116,18 @@ function Plugins.activate(world, names)
                     end
                 end
                 world.environment.debug[debug.key] = settings
+                -- The inspector lists these keys, in this order, as the section's properties.
+                local keys = debug.keys
+                if not keys then
+                    keys = {}
+                    for key in pairs(debug.defaults or {}) do
+                        keys[#keys + 1] = key
+                    end
+                    table.sort(keys, function(a, b)
+                        return a == 'enabled' or (b ~= 'enabled' and a < b)
+                    end)
+                end
+                Plugins.settingsKeys[settings] = keys
                 state.debug[#state.debug + 1] = {
                     key = debug.key,
                     title = debug.title or debug.key,
@@ -128,6 +140,8 @@ function Plugins.activate(world, names)
 end
 
 -- Debug sections of the active plugins: { key, title, settings } in activation order.
+Plugins.settingsKeys = setmetatable({}, { __mode = 'k' })
+
 function Plugins.debugSections(world)
     return world.plugins and world.plugins.debug or {}
 end

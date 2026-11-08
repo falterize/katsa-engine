@@ -12,6 +12,17 @@ function Module.run(self)
         'Pathfinding is one debug section with a drawPaths property'
     )
     self:check(#Plugins.debugSections(world) == 1, 'The plugin adds a single debug row')
+    local rows = require('source.engine.editor.inspectors.properties').list(debug.pathfinding)
+    local names = {}
+    for _, row in ipairs(rows) do
+        names[#names + 1] = row.key
+    end
+    self:check(table.concat(names, ',') == 'enabled,drawCells,drawLinks,drawPaths,drawDistance', 'The inspector lists the pathfinding debug settings: ' .. table.concat(names, ','))
+    local kinds = {}
+    for _, row in ipairs(rows) do
+        kinds[row.key] = row.kind
+    end
+    self:check(kinds.drawCells == 'boolean' and kinds.drawDistance == 'number', 'Debug settings have editable kinds')
     local Debug = require('source.plugins.pathfinding').Debug
     Debug.setRoute(world, 'bot1', { points = { { 0, 0, 0 } } })
     Debug.setRoute(world, 'bot2', { points = { { 1, 0, 1 } } })

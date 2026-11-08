@@ -13,6 +13,7 @@ return {
     debug = {
         key = 'pathfinding',
         title = 'Pathfinding',
+        keys = { 'enabled', 'drawCells', 'drawLinks', 'drawPaths', 'drawDistance' },
         defaults = {
             enabled = false,
             drawCells = true,

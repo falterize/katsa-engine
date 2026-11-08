@@ -246,29 +246,60 @@ return function(Platform, K)
         end
     end
 
+    local function log(message)
+        require('source.katsa.core.log').write('log', message, 'window', true)
+    end
+
+    -- Destroys an SDL window that no record owns any more. Each step is logged (silently, in the
+    -- history and the log file): a freeze while closing windows shows which call it stopped in.
+    local function destroyRaw(self, raw, id)
+        local sdl, main = self.sdl, self.mainWindow or self.window
+        -- Never destroy the window that owns the current context or the call target.
+        if self.window == raw then
+            self:bind(main)
+        end
+        log('window ' .. tostring(id) .. ': context to main')
+        sdl.SDL_GL_MakeCurrent(main, self.context)
+        log('window ' .. tostring(id) .. ': hide')
+        sdl.SDL_HideWindow(raw)
+        log('window ' .. tostring(id) .. ': destroy')
+        sdl.SDL_DestroyWindow(raw)
+        log('window ' .. tostring(id) .. ': raise main')
+        sdl.SDL_RaiseWindow(main)
+        sdl.SDL_SetWindowInputFocus(main)
+        log('window ' .. tostring(id) .. ': closed')
+    end
+
     function Platform:destroyWindow(record)
-        if record.raw then
-            local sdl, raw, main = self.sdl, record.raw, self.mainWindow or self.window
-            self.subWindows[record.id] = nil
-            record.listener = nil
-            -- Never destroy the window that owns the current context or the call target, and hide
-            -- it first so no focus or z-order change is pending while it goes.
-            if self.window == raw then
-                self:bind(main)
-            end
-            -- Each step is logged (silently, in the history and the log file): a freeze while
-            -- closing windows then shows which call it stopped in.
-            local Log = require('source.katsa.core.log')
-            Log.write('log', 'window ' .. tostring(record.id) .. ': close, context to main', 'window', true)
-            sdl.SDL_GL_MakeCurrent(main, self.context)
-            Log.write('log', 'window ' .. tostring(record.id) .. ': hide', 'window', true)
-            sdl.SDL_HideWindow(raw)
-            record.raw = nil
-            Log.write('log', 'window ' .. tostring(record.id) .. ': destroy', 'window', true)
-            sdl.SDL_DestroyWindow(raw)
-            Log.write('log', 'window ' .. tostring(record.id) .. ': raise main', 'window', true)
-            sdl.SDL_RaiseWindow(main)
-            Log.write('log', 'window ' .. tostring(record.id) .. ': closed', 'window', true)
+        local raw = record.raw
+        if not raw then
+            return
+        end
+        self.subWindows[record.id] = nil
+        record.listener = nil
+        record.raw = nil
+        if self.liveResizing then
+            -- Inside the OS's own move/size loop (a frame run from an event watch): destroying a
+            -- window from here would pull it out from under the event being dispatched. Hide it
+            -- now and destroy it when the loop is over.
+            self.sdl.SDL_HideWindow(raw)
+            self.closedWindows = self.closedWindows or {}
+            self.closedWindows[#self.closedWindows + 1] = { raw = raw, id = record.id }
+            return
+        end
+        destroyRaw(self, raw, record.id)
+    end
+
+    -- Destroys the windows whose closing was deferred; run at the start of every event poll, never
+    -- from inside a watch.
+    function Platform:flushClosedWindows()
+        local list = self.closedWindows
+        if not list or #list == 0 or self.liveResizing then
+            return
+        end
+        self.closedWindows = {}
+        for _, entry in ipairs(list) do
+            destroyRaw(self, entry.raw, entry.id)
         end
     end
 
