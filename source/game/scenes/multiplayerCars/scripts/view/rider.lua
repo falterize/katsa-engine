@@ -62,7 +62,12 @@ function Rider:board(carRoot, seat)
     -- has been around when the player boards is.
     local first = self.carRoot == nil and not self.placed
         and katsa.timer.getTime() - self.createdAt < 0.25
-    self.root:setParent(carRoot, { keepWorldTransform = true })
+    -- Keeping the world transform would need the inverse of the car's matrix as a TRS pose, which
+    -- does not exist once the car root has a non-uniform scale (the walker would gain shear). The
+    -- standing point is carried over instead; the ramp turns the walker to the seat anyway.
+    local standing = self.root:pointToWorldSpace({ 0, 0, 0 })
+    self.root:setParent(carRoot)
+    self.root.position = carRoot:pointToLocalSpace(standing)
     self.pivot.position = { 0, 0, 0 }
     self.carRoot, self.seat, self.placed = carRoot, seat, true
     local from = self.root.position

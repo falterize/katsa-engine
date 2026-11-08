@@ -66,6 +66,23 @@ function Tests:draw()
     self:check(hull.children[3].size[3] < 5.1 / 3 - 0.05, 'The nose section is shorter after a front hit')
     self:check(math.abs(hull.children[1].size[3] - 5.1 / 3) < 1e-6, 'An untouched section keeps its size')
     body:destroy()
+    -- A passenger boards a car whose root has a non-uniform scale (the owner scaled it in the
+    -- Explorer): no shear error, and the walker ends up on the car.
+    local world = self.host.world
+    local Rider = self.host.package:require('scripts.view.rider')
+    local carRoot = world:create('Node3D', { name = 'ScaledCar', scale = { 1, 2, 1.5 }, rotation = { 0, 40, 0 } })
+    local walker = world:create('Node3D', { name = 'ScaledWalker', position = { 1, 0, 1 } })
+    local pivot = world:create('Node3D', { name = 'ScaledPivot' }, walker)
+    local rider = Rider.new(world, walker, pivot)
+    local ok = pcall(function()
+        rider:board(carRoot, 1)
+        world.root:getDescendants()
+        walker:getWorldMatrix()
+    end)
+    self:check(ok and walker.parent == carRoot, 'A walker can board a car with a non-uniform scale')
+    rider:release(true)
+    carRoot:destroy()
+    walker:destroy()
     print('PASSED ' .. self.count .. ' v108.7 wheel steering checks')
     katsa.event.quit()
 end

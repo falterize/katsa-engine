@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- multiplayerCars: the collision hull follows the dents: the chassis box becomes three boxes whose faces are pulled in by the dents (untouched sections stay exact). Test: `--test-v108.7.steering`.
+- Pathfinding: `Layered:snapshot()/fromSnapshot()/version()` and `RemotePlanner` (route searches on an ActorPool, inline fallback without threads or after a worker failure). multiplayerCars bots search routes on a worker (`workers = false` keeps them on the main thread). Test: `v108_7/botWorkers.lua`.
+- multiplayerCars: boarding a car whose root has a non-uniform scale no longer crashes with "Transform contains shear" (the walker is re-parented by its standing point instead of the inverse car matrix). Test: `--test-v108.7.steering`.
 - multiplayerCars: wheels now roll in the direction of travel (the spin sign was inverted). Test: `v108_7/wheelRoll.lua`.
 - multiplayerCars: a car steers with its front wheels and is driven by its rear wheels; a torn-off or airborne wheel takes its share of steering and thrust with it (no front wheels, no turning). Test: `--test-v108.7.steering` (`v108_7/wheelSteering.lua`).
 - multiplayerCars: stacked dents saturate (exact below 0.6 m, smooth limit 1.0 m) instead of dragging vertices away and stretching the hood into a strip. Test: `v108_7/dentShading.lua`.
