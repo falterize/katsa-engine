@@ -74,6 +74,44 @@ local function separator()
     return Native.os() == 'Windows' and '\\' or '/'
 end
 
+-- ffi.load for a file path in UTF-8 (every path in katsa is UTF-8).
+--
+-- LuaJIT's ffi.load calls LoadLibraryExA on Windows, which reads the path in the ANSI code page,
+-- so a folder such as C:\Users\Админ or a game folder with characters outside that code page
+-- cannot be loaded. A path with non-ASCII bytes is therefore loaded with LoadLibraryW first;
+-- Windows then hands that already loaded module to ffi.load when it is asked for the bare file
+-- name. Other systems take UTF-8 paths directly.
+local wideDeclared = false
+
+local function loadWindowsUnicode(path)
+    if not wideDeclared then
+        pcall(ffi.cdef, [[
+        int MultiByteToWideChar(unsigned int, unsigned long, const char*, int, uint16_t*, int);
+        void* LoadLibraryW(const uint16_t* name);
+        ]])
+        wideDeclared = true
+    end
+    local kernel32 = ffi.load('kernel32')
+    local CP_UTF8 = 65001
+    local count = kernel32.MultiByteToWideChar(CP_UTF8, 0, path, -1, nil, 0)
+    if count <= 0 then
+        error('Invalid UTF-8 library path: ' .. path, 2)
+    end
+    local wide = ffi.new('uint16_t[?]', count)
+    kernel32.MultiByteToWideChar(CP_UTF8, 0, path, -1, wide, count)
+    if kernel32.LoadLibraryW(wide) == nil then
+        error('cannot load module ' .. path, 2)
+    end
+    return ffi.load(path:match('[^/\\]+$'))
+end
+
+function Native.loadFile(path)
+    if Native.os() == 'Windows' and path:find('[\128-\255]') then
+        return loadWindowsUnicode(path)
+    end
+    return ffi.load(path)
+end
+
 function Native.load(name)
     if Native.cache[name] ~= nil then
         return Native.cache[name] or nil
@@ -94,7 +132,7 @@ function Native.load(name)
         for _, file in ipairs(names) do
             local path = directory .. separator() .. file
             tried[#tried + 1] = path
-            local ok, library = pcall(ffi.load, path)
+            local ok, library = pcall(Native.loadFile, path)
             if ok then
                 Native.cache[name], Native.paths[name] = library, path
                 return library

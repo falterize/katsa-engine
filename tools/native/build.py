@@ -171,8 +171,9 @@ def build_host(tc, out, target, required):
         # the statically linked LuaJIT must be in the export table; without this Actors in a
         # packaged Windows game always fall back to the main thread.
         exports = '-Wl,--export-all-symbols'
+        # shell32: CommandLineToArgvW (UTF-8 arguments, see host/main.c).
         run([tc.cc, '-O2', '-I' + include, *HOST_SOURCES, lib, '-static', subsystem, exports,
-             '-o', out / 'katsa.exe'])
+             '-lshell32', '-o', out / 'katsa.exe'])
         return True
     if not os.environ.get('LUAJIT_PREFIX'):
         if required:

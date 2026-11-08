@@ -45,7 +45,9 @@ if path and katsa.filesystem.getInfo(path) then
     if katsa.filesystem.read(target) ~= bytes then
         assert(katsa.filesystem.write(target, bytes))
     end
-    Jobs.C = ffi.load(katsa.filesystem.getSaveDirectory() .. '/' .. target)
+    Jobs.C = require('source.katsa.core.native').loadFile(
+        katsa.filesystem.getSaveDirectory() .. '/' .. target
+    )
     local names = {
         'JPH_Body_GetID',
         'JPH_ContactManifold_GetSubShapeID1',

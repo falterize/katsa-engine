@@ -30,7 +30,8 @@ if platformName == 'Android' then
         lib = packaged
     end
 end
-lib = lib or ffi.load(katsa.filesystem.getSaveDirectory() .. '/' .. target)
+lib = lib
+    or require('source.katsa.core.native').loadFile(katsa.filesystem.getSaveDirectory() .. '/' .. target)
 assert(lib.JPH_Init(), 'Jolt initialization failed')
 -- Keep the library alive for the entire Lua state; worlds own their native handles.
 return { ffi = ffi, C = lib, hash = hash, platform = platform .. '-' .. architecture }

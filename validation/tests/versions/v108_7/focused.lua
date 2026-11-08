@@ -35,6 +35,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_7.wheelRoll').run(self)
     require('validation.tests.versions.v108_7.sceneTags').run(self)
     require('validation.tests.versions.v108_7.botWorkers').run(self)
+    require('validation.tests.versions.v108_7.nativePaths').run(self)
     print('PASSED ' .. self.count .. ' v108.7 focused checks')
     katsa.event.quit()
 end

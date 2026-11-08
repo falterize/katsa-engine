@@ -54,16 +54,20 @@ static int read_whole(HostImage* image, FILE* file) {
 
 int host_load_image(HostImage* image, const char* argv0) {
 #if defined(_WIN32)
-    /* KNOWN LIMITATION: the path is in the ANSI code page, not UTF-8. Lua passes it both to
-     * katsa_fs_* (which expects UTF-8) and to LuaJIT's ffi.load (which expects ANSI on Windows),
-     * so a folder name outside the code page breaks one of them either way. Changing this needs
-     * both consumers fixed together; see docs/AGENTS.md, open items. */
+    /* The wide API, so any folder name works; Lua receives the path as UTF-8 like every other
+     * path (katsa_fs_* expect UTF-8, and Native.loadFile loads DLLs from non-ASCII folders). */
     (void)argv0;
-    DWORD count = GetModuleFileNameA(NULL, image->path, (DWORD)sizeof image->path);
-    if (count == 0 || count >= sizeof image->path) {
+    wchar_t wide[4096];
+    DWORD count = GetModuleFileNameW(NULL, wide, 4096);
+    if (count == 0 || count >= 4096) {
         return 0; /* failed, or the path was truncated */
     }
-    return read_whole(image, fopen(image->path, "rb"));
+    if (WideCharToMultiByte(CP_UTF8, 0, wide, -1, image->path, (int)sizeof image->path, NULL,
+                            NULL)
+        <= 0) {
+        return 0;
+    }
+    return read_whole(image, _wfopen(wide, L"rb"));
 #elif defined(__APPLE__)
     (void)argv0;
     uint32_t size = sizeof image->path;

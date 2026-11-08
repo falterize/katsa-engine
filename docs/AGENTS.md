@@ -54,6 +54,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 - Plugin manifests name modules as `./nodes.navMap`. Scene scripts are relative to the scene root; scene packages use the `scene.` prefix (`require('scene.scripts.x')`) and `scene://` for asset URLs.
 - `katsa.filesystem.getDirectoryItems/getInfo/read/load` list and read files (also from archives). Scene code gets its root from `context.root`.
 - Keep game features in `source/game`, engine services in `source/engine`, third-party artifacts in `vendor`. The core must **never** require a plugin.
+- Paths are UTF-8 everywhere (the host converts on Windows). Load native libraries by path with `require('source.katsa.core.native').loadFile(path)`, never `ffi.load(path)` directly: LuaJIT's `ffi.load` is ANSI-only on Windows and fails in folders with other characters.
 
 ## 5. Build, run, test
 

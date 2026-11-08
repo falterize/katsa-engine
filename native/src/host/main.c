@@ -5,7 +5,8 @@
  * Lua receives one global, `katsa_host`:
  *
  *     katsa_host.exe    UTF-8 path of the file that holds the archive
- *     katsa_host.args   command-line arguments after the program name, { [1] = ..., ... }
+ *     katsa_host.args   command-line arguments after the program name, { [1] = ..., ... },
+ *                       UTF-8 on every system (Windows converts the UTF-16 command line)
  *     katsa_host.read   function(name) -> contents of a STORE entry, or nil
  *
  * boot.lua may return an integer, which becomes the process exit status.
@@ -25,6 +26,9 @@
 
 #if defined(__ANDROID__)
 #include <SDL.h> /* renames main to SDL_main, which SDLActivity calls */
+#elif defined(_WIN32)
+#include <windows.h>
+#include <shellapi.h>
 #endif
 
 #define BOOT_ENTRY "__katsa/boot.lua"
@@ -61,9 +65,29 @@ static void publish_host_table(lua_State* L, int argc, char** argv) {
     lua_setfield(L, -2, "read");
 
     lua_newtable(L);
-    for (int i = 1; i < argc; i++) {
-        lua_pushstring(L, argv[i]);
-        lua_rawseti(L, -2, i);
+#if defined(_WIN32)
+    /* argv is in the ANSI code page on Windows; take the UTF-16 command line instead so a game
+     * path such as C:\Игры\demo reaches Lua intact (as UTF-8, like every path in katsa). */
+    int wide_count = 0;
+    wchar_t** wide_args = CommandLineToArgvW(GetCommandLineW(), &wide_count);
+    if (wide_args) {
+        for (int i = 1; i < wide_count; i++) {
+            char utf8[4096];
+            if (WideCharToMultiByte(CP_UTF8, 0, wide_args[i], -1, utf8, (int)sizeof utf8, NULL,
+                                    NULL)
+                > 0) {
+                lua_pushstring(L, utf8);
+                lua_rawseti(L, -2, i);
+            }
+        }
+        LocalFree(wide_args);
+    } else
+#endif
+    {
+        for (int i = 1; i < argc; i++) {
+            lua_pushstring(L, argv[i]);
+            lua_rawseti(L, -2, i);
+        }
     }
     lua_setfield(L, -2, "args");
 

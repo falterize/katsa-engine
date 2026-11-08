@@ -37,7 +37,7 @@ do
     end
 end
 
-local library = ffi.load(KATSA_LIB)
+local library = require('source.katsa.core.native').loadFile(KATSA_LIB)
 -- Modules such as SharedArray find the library through the binding module; here it is already
 -- loaded (and the C declarations exist), so hand over this instance.
 package.loaded['source.katsa.thread.binding'] = {
