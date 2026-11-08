@@ -43,6 +43,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 - Blank lines between sibling functions and logical phases. Runtime modules export named tables in this order: imports, locals, module table, helpers, functions, final export. Use explicit `create/new/build/install/register` entry points.
 - Comment non-obvious invariants, units, ownership, callback boundaries and cache invalidation. Do not narrate obvious assignments or comment every function.
 - Keep allocations out of hot loops; keep native callback lifetime and JIT safeguards.
+- **Weak tables are not ephemerons in LuaJIT.** A value in a weak-key table is marked strongly, so if the value refers back to its key (directly or through a group/cache entry) the entry never dies. This leaked every removed car in v108.7 (renderer batch `membership`). Caches keyed by nodes must drop entries of destroyed nodes explicitly. To find a leak, `validation/tests/versions/v108_7/heapWalk.lua` (`Walk.find`) prints the shortest reference chain to a reachable destroyed node; `--test-v108.7.botmemory` is the example.
 - Shaders keep **CRLF** line endings where the file has them (`world.glsl`). When editing with Python, open with `newline=''`; a text-mode rewrite turns the whole file into a diff.
 - Tests must be **short** and focused (a handful of checks per feature). Test descriptions are English sentences.
 

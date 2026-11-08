@@ -82,16 +82,35 @@ function Batches.new(options)
 end
 
 function Batches:pruneDestroyed()
+    local retired = false
     for i = #self.groups, 1, -1 do
         local group = self.groups[i]
         if
             group.example.destroyed or (group.lastUsed and self.prepareEpoch - group.lastUsed > 60)
         then
             group.retired = true
+            retired = true
             if group.mesh then
                 group.mesh:release()
             end
             table.remove(self.groups, i)
+        end
+    end
+    if retired then
+        self:pruneMembership()
+    end
+end
+
+-- `membership` has weak keys, but LuaJIT's weak tables are not ephemerons: a value is marked even
+-- when only its own key refers to it, and a membership value reaches its key again through
+-- group.example / group.members. Entries of destroyed meshes and retired groups would therefore
+-- keep every removed mesh (and its node tree and geometry) alive forever, so they are dropped
+-- explicitly whenever a group retires.
+function Batches:pruneMembership()
+    local membership = self.membership
+    for object, entry in pairs(membership) do
+        if object.destroyed or entry.group.retired then
+            membership[object] = nil
         end
     end
 end
