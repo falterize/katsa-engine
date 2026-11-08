@@ -33,8 +33,11 @@ function Tests:report(label)
     for _ in pairs(server.bots) do
         bots = bots + 1
     end
-    print(('MEM %-14s live %.1f MB  bots %d  cars %d  nodes %d'):format(
-        label, live(), bots, #server.order, #self.host.world.root:getDescendants()))
+    local stats = katsa.graphics.getStats()
+    local groups = #self.host.renderer.batches.groups
+    print(('MEM %-14s live %.1f MB  bots %d  cars %d  nodes %d  drawcalls %d  batchGroups %d'):format(
+        label, live(), bots, #server.order, #self.host.world.root:getDescendants(),
+        stats.drawcalls or -1, groups))
 end
 
 function Tests:finish()

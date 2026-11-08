@@ -82,6 +82,21 @@ function Module.run(self)
     single:add({ x = 0, y = 0.5, z = 2, dx = 0, dz = -1, dy = 0, depth = 0.3, radius = 1.5 })
     local sx, _, sz = single:offsetAt(0.4, 0.5, 2)
     self:check(math.abs(sz) > 0.05 and math.abs(sx) < 0.6, 'A single moderate dent is not limited')
+
+    -- Copy-on-write: an undented part draws the shared asset geometry; a dent gives it its own
+    -- copy (the shared one is never written); a repair returns it to the shared geometry.
+    local shared = { vertices = rest, revision = 0, mesh = { setVertices = function() error('shared mesh written') end } }
+    local object = { geometry = shared }
+    local cow = {
+        rest = rest, box = { -1, -1, -1, 2, 2, 1 }, radius = 2, smooth = smooth, group = group,
+        groups = count, shared = shared, geometry = shared, object = object,
+    }
+    local before = rest[1][3]
+    CarModel.deform({ cow }, dents)
+    self:check(object.geometry ~= shared and object.geometry == cow.geometry and rest[1][3] == before,
+        'A dent gives the part its own geometry and leaves the shared one untouched')
+    CarModel.deform({ cow }, Deformation.new())
+    self:check(object.geometry == shared and cow.deformed == false, 'A repaired part draws the shared geometry again')
 end
 
 return Module

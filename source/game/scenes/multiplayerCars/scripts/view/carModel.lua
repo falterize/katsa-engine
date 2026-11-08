@@ -5,8 +5,10 @@
 --   * Body, Hood and Trunkdoor are the paint: tinted per car, no texture.
 --   * Wheel_FL/FR/RL/RR are pivots at the hub with a hub-centred mesh, so the view can spin and
 --     steer them and a lost wheel keeps its own geometry.
---   * Every part that bends in a crash owns its vertices (the rest pose is shared, read-only);
---     the interior, steering wheel and suspension are rigid and share the asset's geometry.
+--   * Parts that bend in a crash share the asset's geometry until the first dent reaches them;
+--     then the part gets its own copy (copy-on-write) and returns to the shared geometry once
+--     it is repaired. Undented cars therefore draw as instances of one mesh per part and cost no
+--     vertex memory of their own. The interior, steering wheel and suspension never bend.
 local Models = require('source.engine.import.models')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
@@ -41,15 +43,14 @@ local function bounds(vertices)
 end
 
 -- An independent, dentable geometry over a shared rest pose.
-local function dentable(rest)
+local function dentable(rest, radius)
     local vertices = copyOf(rest)
-    local box, radius = bounds(vertices)
     return {
         mesh = katsa.graphics.newMesh(Geometry.format, vertices, 'triangles', 'dynamic'),
         vertices = vertices,
-        radius = radius + 0.5,
+        radius = radius,
         revision = 0,
-    }, box
+    }
 end
 
 -- Which authored polygons are shaded smooth. A triangle is smooth when its vertex normals differ
@@ -154,6 +155,20 @@ end
 
 CarModel.analyseShading = analyseShading
 
+-- Per rest pose (one per asset part, shared by every car): bounds and shading analysis.
+local analysed = setmetatable({}, { __mode = 'k' })
+
+local function analyse(rest)
+    local info = analysed[rest]
+    if not info then
+        local box, radius = bounds(rest)
+        local smooth, group, groups = analyseShading(rest)
+        info = { box = box, radius = radius + 0.5, smooth = smooth, group = group, groups = groups }
+        analysed[rest] = info
+    end
+    return info
+end
+
 function CarModel.available(scene)
     return katsa.filesystem.getInfo(scene.resources:canonical(CarModel.PATH), 'file') ~= nil
 end
@@ -184,14 +199,9 @@ function CarModel.create(scene, root, netId, color)
             pivots[name] = pivot
             result.wheelGeometry[name] = part
         else
-            local geometry, rest, box = part.geometry, nil, nil
-            if not RIGID[name] then
-                rest = part.geometry.vertices
-                geometry, box = dentable(rest)
-            end
             local object = world:create('Mesh3D', {
                 name = 'Car' .. label,
-                geometry = geometry,
+                geometry = part.geometry,
                 color = PAINT[name] and color or (GLASS[name] and GLASS_COLOR or m.color),
                 blend = m.blend or GLASS[name],
                 alphaCutoff = m.alphaCutoff,
@@ -201,11 +211,21 @@ function CarModel.create(scene, root, netId, color)
             if PAINT[name] then
                 result.paint[#result.paint + 1] = object
             end
-            if rest then
-                result.parts[#result.parts + 1] =
-                    { name = name, object = object, geometry = geometry, rest = rest, box = box }
-                local entry = result.parts[#result.parts]
-                entry.smooth, entry.group, entry.groups = analyseShading(rest)
+            if not RIGID[name] then
+                local rest = part.geometry.vertices
+                local info = analyse(rest)
+                result.parts[#result.parts + 1] = {
+                    name = name,
+                    object = object,
+                    shared = part.geometry, -- the asset's geometry, never written
+                    geometry = part.geometry, -- the drawn one: shared, or the part's own copy
+                    rest = rest,
+                    box = info.box,
+                    radius = info.radius,
+                    smooth = info.smooth,
+                    group = info.group,
+                    groups = info.groups,
+                }
             end
         end
     end
@@ -235,7 +255,17 @@ function CarModel.deform(parts, deformation)
     for _, part in ipairs(parts) do
         local box = part.box
         local reached = deformation:touches(box[1], box[2], box[3], box[4], box[5], box[6])
-        if reached or part.deformed then
+        if not reached and part.deformed then
+            -- Repaired: draw the shared geometry again. The copy is not released here: renderer
+            -- caches may still hold its mesh this frame; the collector frees it (Core.track).
+            part.geometry = part.shared
+            part.object.geometry = part.shared
+            part.deformed = false
+        elseif reached then
+            if part.geometry == part.shared then
+                part.geometry = dentable(part.rest, part.radius)
+                part.object.geometry = part.geometry
+            end
             local rest, vertices = part.rest, part.geometry.vertices
             local moved = part.moved or {}
             part.moved = moved
@@ -320,7 +350,7 @@ function CarModel.deform(parts, deformation)
                     end
                 end
             end
-            part.deformed = reached
+            part.deformed = true
             part.geometry.mesh:setVertices(vertices)
             part.geometry.revision = part.geometry.revision + 1
         end
