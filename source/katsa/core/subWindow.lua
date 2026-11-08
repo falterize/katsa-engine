@@ -169,6 +169,18 @@ function SubWindow:setAlwaysOnTop(onTop)
     end)
 end
 
+-- Owned (the default): stays above the main window and minimises with it. Free: an independent
+-- top-level window (raise it above others with setAlwaysOnTop).
+function SubWindow:setOwned(owned)
+    assert(self._record.raw, 'The window is closed')
+    local platform = self._platform
+    self._record.owned = platform:setOwner(
+        self._record.raw,
+        owned and (platform.mainWindow or platform.window) or nil
+    )
+    return self._record.owned
+end
+
 function SubWindow:center()
     aimed(self, function(platform)
         platform:center()

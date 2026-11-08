@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- windowsLab transparency regression hunt: `DwmEnableBlurBehindWindow` succeeds (0x0) yet the main window stays opaque since the panels became owned windows with their own swap interval. `SubWindow:setOwned`, and windowsLab keys `O` (panels owned or free and topmost, the old behaviour) and `S` (main vsync) switch the two differences at runtime; the card shows both states.
 - Windows: `setTransparent` removes the layered window style (left by `setOpacity`) before enabling DWM transparency and logs the `DwmEnableBlurBehindWindow` result (`transparent window on/off: ...` in latest.log). Since leaving windowsLab now really switches transparency off (the earlier call failed silently), entering the scene again needs the layered style cleared. Needs confirmation on Windows.
 - windowsLab: measured on Windows, one window move costs ~6 ms whether single or batched (`moveWindows` gave no gain), so the scene moves window moves may use 30% of the wall time (a credit that pays for each measured move), the longest waiting first (`V` cycles budget / all / batch; the card shows the mode, the measured ms per window and the transparency state).
 - Windows: dragging any window (an orbiting panel, the mini game) no longer freezes the others. The live-resize watch ignored every window but the main one; it now reacts to a drag of any window and tells the game's own moves and resizes apart by the requested values (`Platform:remember`). Needs confirmation on Windows.

@@ -9,6 +9,8 @@
 --   M      opens / closes a second scene (a mini game) in its own window
 --   V      cycles how the windows are moved: budget (default), all every frame, one OS batch
 --   Y      switches the main window's per-pixel transparency off and on (same comparison)
+--   O      panels owned by the main window / free and topmost (transparency experiment)
+--   S      main window vsync on / off (transparency experiment)
 --   R      cycles the size of the orbiting windows (windows can be resized at any time)
 -- A window closed by its close button is removed; the main window ends the scene as usual.
 local Lab = {}
@@ -55,20 +57,20 @@ function Lab.new(scene)
     local ui = scene.ui
     local card = ui:container({
         position = { 0.5, -190, 0.5, -70 },
-        size = { 0, 380, 0, 190 },
+        size = { 0, 380, 0, 210 },
         backgroundColor = { 0.08, 0.1, 0.16 },
         backgroundTransparency = 0.2,
     }, ui.content)
     ui:text({
         position = { 0, 14, 0, 10 },
         size = { 1, -28, 1, -20 },
-        text = 'Transparent main window\nT  opacity     B  title bar     F11  fullscreen\nM  mini game window     R  resize windows     Space  pause\nV  move mode     Y  transparency',
+        text = 'Transparent main window\nT  opacity     B  title bar     F11  fullscreen\nM  mini game window     R  resize windows     Space  pause\nV  move mode     Y  transparency     O  owned     S  vsync',
         fontSize = 17,
         align = 'left',
     }, card)
     self.status = ui:text({
-        position = { 0, 14, 1, -34 },
-        size = { 1, -28, 0, 24 },
+        position = { 0, 14, 1, -50 },
+        size = { 1, -28, 0, 40 },
         text = '',
         fontSize = 15,
         textColor = { 0.6, 0.9, 0.7 },
@@ -119,12 +121,25 @@ function Lab:update(dt)
         self.flat = not self.flat
         katsa.window.setTransparent(not self.flat)
     end
+    if self:pressed('o') then
+        self.free = not self.free
+        for _, entry in ipairs(self.windows) do
+            entry.window:setOwned(not self.free)
+            entry.window:setAlwaysOnTop(self.free == true)
+        end
+    end
+    if self:pressed('s') then
+        self.vsyncOff = not self.vsyncOff
+        katsa.window.setVSync(self.vsyncOff and 0 or 1)
+    end
     if self.status then
         self.status.text = string.format(
-            'moves: %s (%.1f ms per window)   transparency: %s',
+            'moves: %s (%.1f ms)  transparency: %s\npanels: %s  vsync: %s',
             MODES[self.modeIndex or 1],
             self.moveCost or 0,
-            self.flat and 'off' or 'on'
+            self.flat and 'off' or 'on',
+            self.free and 'free' or 'owned',
+            self.vsyncOff and 'off' or 'on'
         )
     end
     if self:pressed('m') then
