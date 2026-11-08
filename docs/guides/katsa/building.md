@@ -3,7 +3,7 @@
 This guide takes you from a fresh clone to a running engine and a shippable game on Windows, Linux,
 macOS and Android. Every command is meant to be run from the repository root.
 
-- [How Katsa runs](#how-katsa-runs): the pieces and the three ways to start a game
+- [How Katsa runs](#how-katsa-runs): the pieces, [what the host is](#what-the-host-is) and the three ways to start a game
 - [Quick start](#quick-start-run-from-source): run from source in a few minutes
 - [Windows](#windows), [Linux](#linux), [macOS](#macos), [Android](#android): complete steps per platform
 - [Packaging a game](#packaging-a-game), [build.py reference](#buildpy-reference),
@@ -30,6 +30,34 @@ Native libraries are **per platform and per CPU architecture**: a `.dll` never w
 arm64 `.so` never on x86_64. The engine looks for them in this order: the folder in the environment
 variable `KATSA_LIB_DIR`, the executable's folder, `lib/` next to the executable, and when running
 from source also `build/native/<platform>/`.
+
+### What the host is
+
+The host (`katsa.exe` on Windows, `katsa` on Linux and macOS, `libmain.so` on Android) is a small
+program, about 800 KB, that does one thing: it turns Lua code into a program you can start by
+double-click, with no `luajit` installed.
+
+1. It reads **its own file**. After the machine code, a ZIP archive is appended (the Lua runtime
+   `source/`, and for a fused game also the game's files). The layout is described in
+   `native/src/host/host.h`.
+2. It creates a Lua state and runs `__katsa/boot.lua` from that archive. From there the engine
+   starts exactly as it does from source.
+3. It gives Lua one global, `katsa_host`: `exe` (the path of the file, UTF-8), `args` (the command
+   line, UTF-8) and `read(name)` (a file from the archive).
+4. It exports the Lua C API, which `katsa_threads` needs to create the worker states of `Actor`
+   nodes. Without that, workers cannot start in a packaged game.
+
+On its own the host is an empty shell: it has no engine and no game. A file becomes a runnable
+`katsa.exe` or `MyGame.exe` only after `packageKatsa.py` appends the archive:
+
+```text
+host (build/native/<platform>/katsa[.exe])  +  ZIP archive  =  dist/katsa[.exe]  (or dist/MyGame[.exe])
+```
+
+You rebuild the host rarely: only when `native/src/host` or `native/src/threads` changes, or for a
+new platform. Changing Lua code needs no host build, because the Lua code lives in the archive and
+is replaced at packaging time. Developing from source (`luajit tools/dev/katsa.lua .`) never needs
+the host at all.
 
 There are three ways to start a game:
 
