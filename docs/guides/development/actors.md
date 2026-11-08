@@ -119,8 +119,8 @@ files and the thread-safety rules) builds to `libkatsa_threads.so` / `katsa_thre
 `libkatsa_threads.dylib` with `tools/native/build.py <target> threads`.
 It does not link Lua: at start-up the process hands it `luaL_newstate`, `lua_pcall` and the few other
 entry points through `ffi.C`, so **the host executable must export the Lua C API** (the dev
-`luajit` does; the shipped `katsa_host` links LuaJIT statically with `-rdynamic` on Linux, and on
-Windows the host must export the `lua*` symbols). Where the symbols are missing `isSupported()` is
+`luajit` does; the shipped host links LuaJIT statically and exports it with `-rdynamic` on Linux,
+`-Wl,-export_dynamic` on macOS and `-Wl,--export-all-symbols` on Windows; `build.py` adds these). Where the symbols are missing `isSupported()` is
 false and `spawn` raises a clear error; nothing else in the engine depends on it.
 
 Rules that keep it fast and safe: send **jobs** (coarse messages) rather than thousands of tiny

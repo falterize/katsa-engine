@@ -164,7 +164,11 @@ def build_host(tc, out, target, required):
             return
         include = os.environ.get('LUAJIT_WIN_INCLUDE', LUAJIT + '/include/luajit-2.1')
         subsystem = '-mwindows' if os.environ.get('KATSA_GUI') else '-mconsole'
-        run([tc.cc, '-O2', '-I' + include, *HOST_SOURCES, lib, '-static', subsystem,
+        # katsa_threads finds lua_* with GetProcAddress on the executable (LuaJIT's ffi.C), so
+        # the statically linked LuaJIT must be in the export table; without this Actors in a
+        # packaged Windows game always fall back to the main thread.
+        exports = '-Wl,--export-all-symbols'
+        run([tc.cc, '-O2', '-I' + include, *HOST_SOURCES, lib, '-static', subsystem, exports,
              '-o', out / 'katsa.exe'])
         return
     if not os.environ.get('LUAJIT_PREFIX'):
