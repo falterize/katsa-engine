@@ -116,20 +116,22 @@ function Tests.run(tester)
         #menu.resources.owned == owned,
         'Several seconds of idle Menu polling retain a bounded resource set'
     )
-    menu.categoryButton.text = 'Changed category label'
+    menu.tagButton.text = 'Changed tag label'
     tester:check(not menu:canReuseWindowFrame(), 'Direct text edits invalidate the presented Menu')
     menu:draw()
-    menu.categoryChooser.visible = true
-    tester:check(not menu:canReuseWindowFrame(), 'Opening the category chooser requests a repaint')
+    menu.tagChooser.visible = true
+    tester:check(not menu:canReuseWindowFrame(), 'Opening the tag chooser requests a repaint')
     menu:draw()
-    menu.categoryChooser.visible = false
-    menu.rebuildCategory('Physics')
+    menu.tagChooser.visible = false
+    menu.setTags({ physics = true })
+    local shown = #menu.ui:find('LevelList', true).children
     tester:check(
         not menu:canReuseWindowFrame(),
-        'Category changes rebuild and repaint the scene list'
+        'Tag changes rebuild and repaint the scene list'
     )
     menu:draw()
-    menu.rebuildCategory('All')
+    tester:check(shown > 0 and shown < 20, 'Selecting the physics tag narrows the scene list (' .. shown .. ')')
+    menu.setTags({})
     menu:draw()
     local list = menu.ui:find('LevelList', true)
     menu.ui:scrollBy(list, 48)

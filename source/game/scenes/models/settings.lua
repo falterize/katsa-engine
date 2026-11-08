@@ -3,6 +3,7 @@ local Settings = {
     id = 'models',
     title = 'OBJ + animated GLB + transparency',
     category = 'Models',
+    tags = { 'models', 'animation', '3d' },
     physics = { backend = 'auto' },
 }
 

@@ -100,6 +100,11 @@ local Settings = {
 return Settings
 ```
 
+Scene tags: `tags = { 'physics', '2d', 'game' }` in `settings.lua` lists lowercase tags. The menu shows
+them under each scene title and filters by them: the search box matches title, id and tag words, and the
+Tags chooser keeps the scenes that have every selected tag. A scene without `tags` shows its old `category`
+as its only tag. Filtering lives in `source/game/sceneTags.lua`.
+
 `layoutVersion = 3` does not require the category directories to exist (empty folders are lost by Git and GitHub ZIPs); it validates the five lifecycle
 hooks. Version 2 archives retain their original root ui folder; archives without
 a layout version retain the earlier compatibility loader. New scenes use version 3.

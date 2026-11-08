@@ -3,6 +3,7 @@ local Settings = {
     id = 'launcherShowcase',
     title = 'Launcher UI / UIStyler plugin + runtime themes',
     category = 'UI',
+    tags = { 'ui', 'plugin', 'styling' },
     physics = { backend = 'auto' },
     plugins = { 'uiStyler' },
 }

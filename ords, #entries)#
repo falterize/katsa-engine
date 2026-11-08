@@ -1,0 +1,2 @@
+        local words = Tags.words(searchBox.text)
+        local n = 0 for _ in pairs(self.selectedTags) do n = n + 1 end print('REBUILD', n, 

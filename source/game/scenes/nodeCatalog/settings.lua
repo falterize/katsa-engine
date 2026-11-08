@@ -3,6 +3,7 @@ local Settings = {
     id = 'nodeCatalog',
     title = 'Node catalog / every node',
     category = 'UI',
+    tags = { 'ui', 'tool', 'nodes' },
     kind = 'interface',
 }
 

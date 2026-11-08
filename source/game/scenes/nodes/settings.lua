@@ -4,6 +4,7 @@ local Settings = {
     id = 'nodes',
     title = 'Nodes + attachments + cameras + UI scroll',
     category = 'UI',
+    tags = { 'nodes', 'ui', 'camera', '3d' },
     physics = { backend = 'auto' },
 }
 

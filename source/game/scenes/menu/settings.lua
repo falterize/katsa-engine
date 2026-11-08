@@ -3,6 +3,7 @@ local Settings = {
     id = 'menu',
     title = 'Main menu',
     category = 'UI',
+    tags = { 'ui' },
     kind = 'interface',
 }
 

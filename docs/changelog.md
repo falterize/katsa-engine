@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Menu: scene tags replace the category chooser. Every scene lists `tags` in `settings.lua`; the menu shows them under each title, filters by search words (title, id, tags) and by a multi-select Tags chooser (a scene needs all selected tags). `category` still works as a fallback tag. Tests: `v108_7/sceneTags.lua`, `--test-menu-idle`. Module: `source/game/sceneTags.lua`.
+- multiplayerCars: scaling the `Car<id>` node scales the drawn model in place instead of carrying it away (the Model keeps world coordinates and copies the scale; the Body ignores it). Test: `--test-v108.7.steering`.
 - multiplayerCars: one node per car in the Explorer. `Car<id>` now holds the physics `Body` and the drawn `Model` (it was a loose `CarBody<id>` at the root plus a separate `Car<id>` model). The container is shared and reference counted (`game/carNode.lua`). The Body ignores the container's scale (`inheritScale = false`), so scaling the Car node scales the model and cannot break the physics. Test: `--test-v108.7.steering`.
 - Actors without worker threads: `ActorPool` falls back to `InlineWorker` (the same contract on the calling thread, jobs run in 4 ms slices from `poll`) when the native thread library or the Lua C API is unavailable, so scenes using the Actor node (`actorLab`) still load. `Actor:isThreaded()/getFallbackReason()`, a log warning with the reason, and the actorLab and multiplayerCars HUD lines show why. Tests: `v108_7/actor.lua`, `--test-v108.7.actorlab` (`KATSA_NO_THREADS=1` forces the fallback).
 - Menu: a scene that fails to start now shows "Could not load <scene>: <error>" instead of "Loading ..." forever. Test: `v108_5/menuAndInterrupt.lua`.

@@ -4,6 +4,7 @@ local Settings = {
     title = 'Starter Game',
     runtime = 'standalone',
     category = 'Games',
+    tags = { 'game', 'example' },
     frameRateLimit = 500,
     physics = { backend = 'jolt' },
     world = { sky = { enabled = false }, fog = { enabled = false }, ambient = { 180, 180, 180 } },

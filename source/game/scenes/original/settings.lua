@@ -3,6 +3,7 @@ local Settings = {
     id = 'original',
     title = 'Original v33 scene',
     category = 'Legacy',
+    tags = { 'legacy' },
     physics = { backend = 'auto' },
 }
 

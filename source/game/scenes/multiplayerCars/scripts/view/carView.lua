@@ -57,7 +57,9 @@ function CarView.new(scene, netId, model)
         up = {},
     }, CarView)
     self.carNode = CarNode.acquire(world, netId)
-    self.root = world:create('Node3D', { name = 'Model' }, self.carNode)
+    -- The Model is placed in world coordinates by the car's pose, so it must not inherit the Car
+    -- node's scale (that would scale its position and carry it away); the scale is copied in update.
+    self.root = world:create('Node3D', { name = 'Model', inheritScale = false }, self.carNode)
     if CarModel.available(scene) then
         local built = CarModel.create(scene, self.root, netId, color)
         self.parts, self.wheels, self.wheelParts = built.parts, built.wheels, built.wheelGeometry
@@ -216,6 +218,11 @@ function CarView:update(dt)
         (car.rz or car.z) - up[3] * drop,
     }
     self.root.rotation = orientation(heading, pitch, roll, self.angles)
+    local scale = self.carNode.scale
+    if scale and (scale[1] ~= 1 or scale[2] ~= 1 or scale[3] ~= 1 or self.root.scale[1] ~= 1 or self.root.scale[2] ~= 1 or self.root.scale[3] ~= 1) then
+        -- Scaling the Car node in the Explorer scales the drawn model in place around the car's pose.
+        self.root.scale = { scale[1], scale[2], scale[3] }
+    end
     self.spin = (self.spin + car.speed * dt / WHEEL_RADIUS * 57.3) % 360
     for index, wheel in ipairs(self.wheels) do
         local steer = index <= 2 and car.steerAngle or 0

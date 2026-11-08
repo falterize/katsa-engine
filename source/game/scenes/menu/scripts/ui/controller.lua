@@ -4,6 +4,7 @@ local Input = require('source.engine.input.input')
 local Version = require('source.engine.core.version')
 local Loader = require('source.engine.scenes.loader')
 local Catalog = require('source.game.sceneCatalog')
+local Tags = require('source.game.sceneTags')
 
 local Menu = {}
 Menu.__index = Menu
@@ -47,21 +48,35 @@ function Menu:load()
     for _, entry in ipairs(Catalog.entries) do
         local package = Loader.open(entry.id, Catalog)
         local settings = package.settings
-        entries[#entries + 1] = { settings.title, settings.id, settings.category }
+        entries[#entries + 1] = { title = settings.title, id = settings.id, tags = Tags.of(settings) }
         package:release()
     end
 
-    self.category = 'All'
-    local categoryButton = self.ui:button({
-        name = 'SceneCategory',
+    -- Filters: a search box (title, id or tag words) and a tag chooser (a scene needs every
+    -- selected tag).
+    self.selectedTags = {}
+    local searchBox = self.ui:create('TextBox', {
+        name = 'SceneSearch',
         position = { 0, 16, 0, 88 },
-        size = { 1, -32, 0, 36 },
-        text = 'Category: All ▾',
+        size = { 1, -204, 0, 36 },
+        placeholderText = 'Search scenes or tags...',
+        fontSize = 18,
+        padding = 10,
+        backgroundColor = { 0.02, 0.04, 0.07 },
+        textColor = { 0.85, 0.93, 1 },
+        align = 'left',
+    }, panel)
+    self.searchBox = searchBox
+    local tagButton = self.ui:button({
+        name = 'SceneTags',
+        position = { 1, -180, 0, 88 },
+        size = { 0, 164, 0, 36 },
+        text = 'Tags ▾',
         textScaled = true,
         maxTextSize = 16,
         radius = 8,
     }, panel)
-    self.categoryButton = categoryButton
+    self.tagButton = tagButton
     local list = self.ui:scroll({
         name = 'LevelList',
         position = { 0, 16, 0, 136 },
@@ -70,76 +85,125 @@ function Menu:load()
         contentPadding = 12,
         backgroundColor = { 0.02, 0.04, 0.07 },
     }, panel)
-    local listed = {}
-    for _, entry in ipairs(entries) do
-        listed[#listed + 1] = entry
-    end
+    local ROW = 68
 
-    local function rebuild(category)
+    local function rebuild()
         for i = #list.children, 1, -1 do
             list.children[i]:destroy()
         end
+        self.firstSceneButton = nil
+        local words = Tags.words(searchBox.text)
         local i = 0
-        for _, entry in ipairs(listed) do
-            if category == 'All' or (entry[3] or 'UI') == category then
+        for _, entry in ipairs(entries) do
+            if Tags.matches(entry, self.selectedTags, words) then
                 i = i + 1
+                local y = (i - 1) * ROW + 4
                 local button = self.ui:button({
-                    position = { 0, 8, 0, (i - 1) * 56 + 4 },
-                    size = { 1, -16, 0, 48 },
-                    text = entry[1],
-                    textScaled = true,
-                    maxTextSize = 20,
-                    align = 'left',
-                    padding = 14,
+                    position = { 0, 8, 0, y },
+                    size = { 1, -16, 0, ROW - 8 },
+                    text = '',
                     backgroundColor = { 0.075, 0.15, 0.23 },
                     radius = 8,
                     onPress = function()
-                        self:choose(entry[1], entry[2])
+                        self:choose(entry.title, entry.id)
                     end,
                 }, list)
+                -- Title above, tags below; labels do not take input, the button stays pressable.
+                self.ui:text({
+                    position = { 0, 14, 0, 5 },
+                    size = { 1, -28, 0, 30 },
+                    text = entry.title,
+                    textScaled = true,
+                    maxTextSize = 20,
+                    align = 'left',
+                }, button)
+                self.ui:text({
+                    position = { 0, 14, 0, 36 },
+                    size = { 1, -28, 0, 20 },
+                    text = table.concat(entry.tags, ',  '),
+                    fontSize = 14,
+                    textColor = { 0.45, 0.72, 0.9 },
+                    align = 'left',
+                }, button)
                 if i == 1 then
                     self.firstSceneButton = button
                 end
             end
         end
         list.scrollY = 0
+        local count = 0
+        for _ in pairs(self.selectedTags) do
+            count = count + 1
+        end
+        tagButton.text = (count > 0 and ('Tags (' .. count .. ')') or 'Tags') .. ' ▾'
         self.ui:invalidate()
     end
-    self.rebuildCategory = rebuild
-    rebuild('All')
-    local categories, seen = { 'All' }, { All = true }
-    for _, entry in ipairs(entries) do
-        local category = entry[3] or 'UI'
-        if not seen[category] then
-            seen[category] = true
-            categories[#categories + 1] = category
-        end
+    self.rebuildList = rebuild
+    rebuild()
+    searchBox.onTextChanged = function()
+        rebuild()
     end
+
     local chooser = self.ui:scroll({
-        name = 'Categories',
-        position = { 0, 16, 0, 128 },
-        size = { 0, 260, 0, 280 },
+        name = 'Tags',
+        position = { 1, -280, 0, 128 },
+        size = { 0, 264, 0, 320 },
         automaticLength = true,
         contentPadding = 4,
         visible = false,
         zIndex = 100,
         backgroundColor = { 0.025, 0.05, 0.08 },
     }, panel)
-    self.categoryChooser = chooser
-    for i, category in ipairs(categories) do
-        self.ui:button({
-            position = { 0, 4, 0, (i - 1) * 36 },
+    self.tagChooser = chooser
+    local all = Tags.collect(entries)
+    local chips = {}
+    local function refreshChips()
+        for tag, chip in pairs(chips) do
+            chip.text = (self.selectedTags[tag] and '[x]  ' or '[  ]  ') .. chip.label
+            chip.backgroundColor = self.selectedTags[tag] and { 0.12, 0.34, 0.5 } or { 0.075, 0.15, 0.23 }
+        end
+    end
+    self.ui:button({
+        position = { 0, 4, 0, 0 },
+        size = { 1, -8, 0, 32 },
+        text = 'Clear tags',
+        fontSize = 16,
+        backgroundColor = { 0.35, 0.18, 0.12 },
+        onPress = function()
+            self.selectedTags = {}
+            refreshChips()
+            rebuild()
+        end,
+    }, chooser)
+    for i, item in ipairs(all) do
+        local chip = self.ui:button({
+            position = { 0, 4, 0, i * 36 },
             size = { 1, -8, 0, 32 },
-            text = category,
+            text = item.tag,
+            fontSize = 16,
+            align = 'left',
+            padding = 10,
             onPress = function()
-                self.category = category
-                categoryButton.text = 'Category: ' .. category .. ' ▾'
-                chooser.visible = false
-                rebuild(category)
+                if self.selectedTags[item.tag] then
+                    self.selectedTags[item.tag] = nil
+                else
+                    self.selectedTags[item.tag] = true
+                end
+                refreshChips()
+                rebuild()
             end,
         }, chooser)
+        chip.label = item.tag .. '  (' .. item.count .. ')'
+        chips[item.tag] = chip
     end
-    categoryButton.onPress = function()
+    refreshChips()
+    -- Replaces the selected tags (a set { tag = true }) and refreshes the chips and the list.
+    self.setTags = function(selected)
+        self.selectedTags = selected
+        refreshChips()
+        rebuild()
+    end
+    tagButton.onPress = function()
         chooser.visible = not chooser.visible
     end
 
@@ -220,12 +284,14 @@ function Menu:resize(w, h)
     self.ui:fit(w, h)
     self.menuPanel.size = { 0, math.min(760, self.ui.width - 24), 1, -24 }
     -- The scroll viewport must fit inside the panel's clipped area after rotation.
-    self.categoryChooser.size = {
+    local width = math.min(264, self.ui.width - 56)
+    self.tagChooser.size = {
         0,
-        math.min(260, self.ui.width - 56),
+        width,
         0,
-        math.max(1, math.min(280, self.ui.height - 24 - 128 - 42)),
+        math.max(1, math.min(320, self.ui.height - 24 - 128 - 42)),
     }
+    self.tagChooser.position = { 1, -(width + 16), 0, 128 }
     self.ui:invalidate()
 end
 

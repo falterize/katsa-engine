@@ -3,6 +3,7 @@ local Settings = {
     id = 'physics',
     title = 'Physics Lab / bodies + pendulum joint',
     category = 'Physics',
+    tags = { 'physics', 'joints', '3d' },
     physics = { backend = 'auto' },
 }
 
