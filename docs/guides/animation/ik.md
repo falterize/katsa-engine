@@ -24,7 +24,16 @@ Targets and poles are **world** positions. The plugin converts them into model s
 
 ## The `InverseKinematics3D` node
 
-Every solver is also available as one node, so rigs can be set up in the inspector. Create it under a model instance and choose `type`:
+Every solver is also available as one node, so rigs can be set up in the inspector without code.
+
+### Setting one up
+
+1. The scene loads the plugin: `plugins = { 'ik' }` in its `settings.lua`.
+2. The model is instantiated (`Models.instantiate`) and has an `Animator` (every animated glTF does).
+3. Create the node **anywhere under the model's root node**. It walks up its parents to the first
+   one that carries the model and registers with that model's Animator. Created before the model
+   exists? It keeps looking every frame until it finds it.
+4. Pick `type`, then the bones (dropdowns list the model's bones) and the target.
 
 ```lua
 local ik = world:create('InverseKinematics3D', {
@@ -34,26 +43,71 @@ local ik = world:create('InverseKinematics3D', {
 }, botRoot)
 ```
 
+In the Workspace: select the model's root node, add `InverseKinematics3D`, choose the bones in the
+dropdowns and drag a `Node3D` onto `target` (and `pole`). Turn on `debug` to see the chain.
+
+### Types
+
 | `type` | Use | Settings shown |
 | --- | --- | --- |
-| `TwoBone` | arms, legs | root/mid/tip bone, target, pole, softness |
-| `CCD` | chains | root/tip bone, target, iterations, tolerance, maxStep, jointLimit |
-| `FABRIK` | chains | root/tip bone, target, pole, iterations, tolerance |
-| `Jacobian` | chains | root/tip bone, target, iterations, damping, maxStep |
-| `Spline` | tails, spines, tentacles | root/tip bone, the node's Node3D children as curve points, splineOffset |
-| `LookAt` | heads, turrets | bone, target, forward axis, maxAngle, smoothing |
-| `FK` | pose by angles | bones and euler angles (Z·Y·X) |
+| `TwoBone` | arms, legs | rootBone, midBone, tipBone, target, pole, softness |
+| `CCD` | chains with limits | rootBone, tipBone, target, iterations, tolerance, maxStep, jointLimit |
+| `FABRIK` | long chains | rootBone, tipBone, target, pole, iterations, tolerance |
+| `Jacobian` | smooth long chains (tentacles, cranes) | rootBone, tipBone, target, iterations, tolerance, maxStep, jointLimit, damping |
+| `Spline` | tails, spines, ropes | rootBone, tipBone, splineOffset; the curve goes through the node's `Node3D` children |
+| `LookAt` | heads, eyes, turrets | rootBone, tipBone, target, forward, maxAngle, smoothing |
+| `FK` | pose by angles, no target | rootBone, tipBone, rotation, falloff, fkMode |
 
-Always shown: `type`, `influence`, `priority`, `debug`. Bone fields are dropdowns filled from the target model's bones. Fields irrelevant to the chosen type are hidden by `visibleWhen`. The `ikLab` scene shows both hands following a moving ball with bent elbows.
+Always shown: `type`, `influence`, `priority`, `debug`. Fields that do not apply to the chosen type
+are hidden. The `ikLab` scene shows both hands following a moving ball with bent elbows and a solver
+switch.
 
-## Common settings
+### Property reference
 
-| Field | Meaning |
+| Property | Default | Types | Meaning |
+| --- | --- | --- | --- |
+| `type` | `TwoBone` | all | the solver (table above) |
+| `influence` | 1 | all | 0..1 blend between the animated pose (0) and the solved pose (1) |
+| `priority` | 0 | all | order among the modifiers of one model; lower runs first and later ones see its result |
+| `debug` | false | all | draw the chain, the target and the pole over the 3D view |
+| `enabled` | true | all | switch the node off without removing it |
+| `tipBone` | | all | **required**: last bone of the chain (hand, foot, head, end effector) |
+| `rootBone` | | all | first bone of the chain. Empty: TwoBone uses the tip's grandparent, other types a chain of just the tip |
+| `midBone` | | TwoBone | elbow or knee. Empty: the tip's parent |
+| `target` | none | TwoBone, CCD, FABRIK, Jacobian, LookAt | `Node3D` the tip reaches for or looks at; without it the solve is skipped |
+| `pole` | none | TwoBone, FABRIK | `Node3D` the elbow or knee bends toward; without it the animated bend direction is kept |
+| `softness` | 0 | TwoBone | model units over which the limb eases into full extension (avoids snapping straight) |
+| `iterations` | 10 | CCD, FABRIK, Jacobian | solver passes per pose evaluation (1..64) |
+| `tolerance` | 0.001 | CCD, FABRIK, Jacobian | stop when the tip is this close to the target (model units) |
+| `maxStep` | 20 | CCD, Jacobian | largest rotation of one joint per iteration in degrees (0 = unlimited for CCD) |
+| `jointLimit` | 0 | CCD, Jacobian | how far a joint may leave the animated pose in degrees (0 = unlimited) |
+| `damping` | 0.2 | Jacobian | damping relative to the chain length; higher is steadier but slower to reach |
+| `splineOffset` | 0 | Spline | slides the chain along the curve (model units) |
+| `forward` | `{0, 0, 1}` | LookAt | bone-local axis that should face the target |
+| `maxAngle` | 0 | LookAt | largest turn away from the animated facing in degrees (0 = unlimited) |
+| `smoothing` | 0 | LookAt | follow speed in 1/second (0 turns instantly) |
+| `rotation` | `{0, 0, 0}` | FK | euler degrees, applied Z·Y·X in each bone's local space |
+| `falloff` | 1 | FK | multiplies the rotation per joint along the chain (0.8 curls a finger) |
+| `fkMode` | `Additive` | FK | `Additive` turns the animated pose; `FromRest` ignores the animation |
+
+### Changing settings at runtime
+
+Every property can be changed at any time, from code or the inspector; the next pose evaluation uses
+the new values. Switching `type` keeps the previous solver's state, so switching back is instant. To
+move the target, move the target node; to fade IK in or out, animate `influence`.
+
+### When nothing happens
+
+| Symptom | Check |
 | --- | --- |
-| `target`, `pole` | Node, `{x, y, z}` or function; a missing target skips the solve |
-| `influence` | 0..1 blend between the animated pose and the solved pose |
-| `priority` | Order on one animator, lower first (later modifiers see earlier edits) |
-| `enabled`, `debug` | Switch the modifier off / draw its overlay |
+| The bones do not move | the node is under the model's root node; the model has an Animator (an animated glTF); `tipBone` is set; `target` is set (not for Spline and FK); `influence` > 0 |
+| Error `Bone X is not an ancestor of Y` | `rootBone` must be above `tipBone` in the same branch of the skeleton |
+| Error `InverseKinematics3D needs tipBone` | choose `tipBone` in the dropdown |
+| The elbow bends the wrong way | add a `pole` node in front of (or behind) the elbow |
+| The limb snaps straight at full reach | raise `softness` |
+| The head turns too far | set `maxAngle`; add `smoothing` for a slower follow |
+| A chain jitters | lower `maxStep`, raise `damping` (Jacobian) or `iterations` |
+| The dropdowns are empty | the node is not under a model yet; place it under the model's root node |
 
 ## Solvers
 
@@ -71,8 +125,17 @@ Always shown: `type`, `influence`, `priority`, `debug`. Bone fields are dropdown
   descent. `maxStep` caps the rotation per joint per iteration and `limits` (degrees, by bone
   name) cap how far a joint's local rotation may leave the animated pose.
 
-Use TwoBone for limbs, LookAt for heads and turrets, FABRIK for long chains and CCD when joints
-need limits.
+- **`IK.Jacobian`** (`bones`, `iterations`, `tolerance`, `damping`, `maxStep`, `limit`): damped
+  least squares over three rotation axes per joint. All joints move together, which looks smooth on
+  long chains and copes with targets near straight poses.
+- **`IK.Spline`** (`bones`, `points`, `offset`): the chain follows a Catmull-Rom curve through
+  `points` (nodes, `{x, y, z}` or a function returning the list). The first bone stays; bones keep
+  their lengths; `offset` slides the chain along the curve.
+- **`IK.FK`** (`bones`, `rotation`, `falloff`, `mode`, or `pose = { Bone = {x, y, z} }`): poses
+  bones by euler angles (degrees, Z·Y·X) instead of reaching for a target.
+
+Use TwoBone for limbs, LookAt for heads and turrets, FABRIK or Jacobian for long chains, CCD when
+joints need limits, Spline for tails and ropes and FK for procedural poses.
 
 ## Bone pose access
 
@@ -107,5 +170,7 @@ function MyIK:solve(skeleton, dt)
 end
 ```
 
-`bones()` lets the base class blend by `influence` and draw the debug overlay. The scene
-`ikLab` shows all four solvers on the XBot with an influence and debug toggle.
+`bones()` lets the base class blend by `influence` and draw the debug overlay. To offer the new
+solver as a node type too, add it to `TYPES` and `SOLVERS` in `nodes/inverseKinematics3D.lua`, show
+its settings with `visibleWhen = only('MyType')`, and add a test next to `v108_5/ikNode.lua`. The
+scene `ikLab` shows the solvers on the XBot with an influence and debug toggle.
