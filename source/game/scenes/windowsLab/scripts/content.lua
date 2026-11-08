@@ -7,7 +7,7 @@
 --   F11    fullscreen (every scene)
 --   Space  pauses the flight
 --   M      opens / closes a second scene (a mini game) in its own window
---   V      moves the windows one by one instead of in one batch (compare 'Windows: move')
+--   V      cycles how the windows are moved: budget (default), all every frame, one OS batch
 --   Y      switches the main window's per-pixel transparency off and on (same comparison)
 --   R      cycles the size of the orbiting windows (windows can be resized at any time)
 -- A window closed by its close button is removed; the main window ends the scene as usual.
@@ -24,6 +24,10 @@ local WIDTH, HEIGHT = 260, 170
 local REDRAW = 12 -- repaints per second of every panel (their motion runs every frame)
 local SIZES = { { 260, 170 }, { 340, 220 }, { 180, 120 } }
 local MINI_GAME = 'platformer'
+-- Moving an OS window costs several milliseconds on Windows (measured: about 6 ms each), so by
+-- default only as many windows are moved per frame as fit the budget, the longest waiting first.
+local MOVE_BUDGET_MS = 5
+local MODES = { 'budget', 'all', 'batch' }
 
 local function drawPanel(panel, time, fps, width, height)
     local g = katsa.graphics
@@ -49,15 +53,23 @@ function Lab.new(scene)
     local ui = scene.ui
     local card = ui:container({
         position = { 0.5, -190, 0.5, -70 },
-        size = { 0, 380, 0, 164 },
+        size = { 0, 380, 0, 190 },
         backgroundColor = { 0.08, 0.1, 0.16 },
         backgroundTransparency = 0.2,
     }, ui.content)
     ui:text({
         position = { 0, 14, 0, 10 },
         size = { 1, -28, 1, -20 },
-        text = 'Transparent main window\nT  opacity     B  title bar     F11  fullscreen\nM  mini game window     R  resize windows     Space  pause\nV  batch moves     Y  transparency',
+        text = 'Transparent main window\nT  opacity     B  title bar     F11  fullscreen\nM  mini game window     R  resize windows     Space  pause\nV  move mode     Y  transparency',
         fontSize = 17,
+        align = 'left',
+    }, card)
+    self.status = ui:text({
+        position = { 0, 14, 1, -34 },
+        size = { 1, -28, 0, 24 },
+        text = '',
+        fontSize = 15,
+        textColor = { 0.6, 0.9, 0.7 },
         align = 'left',
     }, card)
     local x, y = katsa.window.getPosition()
@@ -99,11 +111,19 @@ function Lab:update(dt)
         katsa.window.setBorderless(not katsa.window.isBorderless())
     end
     if self:pressed('v') then
-        self.single = not self.single
+        self.modeIndex = (self.modeIndex or 1) % #MODES + 1
     end
     if self:pressed('y') then
         self.flat = not self.flat
         katsa.window.setTransparent(not self.flat)
+    end
+    if self.status then
+        self.status.text = string.format(
+            'moves: %s (%.1f ms per window)   transparency: %s',
+            MODES[self.modeIndex or 1],
+            self.moveCost or 0,
+            self.flat and 'off' or 'on'
+        )
     end
     if self:pressed('m') then
         self:toggleMiniGame()
@@ -135,34 +155,52 @@ function Lab:serveWindows(dt)
     end
     local profiler = self.scene.manager and self.scene.manager.profiler
     local clock = katsa.timer.getTime
-    -- Motion is cheap (one window move) and runs every frame for every panel, so it stays smooth
-    -- at any frame rate. Presenting a window's content costs a context switch and a swap, which on
-    -- Windows is several milliseconds, so the panels are repainted round robin at REDRAW per second.
+    -- Moves are limited by a time budget per frame (see MOVE_BUDGET_MS) and the panels' content is
+    -- repainted round robin at REDRAW per second: presenting a window costs a context switch and
+    -- a swap, which on Windows is several milliseconds.
     local moveStart = clock()
-    local moves = {}
+    local mode = MODES[self.modeIndex or 1]
+    local due = {}
     for index = #self.windows, 1, -1 do
         local entry = self.windows[index]
         if entry.window:isCloseRequested() then
             entry.window:close()
             table.remove(self.windows, index)
         else
-            local width, height = entry.window:getSize()
-            local panel = entry.panel
-            local angle = self.time * panel.speed + panel.phase
-            local x = math.floor(self.centerX + math.cos(angle) * panel.radius[1] - width / 2)
-            local y = math.floor(self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2)
-            if x ~= entry.x or y ~= entry.y then
-                entry.x, entry.y = x, y
-                moves[#moves + 1] = { entry.window, x, y }
+            due[#due + 1] = entry
+        end
+    end
+    self.moveCount = (self.moveCount or 0) + 1
+    -- The window that has waited longest goes first; every target is computed from the current
+    -- time, so a window served late still lands where it belongs.
+    table.sort(due, function(a, b)
+        return (a.moved or 0) < (b.moved or 0)
+    end)
+    local batch = {}
+    local moved = 0
+    for _, entry in ipairs(due) do
+        local width, height = entry.window:getSize()
+        local panel = entry.panel
+        local angle = self.time * panel.speed + panel.phase
+        local x = math.floor(self.centerX + math.cos(angle) * panel.radius[1] - width / 2)
+        local y = math.floor(self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2)
+        if x ~= entry.x or y ~= entry.y then
+            if mode == 'batch' then
+                entry.x, entry.y, entry.moved = x, y, self.moveCount
+                batch[#batch + 1] = { entry.window, x, y }
+            elseif mode == 'all' or moved == 0 or (clock() - moveStart) * 1000 < MOVE_BUDGET_MS then
+                local started = clock()
+                entry.x, entry.y, entry.moved = x, y, self.moveCount
+                entry.window:setPosition(x, y)
+                moved = moved + 1
+                local cost = (clock() - started) * 1000
+                self.moveCost = (self.moveCost or cost) * 0.9 + cost * 0.1
             end
         end
     end
-    if self.single then
-        for _, move in ipairs(moves) do
-            move[1]:setPosition(move[2], move[3])
-        end
-    elseif #moves > 0 then
-        katsa.window.moveWindows(moves)
+    if #batch > 0 then
+        katsa.window.moveWindows(batch)
+        self.moveCost = (clock() - moveStart) * 1000 / #batch
     end
     local drawStart = clock()
     count = #self.windows

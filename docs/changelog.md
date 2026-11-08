@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- windowsLab: measured on Windows, one window move costs ~6 ms whether single or batched (`moveWindows` gave no gain), so the scene moves only as many panels per frame as fit a 5 ms budget, the longest waiting first (`V` cycles budget / all / batch; the card shows the mode, the measured ms per window and the transparency state).
 - Windows: dragging any window (an orbiting panel, the mini game) no longer freezes the others. The live-resize watch ignored every window but the main one; it now reacts to a drag of any window and tells the game's own moves and resizes apart by the requested values (`Platform:remember`). Needs confirmation on Windows.
 - Window scenes call `profiler:frame()`, so the CPU profiler records the mini game (the recording stayed empty). Test: `v108_7/profileWindowScene.lua`.
 - `katsa.window.moveWindows({ {window, x, y}, ... })` moves several windows in one OS batch (`BeginDeferWindowPos`) on Windows; the windowsLab profile showed ~6 ms per single `SetWindowPos`. windowsLab: `V` switches to single moves and `Y` switches the main window's transparency off, to compare `Windows: move` on hardware. Test: `v108_7/moveWindows.lua`.
