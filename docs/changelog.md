@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- windowsLab: the panel motion lives in `Lab:updateInBackground` (and `update`), so the windows keep orbiting while the main window is unfocused without running the whole scene in the background; `runInBackground` is gone. Needs confirmation on Windows.
+- Platform: `setTransparent` declared its DWM types on every call and the second call (made when a scene restores the opaque window) failed on the redefinition; the declarations are now made once.
+- multiplayerCars: a bot kept one route search per other-floor car per tick (the bulk of `Cars: bot`, up to 12 ms per frame in the x5 profile); the result is now kept for one replan period and reused by the chase plan. Test: `v108_7/botRoutes.lua`; probe `--test-v108.7.rev` (UI revision and node counts).
 - Inspector: plugin debug sections list their settings (`Plugins.settingsKeys`), so `Environment.debug.pathfinding` shows `enabled`, `drawCells`, `drawLinks`, `drawPaths`, `drawDistance` as properties. Test: `v108_7/pathDebug.lua`.
 - Windows: the live-resize event watch reacts only to main-window events and only when `SDL_PollEvent` itself blocked (the modal move/size loop), and closing a window while that happens is deferred (`flushClosedWindows`). windowsLab runs with `runInBackground = true`, so the moving panels keep moving without focus. Needs confirmation on Windows.
 - multiplayerCars: the car body uses smooth (area-weighted, position-welded) normals while dented instead of flat per-triangle normals. The microphone is opened one and a half seconds after the session starts, not on the first Tab press (opening the capture device took ~100 ms on Windows). Test: `v108_7/voiceWarmUp.lua`; probe `--test-v108.7.tab`.

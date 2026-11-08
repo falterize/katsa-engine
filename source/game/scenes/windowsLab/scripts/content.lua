@@ -96,9 +96,6 @@ function Lab:update(dt)
     if self:pressed('b') then
         katsa.window.setBorderless(not katsa.window.isBorderless())
     end
-    if not self.paused then
-        self.time = self.time + dt
-    end
     if self:pressed('m') then
         self:toggleMiniGame()
     end
@@ -108,6 +105,20 @@ function Lab:update(dt)
         for _, entry in ipairs(self.windows) do
             entry.window:setSize(size[1], size[2])
         end
+    end
+    self:serveWindows(dt)
+end
+
+-- Runs while the main window is not focused (the scene's full update is frozen then): the panels
+-- keep orbiting, so clicking another application does not stop them.
+function Lab:updateInBackground(dt)
+    self:serveWindows(dt)
+end
+
+-- The motion of the panel windows, shared by update and updateInBackground.
+function Lab:serveWindows(dt)
+    if not self.paused then
+        self.time = self.time + dt
     end
     -- Moving and presenting an OS window costs several milliseconds on Windows, so the panels are
     -- served one per tick, round robin, instead of all in one frame: the cost is spread over

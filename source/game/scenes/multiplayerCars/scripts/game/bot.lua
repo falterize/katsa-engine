@@ -30,6 +30,8 @@ function Bot.new(car, options)
         mode = 'patrol',
         path = nil,
         sinceReplan = 99,
+        clock = 0, -- seconds of thinking time, ages the cached floor routes
+        routes = setmetatable({}, { __mode = 'k' }), -- other car -> { at, ok, path }
         stuck = 0,
         reverse = 0,
         target = nil,
@@ -63,8 +65,20 @@ function Bot:findTarget(cars)
                     visible = nav.levels[level]:lineOfSight(bx, bz, ox, oz)
                 else
                     -- Another floor: reachable if the route is not much longer than the sight radius.
-                    local path = nav:findPath(car.x, car.y - 0.6, car.z, other.x, other.y - 0.6, other.z)
-                    visible = path ~= nil and path.length < self.sightRadius * 2
+                    -- A route search per car per tick was the bulk of the bot cost, so the answer
+                    -- is kept for one replan period.
+                    local route = self.routes[other]
+                    if not route or self.clock - route.at >= self.replanEvery then
+                        local path =
+                            nav:findPath(car.x, car.y - 0.6, car.z, other.x, other.y - 0.6, other.z)
+                        route = {
+                            at = self.clock,
+                            ok = path ~= nil and path.length < self.sightRadius * 2,
+                            path = path,
+                        }
+                        self.routes[other] = route
+                    end
+                    visible = route.ok
                 end
                 if visible then
                     best, bestDistance = other, distance
@@ -88,9 +102,10 @@ function Bot:pickPatrolPoint()
     return { 0, -45 }
 end
 
-function Bot:plan(x, y, z)
+function Bot:plan(x, y, z, fresh)
     local car = self.car
-    self.path = self.nav:findPath(car.x, car.y - 0.6, car.z, x, y - 0.6, z)
+    -- `fresh` is a route found a moment ago for this very target: use it instead of searching again.
+    self.path = fresh or self.nav:findPath(car.x, car.y - 0.6, car.z, x, y - 0.6, z)
     self.sinceReplan = 0
 end
 
@@ -112,12 +127,15 @@ end
 function Bot:think(cars, dt)
     local car = self.car
     self.sinceReplan = self.sinceReplan + dt
+    self.clock = self.clock + dt
     local target, distance = self:findTarget(cars)
     local goalX, goalZ
     if target then
         self.mode, self.target = 'chase', target
         if self.sinceReplan >= self.replanEvery or not self.path then
-            self:plan(target.x, target.y, target.z)
+            local route = self.routes[target]
+            local fresh = route and route.at == self.clock and route.path or nil
+            self:plan(target.x, target.y, target.z, fresh)
         end
         goalX, goalZ = target.x, target.z
     else

@@ -144,6 +144,22 @@ return function(Platform, K)
         return self.sdl.SDL_GetWindowDisplayIndex(self.window)
     end
 
+    -- ffi.cdef redefining a type raises, so the declarations are made once (setTransparent runs
+    -- again when a scene leaves and restores the opaque window).
+    local dwmDeclared
+    local function declareDwm()
+        if dwmDeclared then
+            return
+        end
+        ffi.cdef([[
+            typedef struct { uint32_t flags; int enable; void* region; int transition; } KatsaBlurBehind;
+            int DwmEnableBlurBehindWindow(void* window, const KatsaBlurBehind* behind);
+            void* CreateRectRgn(int left, int top, int right, int bottom);
+            int DeleteObject(void* object);
+        ]])
+        dwmDeclared = true
+    end
+
     -- Per-pixel transparency of the main window. Linux and macOS compositors honour the alpha
     -- channel of the framebuffer by themselves; on Windows the window must be told to blend with
     -- the desktop (DWM), the way GLFW does it. Returns whether the call could be made.
@@ -153,12 +169,7 @@ return function(Platform, K)
             return true
         end
         local ok, message = pcall(function()
-            ffi.cdef([[
-                typedef struct { uint32_t flags; int enable; void* region; int transition; } KatsaBlurBehind;
-                int DwmEnableBlurBehindWindow(void* window, const KatsaBlurBehind* behind);
-                void* CreateRectRgn(int left, int top, int right, int bottom);
-                int DeleteObject(void* object);
-            ]])
+            declareDwm()
             local handle = nativeHandle(self, self.window)
             if not handle then
                 error('SDL_GetWindowWMInfo failed')
