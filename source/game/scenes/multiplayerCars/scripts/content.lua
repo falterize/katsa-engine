@@ -836,7 +836,15 @@ function Session:routeInfo()
     end
     local planner = server.planner
     if planner then
-        return ('  -  bot routes: worker (%d searches, %d waiting)'):format(planner.searches, planner.pending)
+        -- Searches per second over the last second (the planner's own counter only grows).
+        local now = katsa.timer.getTime()
+        local stamp = self.routeStamp
+        if not stamp or now - stamp.at >= 1 then
+            local rate = stamp and (planner.searches - stamp.count) / (now - stamp.at) or 0
+            self.routeStamp = { at = now, count = planner.searches, rate = rate }
+            stamp = self.routeStamp
+        end
+        return ('  -  bot routes: worker (%.0f searches/s, %d waiting)'):format(stamp.rate, planner.pending)
     end
     local why = server.plannerFailure
     if why then
