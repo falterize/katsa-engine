@@ -92,7 +92,7 @@ end
 function PointCollider.build(node, body)
     local points = PointCollider.copy(node.points or node.vertices)
     local kind = Level.kind(node.collisionLevel)
-    assert(kind ~= 'trimesh' or body.bodyType == 'Static', 'Detailed points require a Static Body3D')
+    assert(kind ~= 'trimesh' or body.bodyType == 'Static', 'Trimesh points require a Static Body3D')
     local triangles = points
     -- Exact triangles and the voxel analysis of Multiple Convex need the surface; a bare point
     -- cloud only has a hull, so Multiple Convex falls back to one simplified hull for it.
@@ -111,7 +111,7 @@ function PointCollider.build(node, body)
     if kind == 'trimesh' then
         assert(
             #triangles >= 3 and #triangles % 3 == 0,
-            'Detailed points require indexed triangles or a triangle-soup list'
+            'Trimesh points require indexed triangles or a triangle-soup list'
         )
     elseif not indexed then
         -- Geometry.build consumes a render-style triangle list; hull points may have

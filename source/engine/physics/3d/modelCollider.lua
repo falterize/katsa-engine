@@ -99,8 +99,8 @@ function Builder.collect(node, body)
     return parts, tostring(node._geometryRevision)
 end
 
--- Level names of the physics layer ('Simple' / 'Convex' / 'Detailed') for the kinds it builds.
-local PHYSICS_LEVEL = { box = 'Simple', convex = 'Convex', trimesh = 'Detailed' }
+-- Level names of the physics layer for the kinds it builds.
+local PHYSICS_LEVEL = { box = 'Bounding Box', convex = 'Single Convex', trimesh = 'Trimesh' }
 
 -- A flat or one-sided mesh has no volume; a hull needs some thickness.
 local function thickened(vertices)
@@ -138,7 +138,7 @@ function Builder.build(node, body, parts)
     local kind = Level.kind(node.collisionLevel)
     assert(
         kind ~= 'trimesh' or body.bodyType == 'Static',
-        'Detailed model collision requires a Static Body3D'
+        'Trimesh model collision requires a Static Body3D'
     )
     local baked = bake(node, parts)
     local children = {}

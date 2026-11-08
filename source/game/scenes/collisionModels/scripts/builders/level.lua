@@ -3,36 +3,38 @@ local Physics = require('source.engine.physics')
 local UI = require('source.engine.ui')
 local Models = require('source.engine.import.models')
 local object = require('./object')
+local Level = require('source.engine.physics.3d.collisionLevel')
 
 local CollisionModels = {}
 
 function CollisionModels.build(self, scene)
     local model = Models.load('assets/models/examples/pyramid.obj', scene.resources)
-    for i, level in ipairs({ 'Simple', 'Convex', 'Detailed' }) do
+    for i, level in ipairs(Level.names) do
+        local label = level:gsub(' ', '')
         local mesh = object.create(
             scene,
-            'Pyramid.' .. level,
-            { (i - 2) * 90, 0, 65 },
+            'Pyramid.' .. label,
+            { (i - 3) * 70, 0, 65 },
             { 32, 32, 32 },
-            { geometry = model.parts[1].geometry, color = { i / 3, 0.6, 1 - i / 4, 1 } }
+            { geometry = model.parts[1].geometry, color = { i / 5, 0.6, 1 - i / 6, 1 } }
         )
         local body = scene.world:create('Body3D', {
-            name = 'PyramidBody.' .. level,
-            bodyType = level == 'Detailed' and 'Static' or 'Dynamic',
-            position = { (i - 2) * 90, 0, 65 },
+            name = 'PyramidBody.' .. label,
+            bodyType = level == 'Trimesh' and 'Static' or 'Dynamic',
+            position = { (i - 3) * 70, 0, 65 },
             density = 2,
             friction = 0.6,
         })
         mesh.position = { 0, 0, 0 }
         mesh.parent = body
         local collider = scene.world:create('Collider3D', {
-            name = 'PyramidCollider.' .. level,
+            name = 'PyramidCollider.' .. label,
             shape = 'Geometry',
-            geometrySource = level == 'Convex' and 'shared://models/examples/pyramid.obj' or mesh,
-            size = level == 'Convex' and { 32, 32, 32 } or { 1, 1, 1 },
+            geometrySource = level == 'Single Convex' and 'shared://models/examples/pyramid.obj' or mesh,
+            size = level == 'Single Convex' and { 32, 32, 32 } or { 1, 1, 1 },
             collisionLevel = level,
         }, body)
-        if level == 'Detailed' then
+        if level == 'Trimesh' then
             -- Bake editable points independently of the visible model.
             collider:setPointsFromModel('shared://models/examples/pyramid.obj', {
                 scale = { 32, 32, 32 },
@@ -44,7 +46,7 @@ function CollisionModels.build(self, scene)
             object.create(
                 scene,
                 'TestBall' .. i .. '.' .. n,
-                { (i - 2) * 90 + (n - 2) * 12, 100 + n * 25, 65 },
+                { (i - 3) * 70 + (n - 2) * 12, 100 + n * 25, 65 },
                 { 12, 12, 12 },
                 { kind = 'sphere', color = { 1, 0.7, 0.2, 1 } },
                 { collider = { shape = 'Sphere', radius = 6 }, restitution = 0.35 }
@@ -92,7 +94,7 @@ function CollisionModels.build(self, scene)
             position = position,
             rotation = rotation,
             scale = scale,
-            collider = Physics.modelCollider(mesh, 'Convex'),
+            collider = Physics.modelCollider(mesh, 'Single Convex'),
             density = 2,
             restitution = 0.2,
         }, parent)

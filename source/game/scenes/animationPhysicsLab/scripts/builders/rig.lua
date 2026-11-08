@@ -89,7 +89,7 @@ function Lab.new(scene)
     }, self.multi.objects[1])
     self.colliders = {}
     for _, object in ipairs(self.multi.objects) do
-        local level = object.name:find('Triangle') and 'Detailed' or 'Convex'
+        local level = object.name:find('Triangle') and 'Trimesh' or 'Single Convex'
         local body = scene.world:create('Body3D', {
             name = object.name .. 'Physics',
             bodyType = 'Static',

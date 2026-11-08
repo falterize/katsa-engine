@@ -25,7 +25,7 @@ function Tests.run(tester)
         local body = world:create('Body3D', { bodyType = 'Static', position = { 20, 30, 40 } })
         local collider = world:create('Collider3D', {
             shape = 'Geometry',
-            collisionLevel = 'Convex',
+            collisionLevel = 'Single Convex',
             size = { 2, 3, 4 },
         }, body)
         for _, filename in ipairs({ 'pyramid.obj', 'cubeTriangle.glb', 'skinRibbon.gltf' }) do
@@ -42,19 +42,19 @@ function Tests.run(tester)
                 collider.status == 'Ready' and #body.body.shapes > 0,
                 backend .. ': ' .. filename .. ' creates native file collision'
             )
-            collider.collisionLevel = 'Detailed'
+            collider.collisionLevel = 'Trimesh'
             world:updateNodes(1 / 60)
             tester:check(
                 collider.status == 'Ready' and #body.body.shapes == #indices / 3,
-                backend .. ': ' .. filename .. ' supports direct Detailed file collision'
+                backend .. ': ' .. filename .. ' supports direct Trimesh file collision'
             )
-            collider.collisionLevel = 'Simple'
+            collider.collisionLevel = 'Bounding Box'
             world:updateNodes(1 / 60)
             tester:check(
                 collider.status == 'Ready',
-                backend .. ': ' .. filename .. ' supports direct Simple file collision'
+                backend .. ': ' .. filename .. ' supports direct Bounding Box file collision'
             )
-            collider.collisionLevel = 'Convex'
+            collider.collisionLevel = 'Single Convex'
             local parts = Geometry.collect(collider, body)
             tester:check(
                 parts == Geometry.collect(collider, body),
@@ -90,13 +90,13 @@ function Tests.run(tester)
                 collider.shape == 'Points' and collider.points[1][1] ~= points[1][1],
                 backend .. ': baked points are independent editable copies'
             )
-            collider.collisionLevel = 'Detailed'
+            collider.collisionLevel = 'Trimesh'
             world:updateNodes(1 / 60)
             tester:check(
                 collider.status == 'Ready',
                 backend .. ': file points retain triangle topology'
             )
-            collider.collisionLevel = 'Convex'
+            collider.collisionLevel = 'Single Convex'
         end
         collider.shape, collider.geometrySource = 'Geometry', 'shared://models/examples/pyramid.obj'
         world:updateNodes(1 / 60)

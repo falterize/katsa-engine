@@ -4,13 +4,13 @@ A `Collider3D` with `shape = 'Geometry'` (a model file or a part of a model) or 
 
 | Level | What it builds | Use for |
 | --- | --- | --- |
-| `Trimesh` | One thin prism per triangle (Static bodies only). Exact, expensive. Legacy name `Detailed`. | Level geometry |
-| `Single Convex` | One convex hull per mesh part. Legacy name `Convex`. | Rocks, props that are already convex |
+| `Trimesh` | One thin prism per triangle (Static bodies only). Exact, expensive. | Level geometry |
+| `Single Convex` | One convex hull per mesh part. | Rocks, props that are already convex |
 | `Simplified Convex` | One hull per part, reduced to `hullPoints` vertices. | Cheap dynamic bodies |
 | `Multiple Convex` | The whole model cut into up to `maxHulls` nearly convex hulls. Concave shapes (an L, a car body, a chair) keep their hollows. | Dynamic bodies that must be accurate |
-| `Bounding Box` | One box. Legacy name `Simple`. Default. | Anything that only needs a volume |
+| `Bounding Box` | One box. Default. | Anything that only needs a volume |
 
-Old scenes keep working: the legacy names are accepted everywhere and `collisionLevel.lua` maps all names to one kind.
+The 3D levels replace the old `Simple`, `Convex` and `Detailed` names (`Bounding Box`, `Single Convex`, `Trimesh`); the old names are rejected with an error that lists the valid ones. `Collider2D` keeps its own `Simple` / `Convex` / `Detailed` image levels.
 
 ## Multiple Convex
 

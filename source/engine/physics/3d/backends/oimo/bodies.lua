@@ -34,8 +34,8 @@ function Bodies.create(physics, object, settings, scale)
     valid(config.linearDamping, 'Body3D.linearDamping', 0)
     valid(config.angularDamping, 'Body3D.angularDamping', 0)
     assert(
-        not Level.isTrimesh(settings.collisionLevel or 'Simple') or kind == 'Static',
-        'Detailed triangle collision is supported for static bodies only'
+        not Level.isTrimesh(settings.collisionLevel or 'Bounding Box') or kind == 'Static',
+        'Trimesh collision is supported for static bodies only'
     )
     return O.RigidBody.new(config)
 end

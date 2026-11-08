@@ -152,7 +152,7 @@ function Tests.run(tester)
             { name = 'ExtractionSource', position = { 2, 0, 0 }, size = { 4, 2, 2 } },
             owner
         )
-        local collider3D = world:create('Collider3D', { collisionLevel = 'Convex' }, owner)
+        local collider3D = world:create('Collider3D', { collisionLevel = 'Single Convex' }, owner)
         local originalX = mesh.geometry.vertices[1][1]
         local points, indices = collider3D:getPointsFromMesh(mesh)
         tester:check(
@@ -177,17 +177,17 @@ function Tests.run(tester)
             collider3D._descriptorKey ~= key and collider3D.status == 'Ready',
             backend .. ': in-place edits rebuild a manual 3D collider'
         )
-        collider3D.collisionLevel = 'Detailed'
+        collider3D.collisionLevel = 'Trimesh'
         world:updateNodes(1 / 60)
         tester:check(
             collider3D.status == 'Ready' and #owner.body.shapes == 12,
             backend .. ': indexed manual points build static triangle collision'
         )
-        collider3D.collisionLevel = 'Simple'
+        collider3D.collisionLevel = 'Bounding Box'
         world:updateNodes(1 / 60)
         tester:check(
             collider3D.status == 'Ready' and #owner.body.shapes == 1,
-            backend .. ': manual points support Simple collision quality'
+            backend .. ': manual points support Bounding Box collision quality'
         )
         local meshPoints, meshIndices = mesh:getCollisionPoints(owner)
         tester:check(

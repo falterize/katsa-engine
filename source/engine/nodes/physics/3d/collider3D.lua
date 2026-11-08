@@ -38,7 +38,7 @@ Class.propertySchema = {
         hint = 'Most vertices of each convex hull.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
-            { key = 'collisionLevel', oneOf = { 'Simplified Convex', 'Multiple Convex', 'simplified', 'multiple' } },
+            { key = 'collisionLevel', oneOf = { 'Simplified Convex', 'Multiple Convex' } },
         },
     },
     maxHulls = {
@@ -47,7 +47,7 @@ Class.propertySchema = {
         hint = 'Most convex pieces the model is cut into.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
-            { key = 'collisionLevel', oneOf = { 'Multiple Convex', 'multiple' } },
+            { key = 'collisionLevel', oneOf = { 'Multiple Convex' } },
         },
     },
     concavity = {
@@ -57,7 +57,7 @@ Class.propertySchema = {
             .. 'cut again (0.02 = 2%). Lower values fit tighter and make more pieces.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
-            { key = 'collisionLevel', oneOf = { 'Multiple Convex', 'multiple' } },
+            { key = 'collisionLevel', oneOf = { 'Multiple Convex' } },
         },
     },
     resolution = {
@@ -66,7 +66,7 @@ Class.propertySchema = {
         hint = 'Voxels along the longest side used to find concave regions. Higher is slower.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
-            { key = 'collisionLevel', oneOf = { 'Multiple Convex', 'multiple' } },
+            { key = 'collisionLevel', oneOf = { 'Multiple Convex' } },
         },
     },
 }
@@ -149,7 +149,7 @@ function Class:descriptor(body)
         end
     elseif self.shape == 'Geometry' then
         if Level.isTrimesh(self.collisionLevel) and body.bodyType ~= 'Static' then
-            self.status = 'Detailed requires a Static Body3D'
+            self.status = 'Trimesh requires a Static Body3D'
             return nil, signature .. ':nonstatic'
         end
         local builder = require('source.engine.physics.3d.modelCollider')

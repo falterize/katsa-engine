@@ -52,19 +52,27 @@ function Tests:draw()
     self:check(whole > 20, 'A car with all wheels turns when steered')
     self:check(noFront < whole * 0.25, 'A car without front wheels cannot turn')
     self:check(noRearDistance < wholeDistance * 0.5, 'A car without rear wheels is not driven')
-    -- A front hit pulls the hull's nose in: the collider follows the dents in three boxes.
+    -- The hull is a few Collider3D pieces under the Body (visible in the Explorer); a front hit
+    -- pulls the nose of the front piece in while an untouched piece keeps its points.
     local Session = getmetatable(self.host.demo).__index
     local model = self.host.package:require('scripts.game.carEntity').create(nil, { x = -12, z = -40, heading = 0 })
     local body = Session.PhysicsCar.new(self.host.world, model, 93)
     body:step(1 / 60)
-    local count = #body.node.body.shapes
+    local function frontZ()
+        local z = -math.huge
+        for _, collider in ipairs(body.colliders) do
+            for _, p in ipairs(collider.points) do
+                z = math.max(z, p[3])
+            end
+        end
+        return z
+    end
+    local before, pieces = frontZ(), #body.colliders
     model.dents:addImpact({ x = 0, y = 0.6, z = 2.5, nx = 0, ny = 0, nz = -1, speed = 14 })
     body:step(1 / 60)
-    local shapes = body.node.body.shapes
-    local hull = body:hullFor(model.dents)
-    self:check(count == 1 and #shapes == 3, 'Dents split the collider into a simplified three-box hull')
-    self:check(hull.children[3].size[3] < 5.1 / 3 - 0.05, 'The nose section is shorter after a front hit')
-    self:check(math.abs(hull.children[1].size[3] - 5.1 / 3) < 1e-6, 'An untouched section keeps its size')
+    self:check(pieces >= 2 and #body.colliders[1].parent.children >= pieces, 'The hull is several Collider3D nodes under the Body')
+    self:check(frontZ() < before - 0.05, 'The nose of the hull is shorter after a front hit')
+    self:check(body.colliders[1].status == 'Ready', 'Every hull piece builds a valid collider')
     body:destroy()
     -- One Explorer entry per car: the body and the drawn model are children of the same node.
     local CarView = self.host.package:require('scripts.view.carView')

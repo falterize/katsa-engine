@@ -33,7 +33,7 @@ function Spatial.create(state)
         color = { 0.2, 0.8, 0.5 },
         surfaceAppearance = { colorMap = 'white' },
     }, owner)
-    local collider = scene.world:create('Collider3D', { collisionLevel = 'Convex' }, owner)
+    local collider = scene.world:create('Collider3D', { collisionLevel = 'Single Convex' }, owner)
     local points, indices = collider:getPointsFromMesh(mesh)
     for _, point in ipairs(points) do
         if point[2] > 0 then

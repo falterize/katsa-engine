@@ -6,7 +6,7 @@ local ModelCollider = {}
 
 function ModelCollider.install(Physics, Body3D)
     function Physics.modelCollider(object, level)
-        local kind = Level.kind(level or 'Simple')
+        local kind = Level.kind(level or 'Bounding Box')
         if kind == 'box' then
             local min, max =
                 { math.huge, math.huge, math.huge }, { -math.huge, -math.huge, -math.huge }

@@ -1,36 +1,33 @@
 -- Collision levels of Geometry and Points colliders, named after Godot's collision shape types:
 --
---   Trimesh            exact triangles (static bodies only)       was "Detailed"
---   Single Convex      one convex hull per mesh                    was "Convex"
+--   Trimesh            exact triangles (static bodies only)
+--   Single Convex      one convex hull per mesh
 --   Simplified Convex  one convex hull per mesh, few vertices
 --   Multiple Convex    several convex hulls that follow the model, so it may be concave
---   Bounding Box       one box around the model                    was "Simple"
+--   Bounding Box       one box around the model
 --
--- The older names stay valid; `kind` reduces any spelling (case, spaces and underscores ignored)
--- to one of: 'trimesh', 'convex', 'simplified', 'multiple', 'box'.
+-- `kind` turns a level name into the short token the builders switch on: 'trimesh', 'convex',
+-- 'simplified', 'multiple' or 'box'.
 local Level = {}
 
 -- The names shown in the inspector, in Godot's order.
 Level.names = { 'Trimesh', 'Single Convex', 'Simplified Convex', 'Multiple Convex', 'Bounding Box' }
 
 local kinds = {
-    trimesh = 'trimesh',
-    detailed = 'trimesh',
-    singleconvex = 'convex',
-    convex = 'convex',
-    simplifiedconvex = 'simplified',
-    simplified = 'simplified',
-    multipleconvex = 'multiple',
-    multiple = 'multiple',
-    boundingbox = 'box',
-    simple = 'box',
-    box = 'box',
+    ['Trimesh'] = 'trimesh',
+    ['Single Convex'] = 'convex',
+    ['Simplified Convex'] = 'simplified',
+    ['Multiple Convex'] = 'multiple',
+    ['Bounding Box'] = 'box',
 }
 
 function Level.kind(name)
-    local key = tostring(name):lower():gsub('[%s_]', '')
-    local kind = kinds[key]
-    assert(kind, 'Collision level must be Trimesh, Single Convex, Simplified Convex, Multiple Convex or Bounding Box')
+    local kind = kinds[name]
+    assert(
+        kind,
+        'Collision level must be Trimesh, Single Convex, Simplified Convex, Multiple Convex or '
+            .. 'Bounding Box, got ' .. tostring(name)
+    )
     return kind
 end
 

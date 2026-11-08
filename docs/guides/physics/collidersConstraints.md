@@ -2,10 +2,10 @@
 
 Collider3D is a child of Body3D. Use shape="Geometry", geometrySource pointing to
 one Mesh3D, a whole Node3D model, or a model file path, and
-collisionLevel="Simple", "Convex" or "Detailed".
-Simple creates a box for each mesh; Convex creates a hull per mesh; Detailed creates
-thin triangle prisms and requires a Static body. maxTriangles bounds Detailed work.
-Convex is not automatic decomposition of an individual concave mesh. Skinned models
+collisionLevel="Trimesh", "Single Convex", "Simplified Convex", "Multiple Convex" or
+"Bounding Box" (see `collisionLevels.md`). Bounding Box creates a box for each mesh; Single
+Convex a hull per mesh; Trimesh thin triangle prisms and requires a Static body; Multiple
+Convex cuts a concave model into several hulls. maxTriangles bounds the work. Skinned models
 use bind geometry, not live GPU vertex deformation. Source transforms and geometry
 changes rebuild cached shapes; stable geometry reuses them. Status reports invalid
 or unavailable sources. Primitive Box/Sphere/Capsule/Cylinder remain available.
@@ -22,7 +22,7 @@ local collider = scene.world:create('Collider3D', {
     shape = 'Geometry',
     geometrySource = 'shared://models/examples/pyramid.obj',
     size = { 2, 2, 2 },
-    collisionLevel = 'Convex',
+    collisionLevel = 'Single Convex',
 }, body)
 ```
 

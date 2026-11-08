@@ -73,7 +73,7 @@ image widget or change the underlying texture.
 ```lua
 local collider = scene.world:create('Collider3D', {
     shape = 'Points',
-    collisionLevel = 'Convex',
+    collisionLevel = 'Single Convex',
     points = {
         { -1, 0, -1 }, { 1, 0, -1 },
         { 0, 0, 1 }, { 0, 2, 0 },
@@ -83,12 +83,13 @@ collider.points[4][2] = 3
 ```
 
 `points` accepts nested XYZ coordinates or a flat XYZ list; `vertices` is accepted
-when points is absent. The Simple level makes a bounding box, Convex builds a
-convex hull, and Detailed makes the existing thin triangular-prism approximation
-for static geometry. Coplanar Convex points receive the same thin extrusion as
+when points is absent. The Bounding Box level makes a box, Single Convex builds a
+convex hull, Simplified Convex a hull with at most `hullPoints` vertices, Multiple Convex
+needs triangle topology (without it it behaves as Simplified Convex), and Trimesh makes
+the thin triangular-prism approximation for static geometry. Coplanar Single Convex points receive the same thin extrusion as
 mesh-derived convex geometry. Degenerate point clouds are rejected.
 
-Detailed requires a Static Body3D and triangle topology. Set `indices` to a flat
+Trimesh requires a Static Body3D and triangle topology; Multiple Convex uses it too. Set `indices` to a flat
 list of one-based point indices in triples, or omit indices and supply a triangle
 soup with three consecutive points per triangle. Arbitrary point clouds have no
 unique surface connectivity. maxTriangles applies to the baked geometry.

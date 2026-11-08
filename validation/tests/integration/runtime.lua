@@ -213,7 +213,7 @@ function Runtime:update()
     elseif self.frame == 92 then
         self:check(
             s.world.byName['Pyramid.detailed'].body.type == 'static',
-            'Detailed model collider is static'
+            'Trimesh model collider is static'
         )
         local glb = s.world.byName['PhysicalGLB.1']
         self:check(glb ~= nil, 'Physical GLB instance exists')

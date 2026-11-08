@@ -26,11 +26,11 @@ end
 function Tests.run(tester)
     tester:check(Level.kind('Multiple Convex') == 'multiple', 'Multiple Convex level is known')
     tester:check(
-        Level.kind('Detailed') == 'trimesh' and Level.kind('Convex') == 'convex'
-            and Level.kind('Simple') == 'box',
-        'legacy level names stay valid'
+        Level.kind('Trimesh') == 'trimesh' and Level.kind('Single Convex') == 'convex'
+            and Level.kind('Bounding Box') == 'box',
+        'level names map to their kinds'
     )
-    tester:check(Level.kind('simplified_convex') == 'simplified', 'level names ignore case and spaces')
+    tester:check(not pcall(Level.kind, 'Detailed'), 'the removed level names are rejected')
 
     local soup = {}
     box(soup, 0, 0, 0, 4, 1, 1)

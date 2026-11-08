@@ -34,8 +34,8 @@ function Interface.create(self)
     ui:text({
         position = { 0, 8, 0, 114 },
         size = { 1, -16, 0, 76 },
-        text = 'Simple: box. Convex: hull. Detailed: static triangle collider. Labels follow '
-            .. 'their Mesh3D supports.',
+        text = 'Bounding Box: one box. Single and Simplified Convex: one hull. Multiple Convex: several '
+            .. 'hulls. Trimesh: static triangle collider.',
         textScaled = true,
         maxTextSize = 15,
     }, self.toolbar)

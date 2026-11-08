@@ -1,6 +1,6 @@
 -- Godot-style collision from node names inside a model file (.glb, .gltf, .obj, and .blend through
 -- its glTF conversion):
---   <name>-col       the mesh keeps rendering and gets an exact (Detailed) static collider
+--   <name>-col       the mesh keeps rendering and gets an exact (Trimesh) static collider
 --   <name>-colonly   the mesh is hidden and acts as collision only
 -- For `-colonly`, when another mesh node named <name> exists, the collider is attached to that node
 -- (so it moves with it); otherwise it is an invisible collision object at its own place.
@@ -102,7 +102,7 @@ function AutoCollision.apply(world, model, objects, settings)
             world:create('Collider3D', {
                 shape = 'Geometry',
                 geometrySource = source,
-                collisionLevel = settings.collisionLevel or 'Detailed',
+                collisionLevel = settings.collisionLevel or 'Trimesh',
             }, body)
             bodies[#bodies + 1] = body
         end

@@ -171,7 +171,7 @@ function Creation.install(Physics, Body3D)
             group = self.collisionGroups:canonical(settings.collisionGroup or 'Default'),
             canCollide = settings.canCollide ~= false,
             canQuery = settings.canQuery ~= false,
-            collisionLevel = settings.collisionLevel or 'Simple',
+            collisionLevel = settings.collisionLevel or 'Bounding Box',
         }, Body3D)
         self:addGroup(body.group)
         body.properties = settings

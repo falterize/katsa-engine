@@ -35,11 +35,11 @@ function CarHull.rest(resources)
     return restHulls
 end
 
--- Collider descriptor in chassis space. `lift` is the model origin's distance below the chassis
--- centre; `floor` the lowest allowed chassis-space height (the underside is flattened there so a
--- dent never drags a hull under the wheels' ground clearance).
-function CarHull.descriptor(hulls, dents, lift, floor)
-    local children = {}
+-- Point lists in chassis space, one per hull piece. `lift` is the model origin's distance below
+-- the chassis centre; `floor` the lowest allowed chassis-space height (the underside is flattened
+-- there so a dent never drags a hull under the wheels' ground clearance).
+function CarHull.pieces(hulls, dents, lift, floor)
+    local pieces = {}
     for _, hull in ipairs(hulls) do
         local points = {}
         for i, v in ipairs(hull) do
@@ -50,15 +50,15 @@ function CarHull.descriptor(hulls, dents, lift, floor)
             end
             points[i] = { x, math.max(y - lift, floor), z }
         end
-        -- A dent can flatten a thin hull completely; keep the rest shape then.
+        -- A dent can flatten a thin piece completely; keep its rest shape then.
         if Hull.classify(points) ~= 'solid' then
             for i, v in ipairs(hull) do
                 points[i] = { v[1], math.max(v[2] - lift, floor), v[3] }
             end
         end
-        children[#children + 1] = { shape = 'Convex', vertices = points }
+        pieces[#pieces + 1] = points
     end
-    return { shape = 'Compound', children = children }
+    return pieces
 end
 
 return CarHull

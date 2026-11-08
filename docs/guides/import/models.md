@@ -37,7 +37,7 @@ it off; `settings.friction`, `restitution`, `collisionGroup` and `collisionLevel
 
 | Name | Result |
 | --- | --- |
-| `wall-col` | the mesh keeps rendering and gets an exact (`Detailed`) static `Body3D` + `Collider3D` |
+| `wall-col` | the mesh keeps rendering and gets an exact (`Trimesh`) static `Body3D` + `Collider3D` |
 | `wall-colonly` | the mesh is hidden (`visible = false`) and is used for collision only |
 
 With `-colonly`, if another mesh node is named `wall`, the collider attaches to that node and moves

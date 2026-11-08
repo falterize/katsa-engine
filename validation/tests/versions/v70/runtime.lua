@@ -56,7 +56,7 @@ function T:update()
         )
         local collider = scene.world:create(
             'Collider3D',
-            { shape = 'Geometry', geometrySource = root, collisionLevel = 'Simple' },
+            { shape = 'Geometry', geometrySource = root, collisionLevel = 'Bounding Box' },
             body
         )
         body:update(0)
@@ -64,14 +64,14 @@ function T:update()
             #body.body.shapes == 2,
             'Simple geometry collision includes both transformed model parts'
         )
-        collider.collisionLevel = 'Convex'
+        collider.collisionLevel = 'Single Convex'
         body:update(0)
         self:check(#body.body.shapes == 2, 'Convex geometry collision keeps separate mesh hulls')
-        collider.collisionLevel = 'Detailed'
+        collider.collisionLevel = 'Trimesh'
         body:update(0)
         self:check(
             #body.body.shapes == 24,
-            'Detailed geometry collision includes all source triangles'
+            'Trimesh geometry collision includes all source triangles'
         )
         local before = body._colliderSignature
         cube.position[1] = 20

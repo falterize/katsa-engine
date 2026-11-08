@@ -96,6 +96,7 @@ function PhysicsCar.new(world, model, netId, options)
         angles = {},
         axes = { right = {}, up = {}, forward = {} },
     }, PhysicsCar)
+    self:buildHull()
     if self.mode == 'follow' then
         node.bodyType = 'Kinematic'
         node:update(0)
@@ -162,22 +163,35 @@ function PhysicsCar:follow(dt, source)
     self.node.body:sync()
 end
 
--- The collision hull is the body mesh as a few convex pieces (game/carHull.lua) whose vertices
--- follow the dents. The pieces come from a one-off decomposition; later changes only displace
--- vertices. Rebuilt when the dents change (the signature is cheap: a few numbers per dent),
--- through the transactional setCollider. If the model is missing the old chassis box stays.
-function PhysicsCar:hullFor(dents)
-    local t, config = self.tuning, self.config
+-- The collision hull is the body mesh as a few convex pieces (game/carHull.lua), each a
+-- Collider3D under the Body so they show up in the Explorer and the physics debug view. A dent
+-- moves the pieces' points; the decomposition itself runs once per process. If the model is
+-- missing the Body keeps its chassis box.
+function PhysicsCar:buildHull()
     local ok, hulls = pcall(CarHull.rest, self.world.resources)
     if not ok then
-        return nil
+        return
     end
-    return CarHull.descriptor(hulls, dents, config.rideHeight, -t.size[2] * 0.5)
+    self.hulls = hulls
+    self.colliders = {}
+    for index, points in ipairs(self:hullPieces(nil)) do
+        self.colliders[index] = self.world:create('Collider3D', {
+            name = 'Hull' .. index,
+            shape = 'Points',
+            collisionLevel = 'Single Convex',
+            points = points,
+        }, self.node)
+    end
+end
+
+function PhysicsCar:hullPieces(dents)
+    local t = self.tuning
+    return CarHull.pieces(self.hulls, dents, self.config.rideHeight, -t.size[2] * 0.5)
 end
 
 function PhysicsCar:syncCollision()
     local dents = self.model.dents
-    if not dents then
+    if not dents or not self.colliders then
         return
     end
     local signature = #dents.dents
@@ -188,9 +202,8 @@ function PhysicsCar:syncCollision()
         return
     end
     self.hullSignature = signature
-    local hull = self:hullFor(dents)
-    if hull then
-        self.node.body:setCollider(hull)
+    for index, points in ipairs(self:hullPieces(dents)) do
+        self.colliders[index].points = points
     end
     self.hullRevision = (self.hullRevision or 0) + 1
 end
