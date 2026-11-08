@@ -11,7 +11,7 @@ Targets:
 
 Libraries (all of them when none is named):
     katsa_native   UTF-8 files, image/audio/font decoding (native/src/native/*.c)
-    katsa_box2d    Box2D bridge (katsa_box2d.cpp + vendor/box2d)
+    katsa_box2d    Box2D bridge (native/src/box2d/*.cpp + vendor/box2d)
     katsa_net      ENet bridge (katsa_net.c + vendor/enet)
     katsa_threads  OS threads, channels and shared arrays for actors (katsa_threads.c)
     host           the katsa executable (native/src/host/*.c); built only when named or when
@@ -43,7 +43,7 @@ LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 NATIVE_SOURCES = sorted((SRC / 'native').glob('*.c'))
 NATIVE_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(VENDOR / 'stb'), '-I' + str(SRC)]
 
-BOX2D_SOURCES = sorted((VENDOR / 'box2d' / 'Box2D').rglob('*.cpp')) + [SRC / 'katsa_box2d.cpp']
+BOX2D_SOURCES = sorted((VENDOR / 'box2d' / 'Box2D').rglob('*.cpp')) + sorted((SRC / 'box2d').glob('*.cpp'))
 BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(VENDOR / 'box2d'), '-std=c++11']
 
 ENET = VENDOR / 'enet'
@@ -229,14 +229,24 @@ TOOLCHAINS = {'linux': linux_toolchain, 'windows': windows_toolchain, 'macos': m
 TARGETS = ['linux', 'windows', 'macos', 'android']
 
 
+# Source file names (without extension) that select the library they belong to, so
+# `build.py windows font.c` builds katsa_native. File names shared by several libraries are
+# left out on purpose.
+FILE_LIBRARIES = {
+    'katsa_native': ('native', 'core', 'filesystem', 'image', 'audio', 'font'),
+    'katsa_box2d': ('box2d', 'bridge', 'world', 'body', 'shape', 'fixture', 'contact', 'joint'),
+}
+
+
 def library_name(argument):
-    """'--katsa_net.c', 'katsa_net.c', 'katsa_net' and 'net' all mean katsa_net."""
+    """'--katsa_net.c', 'katsa_net.c', 'katsa_net', 'net' and file names such as 'font.c'."""
     name = argument.lstrip('-')
-    for ending in ('.cpp', '.c'):
+    for ending in ('.cpp', '.c', '.h'):
         if name.endswith(ending):
             name = name[: -len(ending)]
-    if name in ('native', 'filesystem', 'image', 'audio', 'font', 'core'):
-        name = 'katsa_native'  # these sources are part of katsa_native
+    for library, files in FILE_LIBRARIES.items():
+        if name in files:
+            return library
     if not name.startswith('katsa_') and name != 'host':
         name = 'katsa_' + name
     if name not in LIBRARIES:
