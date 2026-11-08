@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- New scene `shapeKeysLab` and `tools/import/makeShapeKeyDemo.py`: a generated glTF with four shape keys (Squash, Stretch, Spike, Twist) viewed with one slider per shape and a Wave button; run inside Blender the same script writes a `.blend` with real Shape Keys. Test: `--test-v108.7.shapekeys`.
+- uiStyler plugin: new `UIStyler` node (properties `theme`, `stylesFolder`; `bind(ui)`, `setTheme`) so the plugin is visible in the inspector. The launcher showcase uses it. Test: `--test-v108.7.styler`.
 - Menu: scene tags replace the category chooser. Every scene lists `tags` in `settings.lua`; the menu shows them under each title, filters by search words (title, id, tags) and by a multi-select Tags chooser (a scene needs all selected tags). `category` still works as a fallback tag. Tests: `v108_7/sceneTags.lua`, `--test-menu-idle`. Module: `source/game/sceneTags.lua`.
 - multiplayerCars: scaling the `Car<id>` node scales the drawn model in place instead of carrying it away (the Model keeps world coordinates and copies the scale; the Body ignores it). Test: `--test-v108.7.steering`.
 - multiplayerCars: one node per car in the Explorer. `Car<id>` now holds the physics `Body` and the drawn `Model` (it was a loose `CarBody<id>` at the root plus a separate `Car<id>` model). The container is shared and reference counted (`game/carNode.lua`). The Body ignores the container's scale (`inheritScale = false`), so scaling the Car node scales the model and cannot break the physics. Test: `--test-v108.7.steering`.

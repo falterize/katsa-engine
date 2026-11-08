@@ -36,12 +36,14 @@ end
 function Interface.create(state)
     local scene = state.scene
     local ui = scene.ui
-    local UIStyler = require('source.engine.plugins').require('uiStyler')
-    local styler = UIStyler.new(ui)
-    state.styler = styler
-    styler:defineTheme('dark', UIStyler.themes.dark)
-    styler:defineTheme('light', UIStyler.themes.light)
-    styler:loadStyles(state.sceneRoot .. '/assets/styles')
+    -- The style sheet is a node (theme and styles folder in the Inspector); code uses its styler.
+    local stylerNode = scene.world:create('UIStyler', {
+        name = 'UIStyler',
+        theme = 'dark',
+        stylesFolder = 'scene://styles',
+    })
+    local styler = stylerNode:bind(ui)
+    state.styler, state.stylerNode = styler, stylerNode
 
     local root = make(ui, 'Frame', {
         name = 'Launcher',
@@ -74,7 +76,7 @@ function Interface.create(state)
     themeButton.position = { 1, -330, 0, 4 }
     themeButton.onPress = function()
         local next = styler:getTheme() == 'dark' and 'light' or 'dark'
-        styler:setTheme(next)
+        stylerNode:setTheme(next)
         themeButton.text = 'Theme: ' .. next
     end
     local account = toolButton(ui, toolbar, 0, 'Account', 'account', function() end)

@@ -62,3 +62,7 @@ return {
 ```
 
 Give a node the tag (`node:addTag('uicorner')`) and it receives every value. `extends` merges other styles first (a name or a list); own values win. `styler:style(selector, values)` registers the same thing from code.
+
+## UIStyler node
+
+The plugin also provides a `UIStyler` node (`world:create('UIStyler', { theme = 'dark', stylesFolder = 'scene://styles' })`). `theme` is a dropdown of the built-in themes, `stylesFolder` is loaded as style files, `node:bind(ui)` applies the styles to a UI root and `node:setTheme(name)` switches the theme at runtime.

@@ -13,5 +13,8 @@
 -- See styler.lua for the selector grammar and the pseudo properties `corner` and `stroke`.
 return {
     new = require('./styler').new,
+    themeNames = function()
+        return { 'dark', 'light' }
+    end,
     themes = { dark = require('./themes.dark'), light = require('./themes.light') },
 }
