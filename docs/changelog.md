@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Windows: dragging any window (an orbiting panel, the mini game) no longer freezes the others. The live-resize watch ignored every window but the main one; it now reacts to a drag of any window and tells the game's own moves and resizes apart by the requested values (`Platform:remember`). Needs confirmation on Windows.
+- Window scenes call `profiler:frame()`, so the CPU profiler records the mini game (the recording stayed empty). Test: `v108_7/profileWindowScene.lua`.
+- `katsa.window.moveWindows({ {window, x, y}, ... })` moves several windows in one OS batch (`BeginDeferWindowPos`) on Windows; the windowsLab profile showed ~6 ms per single `SetWindowPos`. windowsLab: `V` switches to single moves and `Y` switches the main window's transparency off, to compare `Windows: move` on hardware. Test: `v108_7/moveWindows.lua`.
 - Windows (fix for the freeze after leaving a scene with extra windows): events of a window that was already closed (its HIDDEN, FOCUS_LOST, CLOSE) were taken as main-window events, which marked the game unfocused and hidden (frozen scene, no clicks) or could quit it. `Platform:translate` now drops every event whose window is not the main one. Test: `v108_7/closedWindowEvents.lua`.
 - Windows: extra windows get a taskbar button (`WS_EX_APPWINDOW`; option `taskbar = false` opts out), so they appear in the taskbar hover list. The swap interval is queried on a window switch and only set when it differs. Slow SDL polls (>= 100 ms) are logged with the event kinds that arrived. New profiler stages: `Windows: move`, `Windows: draw` (windowsLab) and `Window scenes`.
 - windowsLab: panel motion runs every frame for every panel; their content is repainted round robin at 12 Hz.

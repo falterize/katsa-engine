@@ -7,6 +7,8 @@
 --   F11    fullscreen (every scene)
 --   Space  pauses the flight
 --   M      opens / closes a second scene (a mini game) in its own window
+--   V      moves the windows one by one instead of in one batch (compare 'Windows: move')
+--   Y      switches the main window's per-pixel transparency off and on (same comparison)
 --   R      cycles the size of the orbiting windows (windows can be resized at any time)
 -- A window closed by its close button is removed; the main window ends the scene as usual.
 local Lab = {}
@@ -47,14 +49,14 @@ function Lab.new(scene)
     local ui = scene.ui
     local card = ui:container({
         position = { 0.5, -190, 0.5, -70 },
-        size = { 0, 380, 0, 140 },
+        size = { 0, 380, 0, 164 },
         backgroundColor = { 0.08, 0.1, 0.16 },
         backgroundTransparency = 0.2,
     }, ui.content)
     ui:text({
         position = { 0, 14, 0, 10 },
         size = { 1, -28, 1, -20 },
-        text = 'Transparent main window\nT  opacity     B  title bar     F11  fullscreen\nM  mini game window     R  resize windows     Space  pause',
+        text = 'Transparent main window\nT  opacity     B  title bar     F11  fullscreen\nM  mini game window     R  resize windows     Space  pause\nV  batch moves     Y  transparency',
         fontSize = 17,
         align = 'left',
     }, card)
@@ -96,6 +98,13 @@ function Lab:update(dt)
     if self:pressed('b') then
         katsa.window.setBorderless(not katsa.window.isBorderless())
     end
+    if self:pressed('v') then
+        self.single = not self.single
+    end
+    if self:pressed('y') then
+        self.flat = not self.flat
+        katsa.window.setTransparent(not self.flat)
+    end
     if self:pressed('m') then
         self:toggleMiniGame()
     end
@@ -130,6 +139,7 @@ function Lab:serveWindows(dt)
     -- at any frame rate. Presenting a window's content costs a context switch and a swap, which on
     -- Windows is several milliseconds, so the panels are repainted round robin at REDRAW per second.
     local moveStart = clock()
+    local moves = {}
     for index = #self.windows, 1, -1 do
         local entry = self.windows[index]
         if entry.window:isCloseRequested() then
@@ -143,9 +153,16 @@ function Lab:serveWindows(dt)
             local y = math.floor(self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2)
             if x ~= entry.x or y ~= entry.y then
                 entry.x, entry.y = x, y
-                entry.window:setPosition(x, y)
+                moves[#moves + 1] = { entry.window, x, y }
             end
         end
+    end
+    if self.single then
+        for _, move in ipairs(moves) do
+            move[1]:setPosition(move[2], move[3])
+        end
+    elseif #moves > 0 then
+        katsa.window.moveWindows(moves)
     end
     local drawStart = clock()
     count = #self.windows

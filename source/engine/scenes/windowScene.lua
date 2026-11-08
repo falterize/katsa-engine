@@ -126,6 +126,8 @@ function WindowScene:step(dt)
             local color = self.clearColor
             katsa.graphics.clear(color[1], color[2], color[3], color[4])
             manager:draw()
+            -- Closes the profiler's frame; without it a recording of this scene stays empty.
+            manager.profiler:frame()
         end)
     end)
     if not ok then

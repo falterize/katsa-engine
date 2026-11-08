@@ -60,7 +60,9 @@ end
 
 function SubWindow:setSize(width, height)
     assert(self._record.raw, 'The window is closed')
-    self._platform.sdl.SDL_SetWindowSize(self._record.raw, width, height)
+    aimed(self, function(platform)
+        platform:setSize(width, height)
+    end)
 end
 
 function SubWindow:getSize()

@@ -171,6 +171,19 @@ function Window.getOpacity()
     return platform:getOpacity()
 end
 
+-- Moves several windows at once: `moves` is a list of { window, x, y } where `window` is a window
+-- from `Window.create`. Cheaper than separate setPosition calls on Windows. Returns whether the
+-- OS batch was used.
+function Window.moveWindows(moves)
+    local list = {}
+    for _, move in ipairs(moves) do
+        local record = move[1]._record
+        assert(record and record.raw, 'The window is closed')
+        list[#list + 1] = { record.raw, move[2], move[3] }
+    end
+    return platform:moveWindows(list)
+end
+
 function Window.setPosition(x, y)
     platform:setPosition(x, y)
 end

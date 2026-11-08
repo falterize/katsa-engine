@@ -15,8 +15,66 @@ return function(Platform, K)
         return value[0]
     end
 
+    -- What the game itself asked for, per window id: SDL reports these moves and resizes with
+    -- the same numbers, which is how the live-resize watch tells them from a drag by the user.
+    function Platform:remember(kind, a, b)
+        self.requested = self.requested or {}
+        self.requested[self.sdl.SDL_GetWindowID(self.window)] = { a, b, kind = kind }
+    end
+
     function Platform:setPosition(x, y)
+        self:remember('move', x, y)
         self.sdl.SDL_SetWindowPosition(self.window, x, y)
+    end
+
+    -- Moves several windows in one call: `moves` is a list of { raw, x, y } (x, y as for
+    -- setPosition). Windows moves them in a single batch (BeginDeferWindowPos), which the desktop
+    -- compositor handles as one change; every other platform moves them one by one.
+    function Platform:moveWindows(moves)
+        self.requested = self.requested or {}
+        local batched = false
+        if ffi.os == 'Windows' and #moves > 1 then
+            batched = pcall(function()
+                if not self.batchDeclared then
+                    ffi.cdef([[
+                        void* BeginDeferWindowPos(int count);
+                        void* DeferWindowPos(void* batch, void* window, void* after, int x, int y, int w, int h, unsigned flags);
+                        int EndDeferWindowPos(void* batch);
+                    ]])
+                    self.batchDeclared = true
+                end
+                local user = ffi.load('user32')
+                local batch = user.BeginDeferWindowPos(#moves)
+                assert(batch ~= nil, 'BeginDeferWindowPos failed')
+                local top, left = ffi.new('int[1]'), ffi.new('int[1]')
+                local bottom, right = ffi.new('int[1]'), ffi.new('int[1]')
+                for _, move in ipairs(moves) do
+                    -- SDL positions the client area, Windows the frame around it.
+                    top[0], left[0] = 0, 0
+                    self.sdl.SDL_GetWindowBordersSize(move[1], top, left, bottom, right)
+                    -- NOSIZE | NOZORDER | NOACTIVATE | NOOWNERZORDER
+                    batch = user.DeferWindowPos(
+                        batch,
+                        nativeHandle(self, move[1]),
+                        nil,
+                        move[2] - left[0],
+                        move[3] - top[0],
+                        0,
+                        0,
+                        0x1 + 0x4 + 0x10 + 0x200
+                    )
+                    assert(batch ~= nil, 'DeferWindowPos failed')
+                end
+                assert(user.EndDeferWindowPos(batch) ~= 0, 'EndDeferWindowPos failed')
+            end)
+        end
+        for _, move in ipairs(moves) do
+            self.requested[self.sdl.SDL_GetWindowID(move[1])] = { move[2], move[3], kind = 'move' }
+            if not batched then
+                self.sdl.SDL_SetWindowPosition(move[1], move[2], move[3])
+            end
+        end
+        return batched
     end
 
     function Platform:getPosition()
@@ -27,6 +85,7 @@ return function(Platform, K)
 
     -- Window state of the main window, in raw pixels, with the names of Godot's DisplayServer.
     function Platform:setSize(width, height)
+        self:remember('size', width, height)
         self.sdl.SDL_SetWindowSize(self.window, width, height)
     end
 

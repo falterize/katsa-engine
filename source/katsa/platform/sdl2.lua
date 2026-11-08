@@ -66,6 +66,7 @@ int SDL_GL_MakeCurrent(SDL_Window* window, SDL_GLContext context);
 int SDL_GL_SetAttribute(int attr, int value);
 int SDL_GL_SetSwapInterval(int interval);
 int SDL_GL_GetSwapInterval(void);
+int SDL_GetWindowBordersSize(SDL_Window* window, int* top, int* left, int* bottom, int* right);
 void* SDL_GL_GetProcAddress(const char* proc);
 void SDL_GL_SwapWindow(SDL_Window* window);
 typedef int (*SDL_EventFilter)(void* userdata, SDL_Event* event);
@@ -702,15 +703,26 @@ function Platform:onLiveResize(handler)
         end
         local sized = kind == WINDOW_EVENT.SIZE_CHANGED or kind == WINDOW_EVENT.RESIZED
         local moved = kind == WINDOW_EVENT.MOVED or kind == WINDOW_EVENT.EXPOSED
-        -- Only the main window's own moves and resizes count. Events of the extra windows, and the
-        -- ones SDL raises synchronously from calls the game itself makes (setPosition, setSize,
-        -- fullscreen) arrive outside a poll, and running a frame from inside those would re-enter
-        -- the game's update in the middle of itself.
-        if
-            (sized or moved)
-            and event.window.windowID ~= self.sdl.SDL_GetWindowID(self.mainWindow or self.window)
-        then
-            return 0
+        if sized or moved then
+            local id = event.window.windowID
+            local main = id == self.sdl.SDL_GetWindowID(self.mainWindow or self.window)
+            -- The OS runs its move/size loop for whichever window is being dragged, and every
+            -- window waits for it, so a drag of an extra window must keep the frames going too.
+            -- What does not count: EXPOSED of an extra window (every move exposes its neighbours)
+            -- and the moves and resizes the game itself asked for (setPosition, setSize), which
+            -- SDL reports with the very values that were requested.
+            if not main and kind == WINDOW_EVENT.EXPOSED then
+                return 0
+            end
+            local asked = self.requested and self.requested[id]
+            if
+                asked
+                and asked.kind == (sized and 'size' or kind == WINDOW_EVENT.MOVED and 'move' or nil)
+                and asked[1] == event.window.data1
+                and asked[2] == event.window.data2
+            then
+                return 0
+            end
         end
         local now = self.sdl.SDL_GetTicks()
         local modal = self.polling and now - (self.pollStarted or now) > MODAL_AFTER_MS
