@@ -4,7 +4,22 @@ A Lua 2D and 3D engine and interactive example collection on its own LuaJIT + Op
 
 ## Run
 
-Build the katsa runtime (see [building](docs/guides/katsa/building.md)) and run `katsa .` from this directory, or run a release `.katsa` archive. Optional flags: `--physics-jolt` or `--physics-oimo`. Auto mode prefers Jolt when its native library loads. Desktop VSync is disabled by default. Try `--scene abilityRunner2D` for the 2D runner with checkpoints, abilities and 8x8 pixel animation. Windows startup enables native DPI awareness with logical UI sizing; desktop geometry uses hardware-aware MSAA defaults. See the [quality guide](docs/guides/rendering/renderQuality.md) for resolution and sampling settings.
+Full instructions for every platform (Windows, Linux, macOS, Android), packaging and
+troubleshooting: **[Running and building Katsa](docs/guides/katsa/building.md)**.
+
+Quick start from source:
+
+1. Install Git, Python 3.10+, LuaJIT 2.1 and a C compiler (Windows: llvm-mingw; Linux: clang or gcc;
+   macOS: Xcode command line tools).
+2. Build the native libraries: `python tools/native/build.py windows` (or `linux`, `macos`).
+3. Get SDL2 and OpenAL Soft: on Windows put `SDL2.dll` and `soft_oal.dll` into `lib\` together with
+   the built DLLs; on Linux and macOS install them with the package manager.
+4. Run `luajit tools/dev/katsa.lua .` from this folder. The menu lists every example scene; search by
+   name or filter by tags.
+
+Useful flags: `--scene <id>` (for example `--scene abilityRunner2D`), `--physics-jolt` or
+`--physics-oimo` (3D physics backend; auto prefers Jolt). See the
+[quality guide](docs/guides/rendering/renderQuality.md) for resolution, VSync and sampling settings.
 
 ## Project layout
 
@@ -13,7 +28,7 @@ Build the katsa runtime (see [building](docs/guides/katsa/building.md)) and run 
 | `source/engine/` | Reusable engine services and node APIs |
 | `source/game/` | Self-contained scene folders, common runtime and game data |
 | `validation/` | All tests: integration, performance, fixtures and versioned regression suites (`validation/tests/`) |
-| `native/` | The project's C/C++ runtime sources (host, bindings, Box2D bridge) |
+| `native/` | The project's C/C++ sources: one folder per native library in `native/src` (host, files and codecs, Box2D, ENet, threads) |
 | `assets/` | Models, textures, shaders, audio and source assets |
 | `vendor/` | Pinned third-party dependencies and licenses (Box2D, stb, Jolt, Oimo, json) |
 | `tools/project/templates/game/` | Generator-only entry/configuration resources; scene code has one canonical source |
@@ -63,7 +78,7 @@ Collider3D GeometrySource accepts live model nodes or OBJ/GLB/glTF paths. Points
 - [katsa runtime layer](docs/guides/katsa/platform.md), [SoundManager, AudioListener and AudioSource](docs/guides/audio/audioModules.md) and [colliders and constraints](docs/guides/physics/nodesPhysics.md)
 - [Project conventions](docs/guides/architecture/conventions.md), [node classes and naming](docs/guides/development/classSystem.md), [framework and scenes](docs/guides/development/framework.md), [public libraries](docs/guides/development/libraries.md) and [spatial transforms](docs/guides/development/spatialTransforms.md)
 
-Build an archive with `python tools/build/packageProject.py --output dist`. Project code is MIT; see [LICENSE](LICENSE) and the [asset/dependency notices](docs/guides/development/licenses.md).
+Build an archive with `python tools/build/packageProject.py --output dist` ([packaging](docs/guides/katsa/building.md#packaging-a-game)). Project code is MIT; see [LICENSE](LICENSE) and the [asset/dependency notices](docs/guides/development/licenses.md).
 
 Generated scenes expose `scene.data` for shared progress, preferences and arbitrary
 text/binary files in persistent device storage. Keep the save identity stable

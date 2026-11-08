@@ -1,6 +1,6 @@
 # Getting started
 
-Build the katsa runtime (see [building](../katsa/building.md)) and launch this source root with `katsa .`. The menu opens the example catalog. Select a lab to explore rendering, physics, animation, UI, audio or particles; each lab provides its own controls. Workspace inspects the running node tree and properties.
+Follow [Running and building Katsa](../katsa/building.md) for your platform, then start this source root with `luajit tools/dev/katsa.lua .` (from source) or `katsa .` (through a built host). The menu opens the example catalog: type in the search box or pick tags to filter scenes. Select a lab to explore rendering, physics, animation, UI, audio or particles; each lab provides its own controls. Workspace inspects the running node tree and properties.
 
 ## Editing
 
@@ -12,7 +12,7 @@ Start with `source/game/data/project.lua` to select your game's first scene. The
 
 Use `katsa . --physics-oimo` or `katsa . --physics-jolt` to select a solver explicitly. Without a flag, auto mode uses Jolt when available and otherwise Oimo. Stats identifies the active backend. The high-level Body3D/Collider3D/Constraint3D API is shared; private raw solver methods are not portable.
 
-Windows x64 is tested. Linux and Android libraries are bundled but require validation on target hardware. Android may require native library packaging inside the APK; see the [Jolt dependency notes](../../../vendor/joltPhysics/README.md).
+Windows x64 and Linux are tested; macOS and Android builds still need validation on real hardware. Android may require native library packaging inside the APK; see the [Jolt dependency notes](../../../vendor/joltPhysics/README.md).
 
 ## Build and checks
 
