@@ -1,4 +1,5 @@
 local Models = require('source.engine.import.models')
+local Blend = require('source.engine.import.blend')
 
 -- Shows assets/models/Destare.blend (a .blend imported directly) a few steps from the spawn point.
 -- .blend files are converted by the installed Blender (KATSA_BLENDER or the usual install folders)
@@ -8,6 +9,12 @@ local Builder = {}
 Builder.PATH = 'scene://models/Destare.blend'
 
 function Builder.create(scene)
+    -- Ask first: a failed load would also land in the runtime error journal.
+    local available, why = Blend.available(scene.resources:canonical(Builder.PATH))
+    if not available then
+        katsa.log.warn('Destare.blend is skipped: ' .. tostring(why))
+        return nil
+    end
     local ok, result = pcall(function()
         local model = Models.load(Builder.PATH, scene.resources)
         return Models.instantiate(scene.world, model, {

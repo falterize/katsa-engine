@@ -144,6 +144,24 @@ function Blend.convert(path)
     return virtual
 end
 
+-- True when `path` can be imported now: a packaged `<path>.glb`, a cached conversion or an
+-- installed Blender. Otherwise nil plus the reason. Lets optional content skip a .blend instead of
+-- reporting a resource error on machines without Blender.
+function Blend.available(path)
+    if katsa.filesystem.getInfo(path .. '.glb', 'file') then
+        return true
+    end
+    local bytes = katsa.filesystem.read(path)
+    if not bytes then
+        return nil, 'Missing blend file: ' .. path
+    end
+    if katsa.filesystem.getInfo(CACHE .. '/' .. Fingerprint.of(bytes) .. '.glb', 'file') then
+        return true
+    end
+    local blender, why = Blend.find()
+    return blender ~= nil or nil, why
+end
+
 function Blend.load(path, resources)
     return require('source.engine.import.glb').load(Blend.convert(path), resources)
 end
