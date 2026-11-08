@@ -6,6 +6,7 @@
 -- Units are meters (the scene uses unitsPerMeter = 1). Heading 0 faces +z.
 local O = require('source.engine.physics.3d.valueTypes')
 local orientation = require('./orientation')
+local CarNode = require('./carNode')
 
 local PhysicsCar = {}
 PhysicsCar.__index = PhysicsCar
@@ -57,8 +58,10 @@ function PhysicsCar.new(world, model, netId, options)
     local config = model.config
     local ground = model.ground(model.x, model.z)
     local height = -t.mountY + t.restLength + t.wheelRadius
+    local container = CarNode.acquire(world, netId)
     local node = world:create('Body3D', {
-        name = 'CarBody' .. netId,
+        name = 'Body',
+        inheritScale = false, -- scaling the Car node in the Explorer scales the model, never the hull
         bodyType = 'Dynamic', -- a custom mass needs a dynamic body; follow mode switches below
         size = { t.size[1], t.size[2], t.size[3] },
         mass = t.mass,
@@ -70,10 +73,12 @@ function PhysicsCar.new(world, model, netId, options)
         autoSleep = false,
         position = { model.x, ground + height + 0.1, model.z },
         rotation = { 0, -model.heading, 0 }, -- engine yaw runs opposite to the model heading
-    })
+    }, container)
     local self = setmetatable({
         model = model,
         node = node,
+        world = world,
+        netId = netId,
         tuning = t,
         config = config,
         compression = { 0, 0, 0, 0 },
@@ -543,6 +548,7 @@ end
 
 function PhysicsCar:destroy()
     self.node:destroy()
+    CarNode.release(self.world, self.netId)
 end
 
 return PhysicsCar

@@ -66,6 +66,32 @@ function Tests:draw()
     self:check(hull.children[3].size[3] < 5.1 / 3 - 0.05, 'The nose section is shorter after a front hit')
     self:check(math.abs(hull.children[1].size[3] - 5.1 / 3) < 1e-6, 'An untouched section keeps its size')
     body:destroy()
+    -- One Explorer entry per car: the body and the drawn model are children of the same node.
+    local CarView = self.host.package:require('scripts.view.carView')
+    local hullModel = self.host.package:require('scripts.game.carEntity').create(nil, { x = -12, z = -40, heading = 0 })
+    local together = Session.PhysicsCar.new(self.host.world, hullModel, 94)
+    local view = CarView.new(self.host, 94, hullModel)
+    local container = view.root.parent
+    self:check(
+        container.name == 'Car94' and together.node.parent == container and view.root.name == 'Model',
+        'A car keeps its Body and Model under one Car node'
+    )
+    -- Scaling the Car node in the Explorer must not break the body or the view.
+    container.scale = { 1.5, 1, 2 }
+    local scaled, why = pcall(function()
+        together:step(1 / 60)
+        self.host.physics:update(1 / 60)
+        together:readState()
+        view:update(1 / 60)
+        self.host.world:updateNodes(1 / 60)
+    end)
+    self:check(scaled, 'Scaling the Car node keeps the body and the view working: ' .. tostring(why))
+    container.scale = { 1, 1, 1 }
+    view:destroy()
+    self:check(not container.destroyed, 'The car node stays while the body still lives')
+    together:destroy()
+    self:check(container.destroyed == true, 'The car node goes with its last child')
+
     -- A passenger boards a car whose root has a non-uniform scale (the owner scaled it in the
     -- Explorer): no shear error, and the walker ends up on the car.
     local world = self.host.world

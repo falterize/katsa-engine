@@ -5,6 +5,7 @@ local Skid = require('./skid')
 
 local orientation = require('../game.orientation')
 local CarAxes = require('../game.carAxes')
+local CarNode = require('../game.carNode')
 
 local CarView = {}
 CarView.__index = CarView
@@ -55,7 +56,8 @@ function CarView.new(scene, netId, model)
         angles = {},
         up = {},
     }, CarView)
-    self.root = world:create('Node3D', { name = 'Car' .. netId })
+    self.carNode = CarNode.acquire(world, netId)
+    self.root = world:create('Node3D', { name = 'Model' }, self.carNode)
     if CarModel.available(scene) then
         local built = CarModel.create(scene, self.root, netId, color)
         self.parts, self.wheels, self.wheelParts = built.parts, built.wheels, built.wheelGeometry
@@ -263,6 +265,7 @@ function CarView:destroy()
     self.debris = {}
     self.skid:destroy()
     self.root:destroy()
+    CarNode.release(self.scene.world, self.netId)
 end
 
 return CarView
