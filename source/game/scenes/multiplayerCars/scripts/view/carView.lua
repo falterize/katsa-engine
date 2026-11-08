@@ -2,6 +2,7 @@
 local Body = require('./carMesh')
 local CarModel = require('./carModel')
 local Skid = require('./skid')
+local EngineSound = require('./engineSound')
 
 local orientation = require('../game.orientation')
 local CarAxes = require('../game.carAxes')
@@ -69,6 +70,9 @@ function CarView.new(scene, netId, model)
     end
     self:buildNitro(world, model)
     self.skid = Skid.new(world, self.root, model, netId)
+    if EngineSound.available(scene) then
+        self.engine = EngineSound.new(world, self.root, netId)
+    end
     self.origin = {}
     self:refreshDents()
     return self
@@ -243,6 +247,9 @@ function CarView:update(dt)
     local origin = self.origin
     origin[1], origin[2], origin[3] = (car.rx or car.x) - up[1] * drop, (car.ry or car.y) - up[2] * drop, (car.rz or car.z) - up[3] * drop
     self.skid:update(dt, car, origin, up)
+    if self.engine then
+        self.engine:update(dt, car.speed)
+    end
     local burning = self.lastNitro ~= nil and car.nitro < self.lastNitro - 1e-4 and car.speed > 1
     self.lastNitro = car.nitro
     for _, flame in ipairs(self.flames or {}) do
@@ -275,6 +282,9 @@ function CarView:destroy()
     end
     self.debris = {}
     self.skid:destroy()
+    if self.engine then
+        self.engine:destroy()
+    end
     self.root:destroy()
     CarNode.release(self.scene.world, self.netId)
 end

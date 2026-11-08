@@ -1,6 +1,7 @@
 local Array = require('../../math.array')
 local M = require('../../math.math3d')
 local Geometry = require('./modelCollider')
+local Level = require('./collisionLevel')
 
 local PointCollider = {}
 
@@ -90,12 +91,13 @@ end
 
 function PointCollider.build(node, body)
     local points = PointCollider.copy(node.points or node.vertices)
-    assert(
-        node.collisionLevel ~= 'Detailed' or body.bodyType == 'Static',
-        'Detailed points require a Static Body3D'
-    )
+    local kind = Level.kind(node.collisionLevel)
+    assert(kind ~= 'trimesh' or body.bodyType == 'Static', 'Detailed points require a Static Body3D')
     local triangles = points
-    if node.collisionLevel == 'Detailed' and node.indices then
+    -- Exact triangles and the voxel analysis of Multiple Convex need the surface; a bare point
+    -- cloud only has a hull, so Multiple Convex falls back to one simplified hull for it.
+    local indexed = node.indices and (kind == 'trimesh' or kind == 'multiple')
+    if indexed then
         assert(#node.indices % 3 == 0, 'Triangle indices require triples')
         triangles = {}
         for i, index in Array.ipairs(node.indices) do
@@ -106,12 +108,12 @@ function PointCollider.build(node, body)
             triangles[i] = points[index]
         end
     end
-    if node.collisionLevel == 'Detailed' then
+    if kind == 'trimesh' then
         assert(
             #triangles >= 3 and #triangles % 3 == 0,
             'Detailed points require indexed triangles or a triangle-soup list'
         )
-    else
+    elseif not indexed then
         -- Geometry.build consumes a render-style triangle list; hull points may have
         -- any count. Padding with duplicates preserves the hull and bounding box.
         triangles = {}
@@ -122,7 +124,11 @@ function PointCollider.build(node, body)
             triangles[#triangles + 1] = points[#points]
         end
     end
-    local descriptor = Geometry.build(node, body, {
+    local source = node
+    if kind == 'multiple' and not indexed then
+        source = setmetatable({ collisionLevel = 'Simplified Convex' }, { __index = node })
+    end
+    local descriptor = Geometry.build(source, body, {
         { geometry = { vertices = triangles }, frame = M.identity() },
     })
     return descriptor

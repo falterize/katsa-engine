@@ -4,6 +4,9 @@ local pairs = require('../../math.array').pairs
 -- Bake immutable render geometry into the local frame of a physical body.
 local M = require('../../math.math3d')
 local A = require('../../math.affine')
+local Decomposition = require('./decomposition')
+local Hull = require('./decomposition.hull')
+local Level = require('./collisionLevel')
 
 local Builder = {}
 
@@ -96,14 +99,24 @@ function Builder.collect(node, body)
     return parts, tostring(node._geometryRevision)
 end
 
-function Builder.build(node, body, parts)
-    local Physics = require('source.engine.physics')
-    assert(
-        node.collisionLevel ~= 'Detailed' or body.bodyType == 'Static',
-        'Detailed model collision requires a Static Body3D'
-    )
-    local children = {}
-    local triangles = 0
+-- Level names of the physics layer ('Simple' / 'Convex' / 'Detailed') for the kinds it builds.
+local PHYSICS_LEVEL = { box = 'Simple', convex = 'Convex', trimesh = 'Detailed' }
+
+-- A flat or one-sided mesh has no volume; a hull needs some thickness.
+local function thickened(vertices)
+    local kind = Hull.classify(vertices)
+    if kind == 'solid' then
+        return vertices
+    end
+    assert(kind ~= 'point', 'Convex collider requires distinct points')
+    local solid = Hull.thicken(vertices, 0.03)
+    assert(solid, 'Convex collider points are collinear')
+    return solid
+end
+
+-- Vertices of every part baked into the body's local frame, as render-style triangle lists.
+local function bake(node, parts)
+    local baked, triangles = {}, 0
     for _, part in ipairs(parts) do
         local vertices = {}
         for i, v in ipairs(part.geometry.vertices) do
@@ -115,59 +128,63 @@ function Builder.build(node, body, parts)
             'Collider geometry exceeds MaxTriangles; select a simpler source or raise the '
                 .. 'explicit limit'
         )
-        if node.collisionLevel == 'Convex' then
-            local a, b = vertices[1], nil
-            for i = 2, #vertices do
-                local v = vertices[i]
-                if (v[1] - a[1]) ^ 2 + (v[2] - a[2]) ^ 2 + (v[3] - a[3]) ^ 2 > 0.0000000001 then
-                    b = v
-                    break
-                end
-            end
-            assert(b, 'Convex collider requires distinct points')
-            local nx, ny, nz, magnitude = 0, 0, 0, 0
-            for _, c in ipairs(vertices) do
-                nx = (b[2] - a[2]) * (c[3] - a[3]) - (b[3] - a[3]) * (c[2] - a[2])
-                ny = (b[3] - a[3]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[3] - a[3])
-                nz = (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1])
-                magnitude = math.sqrt(nx * nx + ny * ny + nz * nz)
-                if magnitude > 0.000001 then
-                    break
-                end
-            end
-            assert(magnitude > 0.000001, 'Convex collider points are collinear')
-            nx, ny, nz = nx / magnitude, ny / magnitude, nz / magnitude
-            local flat = true
-            for _, v in ipairs(vertices) do
-                if
-                    math.abs((v[1] - a[1]) * nx + (v[2] - a[2]) * ny + (v[3] - a[3]) * nz)
-                    > 0.00001
-                then
-                    flat = false
-                    break
-                end
-            end
-            if flat then
-                local extruded = {}
-                for _, v in ipairs(vertices) do
-                    extruded[#extruded + 1] =
-                        { v[1] + nx * 0.03, v[2] + ny * 0.03, v[3] + nz * 0.03 }
-                    extruded[#extruded + 1] =
-                        { v[1] - nx * 0.03, v[2] - ny * 0.03, v[3] - nz * 0.03 }
-                end
-                vertices = extruded
-            end
-        end
-        local descriptor = Physics.modelCollider(
-            { geometry = { vertices = vertices }, size = { 1, 1, 1 } },
-            node.collisionLevel
-        )
+        baked[#baked + 1] = vertices
+    end
+    return baked
+end
+
+function Builder.build(node, body, parts)
+    local Physics = require('source.engine.physics')
+    local kind = Level.kind(node.collisionLevel)
+    assert(
+        kind ~= 'trimesh' or body.bodyType == 'Static',
+        'Detailed model collision requires a Static Body3D'
+    )
+    local baked = bake(node, parts)
+    local children = {}
+    local function add(descriptor)
         if descriptor.shape == 'Compound' then
             for _, d in ipairs(descriptor.children) do
                 children[#children + 1] = d
             end
         else
             children[#children + 1] = descriptor
+        end
+    end
+    if kind == 'multiple' then
+        -- Several hulls for the whole model: it may be concave, and the pieces share one budget.
+        local soup = {}
+        for _, vertices in ipairs(baked) do
+            for _, v in ipairs(vertices) do
+                soup[#soup + 1] = v
+            end
+        end
+        local hulls = Decomposition.decompose(soup, {
+            maxHulls = node.maxHulls,
+            hullPoints = node.hullPoints,
+            concavity = node.concavity,
+            resolution = node.resolution,
+        })
+        for _, hull in ipairs(hulls) do
+            children[#children + 1] = { shape = 'Convex', vertices = hull }
+        end
+    else
+        for _, vertices in ipairs(baked) do
+            if kind == 'simplified' then
+                local hull = Decomposition.simplify(vertices, node.hullPoints)
+                assert(hull, 'Convex collider requires distinct points')
+                add({ shape = 'Convex', vertices = hull })
+            else
+                if kind == 'convex' then
+                    vertices = thickened(vertices)
+                end
+                add(
+                    Physics.modelCollider(
+                        { geometry = { vertices = vertices }, size = { 1, 1, 1 } },
+                        PHYSICS_LEVEL[kind]
+                    )
+                )
+            end
         end
     end
     return {

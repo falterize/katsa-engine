@@ -5,6 +5,8 @@ local vectorFields = { 'size', 'position', 'rotation' }
 local readValue = require('source.engine.math.managedValue').read
 local unpack = require('source.engine.math.array').unpack
 local Node = require('../../core.baseNode')
+local Level = require('source.engine.physics.3d.collisionLevel')
+local Decomposition = require('source.engine.physics.3d.decomposition')
 
 local Class = Node.define('Collider3D', 'Node')
 Class.propertySchema = {
@@ -19,13 +21,53 @@ Class.propertySchema = {
         visibleWhen = { key = 'shape', equals = 'Geometry' },
     },
     collisionLevel = {
-        options = { 'Simple', 'Convex', 'Detailed' },
+        options = Level.names,
+        hint = 'Trimesh: exact triangles (static bodies). Single Convex: one hull per mesh. '
+            .. 'Simplified Convex: one hull per mesh with few vertices. Multiple Convex: several '
+            .. 'hulls that follow a concave model (cars, rooms, arches). Bounding Box: one box.',
         visibleWhen = { key = 'shape', oneOf = { 'Geometry', 'Points' } },
     },
     maxTriangles = {
         min = 1,
         max = 100000,
         visibleWhen = { key = 'shape', oneOf = { 'Geometry', 'Points' } },
+    },
+    hullPoints = {
+        min = 4,
+        max = 128,
+        hint = 'Most vertices of each convex hull.',
+        visibleWhen = {
+            { key = 'shape', oneOf = { 'Geometry', 'Points' } },
+            { key = 'collisionLevel', oneOf = { 'Simplified Convex', 'Multiple Convex', 'simplified', 'multiple' } },
+        },
+    },
+    maxHulls = {
+        min = 1,
+        max = 64,
+        hint = 'Most convex pieces the model is cut into.',
+        visibleWhen = {
+            { key = 'shape', oneOf = { 'Geometry', 'Points' } },
+            { key = 'collisionLevel', oneOf = { 'Multiple Convex', 'multiple' } },
+        },
+    },
+    concavity = {
+        min = 0,
+        max = 1,
+        hint = 'How much of the model volume a piece may leave empty inside its hull before it is '
+            .. 'cut again (0.02 = 2%). Lower values fit tighter and make more pieces.',
+        visibleWhen = {
+            { key = 'shape', oneOf = { 'Geometry', 'Points' } },
+            { key = 'collisionLevel', oneOf = { 'Multiple Convex', 'multiple' } },
+        },
+    },
+    resolution = {
+        min = 8,
+        max = 96,
+        hint = 'Voxels along the longest side used to find concave regions. Higher is slower.',
+        visibleWhen = {
+            { key = 'shape', oneOf = { 'Geometry', 'Points' } },
+            { key = 'collisionLevel', oneOf = { 'Multiple Convex', 'multiple' } },
+        },
     },
 }
 
@@ -37,8 +79,13 @@ function Class.initialize(self)
     self.position = self.position or { 0, 0, 0 }
     self.rotation = self.rotation or { 0, 0, 0 }
     self.enabled = self.enabled ~= false
-    self.collisionLevel = self.collisionLevel or 'Simple'
+    self.collisionLevel = self.collisionLevel or 'Bounding Box'
     self.maxTriangles = self.maxTriangles or 4096
+    local defaults = Decomposition.defaults
+    self.hullPoints = self.hullPoints or defaults.hullPoints
+    self.maxHulls = self.maxHulls or defaults.maxHulls
+    self.concavity = self.concavity or defaults.concavity
+    self.resolution = self.resolution or defaults.resolution
     self.status = 'Ready'
 end
 
@@ -55,6 +102,11 @@ function Class.mount(world, properties, parent)
 end
 
 function Class:update(dt) end
+
+-- The settings that change the hulls a Simplified / Multiple Convex level builds.
+function Class:decompositionKey()
+    return table.concat({ self.hullPoints, self.maxHulls, self.concavity, self.resolution }, ',')
+end
 
 function Class:descriptor(body)
     if self.shape ~= 'Geometry' and self._geometrySourceCache then
@@ -84,6 +136,8 @@ function Class:descriptor(body)
             .. ':'
             .. self.maxTriangles
             .. ':'
+            .. self:decompositionKey()
+            .. ':'
             .. body.bodyType
         if signature ~= self._descriptorKey then
             local success, descriptor = pcall(builder.build, self, body)
@@ -94,7 +148,7 @@ function Class:descriptor(body)
             self._descriptor = descriptor
         end
     elseif self.shape == 'Geometry' then
-        if self.collisionLevel == 'Detailed' and body.bodyType ~= 'Static' then
+        if Level.isTrimesh(self.collisionLevel) and body.bodyType ~= 'Static' then
             self.status = 'Detailed requires a Static Body3D'
             return nil, signature .. ':nonstatic'
         end
@@ -113,7 +167,7 @@ function Class:descriptor(body)
             self.status = tostring(parts)
             return self._descriptor, self._descriptorKey or signature .. ':invalid'
         end
-        signature = signature .. key .. self.collisionLevel .. self.maxTriangles
+        signature = signature .. key .. self.collisionLevel .. self.maxTriangles .. self:decompositionKey()
         if signature ~= self._descriptorKey then
             local success, descriptor = pcall(builder.build, self, body, parts)
             if not success then

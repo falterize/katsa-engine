@@ -7,7 +7,7 @@
 local O = require('source.engine.physics.3d.valueTypes')
 local orientation = require('./orientation')
 local CarNode = require('./carNode')
-
+local CarHull = require('./carHull')
 local PhysicsCar = {}
 PhysicsCar.__index = PhysicsCar
 
@@ -162,48 +162,17 @@ function PhysicsCar:follow(dt, source)
     self.node.body:sync()
 end
 
--- The collision hull follows the dents without fine detail: the chassis box becomes three boxes
--- along the car whose faces are pulled in by how far the dents push the panel at the face centre.
--- Sections that were never touched stay exactly the original box. Rebuilt only when the dents
--- change (the signature is cheap: a few numbers per dent), through the transactional setCollider.
-local SECTIONS = 3
-local MIN_EXTENT = 0.3
-
+-- The collision hull is the body mesh as a few convex pieces (game/carHull.lua) whose vertices
+-- follow the dents. The pieces come from a one-off decomposition; later changes only displace
+-- vertices. Rebuilt when the dents change (the signature is cheap: a few numbers per dent),
+-- through the transactional setCollider. If the model is missing the old chassis box stays.
 function PhysicsCar:hullFor(dents)
     local t, config = self.tuning, self.config
-    local hw, hh, hl = t.size[1] * 0.5, t.size[2] * 0.5, t.size[3] * 0.5
-    local lift = config.rideHeight -- dent space is measured from the ground plane
-    local step = 2 * hl / SECTIONS
-    local children = {}
-    for section = 1, SECTIONS do
-        local z0 = -hl + (section - 1) * step
-        local z1 = z0 + step
-        local zc = (z0 + z1) * 0.5
-        local ox = dents:offsetAt(hw, lift, zc)
-        local right = math.max(0, -ox)
-        ox = dents:offsetAt(-hw, lift, zc)
-        local left = math.max(0, ox)
-        local _, oy = dents:offsetAt(0, lift + hh, zc)
-        local top = math.max(0, -oy)
-        if section == SECTIONS then
-            local _, _, oz = dents:offsetAt(0, lift, hl)
-            z1 = z1 - math.max(0, -oz)
-        elseif section == 1 then
-            local _, _, oz = dents:offsetAt(0, lift, -hl)
-            z0 = z0 + math.max(0, oz)
-        end
-        local x0, x1 = -hw + left, hw - right
-        local y0, y1 = -hh, hh - top
-        x1 = math.max(x1, x0 + MIN_EXTENT)
-        y1 = math.max(y1, y0 + MIN_EXTENT)
-        z1 = math.max(z1, z0 + MIN_EXTENT)
-        children[section] = {
-            shape = 'Box',
-            size = { x1 - x0, y1 - y0, z1 - z0 },
-            position = { (x0 + x1) * 0.5, (y0 + y1) * 0.5, (z0 + z1) * 0.5 },
-        }
+    local ok, hulls = pcall(CarHull.rest, self.world.resources)
+    if not ok then
+        return nil
     end
-    return { shape = 'Compound', children = children }
+    return CarHull.descriptor(hulls, dents, config.rideHeight, -t.size[2] * 0.5)
 end
 
 function PhysicsCar:syncCollision()
@@ -218,12 +187,11 @@ function PhysicsCar:syncCollision()
     if signature == self.hullSignature then
         return
     end
-    if signature == 0 and self.hullSignature == nil then
-        self.hullSignature = 0
-        return
-    end
     self.hullSignature = signature
-    self.node.body:setCollider(self:hullFor(dents))
+    local hull = self:hullFor(dents)
+    if hull then
+        self.node.body:setCollider(hull)
+    end
     self.hullRevision = (self.hullRevision or 0) + 1
 end
 

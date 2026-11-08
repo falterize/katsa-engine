@@ -1,5 +1,6 @@
 local O = require('./types')
 local Policy = require('../../internal.bodyPolicy')
+local Level = require('../../collisionLevel')
 local vec, valid, types = Policy.vec, Policy.valid, Policy.types
 local Bodies = {}
 
@@ -33,7 +34,7 @@ function Bodies.create(physics, object, settings, scale)
     valid(config.linearDamping, 'Body3D.linearDamping', 0)
     valid(config.angularDamping, 'Body3D.angularDamping', 0)
     assert(
-        (settings.collisionLevel ~= 'Detailed') or kind == 'Static',
+        not Level.isTrimesh(settings.collisionLevel or 'Simple') or kind == 'Static',
         'Detailed triangle collision is supported for static bodies only'
     )
     return O.RigidBody.new(config)

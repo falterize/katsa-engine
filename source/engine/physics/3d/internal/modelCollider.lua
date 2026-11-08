@@ -1,11 +1,13 @@
 local ipairs = require('source.engine.math.array').ipairs
 local Math = require('source.engine.math.math3d')
+local Level = require('source.engine.physics.3d.collisionLevel')
+local Decomposition = require('source.engine.physics.3d.decomposition')
 local ModelCollider = {}
 
 function ModelCollider.install(Physics, Body3D)
     function Physics.modelCollider(object, level)
-        level = level or 'Simple'
-        if level == 'Simple' then
+        local kind = Level.kind(level or 'Simple')
+        if kind == 'box' then
             local min, max =
                 { math.huge, math.huge, math.huge }, { -math.huge, -math.huge, -math.huge }
             for _, v in ipairs(object.geometry.vertices) do
@@ -31,10 +33,24 @@ function ModelCollider.install(Physics, Body3D)
                     { v[1] * object.size[1], v[2] * object.size[2], v[3] * object.size[3] }
             end
         end
-        if level == 'Convex' then
+        if kind == 'convex' then
             return { shape = 'Convex', vertices = points }
         end
-        assert(level == 'Detailed', 'Collision level must be simple, convex or detailed')
+        if kind == 'simplified' then
+            return { shape = 'Convex', vertices = Decomposition.simplify(points) or points }
+        end
+        if kind == 'multiple' then
+            local soup = {}
+            for _, v in ipairs(object.geometry.vertices) do
+                soup[#soup + 1] =
+                    { v[1] * object.size[1], v[2] * object.size[2], v[3] * object.size[3] }
+            end
+            local children = {}
+            for _, hull in ipairs(Decomposition.decompose(soup)) do
+                children[#children + 1] = { shape = 'Convex', vertices = hull }
+            end
+            return { shape = 'Compound', children = children }
+        end
         local children = {}
         local vertices = object.geometry.vertices
         -- Static surface collision: one thin convex triangular prism per render triangle.
