@@ -66,6 +66,8 @@ function Voice.bindServer(server)
     end)
 end
 
+local WARM_UP_AFTER = 1.5 -- seconds of session time before the microphone is opened
+
 -- options: positionOf(playerId) -> x, y, z or nil; sampleRate
 function Voice.new(gameClient, options)
     options = options or {}
@@ -187,6 +189,11 @@ end
 -- Moves each voice to its speaker and ages the speaking indicator.
 function Voice:update(dt)
     self.now = self.now + dt
+    -- Opening the capture device blocks for ~100 ms on desktop drivers. Do it a moment after the
+    -- session starts, never on the first Tab press or the first push-to-talk.
+    if self.capture == nil and self.now > WARM_UP_AFTER then
+        self:isAvailable()
+    end
     if self.talking then
         self:send(false)
     end

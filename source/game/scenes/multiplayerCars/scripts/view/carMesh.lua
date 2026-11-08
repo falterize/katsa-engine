@@ -100,19 +100,55 @@ local function loft(list, groups, center)
     end
 end
 
-local function flatNormals(vertices)
+-- Shade Smooth: vertices that share a rest position share one averaged (area-weighted) normal, so
+-- a dented panel stays smooth instead of showing its triangles. The grouping depends only on the
+-- rest pose, so it is computed once per template list and reused by every car.
+local function weldGroups(rest)
+    if rest.groups then
+        return rest.groups, rest.groupCount
+    end
+    local ids, count, groups = {}, 0, {}
+    for index = 1, #rest do
+        local v = rest[index]
+        local key = string.format('%.4f,%.4f,%.4f', v[1], v[2], v[3])
+        local id = ids[key]
+        if not id then
+            count = count + 1
+            id = count
+            ids[key] = id
+        end
+        groups[index] = id
+    end
+    rest.groups, rest.groupCount = groups, count
+    return groups, count
+end
+
+local function smoothNormals(vertices, groups, count, sums)
+    for id = 1, count * 3 do
+        sums[id] = 0
+    end
     for index = 1, #vertices, 3 do
         local a, b, c = vertices[index], vertices[index + 1], vertices[index + 2]
         local ux, uy, uz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
         local vx, vy, vz = c[1] - a[1], c[2] - a[2], c[3] - a[3]
+        -- The cross product length is twice the triangle area, which is the weight.
         local nx, ny, nz = uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx
+        for k = index, index + 2 do
+            local base = groups[k] * 3
+            sums[base - 2] = sums[base - 2] + nx
+            sums[base - 1] = sums[base - 1] + ny
+            sums[base] = sums[base] + nz
+        end
+    end
+    for index = 1, #vertices do
+        local base = groups[index] * 3
+        local nx, ny, nz = sums[base - 2], sums[base - 1], sums[base]
         local length = math.sqrt(nx * nx + ny * ny + nz * nz)
         if length > 1e-9 then
             nx, ny, nz = nx / length, ny / length, nz / length
         end
-        for k = index, index + 2 do
-            vertices[k][6], vertices[k][7], vertices[k][8] = nx, ny, nz
-        end
+        local vertex = vertices[index]
+        vertex[6], vertex[7], vertex[8] = nx, ny, nz
     end
 end
 
@@ -129,7 +165,9 @@ end
 
 local function make(rest)
     local vertices = copyOf(rest)
-    flatNormals(vertices)
+    local groups, count = weldGroups(rest)
+    local sums = {}
+    smoothNormals(vertices, groups, count, sums)
     local radius = 0
     for _, vertex in ipairs(vertices) do
         radius = math.max(radius, math.sqrt(vertex[1] ^ 2 + vertex[2] ^ 2 + vertex[3] ^ 2))
@@ -137,6 +175,7 @@ local function make(rest)
     return {
         mesh = katsa.graphics.newMesh(Geometry.format, vertices, 'triangles', 'dynamic'),
         vertices = vertices,
+        sums = sums,
         radius = radius + 0.5,
         revision = 0,
     }
@@ -182,7 +221,8 @@ function Body.deform(geometry, rest, deformation)
         local vertex = geometry.vertices[index]
         vertex[1], vertex[2], vertex[3] = base[1] + ox, base[2] + oy, base[3] + oz
     end
-    flatNormals(geometry.vertices)
+    local groups, count = weldGroups(rest)
+    smoothNormals(geometry.vertices, groups, count, geometry.sums)
     geometry.mesh:setVertices(geometry.vertices)
     geometry.revision = geometry.revision + 1
 end
