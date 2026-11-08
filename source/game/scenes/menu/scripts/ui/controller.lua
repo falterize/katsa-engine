@@ -312,9 +312,24 @@ function Menu:wheelmoved(x, y)
 end
 
 function Menu:keypressed(key)
+    -- A focused search box owns the keyboard (Backspace, arrows, Enter ...).
+    if self.input:keypressed(key) then
+        return
+    end
+    if require('source.engine.ui.widgets.textFocus').current then
+        return
+    end
     if key == 'return' then
         self.manager:switch(require('source.game.runtime.game').new)
     end
+end
+
+function Menu:textinput(text)
+    self.input:textinput(text)
+end
+
+function Menu:keyreleased(key)
+    self.input:keyreleased(key)
 end
 
 function Menu:exit()

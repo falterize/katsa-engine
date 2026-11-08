@@ -65,4 +65,4 @@ Give a node the tag (`node:addTag('uicorner')`) and it receives every value. `ex
 
 ## UIStyler node
 
-The plugin also provides a `UIStyler` node (`world:create('UIStyler', { theme = 'dark', stylesFolder = 'scene://styles' })`). `theme` is a dropdown of the built-in themes, `stylesFolder` is loaded as style files, `node:bind(ui)` applies the styles to a UI root and `node:setTheme(name)` switches the theme at runtime.
+The plugin also provides a `UIStyler` node (`world:create('UIStyler', { theme = 'dark', stylesFolder = 'scene://styles' })`). `theme` is a dropdown of the built-in themes, `stylesFolder` is loaded as style files, `node:bind(ui, scene.resources)` applies the styles to a UI root and `node:setTheme(name)` switches the theme at runtime.

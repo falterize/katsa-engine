@@ -2,7 +2,7 @@
 -- Explorer and Inspector. The scene needs `plugins = { 'uiStyler' }`.
 --
 --   local node = world:create('UIStyler', { theme = 'dark', stylesFolder = 'scene://styles' })
---   node:bind(scene.ui)                 -- the UI the sheet styles (a scene owns its UI, not the world)
+--   node:bind(scene.ui, scene.resources) -- the UI the sheet styles and the scope that resolves scene://
 --   node:getStyler():style('Button', { backgroundColor = '$button' })   -- code rules still work
 --
 -- Editing `theme` restyles every bound root; editing `stylesFolder` reloads the `*.lua` style files
@@ -31,7 +31,7 @@ function Definition.initialize(self)
 end
 
 -- Connects the sheet to a screen UI (the scene's `ui`) and styles it.
-function Definition:bind(ui)
+function Definition:bind(ui, resources)
     local UIStyler = Plugins.require('uiStyler')
     local styler = UIStyler.new(ui)
     for name, tokens in pairs(UIStyler.themes) do
@@ -39,6 +39,7 @@ function Definition:bind(ui)
     end
     self._styler = styler
     self._ui = ui
+    self._resources = resources
     self._applied = {}
     self:_sync()
     return styler
@@ -64,10 +65,14 @@ function Definition:_sync()
         applied.stylesFolder = self.stylesFolder
         if self.stylesFolder ~= '' then
             local folder = self.stylesFolder
-            local resources = self._world and self._world.resources
+            local resources = self._resources
             if resources and resources.canonical and folder:find('://', 1, true) then
                 folder = resources:canonical(folder)
             end
+            assert(
+                not folder:find('://', 1, true),
+                'UIStyler: bind(ui, resources) is needed to resolve ' .. folder
+            )
             styler:loadStyles(folder)
         end
     end

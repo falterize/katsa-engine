@@ -42,7 +42,7 @@ function Interface.create(state)
         theme = 'dark',
         stylesFolder = 'scene://styles',
     })
-    local styler = stylerNode:bind(ui)
+    local styler = stylerNode:bind(ui, scene.resources)
     state.styler, state.stylerNode = styler, stylerNode
 
     local root = make(ui, 'Frame', {

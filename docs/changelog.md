@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Fix: the menu search box did nothing (the menu scene never forwarded text and key events to the focused TextBox; Enter there also started the game). Test: `--test-v108.7.menusearch`.
+- Fix: the `UIStyler` node could not resolve `scene://styles`, so launcherShowcase had no style rules and the theme button did nothing. `node:bind(ui, resources)` now takes the scene resources; the test checks the loaded rule count and a real colour change.
+- stareShooter shows `assets/models/Destare.blend` beside the spawn point (imported through Blender; skipped with a log warning when Blender is missing).
 - New scene `shapeKeysLab` and `tools/import/makeShapeKeyDemo.py`: a generated glTF with four shape keys (Squash, Stretch, Spike, Twist) viewed with one slider per shape and a Wave button; run inside Blender the same script writes a `.blend` with real Shape Keys. Test: `--test-v108.7.shapekeys`.
 - uiStyler plugin: new `UIStyler` node (properties `theme`, `stylesFolder`; `bind(ui)`, `setTheme`) so the plugin is visible in the inspector. The launcher showcase uses it. Test: `--test-v108.7.styler`.
 - Menu: scene tags replace the category chooser. Every scene lists `tags` in `settings.lua`; the menu shows them under each title, filters by search words (title, id, tags) and by a multi-select Tags chooser (a scene needs all selected tags). `category` still works as a fallback tag. Tests: `v108_7/sceneTags.lua`, `--test-menu-idle`. Module: `source/game/sceneTags.lua`.

@@ -24,11 +24,21 @@ function Tests:draw()
     end
     self:check(node ~= nil, 'launcherShowcase has a UIStyler node in its tree')
     local styler = node:getStyler()
+    self:check(#styler.rules > 10, 'The styles folder is loaded: ' .. #styler.rules .. ' rules')
     self:check(styler:getTheme() == 'dark' and node.theme == 'dark', 'The node applies its theme')
     local first = self.host.ui:find('Launcher', true)
     local before = first and first.backgroundColor
+    local button
+    for _, candidate in ipairs(self.host.ui.content:getDescendants()) do
+        if candidate.className == 'Button' and candidate.text == 'Help' then
+            button = candidate
+        end
+    end
+    self:check(button ~= nil, 'the toolbar has a Help button')
+    local dark = button and button.textColor and button.textColor[1]
     node.theme = 'light'
     node:update()
+    self:check(button and button.textColor[1] ~= dark, 'A theme switch changes a styled button text colour')
     self:check(styler:getTheme() == 'light', 'Editing the theme property switches the theme')
     node:setTheme('dark')
     self:check(styler:getTheme() == 'dark' and node.theme == 'dark', 'setTheme keeps the property in step')
