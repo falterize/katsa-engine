@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Fix: Actor workers failed in packaged games (`module 'source.katsa.core.native' not found`): the runtime lives only inside the executable's archive, which a worker state cannot open. `katsa.thread` now sends the three runtime modules the worker prelude needs along with the user's modules. Test: `v108_7/actor.lua` (worker without a module path).
 - Fix: the menu search box did nothing (the menu scene never forwarded text and key events to the focused TextBox; Enter there also started the game). Test: `--test-v108.7.menusearch`.
 - Fix: the `UIStyler` node could not resolve `scene://styles`, so launcherShowcase had no style rules and the theme button did nothing. `node:bind(ui, resources)` now takes the scene resources; the test checks the loaded rule count and a real colour change.
 - stareShooter shows `assets/models/Destare.blend` beside the spawn point (imported through Blender; skipped with a log warning when Blender is missing).
