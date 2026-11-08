@@ -31,6 +31,8 @@ function Tests:draw()
     require('validation.tests.versions.v108_7.moveWindows').run(self)
     require('validation.tests.versions.v108_7.profileWindowScene').run(self)
     require('validation.tests.versions.v108_7.orbitGlide').run(self)
+    require('validation.tests.versions.v108_7.dentShading').run(self)
+    require('validation.tests.versions.v108_7.wheelRoll').run(self)
     print('PASSED ' .. self.count .. ' v108.7 focused checks')
     katsa.event.quit()
 end

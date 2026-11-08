@@ -192,6 +192,13 @@ function CarView:shedWheel(index)
     self.debris[#self.debris + 1] = { node = debris, age = 0 }
 end
 
+-- Engine Euler angles of a wheel: `spin` degrees of forward roll (positive speed) and `steer`
+-- degrees of steering. Engine rotation about +x is right-handed, so a positive angle carries the
+-- top of the tire toward +z, the direction the car drives at positive speed.
+function CarView.wheelRotation(spin, steer)
+    return { spin, -steer, 0 }
+end
+
 -- Moves the nodes to the model state. Call every frame.
 function CarView:update(dt)
     self:ageDebris(dt)
@@ -212,7 +219,7 @@ function CarView:update(dt)
         local steer = index <= 2 and car.steerAngle or 0
         -- The car root turns by -heading (engine yaw opposes the model heading), so a wheel
         -- steering toward positive heading needs the same sign flip.
-        wheel.rotation = { -self.spin, -steer, 0 }
+        wheel.rotation = CarView.wheelRotation(self.spin, steer)
         local shown = math.floor((car.detached or 0) / 2 ^ (index - 1)) % 2 == 0
         if wheel.visible ~= shown then
             wheel.visible = shown

@@ -7,6 +7,8 @@ Deformation.__index = Deformation
 local MAX_DENTS = 24
 local MAX_DEPTH = 0.7
 local CRUMPLE = 0.32 -- facet noise on the pushed panel, as a share of the local depth
+local KNEE = 0.6 -- total displacement of a point below this is exact ...
+local MAX_OFFSET = 1.0 -- ... and saturates smoothly toward this, however many dents stack up
 local PINCH = 0.22 -- how much the metal around the impact is drawn toward its centre
 
 function Deformation.new(options)
@@ -66,6 +68,11 @@ end
 
 -- A repeatable value in -1..1 for a point of the rest pose: the same on every machine, so the
 -- crumpled facets of a replicated dent look identical everywhere.
+local function tanh(x)
+    local e = math.exp(2 * x)
+    return (e - 1) / (e + 1)
+end
+
 local function facet(x, y, z)
     local h = math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453
     return (h - math.floor(h)) * 2 - 1
@@ -92,6 +99,14 @@ function Deformation:offsetAt(x, y, z)
                 ox, oy, oz = ox - ddx * pull, oy - ddy * pull, oz - ddz * pull
             end
         end
+    end
+    -- Overlapping dents add up; without a limit a point hit again and again drifts away from the
+    -- car and stretches the panel into a strip. Past the knee the displacement saturates.
+    local length = math.sqrt(ox * ox + oy * oy + oz * oz)
+    if length > KNEE then
+        local room = MAX_OFFSET - KNEE
+        local k = (KNEE + room * tanh((length - KNEE) / room)) / length
+        ox, oy, oz = ox * k, oy * k, oz * k
     end
     return ox, oy, oz
 end

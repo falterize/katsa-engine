@@ -52,6 +52,46 @@ local function dentable(rest)
     }, box
 end
 
+-- Which authored polygons are shaded smooth. A triangle is smooth when its vertex normals differ
+-- from its face normal (Blender "Shade Smooth"); flat polygons carry the face normal itself. The
+-- flag and the smoothing groups (vertices that share a position and an authored normal) are read
+-- once from the rest pose, so a dent keeps every polygon's authored shading.
+local function analyseShading(rest)
+    local smooth, group, ids, count = {}, {}, {}, 0
+    for first = 1, #rest - 2, 3 do
+        local a, b, c = rest[first], rest[first + 1], rest[first + 2]
+        local ux, uy, uz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
+        local wx, wy, wz = c[1] - a[1], c[2] - a[2], c[3] - a[3]
+        local nx, ny, nz = uy * wz - uz * wy, uz * wx - ux * wz, ux * wy - uy * wx
+        local length = math.sqrt(nx * nx + ny * ny + nz * nz)
+        local round = false
+        if length > 1e-12 then
+            nx, ny, nz = nx / length, ny / length, nz / length
+            for i = 0, 2 do
+                local v = rest[first + i]
+                -- Either winding: compare the axis, not the facing.
+                if math.abs(nx * v[6] + ny * v[7] + nz * v[8]) < 0.998 then
+                    round = true
+                end
+            end
+        end
+        smooth[(first - 1) / 3 + 1] = round
+        if round then
+            for i = 0, 2 do
+                local v = rest[first + i]
+                local key = string.format('%.4f,%.4f,%.4f|%.2f,%.2f,%.2f', v[1], v[2], v[3], v[6], v[7], v[8])
+                local id = ids[key]
+                if not id then
+                    count = count + 1
+                    id, ids[key] = count, count
+                end
+                group[first + i] = id
+            end
+        end
+    end
+    return smooth, group, count
+end
+
 local TEXTURES = 'scene://textures/duke/'
 
 -- Which generated map set (tools/import/carMaps.py) each part wears. A set lists the maps that
@@ -112,6 +152,8 @@ local function material(world, object, part, name)
     world:create('SurfaceAppearance3D', properties, object)
 end
 
+CarModel.analyseShading = analyseShading
+
 function CarModel.available(scene)
     return katsa.filesystem.getInfo(scene.resources:canonical(CarModel.PATH), 'file') ~= nil
 end
@@ -162,6 +204,8 @@ function CarModel.create(scene, root, netId, color)
             if rest then
                 result.parts[#result.parts + 1] =
                     { name = name, object = object, geometry = geometry, rest = rest, box = box }
+                local entry = result.parts[#result.parts]
+                entry.smooth, entry.group, entry.groups = analyseShading(rest)
             end
         end
     end
@@ -185,8 +229,8 @@ local function lean(v, nx, ny, nz, k)
 end
 
 -- Re-applies the dents of `deformation` to the rest pose of every part they can reach and uploads
--- the changed meshes. A panel that bends is shaded flat (face normals) in proportion to how far
--- it moved, so a crumpled area reads as creased metal instead of a smooth blob.
+-- the changed meshes. Polygons authored flat are re-shaded flat (face normals) in proportion to
+-- how far they moved; polygons authored smooth keep smooth shading from the bent surface.
 function CarModel.deform(parts, deformation)
     for _, part in ipairs(parts) do
         local box = part.box
@@ -206,24 +250,72 @@ function CarModel.deform(parts, deformation)
                 moved[index] = ox * ox + oy * oy + oz * oz
             end
             if reached then
+                -- Face normals of the bent triangles. Flat polygons lean to their own face normal
+                -- by how far they moved; smooth polygons add it (area weighted) to the sum of
+                -- their smoothing group, so a dented smooth panel stays smooth.
+                local smooth, group = part.smooth, part.group
+                local sums = part.sums
+                if not sums then
+                    sums = {}
+                    part.sums = sums
+                end
+                for i = 1, part.groups * 3 do
+                    sums[i] = 0
+                end
+                local faces = part.faces or {}
+                part.faces = faces
                 for first = 1, #vertices - 2, 3 do
+                    local tri = (first - 1) / 3 + 1
                     local a, b, c = vertices[first], vertices[first + 1], vertices[first + 2]
-                    local most = math.max(moved[first], moved[first + 1], moved[first + 2])
-                    local k = clamp01(math.sqrt(most) / 0.06)
-                    if k > 0 then
-                        local ux, uy, uz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
-                        local wx, wy, wz = c[1] - a[1], c[2] - a[2], c[3] - a[3]
-                        local nx, ny, nz = uy * wz - uz * wy, uz * wx - ux * wz, ux * wy - uy * wx
-                        local length = math.sqrt(nx * nx + ny * ny + nz * nz)
-                        if length > 1e-9 then
-                            nx, ny, nz = nx / length, ny / length, nz / length
-                            -- Keep the facing of the authored normal (the winding may differ).
-                            if nx * a[6] + ny * a[7] + nz * a[8] < 0 then
-                                nx, ny, nz = -nx, -ny, -nz
+                    local ux, uy, uz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
+                    local wx, wy, wz = c[1] - a[1], c[2] - a[2], c[3] - a[3]
+                    local nx, ny, nz = uy * wz - uz * wy, uz * wx - ux * wz, ux * wy - uy * wx
+                    local length = math.sqrt(nx * nx + ny * ny + nz * nz)
+                    local face = faces[tri]
+                    if not face then
+                        face = {}
+                        faces[tri] = face
+                    end
+                    face[4] = length
+                    if length > 1e-9 then
+                        local fx, fy, fz = nx / length, ny / length, nz / length
+                        -- Keep the facing of the authored normal (the winding may differ).
+                        if fx * a[6] + fy * a[7] + fz * a[8] < 0 then
+                            fx, fy, fz, nx, ny, nz = -fx, -fy, -fz, -nx, -ny, -nz
+                        end
+                        face[1], face[2], face[3] = fx, fy, fz
+                        if smooth[tri] then
+                            for i = 0, 2 do
+                                local at = group[first + i] * 3 - 2
+                                sums[at], sums[at + 1], sums[at + 2] =
+                                    sums[at] + nx, sums[at + 1] + ny, sums[at + 2] + nz
                             end
-                            lean(a, nx, ny, nz, k)
-                            lean(b, nx, ny, nz, k)
-                            lean(c, nx, ny, nz, k)
+                        end
+                    end
+                end
+                for first = 1, #vertices - 2, 3 do
+                    local tri = (first - 1) / 3 + 1
+                    local face = faces[tri]
+                    if face[4] > 1e-9 then
+                        local most = math.max(moved[first], moved[first + 1], moved[first + 2])
+                        for i = 0, 2 do
+                            local v = vertices[first + i]
+                            if smooth[tri] then
+                                local k = clamp01(math.sqrt(moved[first + i]) / 0.06)
+                                if k > 0 then
+                                    local at = group[first + i] * 3 - 2
+                                    local sx, sy, sz = sums[at], sums[at + 1], sums[at + 2]
+                                    local l = math.sqrt(sx * sx + sy * sy + sz * sz)
+                                    if l > 1e-9 then
+                                        lean(v, sx / l, sy / l, sz / l, k)
+                                    end
+                                end
+                            else
+                                local k = clamp01(math.sqrt(most) / 0.06)
+                                if k > 0 then
+                                    lean(v, face[1], face[2], face[3], k)
+                                end
+                            end
                         end
                     end
                 end

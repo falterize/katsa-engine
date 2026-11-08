@@ -24,6 +24,7 @@ local Voice = require('./game.voice')
 local Session = {}
 -- Exposed so tests can build a second, independent client and physics world.
 Session.GameClient, Session.ArenaView = GameClient, ArenaView
+Session.PhysicsCar = PhysicsCar
 Session.__index = Session
 
 local DEFAULT_PORT = 7777

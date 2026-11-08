@@ -210,6 +210,7 @@ function PhysicsCar:step(dt)
 
     -- Suspension: ray down from each mount, spring + damper along the chassis up axis.
     local grounded = 0
+    local front, rear = 0, 0 -- wheels with ground contact on each axle
     local nx, ny, nz = 0, 0, 0 -- summed ground normals under the wheels
     local rayLength = t.restLength + t.wheelRadius + t.droop
     local mass = t.mass
@@ -239,6 +240,11 @@ function PhysicsCar:step(dt)
                 end
                 self.grounded[i] = true
                 grounded = grounded + 1
+                if i <= 2 then
+                    front = front + 1
+                else
+                    rear = rear + 1
+                end
             end
         else
             self.compression[i] = 0
@@ -248,6 +254,9 @@ function PhysicsCar:step(dt)
     end
 
     local share = grounded / 4
+    -- The car steers with its front tires and is driven by its rear tires: a missing or airborne
+    -- wheel takes its share of steering authority and thrust with it.
+    local steering, driving = front / 2, rear / 2
     if grounded > 0 then
         -- Drive / brake along the chassis forward axis, applied at the center.
         local longitudinal = 0
@@ -256,14 +265,14 @@ function PhysicsCar:step(dt)
                 longitudinal = config.brake * throttle
             else
                 local taper = math.max(0, 1 - (speed / top) ^ 2)
-                longitudinal = config.acceleration * (boosting and config.nitroMultiplier or 1) * throttle * taper
+                longitudinal = config.acceleration * (boosting and config.nitroMultiplier or 1) * throttle * taper * driving / share
             end
         elseif throttle < 0 then
             if speed > 0.5 then
                 longitudinal = config.brake * throttle
             else
                 local taper = math.max(0, 1 - (-speed) / config.reverseSpeed)
-                longitudinal = config.acceleration * 0.6 * throttle * taper
+                longitudinal = config.acceleration * 0.6 * throttle * taper * driving / share
             end
         else
             longitudinal = -math.max(-config.rolling, math.min(config.rolling, speed * 4))
@@ -285,7 +294,7 @@ function PhysicsCar:step(dt)
         body:applyForce({ right[1] * accel, right[2] * accel, right[3] * accel })
 
         -- Steering: follow the bicycle-model yaw rate for the current speed and wheel angle.
-        local target = speed / config.wheelBase * math.tan(math.rad(model.steerAngle))
+        local target = speed / config.wheelBase * math.tan(math.rad(model.steerAngle)) * steering
         -- A turn tighter than the tires hold only throws the car sideways onto its roof.
         local cap = t.maxLateral / math.max(2, math.abs(speed))
         if slipping then

@@ -4,6 +4,10 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- multiplayerCars: wheels now roll in the direction of travel (the spin sign was inverted). Test: `v108_7/wheelRoll.lua`.
+- multiplayerCars: a car steers with its front wheels and is driven by its rear wheels; a torn-off or airborne wheel takes its share of steering and thrust with it (no front wheels, no turning). Test: `--test-v108.7.steering` (`v108_7/wheelSteering.lua`).
+- multiplayerCars: stacked dents saturate (exact below 0.6 m, smooth limit 1.0 m) instead of dragging vertices away and stretching the hood into a strip. Test: `v108_7/dentShading.lua`.
+- multiplayerCars: dented polygons keep their authored shading. Polygons that were Shade Smooth in the model stay smooth (normals of their smoothing group follow the bent surface); flat polygons stay flat. Test: `v108_7/dentShading.lua`.
 - windowsLab: a panel that the user drags is no longer pulled back to its orbit. A window found away from where the scene put it counts as grabbed; it rests for 0.4 s after the last movement, then its orbit goes on from the spot where it was let go. Test: `v108_7/windowsLab.lua`.
 - windowsLab: the main window stayed opaque on Windows from `b88cff6` until the status label stopped being rewritten every frame (found by bisecting `4a9b629`..`30b2b19` on hardware). The sandbox frame keeps alpha 0 in empty areas either way (`--test-v108.7.alpha`), so the mechanism is unknown; treat a UI that changes every frame in a transparent window as suspect and check on Windows.
 - windowsLab transparency regression hunt: `DwmEnableBlurBehindWindow` succeeds (0x0) yet the main window stays opaque since the panels became owned windows with their own swap interval. `SubWindow:setOwned`, and windowsLab keys `O` (panels owned or free and topmost, the old behaviour) and `S` (main vsync) switch the two differences at runtime; the card shows both states.
