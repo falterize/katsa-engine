@@ -161,6 +161,9 @@ function R.draw(system, camera, emitter)
             stats.rendered = stats.rendered + n
         end
     end
+    -- The one-entry list is reused to avoid a table per draw; drop the emitter so a destroyed one
+    -- (and its whole node tree) is not kept alive until the next particle draw.
+    system._drawList[1] = nil
     g.pop()
     stats.drawMilliseconds = (stats.drawMilliseconds or 0) + (katsa.timer.getTime() - start) * 1000
 end
