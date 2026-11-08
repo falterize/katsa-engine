@@ -61,12 +61,12 @@ function T:update()
         )
         body:update(0)
         self:check(
-            #body.body.shapes == 2,
-            'Simple geometry collision includes both transformed model parts'
+            #body.body.shapes == 1,
+            'Bounding Box geometry collision is one box around both transformed model parts'
         )
         collider.collisionLevel = 'Single Convex'
         body:update(0)
-        self:check(#body.body.shapes == 2, 'Convex geometry collision keeps separate mesh hulls')
+        self:check(#body.body.shapes == 1, 'Single Convex geometry collision is one hull for the whole source')
         collider.collisionLevel = 'Trimesh'
         body:update(0)
         self:check(
