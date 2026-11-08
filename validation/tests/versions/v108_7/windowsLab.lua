@@ -21,6 +21,17 @@ function Module.run(self)
     end
     local x2 = lab.windows[1].window:getPosition()
     self:check(x1 ~= x2, 'The windows fly around the main one')
+    -- A panel the user drags is left alone instead of being pulled back to its orbit.
+    local panel = lab.windows[1]
+    lab.windows[1].window:setPosition(321, 222)
+    scene:update(0.05, 0.05)
+    scene:update(0.05, 0.05)
+    local gx, gy = panel.window:getPosition()
+    self:check(gx == 321 and gy == 222 and panel.held, 'A panel moved by the user stays where it was put')
+    for _ = 1, 12 do
+        scene:update(0.1, 0.1)
+    end
+    self:check(panel.held == nil, 'The orbit goes on after the panel has been let go')
     lab:toggleMiniGame()
     self:check(lab.mini and lab.mini:isOpen(), 'M opens a scene in its own window')
     for _ = 1, 3 do

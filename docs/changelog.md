@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- windowsLab: a panel that the user drags is no longer pulled back to its orbit. A window found away from where the scene put it counts as grabbed; it rests for 0.4 s after the last movement, then its orbit goes on from the spot where it was let go. Test: `v108_7/windowsLab.lua`.
 - windowsLab: the main window stayed opaque on Windows from `b88cff6` until the status label stopped being rewritten every frame (found by bisecting `4a9b629`..`30b2b19` on hardware). The sandbox frame keeps alpha 0 in empty areas either way (`--test-v108.7.alpha`), so the mechanism is unknown; treat a UI that changes every frame in a transparent window as suspect and check on Windows.
 - windowsLab transparency regression hunt: `DwmEnableBlurBehindWindow` succeeds (0x0) yet the main window stays opaque since the panels became owned windows with their own swap interval. `SubWindow:setOwned`, and windowsLab keys `O` (panels owned or free and topmost, the old behaviour) and `S` (main vsync) switch the two differences at runtime; the card shows both states.
 - Windows: `setTransparent` removes the layered window style (left by `setOpacity`) before enabling DWM transparency and logs the `DwmEnableBlurBehindWindow` result (`transparent window on/off: ...` in latest.log). Since leaving windowsLab now really switches transparency off (the earlier call failed silently), entering the scene again needs the layered style cleared. Needs confirmation on Windows.

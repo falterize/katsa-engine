@@ -31,6 +31,7 @@ local MINI_GAME = 'platformer'
 -- pays for each move), the longest waiting window first. The frame rate stays up; the panels move
 -- a little less often when moves are slow.
 local MOVE_SHARE = 0.3
+local HOLD = 0.4 -- seconds a panel rests after the user moved it, before its orbit goes on
 local MODES = { 'budget', 'all', 'batch' }
 
 local function drawPanel(panel, time, fps, width, height)
@@ -205,10 +206,29 @@ function Lab:serveWindows(dt)
     for _, entry in ipairs(due) do
         local width, height = entry.window:getSize()
         local panel = entry.panel
+        -- A window that is somewhere other than where this scene put it was moved by the user:
+        -- the panel is left alone while it is held, then its orbit goes on from the spot where it
+        -- was let go (the orbit is shifted by the difference, so nothing jumps).
+        local actualX, actualY = entry.window:getPosition()
+        local grabbed = entry.x ~= nil
+            and (math.abs(actualX - entry.x) > 2 or math.abs(actualY - entry.y) > 2)
         local angle = self.time * panel.speed + panel.phase
-        local x = math.floor(self.centerX + math.cos(angle) * panel.radius[1] - width / 2)
-        local y = math.floor(self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2)
-        if x ~= entry.x or y ~= entry.y then
+        local baseX = self.centerX + math.cos(angle) * panel.radius[1] - width / 2
+        local baseY = self.centerY + math.sin(angle * 1.3) * panel.radius[2] - height / 2
+        if grabbed then
+            entry.x, entry.y, entry.held = actualX, actualY, HOLD
+        elseif entry.held then
+            entry.held = entry.held - dt
+            if entry.held <= 0 then
+                entry.held = nil
+                entry.offsetX, entry.offsetY = entry.x - baseX, entry.y - baseY
+            end
+        end
+        local x = math.floor(baseX + (entry.offsetX or 0))
+        local y = math.floor(baseY + (entry.offsetY or 0))
+        if entry.held then
+            -- held by the user: no move
+        elseif x ~= entry.x or y ~= entry.y then
             if mode == 'batch' then
                 entry.x, entry.y, entry.moved = x, y, self.moveCount
                 batch[#batch + 1] = { entry.window, x, y }
