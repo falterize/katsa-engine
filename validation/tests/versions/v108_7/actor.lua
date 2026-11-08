@@ -72,6 +72,20 @@ function Module.run(self)
     pool:destroy(2000)
     self:check(data:getReferences() == 1, 'Workers release their references')
 
+    -- A packaged game keeps the runtime only inside the executable's archive: with no module
+    -- path the worker must still get the runtime modules its prelude needs.
+    local savedPath = package.path
+    package.path = ''
+    local packaged = Thread.spawn({
+        name = 'packaged',
+        script = 'Actor.on("ping", function() return "pong" end)',
+    })
+    package.path = savedPath
+    local answer
+    packaged:request('ping', nil, function(ok, result) answer = ok and result end)
+    self:check(wait(function() return answer end, 5, function() packaged:poll() end) and answer == 'pong', 'A worker starts without a module path (packaged game)')
+    packaged:destroy()
+
     -- A script that fails to start is reported.
     local broken = Thread.spawn({ name = 'broken', script = 'error("bad script")' })
     local message

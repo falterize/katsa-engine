@@ -22,23 +22,50 @@ Thread.__index = Thread
 
 local STATES = { [0] = 'starting', 'running', 'finished', 'failed' }
 
-local prelude
-local function preludeSource()
-    if prelude then
-        return prelude
-    end
-    local path = 'source/katsa/thread/worker.lua'
+-- Reads a runtime file. katsa.filesystem also sees the runtime archive appended to a packaged
+-- executable; plain io covers states without it.
+local function readRuntime(path)
     local data
     if katsa and katsa.filesystem then
         data = katsa.filesystem.read(path)
     end
     if not data then
-        local file = assert(io.open(path, 'rb'), 'Cannot read ' .. path)
-        data = file:read('*a')
-        file:close()
+        local file = io.open(path, 'rb')
+        if file then
+            data = file:read('*a')
+            file:close()
+        end
     end
-    prelude = data
+    return data
+end
+
+local prelude
+local function preludeSource()
+    if not prelude then
+        local path = 'source/katsa/thread/worker.lua'
+        prelude = assert(readRuntime(path), 'Cannot read ' .. path)
+    end
     return prelude
+end
+
+-- Runtime modules the worker prelude requires. In a packaged game they exist only inside the
+-- executable's archive, which a worker state cannot open, so their source is sent along with the
+-- user's `modules` (an explicitly given module of the same name wins).
+local RUNTIME_MODULES = {
+    'source.katsa.core.native',
+    'source.katsa.core.relativeRequire',
+    'source.katsa.thread.sharedArray',
+}
+local runtimeSources
+
+local function runtimeModules()
+    if not runtimeSources then
+        runtimeSources = {}
+        for _, name in ipairs(RUNTIME_MODULES) do
+            runtimeSources[name] = readRuntime(name:gsub('%.', '/') .. '.lua')
+        end
+    end
+    return runtimeSources
 end
 
 -- Native library folders of this state, so workers find the same libraries.
@@ -92,7 +119,13 @@ function Thread.spawn(options)
         directories()
     )
     local parts = { header }
-    for module, source in pairs(options.modules or {}) do
+    local modules = options.modules or {}
+    for module, source in pairs(runtimeModules()) do
+        if modules[module] == nil then
+            parts[#parts + 1] = string.format('[%q]=%q,', module, source)
+        end
+    end
+    for module, source in pairs(modules) do
         parts[#parts + 1] = string.format('[%q]=%q,', module, source)
     end
     parts[#parts + 1] = '}\n'
