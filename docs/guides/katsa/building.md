@@ -98,8 +98,9 @@ The host links LuaJIT statically, so it needs a Windows `libluajit` built with t
 
 1. Get the LuaJIT sources: `git clone --branch v2.1 --depth 1 https://github.com/LuaJIT/LuaJIT C:\katsa-luajit\LuaJIT`.
 2. Build the static library. LuaJIT's build needs `make`, which llvm-mingw does not include. Either
-   - on Linux / WSL with llvm-mingw:
-     `make -C LuaJIT HOST_CC=gcc CROSS=x86_64-w64-mingw32- TARGET_SYS=Windows BUILDMODE=static amalg`, or
+   - in WSL (or on Linux) with llvm-mingw on `PATH` there; the Windows folder `C:\katsa-luajit` is
+     `/mnt/c/katsa-luajit` inside WSL:
+     `make -C /mnt/c/katsa-luajit/LuaJIT HOST_CC=gcc CROSS=x86_64-w64-mingw32- TARGET_SYS=Windows BUILDMODE=static amalg`, or
    - on Windows with a `make` (for example `winget install ezwinports.make`):
      `make -C C:\katsa-luajit\LuaJIT CC=x86_64-w64-mingw32-clang BUILDMODE=static`
      (this variant has not been tried by the maintainers).
