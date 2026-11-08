@@ -9,6 +9,7 @@ local entries = {
     ['--test-v108.5.menu'] = { module = 'validation.tests.versions.v108_5.menuProbe', mode = 'default' },
     ['--test-v108.7.seats'] = { module = 'validation.tests.versions.v108_7.seatShots', mode = 'default' },
     ['--test-v108.7.carbounds'] = { module = 'validation.tests.versions.v108_7.carBounds', mode = 'default' },
+    ['--test-v108.7.actorlab'] = { module = 'validation.tests.versions.v108_7.actorLab', mode = 'default' },
     ['--test-v108.7.navprobe'] = { module = 'validation.tests.versions.v108_7.navWorkerProbe', mode = 'default' },
     ['--test-v108.7.steering'] = { module = 'validation.tests.versions.v108_7.wheelSteering', mode = 'default' },
     ['--test-v108.7.ramp'] = { module = 'validation.tests.versions.v108_7.rampShots', mode = 'default' },

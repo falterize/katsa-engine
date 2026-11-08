@@ -118,6 +118,10 @@ function Module.run(self)
     self:check(wait(function() return square and got end, 5, function() node:update() end), 'The Actor node runs a script on workers')
     self:check(square == 144 and got == 'hi', 'The node delivers results and worker messages')
     self:check(#node:getStats() == 2 and node:isRunning(), 'The node reports per-worker stats')
+    -- The node tree calls start() on the first update; that must not restart running workers.
+    local running = node._pool
+    node:start()
+    self:check(node._pool == running, 'start() without a script keeps running workers (no lost requests)')
     node:destroy()
     self:check(not node:isRunning(), 'Destroying the node stops its workers')
 end

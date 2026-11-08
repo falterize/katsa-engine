@@ -33,7 +33,13 @@ Actor.propertySchema = {
     },
 }
 
-local function readSource(path)
+-- `scene://`, `shared://` and plain paths: the world's resource scope resolves them, so a scene
+-- script folder inside an archive works like any other asset (scene:// maps to the scene's assets).
+local function readSource(self, path)
+    local resources = self._world and self._world.resources
+    if resources and resources.canonical and path:find('://', 1, true) then
+        path = resources:canonical(path)
+    end
     local data, message = katsa.filesystem.read(path)
     assert(data, message or ('Cannot read ' .. tostring(path)))
     return data
@@ -63,12 +69,19 @@ end
 -- Starts the worker threads. `source` (Lua text) replaces the file named by `script`.
 -- Extra options: `args` (plain table every worker gets as Actor.args), `modules`
 -- ({ moduleName = filePath }): modules the script may require, read here so archives work.
+--
+-- The node tree also calls start() once on the first update (the common node lifecycle hook).
+-- Without `source` that call must not restart workers that autoStart already launched: a restart
+-- would drop every request issued before the first frame.
 function Actor:start(source)
+    if self._pool and not source then
+        return self
+    end
     self:stop()
-    local script = source or readSource(self.script)
+    local script = source or readSource(self, self.script)
     local modules = {}
     for name, path in pairs(self.modules or {}) do
-        modules[name] = readSource(path)
+        modules[name] = readSource(self, path)
     end
     self._pool = Pool.new({
         script = script,

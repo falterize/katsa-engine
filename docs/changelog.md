@@ -4,6 +4,9 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- Actor node: the first update of the node tree called `start()` again and restarted workers that `autoStart` had launched, silently dropping every request issued before that frame. `start()` without a script now keeps running workers. `script` and `modules` paths accept `scene://` and `shared://`. Test: `v108_7/actor.lua`.
+- New example scene `actorLab`: the same heavy job on the main thread and on Actor workers, with request/send/answer buttons. Test: `--test-v108.7.actorlab`. Guide: `docs/guides/development/actors.md`.
+- multiplayerCars: the host HUD line shows where bot route searches run (worker thread with a search count, or the main thread).
 - multiplayerCars: the collision hull follows the dents: the chassis box becomes three boxes whose faces are pulled in by the dents (untouched sections stay exact). Test: `--test-v108.7.steering`.
 - Pathfinding: `Layered:snapshot()/fromSnapshot()/version()` and `RemotePlanner` (route searches on an ActorPool, inline fallback without threads or after a worker failure). multiplayerCars bots search routes on a worker (`workers = false` keeps them on the main thread). Test: `v108_7/botWorkers.lua`.
 - multiplayerCars: boarding a car whose root has a non-uniform scale no longer crashes with "Transform contains shear" (the walker is re-parented by its standing point instead of the inverse car matrix). Test: `--test-v108.7.steering`.

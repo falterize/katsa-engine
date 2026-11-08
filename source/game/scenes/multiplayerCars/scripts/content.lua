@@ -803,7 +803,8 @@ function Session:update(dt)
             nitro = 0,
             info = 'On foot  -  E near a car to get in  -  ping '
                 .. math.floor(self.client:getPing())
-                .. ' ms',
+                .. ' ms'
+                .. self:routeInfo(),
         })
     end
     if car then
@@ -822,9 +823,22 @@ function Session:update(dt)
                 car.config.seats,
                 players,
                 math.floor(self.client:getPing())
-            ),
+            ) .. self:routeInfo(),
         })
     end
+end
+
+-- HUD suffix for the host: where the bots' route searches run, and how many were made.
+function Session:routeInfo()
+    local server = self.server
+    if not server or not server.bot then
+        return ''
+    end
+    local planner = server.planner
+    if planner then
+        return ('  -  bot routes: worker (%d searches, %d waiting)'):format(planner.searches, planner.pending)
+    end
+    return '  -  bot routes: main thread'
 end
 
 function Session:release()

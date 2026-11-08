@@ -13,7 +13,7 @@ Measured in the Linux sandbox (2 cores): four 4e7-iteration jobs take 3.06 s on 
 ```lua
 local brain = world:create('Actor', {
     name = 'Brain',
-    script = 'scene://scripts/pathing.lua',  -- file the workers run
+    script = 'scene://worker/pathing.lua',   -- file the workers run (scene:// is the scene's assets folder)
     workers = 2,                              -- threads; requests go to the least busy one
 })
 brain:on('progress', function(data, worker) print(data.percent) end)
@@ -34,6 +34,16 @@ main thread so archives work). A failing worker reports through the world's erro
 
 Results are delivered on the main thread while the node updates (so a paused world, whose delta is
 zero, delivers nothing until it runs again).
+
+## Example scene
+
+`actorLab` (category Performance) is the smallest complete example: a spinning cube, a heavy job
+(count the primes below 1.8 million, split into 8 ranges) and three buttons. "Run on the main
+thread" freezes the screen while it counts; "Run on workers (Actor)" sends the ranges with
+`actor:request(...)` and the cube keeps spinning while the answers arrive. The worker code is
+`assets/worker/primes.lua`, the node and callbacks are in `scripts/content.lua`. "Send a ping
+message" shows `actor:send` and a worker answering with `Actor.send`. The `multiplayerCars` host
+HUD line also shows the bot route searches running on a worker (`RemotePlanner`).
 
 ## The worker script
 
