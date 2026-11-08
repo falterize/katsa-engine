@@ -70,18 +70,18 @@ You need a Windows PC or Linux/macOS with llvm-mingw. The commands below are for
    and add its `bin` folder to `PATH`. Check: `x86_64-w64-mingw32-clang --version`.
 2. `git clone https://github.com/falterize/katsa-engine` and `cd katsa-engine`.
 3. Build the project libraries: `python tools/native/build.py windows`. Result in
-   `build\native\windows\`: `katsa_native.dll`, `katsa_box2d.dll`, `katsa_net.dll`. (A warning from
+   `build\native\windows\`: `katsa_native.dll`, `katsa_box2d.dll`, `katsa_net.dll`, `katsa_threads.dll` (the last one is the worker-thread library of the Actor node; without it Actors run on the main thread). (A warning from
    `stb_vorbis` is harmless.)
 4. Download `SDL2-2.30.x-win32-x64.zip` and take `SDL2.dll`; take `soft_oal.dll` from the OpenAL Soft
    zip (`bin\Win64`). Copy both next to the DLLs from step 3 (or into `lib\`).
-5. Play from source: copy the five DLLs into `lib\`, then
+5. Play from source: copy the six DLLs into `lib\`, then
    `luajit tools\dev\katsa.lua .` (needs `luajit.exe`; see the LuaJIT row above).
 6. Optional, a standalone `katsa.exe`: build a Windows static LuaJIT
    (`make HOST_CC=gcc CROSS=x86_64-w64-mingw32- TARGET_SYS=Windows`), then set
    `LUAJIT_WIN_LIB=<...>\libluajit-5.1.a` and `LUAJIT_WIN_INCLUDE=<...>\src` and rerun step 3.
    `KATSA_GUI=1` builds it without a console window.
 7. Package: `python tools/build/packageProject.py --output dist --host build\native\windows\katsa.exe`
-   and ship `dist\Katsa-<version>` (rename to `.exe`) with the five DLLs next to it.
+   and ship `dist\Katsa-<version>` (rename to `.exe`) with the six DLLs next to it.
 
 ## Step by step: Linux
 

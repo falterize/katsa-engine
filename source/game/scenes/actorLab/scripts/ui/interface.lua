@@ -15,8 +15,8 @@ end
 function Interface.create(self)
     local ui = self.scene.ui
     local card = ui:container({
-        position = { 0, 12, 0, 12 },
-        size = { 0, 420, 0, 250 },
+        position = { 0, 12, 0, 96 }, -- below the Menu / Pause bar
+        size = { 0, 420, 0, 270 },
         backgroundColor = { 0.08, 0.1, 0.16 },
         backgroundTransparency = 0.15,
     }, ui.content)
@@ -31,7 +31,7 @@ function Interface.create(self)
     end)
     self.status = ui:text({
         position = { 0, 14, 0, 158 },
-        size = { 1, -28, 0, 84 },
+        size = { 1, -28, 0, 104 },
         text = 'Press a button',
         fontSize = 15,
         textColor = { 0.6, 0.9, 0.7 },
