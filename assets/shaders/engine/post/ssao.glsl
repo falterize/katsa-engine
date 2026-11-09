@@ -69,11 +69,8 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         if(quv.x<0.||quv.x>1.||quv.y<0.||quv.y>1.) continue;
         highp float sceneZ=viewDepth(quv);
         highp float range=smoothstep(0.0,1.0,radius/max(abs(z-sceneZ),1e-4));
-        highp float tolerance=bias+slope*(1.0+length((quv-uv)*depthSize))+q.z*0.004;
+        highp float tolerance=bias+slope*0.5*length((quv-uv)*depthSize)+q.z*0.004;
         occlusion+=(sceneZ<=q.z-tolerance ? 1.0 : 0.0)*range;
     }
-    // When one pixel already spans more depth than the search radius (far, grazing floors) the
-    // depth cannot resolve occluders of that size: fade the effect out instead of striping.
-    highp float confidence=1.0-smoothstep(.5,1.5,slope/radius);
-    return vec4(vec3(1.0-confidence*occlusion/float(sampleCount)),1.0);
+    return vec4(vec3(1.0-occlusion/float(sampleCount)),1.0);
 }

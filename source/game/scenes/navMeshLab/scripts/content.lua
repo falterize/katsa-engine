@@ -77,7 +77,6 @@ function Lab.new(scene)
     })
     self.pillar = Mesh.create(world, {
         name = 'Pillar',
-        kind = 'cylinder',
         size = { 3, 3, 3 },
         color = { 0.8, 0.25, 0.2, 1 },
         position = { 0, 1.5, 4 },
