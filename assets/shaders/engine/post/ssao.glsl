@@ -46,6 +46,10 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     highp vec3 dy=abs(py1.z-p.z)<abs(p.z-py0.z) ? py1-p : p-py0;
     highp vec3 n=normalize(cross(dy,dx));
     if(n.z>0.0) n=-n; // face the camera (view space looks down +z)
+    // Depth changes by this much from one pixel to the next on this surface. Far, grazing floors
+    // change fast, and a normal estimated from them wobbles; without this term the wobble showed
+    // up as bands. The bias grows with that change and with distance.
+    highp float slopeBias=max(abs(dx.z),abs(dy.z))*2.0+p.z*0.004;
     highp float angle=noise(screen)*6.2831853;
     highp float occlusion=0.0;
     for(int i=0;i<24;i++) {
@@ -62,9 +66,7 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         if(quv.x<0.||quv.x>1.||quv.y<0.||quv.y>1.) continue;
         highp float sceneZ=viewDepth(quv);
         highp float range=smoothstep(0.0,1.0,radius/max(abs(z-sceneZ),1e-4));
-        // The bias grows with distance: a depth texel of a far, grazing surface spans many depth
-        // steps, which showed up as bands on floors at low render density.
-        occlusion+=(sceneZ<=q.z-bias-q.z*0.006 ? 1.0 : 0.0)*range;
+        occlusion+=(sceneZ<=q.z-bias-slopeBias ? 1.0 : 0.0)*range;
     }
     return vec4(vec3(1.0-occlusion/float(sampleCount)),1.0);
 }
