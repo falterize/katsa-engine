@@ -19,7 +19,7 @@ return function(T)
     os.execute(command .. ' --output ' .. fused .. ' >/dev/null')
 
     local native = require('source.katsa.core.native')
-    native.addDirectory('build/native/' .. ({ Windows = 'windows', Linux = 'linux', OSX = 'macos' })[native.os()])
+    native.addDirectory('native/build/' .. ({ Windows = 'windows', Linux = 'linux', OSX = 'macos' })[native.os()])
     for _, name in ipairs({ 'g.katsa', 'fused' }) do
         local FS = package.loaded['source.katsa.core.filesystem']
         package.loaded['source.katsa.core.filesystem'] = nil

@@ -23,7 +23,7 @@ katsa_native (`font.c`, `image`, ...) selects katsa_native. Examples:
     python tools/native/build.py windows                      # everything
     python tools/native/build.py windows katsa_net threads    # only these two DLLs
 
-Output goes to build/native/<target>/ (android: build/native/android/<abi>/).
+Output goes to native/build/<target>/ (android: native/build/android/<abi>/).
 See docs/guides/katsa/building.md.
 """
 import os
@@ -281,7 +281,7 @@ def main():
     target = sys.argv[1]
     requested = [library_name(argument) for argument in sys.argv[2:]]
     names = [name for name in LIBRARIES if not requested or name in requested]
-    out = ROOT / 'build' / 'native' / target
+    out = ROOT / 'native' / 'build' / target
     out.mkdir(parents=True, exist_ok=True)
     if target == 'android':
         build_android(out, names)

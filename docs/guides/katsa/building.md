@@ -29,7 +29,7 @@ The engine is Lua code (`source/`) on top of a small native layer:
 Native libraries are **per platform and per CPU architecture**: a `.dll` never works on Linux, an
 arm64 `.so` never on x86_64. The engine looks for them in this order: the folder in the environment
 variable `KATSA_LIB_DIR`, the executable's folder, `lib/` next to the executable, and when running
-from source also `build/native/<platform>/`.
+from source also `native/build/<platform>/`.
 
 ### What the host is
 
@@ -51,7 +51,7 @@ On its own the host is an empty shell: it has no engine and no game. A file beco
 `katsa.exe` or `MyGame.exe` only after `packageKatsa.py` appends the archive:
 
 ```text
-host (build/native/<platform>/katsa[.exe])  +  ZIP archive  =  dist/katsa[.exe]  (or dist/MyGame[.exe])
+host (native/build/<platform>/katsa[.exe])  +  ZIP archive  =  dist/katsa[.exe]  (or dist/MyGame[.exe])
 ```
 
 You rebuild the host rarely: only when `native/src/host` or `native/src/threads` changes, or for a
@@ -170,10 +170,10 @@ Lua as UTF-8 and DLLs are loaded through the Unicode Windows API.
    python3 tools/native/build.py linux
    ```
 
-   Result in `build/native/linux/`: four `.so` files and the `katsa` host.
+   Result in `native/build/linux/`: four `.so` files and the `katsa` host.
 4. Run from source: `luajit tools/dev/katsa.lua .`
-5. Run through the host: `python3 tools/build/packageKatsa.py --runtime-only --host build/native/linux/katsa --output dist/katsa`,
-   copy `build/native/linux/*.so` to `dist/lib/`, then `dist/katsa .`.
+5. Run through the host: `python3 tools/build/packageKatsa.py --runtime-only --host native/build/linux/katsa --output dist/katsa`,
+   copy `native/build/linux/*.so` to `dist/lib/`, then `dist/katsa .`.
 6. Tests: `tools/dev/runTests.sh --test-v108.7`, or `xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.7`
    without a display. After changing `native/src/threads`, also run `sh validation/native/threadsStress.sh`.
 
@@ -187,10 +187,10 @@ architecture of the Mac that builds it.
    (`MACOSX_DEPLOYMENT_TARGET` defaults to 10.13. If Homebrew has no `libluajit-5.1.a`, build LuaJIT as
    in the Linux steps with `MACOSX_DEPLOYMENT_TARGET=11.0 make`.)
 3. Copy the system libraries next to the result:
-   `cp $(brew --prefix sdl2)/lib/libSDL2.dylib build/native/macos/` and
-   `cp $(brew --prefix openal-soft)/lib/libopenal.1.dylib build/native/macos/`.
+   `cp $(brew --prefix sdl2)/lib/libSDL2.dylib native/build/macos/` and
+   `cp $(brew --prefix openal-soft)/lib/libopenal.1.dylib native/build/macos/`.
 4. Run from source: `luajit tools/dev/katsa.lua .`
-5. Package as in [Packaging a game](#packaging-a-game) with `--host build/native/macos/katsa`, put the
+5. Package as in [Packaging a game](#packaging-a-game) with `--host native/build/macos/katsa`, put the
    `.dylib` files beside it (or in `lib/`, or an `.app` bundle's `Contents/Frameworks`).
 6. On Apple Silicon sign the executable after the archive was appended:
    `codesign --force --sign - dist/MyGame`. Without a developer certificate the first start needs
@@ -243,9 +243,9 @@ All platforms use one packager, `tools/build/packageKatsa.py`:
 | Output | Command |
 | --- | --- |
 | Game archive (run with `katsa Game.katsa`) | `python tools/build/packageKatsa.py --source <game folder> --output dist/Game.katsa` |
-| Generic runtime | `python tools/build/packageKatsa.py --runtime-only --host build/native/<platform>/katsa[.exe] --output dist/katsa[.exe]` |
-| One fused file (game + runtime) | `python tools/build/packageKatsa.py --source <game folder> --host build/native/<platform>/katsa[.exe] --output dist/Game[.exe]` |
-| Whole repository as the game | `python tools/build/packageProject.py --output dist --host build/native/<platform>/katsa[.exe]` (`--with-validation` adds the tests) |
+| Generic runtime | `python tools/build/packageKatsa.py --runtime-only --host native/build/<platform>/katsa[.exe] --output dist/katsa[.exe]` |
+| One fused file (game + runtime) | `python tools/build/packageKatsa.py --source <game folder> --host native/build/<platform>/katsa[.exe] --output dist/Game[.exe]` |
+| Whole repository as the game | `python tools/build/packageProject.py --output dist --host native/build/<platform>/katsa[.exe]` (`--with-validation` adds the tests) |
 | `.blend` models converted at packaging time | add `--convert-blend` (needs Blender on the build machine) |
 
 Ship the executable together with the native libraries of its platform, next to it or in `lib/`.
@@ -274,7 +274,7 @@ python tools/native/build.py <target> [library ...]
 | `MACOSX_DEPLOYMENT_TARGET` | oldest macOS version (default 10.13) |
 
 The last line printed lists the libraries actually built; a skipped host says which variable is
-missing. Output: `build/native/<target>/` (Android: `build/native/android/<abi>/`).
+missing. Output: `native/build/<target>/` (Android: `native/build/android/<abi>/`).
 
 Source layout: `native/src/` has one folder per library (`native/`, `box2d/`, `net/`, `threads/`,
 `host/`) and `common/export.h`. Each folder starts with a header or file comment that lists its files

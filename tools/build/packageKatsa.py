@@ -5,10 +5,10 @@
     python tools/build/packageKatsa.py --source <game folder> --output dist/Game.katsa
 
     # Generic runtime: a host with only the Lua runtime appended (run with `katsa Game.katsa`)
-    python tools/build/packageKatsa.py --runtime-only --host build/native/windows/katsa.exe --output dist/katsa.exe
+    python tools/build/packageKatsa.py --runtime-only --host native/build/windows/katsa.exe --output dist/katsa.exe
 
     # Game and runtime in one file
-    python tools/build/packageKatsa.py --source <game folder> --host build/native/linux/katsa --output dist/Game
+    python tools/build/packageKatsa.py --source <game folder> --host native/build/linux/katsa --output dist/Game
 
     # .blend files converted to <name>.blend.glb with Blender (the originals are left out)
     python tools/build/packageKatsa.py --source <game folder> --convert-blend --output dist/Game.katsa

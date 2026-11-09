@@ -6,7 +6,7 @@ package.path = './?.lua;' .. package.path
 package.path = './?/init.lua;' .. package.path
 _G.require = require('source.katsa.core.relativeRequire').wrap(require)
 local Nat = require('source.katsa.core.native')
-Nat.addDirectory('build/native/' .. ({ Windows = 'windows', Linux = 'linux', OSX = 'macos' })[Nat.os()])
+Nat.addDirectory('native/build/' .. ({ Windows = 'windows', Linux = 'linux', OSX = 'macos' })[Nat.os()])
 local failures, passes, skipped = 0, 0, 0
 local T = {}
 

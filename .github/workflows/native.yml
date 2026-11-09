@@ -39,7 +39,7 @@ jobs:
         # macOS stays non-blocking until it has passed once on a real runner.
         continue-on-error: ${{ matrix.target == 'macos' }}
         env:
-          KATSA_LIB_DIR: ${{ github.workspace }}/build/native/${{ matrix.target }}
+          KATSA_LIB_DIR: ${{ github.workspace }}/native/build/${{ matrix.target }}
         run: |
           if [ "${{ matrix.target }}" = linux ]; then
             tools/ci/annotate.sh 'unit tests' xvfb-run -a luajit validation/tests/katsa/run.lua | tee unit.log
@@ -51,11 +51,11 @@ jobs:
         if: always()
         run: grep -E "^(FAIL|SKIP|katsa:)" unit.log || true
       - name: Package a fused executable
-        run: tools/ci/annotate.sh packaging python3 tools/build/packageProject.py --output dist --host build/native/${{ matrix.target }}/katsa
+        run: tools/ci/annotate.sh packaging python3 tools/build/packageProject.py --output dist --host native/build/${{ matrix.target }}/katsa
       - name: Collect
         run: |
           mkdir -p out
-          cp -R build/native/${{ matrix.target }}/. out/
+          cp -R native/build/${{ matrix.target }}/. out/
           cp dist/Katsa-* out/
       - uses: actions/upload-artifact@v4
         with:
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: katsa-native-windows
-          path: build/native/windows
+          path: native/build/windows
 
   android:
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: katsa-native-android
-          path: build/native/android
+          path: native/build/android
 
   apk:
     runs-on: ubuntu-latest
