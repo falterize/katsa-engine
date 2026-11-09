@@ -245,12 +245,12 @@ function Tests.scenes(tester)
         'Missing XML images use the complete checker instead of failing atlas-size validation'
     )
     scene:draw()
-    local empty = scene.ui:create('ImageLabel', { size = { 0, 32, 0, 32 } }, scene.ui.content)
+    local empty = scene.ui:create('ImageRect', { size = { 0, 32, 0, 32 } }, scene.ui.content)
     scene:draw()
-    tester:check(empty._imageMissing, 'An ImageLabel without image renders a diagnostic texture')
+    tester:check(empty._imageMissing, 'An ImageRect without image renders a diagnostic texture')
     empty.image = ''
     scene:draw()
-    tester:check(empty._imageMissing, 'An empty ImageLabel path renders without crashing')
+    tester:check(empty._imageMissing, 'An empty ImageRect path renders without crashing')
     empty:destroy()
     local emptyButton =
         scene.ui:create('Button', { image = '', size = { 0, 32, 0, 32 } }, scene.ui.content)

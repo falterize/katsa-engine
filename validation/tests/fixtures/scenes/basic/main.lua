@@ -11,12 +11,12 @@ function Scene.new(scene, context)
 end
 
 function Scene:buildUI()
-    self.scene.ui:create('ImageLabel', {
+    self.scene.ui:create('ImageRect', {
         name = 'LocalImage',
         image = 'scene://textures/checker.png',
         size = { 0, 48, 0, 48 },
     }, self.scene.ui.content)
-    self.scene.ui:create('ImageLabel', {
+    self.scene.ui:create('ImageRect', {
         name = 'SharedImage',
         image = 'shared://textures/internal/white.png',
         position = { 0, 56, 0, 0 },

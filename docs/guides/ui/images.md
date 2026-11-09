@@ -1,6 +1,6 @@
 # Shared image component and viewport resolution
 
-UI ImageLabel and image-bearing Button use imageMode and the shared component.
+UI ImageRect and image-bearing Button use imageMode and the shared component.
 
 | Mode | Settings and units |
 | --- | --- |
@@ -48,7 +48,7 @@ Use the project flipbook manifest schema documented in [Physics2D](../physics/ph
 This is not an importer for arbitrary XML formats from other engines or atlas tools.
 
 ```lua
-local sprite = scene.ui:create('ImageLabel', {
+local sprite = scene.ui:create('ImageRect', {
     imageMode = 'XML',
     xml = 'scene://animations/player.xml',
     image = 'scene://textures/player-red.png', -- Optional alternate atlas with the same layout.
@@ -85,13 +85,13 @@ playback:update(dt)
 
 `playback:pause()` allows manual frame selection while retaining the clip state.
 The convenience `Xml.load(resources, path, target)` sets XML mode/path and creates
-playback. ImageLabel and image-bearing Button share this mode; SurfaceAppearance3D
+playback. ImageRect and image-bearing Button share this mode; SurfaceAppearance3D
 uses the manifest image as its color map and the same grid for its UV modes.
 Decal3D uses the same imageMode API; its legacy mode property remains synchronized.
 
 ## Missing assets
 
-An absent/empty ImageLabel image, an explicitly empty image-bearing Button,
+An absent/empty ImageRect image, an explicitly empty image-bearing Button,
 a missing path or an undecodable image displays an opaque black/purple checker.
 Ordinary text-only buttons keep their normal appearance. Missing XML image files
 use the complete checker and bypass frame-dimension validation of the substitute;

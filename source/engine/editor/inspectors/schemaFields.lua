@@ -68,7 +68,7 @@ local groups = {
         'clip',
         'layoutStatus',
     },
-    TextLabel = {
+    Label = {
         'text',
         'fontSize',
         'textColor',
@@ -81,7 +81,7 @@ local groups = {
         'verticalAlign',
         'padding',
     },
-    ImageLabel = {
+    ImageRect = {
         'image',
         'imageColor',
         'imageTransparency',

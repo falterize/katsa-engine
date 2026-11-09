@@ -62,7 +62,7 @@ return function(test)
         cornerUI.content
     )
     cornerUI:create(
-        'ImageLabel',
+        'ImageRect',
         { width = 48, height = 48, image = 'white', tint = { 0, 1, 0, 1 } },
         rounded
     )

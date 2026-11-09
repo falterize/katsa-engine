@@ -35,7 +35,7 @@ function Interface.create(state)
         }, ui.content)
     end
     -- Preserve the source Sprite2D's authored 324,323 center and 0.5962963 scale.
-    state.hud = ui:create('ImageLabel', {
+    state.hud = ui:create('ImageRect', {
         _viewportAuthored = true,
         name = 'CharacterHUD',
         position = { 0, 324, 0, 323 },

@@ -1,7 +1,7 @@
 # Text rendering
 
 Menu, Workspace, inspector dialogs, Stats, example HUDs and world UI use the
-same TextLabel/Button nodes and `source/engine/ui/drawing/text.lua`. Custom
+same Label/Button nodes and `source/engine/ui/drawing/text.lua`. Custom
 widgets should use `ui:drawText(node)` instead of creating separate font paths.
 
 ## Physical glyphs, logical layout
@@ -21,7 +21,7 @@ physical glyphs rather than rounded logical metrics.
 This avoids fractional-DPI metric/quad rounding in the legacy path.
 `ui:font(size)` remains available with its legacy native Font/DPI semantics for
 existing callers. New custom text rendering should use `ui:rasterFont(size)` and
-its returned scale, or delegate to TextLabel.
+its returned scale, or delegate to Label.
 
 `pixelGrid.lua` snaps paint origins without changing authored rectangles or input
 coordinates. Translucent CanvasGroup renders into a physical-pixel target and

@@ -20,11 +20,11 @@ function BillboardDemo.build(scene)
             b.ui.content
         )
         b.title = b.ui:create(
-            'TextLabel',
+            'Label',
             { position = { 0, 0, 0, 12 }, size = { 0, 240, 0, 30 }, text = title, fontSize = 22 },
             b.ui.content
         )
-        b.subtitle = b.ui:create('TextLabel', {
+        b.subtitle = b.ui:create('Label', {
             position = { 0, 0, 0, 73 },
             size = { 0, 240, 0, 30 },
 
@@ -124,7 +124,7 @@ function BillboardDemo.build(scene)
     )
     image.transparency = 0.25
     image.ui:create(
-        'ImageLabel',
+        'ImageRect',
         { position = { 0, 94, 0, 44 }, size = { 0, 52, 0, 32 }, image = 'bricks' },
         image.ui.content
     )

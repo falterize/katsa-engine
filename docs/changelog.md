@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.7
 
+- UI node names follow the usual vocabulary: the text node is `Label` (derived: `Button`, `TextBox`) and the image node is `ImageRect`. `Decal3D` keeps its name. No old-name aliases: scenes, styles, tests and fixtures use the new names.
 - Collision levels: `Trimesh`, `Single Convex`, `Simplified Convex`, `Multiple Convex` and `Bounding Box` for Collider3D (legacy `Detailed`/`Convex`/`Simple` still work; new properties `hullPoints`, `maxHulls`, `concavity`, `resolution`). Pure-Lua convex decomposition in `physics/3d/decomposition`. Guide: `docs/guides/physics/collisionLevels.md`. Tests: `v108_7/collisionLevels.lua`.
 - multiplayerCars: the car hull is the body mesh as Multiple Convex pieces moved by the dents (`game/carHull.lua`); engine sound (`view/engineSound.lua`, `assets/audio/engineLoop.ogg`, 14 MB source reduced to a 75 KB mono loop; spatial, silent beyond 60 m, at most 6 engines at once); smooth shading survives dents; dented noses no longer climb walls (ground needs a surface facing up); lost wheels get unique names.
 - Probes: `--test-v108.7.timescale` (multiplayerCars with bots at a world TimeScale; frame percentiles and stage peaks) and `--test-v108.7.overlays` (Screen UI cost with Stats, F4 and console open). Findings: the TimeScale 5 spikes came from bot route searches, now on workers; each debug overlay costs about 1 ms of Screen UI.
@@ -142,7 +143,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 - Stats export without the panel: **F6** (also *Export Stats CSV* in the F4 menu, `statistics:export(seconds)`) saves the last 30 s of the background-recorded histories.
 - Quality profiles `Low` / `Medium` / `High` (`Environment:applyQualityProfile`, F4 menu): render density, MSAA and shadow resolution cap, distance, update rate, filter samples and update budget; no feature is removed. `renderDensity` is the render-resolution scale.
 - `Environment.rendering.vsync` (boolean) drives the window's vertical sync from the scene (default: the current window setting).
-- `TextLabel`, `Button` and `TextBox` have a `font` property: a path resolved like image paths (`shared://fonts/test-font`, extension optional, `.ttf`/`.otf`). A missing file logs a warning and falls back to the default font. `assets/fonts/test-font.ttf` ships as an example.
+- `Label`, `Button` and `TextBox` have a `font` property: a path resolved like image paths (`shared://fonts/test-font`, extension optional, `.ttf`/`.otf`). A missing file logs a warning and falls back to the default font. `assets/fonts/test-font.ttf` ships as an example.
 - Renamed `nodes/physics/3d/constraints.lua` to `constraints3D.lua` (matching `constraints2D.lua`; the old name remains a one-line alias). The character texture `surfaces/grass.jpg` is now `surfaces/deltarune.jpg` (manifest key `deltarune`), and `surfaces/grass.png` is a real grass texture.
 - multiplayerCars: shadow map 1024 (was 2048; the atlas used 400 MB and was redrawn every frame because cars move).
 - Fewer hitches and faster loads: glTF accessors are read with typed arrays instead of per-number string unpacking, the multiplayerCars character is imported while the scene loads (cached for every walker), relative requires inside functions were reverted to absolute names (they cost a stack inspection per call), and the load phases of multiplayerCars show in the profiler. Steps slower than 50 ms (car / character views) are logged.
@@ -210,7 +211,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 - Plugin loader (`source/engine/plugins`) and the `pathfinding` plugin (`source/plugins/pathfinding`): A* on grids and waypoint graphs, smoothing, weights, path following. See [plugins](guides/development/plugins.md).
 - `katsa.net`: UDP networking over ENet (`katsa_net` library). `listen`/`connect`, three channels (reliable, sequenced, unreliable), peer ping/loss, LAN server discovery (`katsa.net.lan`). See [networking](guides/katsa/net.md).
 - `katsa.log` (levels log/warn/error, bounded history, listeners, `logs/latest.log`, print capture), JSON/CSV console export, crash reports as `crashes/crash-NN.log` with recent console lines. See [console and logs](guides/development/console.md).
-- Workspace inspector: `Image.describe` mutated the parent class schema, so every `Frame`/`TextLabel` listed image fields (and the reverse looked like ImageLabel showing the wrong parameters). Each class now owns its schema, and writing a property the class does not declare is rejected (`Schema.hasProperty`). Focused suite: `--test-v108.4`.
+- Workspace inspector: `Image.describe` mutated the parent class schema, so every `Frame`/`Label` listed image fields (and the reverse looked like ImageRect showing the wrong parameters). Each class now owns its schema, and writing a property the class does not declare is rejected (`Schema.hasProperty`). Focused suite: `--test-v108.4`.
 
 ## v108.3
 

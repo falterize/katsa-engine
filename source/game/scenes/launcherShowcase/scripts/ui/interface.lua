@@ -24,7 +24,7 @@ local function toolButton(ui, parent, x, label, icon, onPress)
         verticalAlign = 'bottom',
         onPress = onPress,
     }, parent, 'tool')
-    make(ui, 'ImageLabel', {
+    make(ui, 'ImageRect', {
         position = { 0.5, 0, 0, 4 },
         size = { 0, 30, 0, 30 },
         anchorPoint = { 0.5, 0 },
@@ -52,7 +52,7 @@ function Interface.create(state)
         _viewportAuthored = true,
     }, ui.content, 'root')
     state.root = root
-    make(ui, 'ImageLabel', {
+    make(ui, 'ImageRect', {
         name = 'Backdrop',
         position = { 0, 0, 0, 0 },
         size = { 1, 0, 1, 0 },
@@ -98,7 +98,7 @@ function Interface.create(state)
             position = { 0, 6, 0, y },
             size = { 1, -12, 0, 28 },
         }, list, 'group')
-        make(ui, 'TextLabel', {
+        make(ui, 'Label', {
             position = { 0, 10, 0, 0 },
             size = { 1, -20, 1, 0 },
             text = group.name,
@@ -113,25 +113,25 @@ function Interface.create(state)
                 size = { 1, -12, 0, 44 },
                 text = '',
             }, list, 'instance')
-            make(ui, 'ImageLabel', {
+            make(ui, 'ImageRect', {
                 position = { 0, 8, 0.5, 0 },
                 size = { 0, 28, 0, 28 },
                 anchorPoint = { 0, 0.5 },
                 image = ICONS .. 'cube.png',
             }, row, 'accentIcon')
-            make(ui, 'TextLabel', {
+            make(ui, 'Label', {
                 position = { 0, 48, 0, 2 },
                 size = { 0.55, -48, 0, 22 },
                 text = instance.name,
                 align = 'left',
             }, row, 'title')
-            make(ui, 'TextLabel', {
+            make(ui, 'Label', {
                 position = { 0, 48, 0, 22 },
                 size = { 0.55, -48, 0, 18 },
                 text = instance.version,
                 align = 'left',
             }, row, 'muted')
-            make(ui, 'TextLabel', {
+            make(ui, 'Label', {
                 position = { 0.55, 0, 0, 12 },
                 size = { 0.45, -12, 0, 20 },
                 text = instance.hours > 0 and (instance.played .. '  -  ' .. instance.hours .. ' h')
@@ -152,20 +152,20 @@ function Interface.create(state)
         position = { 1, -228, 0, 76 },
         size = { 0, 216, 1, -76 - 40 },
     }, root, 'actions')
-    make(ui, 'ImageLabel', {
+    make(ui, 'ImageRect', {
         position = { 0.5, 0, 0, 14 },
         size = { 0, 56, 0, 56 },
         anchorPoint = { 0.5, 0 },
         image = ICONS .. 'cube.png',
     }, actions, 'accentIcon')
-    local title = make(ui, 'TextLabel', {
+    local title = make(ui, 'Label', {
         position = { 0, 8, 0, 76 },
         size = { 1, -16, 0, 26 },
         text = '',
         textScaled = true,
         maxTextSize = 18,
     }, actions, 'title')
-    local subtitle = make(ui, 'TextLabel', {
+    local subtitle = make(ui, 'Label', {
         position = { 0, 8, 0, 102 },
         size = { 1, -16, 0, 20 },
         text = '',
@@ -196,13 +196,13 @@ function Interface.create(state)
         position = { 0, 0, 1, -28 },
         size = { 1, 0, 0, 28 },
     }, root, 'status')
-    make(ui, 'TextLabel', {
+    make(ui, 'Label', {
         position = { 0, 12, 0, 0 },
         size = { 0.5, 0, 1, 0 },
         text = 'Total playtime: 249 h 14 min',
         align = 'left',
     }, status, 'muted')
-    make(ui, 'TextLabel', {
+    make(ui, 'Label', {
         position = { 0.5, 0, 0, 0 },
         size = { 0.5, -12, 1, 0 },
         text = 'No account selected',

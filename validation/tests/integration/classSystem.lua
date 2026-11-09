@@ -44,7 +44,7 @@ return function(test)
     world:updateNodes(1)
     test:check(first.rotation[2] == 90, 'Node processing can be disabled explicitly')
     local ui = UI.new(100, 100, resources)
-    local Label = Nodes.define('TestStatusLabel', 'TextLabel')
+    local Label = Nodes.define('TestStatusLabel', 'Label')
 
     function Label:drawSelf(owner)
         self.drawCount = (self.drawCount or 0) + 1

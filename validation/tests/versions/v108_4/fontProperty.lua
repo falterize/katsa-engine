@@ -1,4 +1,4 @@
--- TextLabel/TextBox font property: resolved like image paths, extension optional.
+-- Label/TextBox font property: resolved like image paths, extension optional.
 local UI = require('source.engine.ui')
 
 local Module = {}
@@ -22,7 +22,7 @@ function Module.run(self)
         'a missing font falls back to the default font'
     )
     local label = ui:create(
-        'TextLabel',
+        'Label',
         { x = 0, y = 0, width = 200, height = 40, text = 'Hello', font = 'shared://fonts/test-font' },
         ui.content
     )
@@ -30,7 +30,7 @@ function Module.run(self)
     require('source.engine.ui.drawing.text').prepare(ui, label)
     self:check(
         label._textLines ~= nil and label.font == 'shared://fonts/test-font',
-        'TextLabel keeps the font property'
+        'Label keeps the font property'
     )
     label.font = ''
     ui:layout()

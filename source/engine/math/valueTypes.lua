@@ -78,7 +78,7 @@ function Types.kind(node, key)
     if
         key == 'tileSize'
         and (
-            node:isA('ImageLabel')
+            node:isA('ImageRect')
             or node:isA('Button')
             or node:isA('Decal3D')
             or node:isA('SurfaceAppearance3D')

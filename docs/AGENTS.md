@@ -172,7 +172,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 - Image-bearing nodes use `components/image.lua` (sampler, XML and UV policy). XML mode: `xml` visible only in XML mode, `atlasFrame` editable in Atlas/XML; XML owns grid/filter and fills `image` automatically but `image` stays an editable override. Rebind only when the manifest path or resource owner changes; rendering never creates playback or resets `atlasFrame`.
 - Invalid XML or incompatible atlas art reports diagnostics and renders a checker; it never asserts from a render callback.
 - Models: glTF accessors are read with typed arrays; preserve glTF transforms; cache successful and failed loads. Skin limits: `docs/guides/rendering/skinLimits.md`.
-- Fonts: `font` property on TextLabel/Button/TextBox resolves like image paths (`shared://fonts/test-font`); a missing file warns and falls back.
+- Fonts: `font` property on Label/Button/TextBox resolves like image paths (`shared://fonts/test-font`); a missing file warns and falls back.
 - Save directory: `Katsa/katsa-engine` (older builds used a nested folder; leave old files alone).
 
 ## 15. Sandbox pitfalls

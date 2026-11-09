@@ -4,7 +4,7 @@
 
 Folder is organizational. Node3D, Mesh3D, Camera3D, Attachment3D, World3D and BillboardUI are spatial classes. Transform inheritance passes through folders. Attachment3D can inherit rotation while excluding a visual parent's scale. Camera3D selection and visibility-layer masks are World3D-owned.
 
-ScreenUI is a UI service root containing CanvasGroup nodes. Widgets must explicitly name a parent with a CanvasGroup or BillboardUI ancestor belonging to the same UI service. BillboardUI widgets are direct children of the BillboardUI, with no duplicate ScreenUI subtree. Frame, TextLabel, Button, ImageLabel, Slider, ScrollFrame and UICorner remain available.
+ScreenUI is a UI service root containing CanvasGroup nodes. Widgets must explicitly name a parent with a CanvasGroup or BillboardUI ancestor belonging to the same UI service. BillboardUI widgets are direct children of the BillboardUI, with no duplicate ScreenUI subtree. Frame, Label, Button, ImageRect, Slider, ScrollFrame and UICorner remain available.
 
 CanvasGroup stores zIndex, transparency, enabled and visible. zIndex sorts siblings consistently for drawing and picking. Partial group transparency renders the subtree to an intermediate canvas and applies opacity once to the composition; overlapping children do not become cumulatively brighter. Disabled, hidden or fully transparent groups block descendant interaction. Text/UI font density follows display scale.
 

@@ -45,7 +45,7 @@ function Interface.create(state)
         state:setDebug(debug)
         toggle.text = 'IK debug: ' .. (debug and 'on' or 'off')
     end
-    ui:create('TextLabel', {
+    ui:create('Label', {
         position = { 0, 8, 0, 128 },
         size = { 1, -16, 0, 60 },
         text = 'Both hands follow the red ball; elbows bend toward the yellow hints. '

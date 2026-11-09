@@ -168,7 +168,7 @@ check(
 )
 local group = ui:canvasGroup({ width = 240, height = 120, transparency = 0.5 })
 local child = ui:create(
-    'TextLabel',
+    'Label',
     { width = 180, height = 50, text = 'Group', color = { 1, 1, 1, 1 } },
     group
 )

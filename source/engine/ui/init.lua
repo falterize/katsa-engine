@@ -164,11 +164,11 @@ function UI:container(settings, parent)
 end
 
 function UI:text(settings, parent)
-    return self:create('TextLabel', settings, parent)
+    return self:create('Label', settings, parent)
 end
 
 function UI:image(settings, parent)
-    return self:create('ImageLabel', settings, parent)
+    return self:create('ImageRect', settings, parent)
 end
 
 function UI:button(settings, parent)

@@ -45,7 +45,7 @@ local descriptions = {
         },
         density = { min = 0.00001 },
     },
-    ImageLabel = {
+    ImageRect = {
         tileSize = { visibleWhen = { key = 'fitMode', equals = 'Tile' } },
         tileOffset = { visibleWhen = { key = 'fitMode', equals = 'Tile' } },
     },

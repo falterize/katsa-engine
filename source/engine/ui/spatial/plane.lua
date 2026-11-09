@@ -76,7 +76,7 @@ local function surface(ui, node)
     local hasVisual, pixelated = false, false
     for _, child in ipairs(node.children) do
         hasVisual = hasVisual or child:isA('UINode')
-        pixelated = pixelated or child:isA('ImageLabel') and child.pixelate == true
+        pixelated = pixelated or child:isA('ImageRect') and child.pixelate == true
     end
     if not hasVisual or node.size[1] <= 0 or node.size[2] <= 0 then
         return

@@ -50,7 +50,7 @@ for the full conversion table and explicit panel/anchor shift composition.
 ## Color and opacity
 
 - backgroundColor/backgroundTransparency control the element fill.
-- imageColor/imageTransparency control ImageLabel content independently.
+- imageColor/imageTransparency control ImageRect content independently.
 - textColor/textTransparency control text independently.
 
 New colors are normalized RGB triples; transparency is 0..1 (1 is invisible).
@@ -78,7 +78,7 @@ markup is literal; malformed supported nesting raises a clear error. Labels are
 limited to 64 KiB of markup and 32 nested levels. No code is evaluated.
 
 ```lua
-ui:create('TextLabel', {
+ui:create('Label', {
     size = { 1, 0, 0, 80 },
     textScaled = true,
     richText = true,

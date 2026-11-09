@@ -1,6 +1,6 @@
 local Node = require('../../nodes')
 
-local Class = Node.define('ImageLabel', 'Frame')
+local Class = Node.define('ImageRect', 'Frame')
 require('../../components.image').describe(Class)
 
 function Class.initialize(self)

@@ -47,7 +47,7 @@ function Module.run(self)
     local ui = world:create('World2D', { width = 800, height = 600 })
     local group = ui:create('CanvasGroup', { name = 'Group', size = { 1, 0, 1, 0 } }, ui.content)
     local panel = world:create('Frame', { name = 'Panel', size = { 0, 100, 0, 50 } }, group)
-    world:create('TextLabel', { name = 'Title', text = 'Hello' }, panel)
+    world:create('Label', { name = 'Title', text = 'Hello' }, panel)
     local panelCopy = panel:clone({ Name = 'PanelCopy' })
     self:check(
         panelCopy.parent == group

@@ -1,6 +1,6 @@
 # TextBox
 
-TextBox is a reusable TextLabel-derived input node. The collection runtime and
+TextBox is a reusable Label-derived input node. The collection runtime and
 standalone scene Host route keyboard/text events to its focused instance and
 suspend gameplay movement while typing. Workspace and popup fields use this node.
 

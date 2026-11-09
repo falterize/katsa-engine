@@ -10,7 +10,7 @@ function Module.run(self)
     local plain = ui:create('Button', { name = 'Plain', text = 'a', textColor = { 1, 0, 0 } }, panel)
     local primary = ui:create('Button', { name = 'Primary', text = 'b' }, panel)
     primary:addTag('primary')
-    local search = ui:create('TextLabel', { name = 'Search', text = 'c' }, panel)
+    local search = ui:create('Label', { name = 'Search', text = 'c' }, panel)
 
     local styler = UIStyler.new(ui)
     styler:defineTheme('dark', { text = { 0.9, 0.9, 0.9 }, accent = { 0.2, 0.4, 0.9 }, corner = 6 })

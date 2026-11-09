@@ -1,7 +1,7 @@
 local unpack = require('../../math.array').unpack
 local Node = require('../../nodes')
 
-local Class = Node.define('Button', 'TextLabel')
+local Class = Node.define('Button', 'Label')
 Class.interactive = true
 require('../../components.image').describe(Class)
 

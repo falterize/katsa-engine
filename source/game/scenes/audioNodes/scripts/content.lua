@@ -70,7 +70,7 @@ function Demo.new(scene)
             55,
         },
     }, self.emitter)
-    local label = board.ui:create('TextLabel', {
+    local label = board.ui:create('Label', {
         position = { 0, 0, 0, 0 },
         size = { 0, 210, 0, 55 },
         text = 'NODE AUDIO',

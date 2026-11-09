@@ -81,7 +81,7 @@ rates, looping and atlas properties; `scripts/animation/player.lua` creates play
 from the sprite's manifest.
 `systems/animation.lua`
 updates the reusable `engine/animation/flipbook.lua` module using World2D time.
-The ImageLabel declares `imageMode = 'XML'` and `xml = 'scene://animations/player.xml'`.
+The ImageRect declares `imageMode = 'XML'` and `xml = 'scene://animations/player.xml'`.
 The manifest configures the image, atlas grid and nearest filtering automatically.
 Only frame changes invalidate its pixel cache; nearest filtering preserves the pixel grid.
 
@@ -122,7 +122,7 @@ checkpoint does not replay it.
 
 ## Visual hierarchy and opacity
 
-Use `World2D -> Node2D (optional group) -> Body2D -> Collider2D -> ImageLabel/Frame`.
+Use `World2D -> Node2D (optional group) -> Body2D -> Collider2D -> ImageRect/Frame`.
 Alternatively attach a visual directly to Body2D or Node2D. A collider is geometry,
 not a drawable material; native shapes appear only in the physics debug overlay.
 The examples now explicitly author their collider and visual children.

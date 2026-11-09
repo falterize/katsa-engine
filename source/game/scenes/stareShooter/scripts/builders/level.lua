@@ -60,7 +60,7 @@ function Level.create(scene)
         onTop = false,
         maxDistance = 4000,
     })
-    board.ui:create('ImageLabel', {
+    board.ui:create('ImageRect', {
         name = 'Sprite',
         size = { 1, 0, 1, 0 },
         image = 'scene://textures/worldSprite.png',

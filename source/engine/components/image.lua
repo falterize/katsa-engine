@@ -167,7 +167,7 @@ function Image.describe(class)
     }
     schema.imageMode = { options = { 'Decal', 'Texture', 'Tiles', 'Atlas', 'XML' } }
     schema.xml = { visibleWhen = { key = 'imageMode', equals = 'XML' } }
-    if class.name == 'ImageLabel' or class.name == 'Button' then
+    if class.name == 'ImageRect' or class.name == 'Button' then
         schema.image = {
             get = function(node)
                 return node.image or ''

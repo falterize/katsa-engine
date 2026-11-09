@@ -29,7 +29,7 @@ function Content.create(scene)
         name = 'PlayerCollider2D',
         size = { 24, 32 },
     }, state.player)
-    state.sprite = ui:create('ImageLabel', {
+    state.sprite = ui:create('ImageRect', {
         name = 'PlayerSprite8x8',
         imageMode = 'XML',
         xml = 'scene://animations/player.xml',

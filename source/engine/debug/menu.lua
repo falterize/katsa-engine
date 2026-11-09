@@ -26,7 +26,7 @@ function Debug.new(scene)
         backgroundColor = { 0.035, 0.075, 0.12 },
         backgroundTransparency = 1 - 1,
     }, overlay)
-    local heading = ui:create('TextLabel', {
+    local heading = ui:create('Label', {
         position = { 0, 20, 0, 15 },
         size = { 0, 570, 0, 46 },
 
@@ -220,7 +220,7 @@ function Debug.new(scene)
     }
 
     local function slider(label, value, min, max, callback, getter)
-        local text = ui:create('TextLabel', {
+        local text = ui:create('Label', {
             position = { 0, 20, 0, y },
             size = { 0, 265, 0, 44 },
             text = string.format('%s %.2f', label, value),
@@ -455,7 +455,7 @@ function Debug.new(scene)
         end)
         inspector._debugInspector = true
     else
-        local unavailable = ui:create('TextLabel', {
+        local unavailable = ui:create('Label', {
             position = { 0, 20, 0, y },
             size = { 0, 700, 0, 75 },
 

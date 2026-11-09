@@ -90,7 +90,7 @@ function Playground.create(state)
             { -30, -30 },
         },
     }, custom)
-    ui:create('ImageLabel', {
+    ui:create('ImageRect', {
         name = 'PolygonVisual',
         image = 'scene://textures/polygon.png',
         size = { 1, 0, 1, 0 },
@@ -106,7 +106,7 @@ function Playground.create(state)
         collisionLevel = 'Detailed',
         imageResolution = 128,
     }, image)
-    ui:create('ImageLabel', {
+    ui:create('ImageRect', {
         name = 'ImageVisual',
         image = 'scene://textures/colliderMask.png',
         size = { 1, 0, 1, 0 },

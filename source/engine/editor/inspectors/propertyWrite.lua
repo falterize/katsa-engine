@@ -233,7 +233,7 @@ function PropertyWrite.install(Properties)
         end
         if
             target.isA
-            and target:isA('TextLabel')
+            and target:isA('Label')
             and (key == 'text' and target.richText or key == 'richText' and value == true)
         then
             local ok, err = pcall(
