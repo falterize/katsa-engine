@@ -60,6 +60,7 @@ function Module.run(self)
     lab = hosted.demo
     scene:step(0.05)
     scene:step(0.05)
+    self:check(hosted.world.activeCamera == nil, 'tileMapLab has no active 3D camera (no 3D render or joystick)')
     local map = lab.map
     local x0, y0 = map._x, map._y
     local cell = 32

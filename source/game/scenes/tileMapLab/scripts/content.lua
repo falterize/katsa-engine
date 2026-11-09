@@ -9,6 +9,8 @@ function Content.new(scene)
     scene.ui.layoutMode = 'Viewport'
     scene.showStats = false
     scene.camera.position = { 0, 30, -80 }
+    -- A screen-space scene: no active 3D camera means no 3D render, joystick or UP/DOWN buttons.
+    scene.world.root.currentCamera = nil
     scene.world.environment.debug.gizmos.enabled = false
     return setmetatable({ scene = scene, brush = 'ground', overlay = {}, snapshot = nil }, Content)
 end
