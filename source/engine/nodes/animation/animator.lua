@@ -12,6 +12,7 @@ function Animator.initialize(self)
     self.poseRate = self.poseRate or 60
     self.tracks = {}
     self.modifiers = {}
+    self.controllers = {}
     self.debugEnabled = self.debugEnabled == true
     self.rootMotionEnabled = self.rootMotionEnabled == true
 end
@@ -34,6 +35,39 @@ function Animator.mount(world, properties, parent)
     return node
 end
 
+local DEFAULT_MAP = {} -- cache key of a retarget without a boneMap
+
+-- A clip of this model plays as it is; a clip of another skeleton is retargeted onto this one
+-- by bone name (see animation/retarget.lua) and cached per clip and bone map.
+function Animator:fitClip(clip, settings)
+    local model = self.model
+    local foreign = false
+    for _, channel in ipairs(clip.channels) do
+        assert(channel.node, 'Animation channel has no target node')
+        if model.nodes[channel.node.index] ~= channel.node then
+            foreign = true
+            break
+        end
+    end
+    if not foreign then
+        return clip
+    end
+    local options = settings and settings.retarget or {}
+    assert(options ~= false, 'Animation ' .. tostring(clip.name) .. ' targets another skeleton')
+    self._retargeted = self._retargeted or setmetatable({}, { __mode = 'k' })
+    local byClip = self._retargeted[clip] or {}
+    self._retargeted[clip] = byClip
+    local key = options.boneMap or DEFAULT_MAP
+    local cached = byClip[key]
+    if not cached then
+        local result, message = require('source.engine.animation.retarget').clip(clip, model, options)
+        assert(result, 'Animation ' .. tostring(clip.name) .. ': ' .. tostring(message))
+        cached = result
+        byClip[key] = cached
+    end
+    return cached
+end
+
 function Animator:load(identifier, settings)
     local clip
     if type(identifier) == 'number' then
@@ -49,17 +83,12 @@ function Animator:load(identifier, settings)
         clip = identifier
     end
     assert(clip, 'Unknown animation: ' .. tostring(identifier))
+    clip = self:fitClip(clip, settings)
     clip._lookup = clip._lookup or {}
     for _, channel in ipairs(clip.channels) do
         assert(channel.node, 'Animation channel has no target node')
         clip._lookup[channel.node] = clip._lookup[channel.node] or {}
         clip._lookup[channel.node][channel.target] = channel
-        assert(
-            channel.node and self.model.nodes[channel.node.index] == channel.node,
-            'Animation '
-                .. clip.name
-                .. ' targets another skeleton. Retarget or import it for this model.'
-        )
     end
     local properties = {
         name = clip.name,
@@ -71,7 +100,9 @@ function Animator:load(identifier, settings)
         fadeOut = clip.fadeOut or 0,
     }
     for key, value in pairs(settings or {}) do
-        properties[key] = value
+        if key ~= 'retarget' then
+            properties[key] = value
+        end
     end
     local track = self._world:create('AnimationTrack', properties, self._trackParent or self)
     self.tracks[#self.tracks + 1] = track
@@ -148,8 +179,34 @@ function Animator:removeModifier(modifier)
     return false
 end
 
+-- Controllers (see animation/tree) run before the tracks advance, so the weights and speeds they
+-- set apply to the same pose evaluation. A controller needs update(dt).
+function Animator:addController(controller)
+    assert(type(controller.update) == 'function', 'A controller needs an update(dt) method')
+    for _, existing in ipairs(self.controllers) do
+        if existing == controller then
+            return controller
+        end
+    end
+    self.controllers[#self.controllers + 1] = controller
+    return controller
+end
+
+function Animator:removeController(controller)
+    for i, existing in ipairs(self.controllers) do
+        if existing == controller then
+            table.remove(self.controllers, i)
+            return true
+        end
+    end
+    return false
+end
+
 function Animator:update(dt)
     local model = self.model
+    for _, controller in ipairs(self.controllers) do
+        controller:update(dt)
+    end
     for _, track in ipairs(self.tracks) do
         track:advance(dt)
     end

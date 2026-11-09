@@ -39,6 +39,7 @@ require('./animation.ramp')
 require('./animation.bone3D')
 require('./animation.animationTrack')
 require('./animation.animator')
+require('./animation.animationTree')
 require('./render.shader3D')
 
 return Node

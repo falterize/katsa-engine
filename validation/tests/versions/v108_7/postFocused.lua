@@ -1,4 +1,4 @@
--- Only the post-processing checks (a quick run of --test-v108.7.post).
+-- Only the post-processing and animation tree checks (a quick run of --test-v108.7.post).
 local Previous = require('validation.tests.versions.v107.physics2D')
 local Tests = setmetatable({}, { __index = Previous })
 Tests.__index = Tests
@@ -15,7 +15,8 @@ function Tests:draw()
     end
     self.done = true
     require('validation.tests.versions.v108_7.postProcessing').run(self)
-    print('PASSED ' .. self.count .. ' post-processing checks')
+    require('validation.tests.versions.v108_7.animationTree').run(self)
+    print('PASSED ' .. self.count .. ' post-processing and animation tree checks')
     katsa.event.quit()
 end
 

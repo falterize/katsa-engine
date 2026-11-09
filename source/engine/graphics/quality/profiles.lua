@@ -1,5 +1,6 @@
 -- Quality profiles trade GPU/CPU cost for fidelity without removing any feature:
--- a profile only changes numeric settings of Environment.rendering and Environment.shadows.
+-- a profile only changes numeric settings of Environment.rendering, Environment.shadows and the
+-- sample counts of the post-processing effects.
 local Profiles = {}
 
 Profiles.names = { 'Low', 'Medium', 'High' }
@@ -8,6 +9,7 @@ Profiles.names = { 'Low', 'Medium', 'High' }
 local definitions = {
     Low = {
         render = { renderDensity = 0.75, msaa = 0 },
+        post = { ssaoQuality = 'Low', dofQuality = 'Low', glowLevels = 4 },
         shadows = {
             resolutionCap = 512,
             distance = 120,
@@ -18,6 +20,7 @@ local definitions = {
     },
     Medium = {
         render = { renderDensity = 1, msaa = 0 },
+        post = { ssaoQuality = 'Medium', dofQuality = 'Medium', glowLevels = 5 },
         shadows = {
             resolutionCap = 1024,
             distance = 180,
@@ -28,6 +31,7 @@ local definitions = {
     },
     High = {
         render = { renderDensity = 1, msaa = 2 },
+        post = { ssaoQuality = 'High', dofQuality = 'High', glowLevels = 6 },
         shadows = {
             resolutionCap = 4096,
             distance = 240,
@@ -53,6 +57,10 @@ function Profiles.apply(environment, name)
     for key, value in pairs(profile.render) do
         environment.render[key] = value
     end
+    -- Post-processing keeps every effect and only lowers its sample counts.
+    environment.ssao.quality = profile.post.ssaoQuality
+    environment.depthOfField.quality = profile.post.dofQuality
+    environment.glow.levels = profile.post.glowLevels
     local shadows = environment.shadows
     for key, value in pairs(profile.shadows) do
         if key == 'resolutionCap' then
