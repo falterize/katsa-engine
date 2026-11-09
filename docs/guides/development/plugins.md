@@ -28,7 +28,7 @@ project: they are packed into `.katsa` archives and fused executables with every
 
 | Plugin | What it adds |
 | --- | --- |
-| `pathfinding` | A* on grids, graphs and multi-floor maps, the `NavMap` node, a debug view |
+| `pathfinding` | A* on grids, graphs and multi-floor maps, a baked NavMesh with obstacles and crowds, the `NavMap`, `NavAgent3D` and `NavObstacle3D` nodes, a debug view |
 | `uiStyler` | UI style sheets and `assets/styles` files, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
 | `ik` | `InverseKinematics3D` node with TwoBone, CCD, FABRIK, Jacobian, Spline, LookAt and FK types (`docs/guides/animation/ik.md`) |
 
@@ -183,6 +183,31 @@ colliders with `navFloor` 0 or 1, floor *n* sees colliders with `navFloor = n`; 
 blocks headroom. A collider with `navWalkable = false` is ignored completely. Floors are linked
 where their free cells meet at a similar height (the foot of a ramp). Keep slabs at least as
 thick as `agentHeight` or tag them so rays from the upper floor do not start inside them.
+
+### NavMesh, obstacles and crowds
+
+Every `bake()` also builds a **NavMesh**: the walkable cells merged into convex polygons (tiles of
+`meshTile` cells, polygons stay flatter than `meshFlatness`), one layer per floor, joined at ramps.
+
+```lua
+local path = map:findSmoothPath({ x, y, z }, { tx, ty, tz })   -- corners only, funnel-straightened
+local obstacle = map:addObstacle({ kind = 'circle', x = 10, z = 4, radius = 2 })
+map:moveObstacle(obstacle, 12, 4)
+map:removeObstacle(obstacle)
+```
+
+Obstacles cover cells (grown by `agentRadius`) and mark their tiles dirty; the next query rebuilds
+only those tiles, so doors and crates cost little. `findPath` keeps using the cell grid.
+
+Nodes (the scene needs the plugin; both look for the first baked NavMap when `navMap` is empty):
+
+- `NavObstacle3D`: `shape` Circle/Box, `radius`, `size`, `height`, `blocking`. It follows the node's transform.
+- `NavAgent3D`: `speed`, `acceleration`, `radius`, `stoppingDistance`, `avoidance`, `autoMove`, `targetNode`,
+  methods `setTarget({x, y, z})`, `clearTarget()`, `getVelocity()`, signals `Arrived` and `PathFailed`.
+  Agents of one map form a crowd: velocity-sampling avoidance, repaths when the mesh changes (at most four
+  agents per frame), movement clamped to the mesh. Put agents under an untransformed parent when `autoMove` is on.
+
+Tests: `v108_7/navMesh.lua` (core) and `v108_7/navNodes.lua` (real bake, obstacle, agent).
 
 ### Pathfinding debug view
 

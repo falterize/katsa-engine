@@ -12,6 +12,11 @@
 -- `navFloor` setting the plugin adds to Body3D (0/1 = the first floor). A floor only sees colliders
 -- of its own number, while every collider blocks headroom. Floors are joined wherever their
 -- surfaces meet, such as the foot of a ramp.
+--
+-- The bake also builds a NavMesh: the walkable cells merged into convex polygons. `findSmoothPath`
+-- returns straight routes over it (corners only), `addObstacle` blocks shapes at run time (the
+-- affected tiles are rebuilt on the next query) and `getCrowd` steers NavAgent3D nodes around
+-- each other. `findPath` keeps using the cell grid.
 local Pathfinding = require('../../pathfinding')
 
 local NavMap = {
@@ -26,10 +31,13 @@ local NavMap = {
         agentHeight = { default = 1.5, min = 0, hint = 'Free height a cell needs above its surface.' },
         maxSlope = { default = 35, min = 0, max = 89, hint = 'Steepest walkable surface, in degrees.' },
         maxStep = { default = 0.6, min = 0, hint = 'Largest height jump between neighboring cells before the edge counts as a cliff; also joins floors.' },
+        meshTile = { default = 16, min = 4, max = 64, integer = true, hint = 'Cells per side of one NavMesh tile. Obstacles rebuild whole tiles, so smaller tiles update faster but make more polygons.' },
+        meshFlatness = { default = 0.3, min = 0, hint = 'Largest height difference inside one NavMesh polygon. Lower values follow slopes more closely with more polygons.' },
     },
 }
 
 local RECENT = 8
+local NavMesh = Pathfinding.NavMesh
 
 function NavMap.initialize(self)
     self.map, self.baked, self.recent = nil, false, {}
@@ -192,6 +200,7 @@ function NavMap:bake(physics)
         return heightLayers[level][(cz - 1) * width + cx]
     end)
     -- Join floors whose free cells touch at a similar height (a ramp meeting the ground).
+    local joins = {}
     local reach = rings + 1
     for level = 1, self.floors - 1 do
         for other = level + 1, self.floors do
@@ -212,6 +221,7 @@ function NavMap:bake(physics)
                                         local ax, az = map.levels[level]:toWorld(cx, cz)
                                         local bx, bz = map.levels[other]:toWorld(nx, nz)
                                         map:link(level, ax, az, other, bx, bz)
+                                        joins[#joins + 1] = { level, ax, az, other, bx, bz }
                                     end
                                 end
                             end
@@ -222,6 +232,22 @@ function NavMap:bake(physics)
         end
     end
     self.map, self.baked = map, true
+    self.mesh = NavMesh.new({
+        width = width,
+        depth = depth,
+        cellSize = cellSize,
+        origin = { originX, originZ },
+        levels = self.floors,
+        tile = self.meshTile,
+        flatness = self.meshFlatness,
+        agentRadius = self.agentRadius,
+    })
+    self.mesh:load(blockedLayers, heightLayers)
+    for _, link in ipairs(joins) do
+        self.mesh:link(link[1], link[2], link[3], link[4], link[5], link[6])
+    end
+    self.mesh:refresh()
+    self.crowd = nil
     register(self)
     local free = 0
     for level = 1, self.floors do
@@ -243,6 +269,53 @@ function NavMap:findPath(from, to, options)
         self.recent[RECENT + 1] = nil
     end
     return path, reason
+end
+
+function NavMap:getMesh()
+    return self.mesh
+end
+
+-- Straight route over the NavMesh between { x, y, z } points: the corners of the shortest path,
+-- not a cell chain. Returns a Path (`levels`, `revision`) or nil, reason. Obstacles added with
+-- addObstacle are already respected.
+function NavMap:findSmoothPath(from, to, options)
+    assert(self.baked, 'NavMap is not baked: call bake() first')
+    local path, reason = self.mesh:findPath(from, to, options)
+    if path then
+        table.insert(self.recent, 1, path)
+        self.recent[RECENT + 1] = nil
+    end
+    return path, reason
+end
+
+-- Blocks a shape until removed: { kind = 'circle', x, z, radius } or
+-- { kind = 'box', x, z, halfX, halfZ, angle }, optionally { y, height } to affect one floor.
+-- Returns a handle for moveObstacle / removeObstacle. NavObstacle3D nodes do this for you.
+function NavMap:addObstacle(shape)
+    assert(self.baked, 'NavMap is not baked: call bake() first')
+    return self.mesh:addObstacle(shape)
+end
+
+function NavMap:moveObstacle(handle, x, z, change)
+    self.mesh:moveObstacle(handle, x, z, change)
+end
+
+function NavMap:removeObstacle(handle)
+    self.mesh:removeObstacle(handle)
+end
+
+-- The crowd that steers this map's NavAgent3D nodes (created on first use).
+function NavMap:getCrowd()
+    assert(self.baked, 'NavMap is not baked: call bake() first')
+    self.crowd = self.crowd or NavMesh.Crowd.new(self.mesh)
+    return self.crowd
+end
+
+-- Runs the crowd every frame once something uses it.
+function NavMap:update(dt)
+    if self.crowd then
+        self.crowd:update(dt)
+    end
 end
 
 function NavMap:levelAt(x, y, z, tolerance)

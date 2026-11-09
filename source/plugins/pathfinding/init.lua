@@ -6,11 +6,13 @@
 --   local path = grid:findPath(x, y, targetX, targetY)
 --   local dx, dy = path:direction(x, y, nil, 8)   -- steer an agent toward the next point
 --
+-- NavMesh = baked polygon mesh with straight paths, dynamic obstacles and crowds (navmesh/).
 -- Layered = several floors joined by portals (ramps), with 3D routes; see layered.lua.
 return {
     Grid = require('source.plugins.pathfinding.grid'),
     Graph = require('source.plugins.pathfinding.graph'),
     Layered = require('source.plugins.pathfinding.layered'),
+    NavMesh = require('source.plugins.pathfinding.navmesh'),
     Path = require('source.plugins.pathfinding.path'),
     Debug = require('source.plugins.pathfinding.debug'),
     AStar = require('source.plugins.pathfinding.astar'),

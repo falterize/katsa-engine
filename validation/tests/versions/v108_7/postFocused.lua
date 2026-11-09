@@ -17,6 +17,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_7.postProcessing').run(self)
     require('validation.tests.versions.v108_7.animationTree').run(self)
     require('validation.tests.versions.v108_7.navMesh').run(self)
+    require('validation.tests.versions.v108_7.navNodes').run(self)
     print('PASSED ' .. self.count .. ' post-processing and animation tree checks')
     katsa.event.quit()
 end
