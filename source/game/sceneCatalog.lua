@@ -26,6 +26,8 @@ local Catalog = {
         { id = 'shadows', path = 'source/game/scenes/shadows' },
         { id = 'modelLab', path = 'source/game/scenes/modelLab' },
         { id = 'ikLab', path = 'source/game/scenes/ikLab' },
+        { id = 'animationTreeLab', path = 'source/game/scenes/animationTreeLab' },
+        { id = 'navMeshLab', path = 'source/game/scenes/navMeshLab' },
         { id = 'ribbonLab', path = 'source/game/scenes/ribbonLab' },
         { id = 'actorLab', path = 'source/game/scenes/actorLab' },
         { id = 'shapeKeysLab', path = 'source/game/scenes/shapeKeysLab' },
