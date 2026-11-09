@@ -231,8 +231,14 @@ differently. Anything not set uses a default (every area costs 1, `jump` 2, othe
 `agent.action` and emits `LinkReached(link)`. Your script does the action (a jump arc, a climb, opening a door) with
 `agent:placeAt(x, y, z)` and ends it with `agent:finishLink()` (the agent continues from the far end) or
 `agent:cancelLink()` (a new route is found). `agent:getLinkEnd()` gives the landing point. This keeps *when* and *how*
-to jump in the scene: `navMeshLab` generates its jump links in `scripts/behaviors/jumpLinks.lua` (low obstacles
-between two walkable cells), waits for a free landing spot and draws the arc in `behaviors/actions.lua`.
+to jump in the scene. `navMeshLab` shows the physical version: its walkers are dynamic capsule bodies driven by the
+engine's `Character` controller (`behaviors/physicalWalker.lua`). The NavAgent3D (`autoMove = false`, a child of
+the body at foot level) supplies the wanted velocity; at `LinkReached` the script waits for a free landing spot,
+computes the ballistic launch velocity that clears the obstacle and lands on `agent:getLinkEnd()`, throws the body
+with `Character:launch(vx, vy, vz)` and calls `finishLink()` once it has really landed near the target (or
+`cancelLink()` when it missed). The jump links themselves are found by `behaviors/jumpLinks.lua` (a step too high
+to walk, a pit or an obstacle between two walkable cells). Keep `maxStep` at what the body can climb, since the
+mesh must not offer routes the physics cannot walk.
 
 The debug view draws action links under `drawLinks` (orange arcs for `jump`, magenta for `climb`, cyan for other
 actions, grey while disabled; hand-made links show their action's name) and agent routes under `drawPaths`.

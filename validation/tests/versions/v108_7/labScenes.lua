@@ -28,9 +28,10 @@ function Module.run(self)
     lab = hosted.demo
     local starts = {}
     for index, agent in ipairs(lab.agents) do
-        starts[index] = { agent.position[1], agent.position[3] }
+        local at = agent:getWorldPosition()
+        starts[index] = { at[1], at[3] }
     end
-    local visual = lab.agents[1].children[1]
+    local visual = lab.walkers[1].body
     local startVisual = visual:getWorldPosition()
     local fastest = 0
     for _ = 1, 60 do
@@ -42,8 +43,8 @@ function Module.run(self)
     end
     local walking = 0
     for index, agent in ipairs(lab.agents) do
-        local moved = math.abs(agent.position[1] - starts[index][1])
-            + math.abs(agent.position[3] - starts[index][2])
+        local at = agent:getWorldPosition()
+        local moved = math.abs(at[1] - starts[index][1]) + math.abs(at[3] - starts[index][2])
         walking = walking + (moved > 1 and 1 or 0)
     end
     local after = visual:getWorldPosition()
@@ -66,9 +67,12 @@ function Module.run(self)
         for _ = 1, 500 do
             scene:step(0.05)
             for _, agent in ipairs(lab.agents) do
-                peak[agent.name] = math.max(peak[agent.name], agent.position[2])
+                peak[agent.name] = math.max(peak[agent.name], agent:getWorldPosition()[2])
             end
         end
+        local landed, missed = 0, 0
+        for _, w in ipairs(lab.walkers) do landed, missed = landed + (w.landed or 0), missed + (w.missed or 0) end
+        self:check(landed == 0 or missed <= landed / 3, 'Planned jumps land near their target (' .. landed .. ' landings, ' .. missed .. ' missed)')
         local curbJumps = 0
         for index = 1, lab.crowdCount do
             curbJumps = curbJumps + jumps[lab.agents[index].name]

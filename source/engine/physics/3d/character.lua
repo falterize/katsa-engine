@@ -9,6 +9,8 @@ local function approach(current, target, delta)
         or math.max(target, current - delta)
 end
 
+-- `camera` gives the look yaw that moves are relative to; without one (AI characters) moves are
+-- in world axes.
 function Character.new(body, camera, settings)
     settings = settings or {}
     body:set({
@@ -52,6 +54,13 @@ function Character:jump()
     self.jumpRemaining = self.jumpBuffer
 end
 
+-- Throws the character with a world velocity (a planned jump to a landing spot). Until it lands
+-- the horizontal velocity is left to physics instead of being steered toward the move input.
+-- `airborne` is true from the launch until the character stands on ground again.
+function Character:launch(vx, vy, vz)
+    self.launchVelocity = { vx, vy, vz }
+end
+
 function Character:step()
     local body, dt = self.body, self.body.physics.fixedDelta
     body:sync()
@@ -76,14 +85,28 @@ function Character:step()
         end
     end
     self.sinceGrounded = self.grounded and 0 or self.sinceGrounded + dt
-    local yaw = math.rad(self.camera:getLookRotation()[2])
+    local yaw = self.camera and math.rad(self.camera:getLookRotation()[2]) or 0
     local length = math.max(1, math.sqrt(self.moveX ^ 2 + self.moveZ ^ 2))
     local x, z = self.moveX / length, self.moveZ / length
     local targetX = (x * math.cos(yaw) + z * math.sin(yaw)) * self.speed
     local targetZ = (z * math.cos(yaw) - x * math.sin(yaw)) * self.speed
     local acceleration = (self.grounded and self.acceleration or self.airAcceleration) * dt
-    v[1], v[3] = approach(v[1], targetX, acceleration), approach(v[3], targetZ, acceleration)
-    if self.jumpRemaining > 0 and self.sinceGrounded <= self.coyoteTime then
+    if self.launchVelocity then
+        local launch = self.launchVelocity
+        v[1], v[2], v[3] = launch[1], launch[2], launch[3]
+        self.launchVelocity, self.airborne, self.flight = nil, true, 0
+        self.grounded, self.sinceGrounded = false, math.huge
+    elseif self.airborne then
+        -- Landed: grounded again after a short flight (the launch frame itself is still grounded).
+        self.flight = self.flight + dt
+        if self.grounded and self.flight > 0.1 and v[2] <= 0.5 then
+            self.airborne = false
+        end
+    end
+    if not self.airborne then
+        v[1], v[3] = approach(v[1], targetX, acceleration), approach(v[3], targetZ, acceleration)
+    end
+    if not self.airborne and self.jumpRemaining > 0 and self.sinceGrounded <= self.coyoteTime then
         v[2], self.jumpRemaining, self.sinceGrounded = self.jumpSpeed, 0, math.huge
         self.grounded = false
     end
