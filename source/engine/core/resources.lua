@@ -195,6 +195,28 @@ function Resources:imageVariant(name, pixel)
     return image
 end
 
+-- Hot reload: replaces the pixels of every loaded copy of an image file (one per sampler filter).
+-- `path` is the file path as the store keys it. Returns how many textures changed, or false when
+-- the file now has another size and the textures must be created again.
+function Resources:reloadImage(path)
+    local prefix = 'image:' .. path .. '|'
+    local data
+    local count = 0
+    for id, entry in pairs(self.store.entries) do
+        if id:sub(1, #prefix) == prefix then
+            data = data or katsa.image.newImageData(path)
+            local image = entry.value
+            local w, h = image:getDimensions()
+            if data:getWidth() ~= w or data:getHeight() ~= h or data:getFormat() ~= 'rgba8' then
+                return false
+            end
+            image:replacePixels(data)
+            count = count + 1
+        end
+    end
+    return count
+end
+
 function Resources:isMissingImage(name)
     if name == nil or name == '' or name == missingImage then
         return true

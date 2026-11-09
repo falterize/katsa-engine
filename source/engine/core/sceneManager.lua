@@ -13,7 +13,7 @@ function Manager.new(options)
     local resources = require('source.engine.core.resources').new(options.manifest)
     local journal = require('source.engine.debug.journal').new()
     resources.store.journal = journal
-    return setmetatable({
+    local self = setmetatable({
         stack = {},
         focused = true,
         frameDelta = 0,
@@ -25,6 +25,11 @@ function Manager.new(options)
         data = Data.new(),
         audio = Audio.new({ clock = clock, resources = resources:scope() }),
     }, Manager)
+    -- Development aid (see debug/hotReload.lua); `options.hotReload` carries its settings.
+    if options.hotReload then
+        self.hotReload = require('source.engine.debug.hotReload').new(self, options.hotReload)
+    end
+    return self
 end
 
 local function dispose(scene)
@@ -169,6 +174,9 @@ function Manager:runsInBackground()
 end
 
 function Manager:update(dt, realDt)
+    if self.hotReload and not self._busy then
+        self.hotReload:update(realDt or dt)
+    end
     if self.drawFinishedAt then
         self.frameGapMilliseconds = (katsa.timer.getTime() - self.drawFinishedAt) * 1000
     end

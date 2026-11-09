@@ -70,6 +70,7 @@ local groups = {
     },
     Label = {
         'text',
+        'textKey',
         'fontSize',
         'textColor',
         'textTransparency',
@@ -80,6 +81,14 @@ local groups = {
         'align',
         'verticalAlign',
         'padding',
+    },
+    TileMap = {
+        'tileSet',
+        'mapFile',
+        'cellSize',
+        'pixelate',
+        'imageColor',
+        'imageTransparency',
     },
     ImageRect = {
         'image',

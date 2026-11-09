@@ -1,8 +1,10 @@
 local Level = {}
 
+local TILE = 20 -- on-screen size of one tile (the tileset art is 16 px)
+
 function Level.create(state)
     local ui = state.scene.ui
-    local function box(name, x, y, w, h, color, trigger)
+    local function box(name, x, y, w, h, color, trigger, tiles)
         local body = ui:create('Body2D', {
             name = name,
             position = { x, y },
@@ -10,6 +12,18 @@ function Level.create(state)
             isTrigger = trigger == true,
         })
         local collider = ui:create('Collider2D', { name = 'Collider', size = { w, h } }, body)
+        if tiles then
+            -- Ground platforms are tile maps: the cells are filled with one autotile terrain so
+            -- the grass and the edges follow the shape of the platform.
+            local map = ui:create('TileMap', {
+                name = 'Tiles',
+                tileSet = 'shared://tilesets/platformer.lua',
+                cellSize = { TILE, TILE },
+                size = { 1, 0, 1, 0 },
+            }, collider)
+            map:fillTerrain(0, 0, math.ceil(w / TILE) - 1, math.ceil(h / TILE) - 1, 'ground', nil, ui)
+            return body, map
+        end
         local visual = ui:create('Frame', {
             name = 'Visual',
             size = { 1, 0, 1, 0 },
@@ -37,7 +51,9 @@ function Level.create(state)
             platform[2],
             platform[3],
             platform[4],
-            { 0.18, 0.32, 0.4 }
+            { 0.18, 0.32, 0.4 },
+            false,
+            true
         )
         state.platforms[#state.platforms + 1] = body
     end

@@ -8,6 +8,9 @@ function Drawing.install(UI)
     end
 
     function UI:drawText(n)
+        if n.textKey and n.textKey ~= '' then
+            n.text = require('source.engine.localization').get():resolve(n)
+        end
         if not n.text then
             return
         end
