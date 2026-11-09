@@ -46,10 +46,11 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     highp vec3 dy=abs(py1.z-p.z)<abs(p.z-py0.z) ? py1-p : p-py0;
     highp vec3 n=normalize(cross(dy,dx));
     if(n.z>0.0) n=-n; // face the camera (view space looks down +z)
-    // Depth changes by this much from one pixel to the next on this surface. Far, grazing floors
-    // change fast, and a normal estimated from them wobbles; without this term the wobble showed
-    // up as bands. The bias grows with that change and with distance.
-    highp float slopeBias=max(abs(dx.z),abs(dy.z))*2.0+p.z*0.004;
+    // Depth changes by this much from one pixel to the next on this surface. On a far, grazing
+    // floor that is several world units per pixel, so a tap that lands a pixel or two away would
+    // read the floor itself as an occluder (this drew bands). Every tap tolerates the surface
+    // slope times its pixel distance from the centre.
+    highp float slope=max(abs(dx.z),abs(dy.z));
     highp float angle=noise(screen)*6.2831853;
     highp float occlusion=0.0;
     for(int i=0;i<24;i++) {
@@ -66,7 +67,8 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         if(quv.x<0.||quv.x>1.||quv.y<0.||quv.y>1.) continue;
         highp float sceneZ=viewDepth(quv);
         highp float range=smoothstep(0.0,1.0,radius/max(abs(z-sceneZ),1e-4));
-        occlusion+=(sceneZ<=q.z-bias-slopeBias ? 1.0 : 0.0)*range;
+        highp float tolerance=bias+slope*(1.0+length((quv-uv)*depthSize))+q.z*0.004;
+        occlusion+=(sceneZ<=q.z-tolerance ? 1.0 : 0.0)*range;
     }
     return vec4(vec3(1.0-occlusion/float(sampleCount)),1.0);
 }
