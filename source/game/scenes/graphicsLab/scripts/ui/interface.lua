@@ -9,7 +9,7 @@ function Interface.create(self)
         name = 'MaximumGraphicsControls',
         position = { 0, 12, 0, 112 },
         size = { 0, 280, 0.66, -124 },
-        length = 420,
+        length = 470,
         visible = false,
         backgroundColor = Theme.panel,
     }, ui.content)
@@ -53,6 +53,7 @@ function Interface.create(self)
     local effects = {
         { 'Glow', function(e) return e.glow end },
         { 'SSAO', function(e) return e.ssao end },
+        { 'Volumetric fog', function(e) return e.volumetricFog end },
         { 'Depth of field', function(e) return e.depthOfField end },
         { 'Adjustments', function(e) return e.adjustments end },
         { 'Vignette', function(e) return e.vignette end },

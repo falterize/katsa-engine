@@ -49,9 +49,12 @@ function Tests:draw()
         -- KATSA_POST="glow,ssao,dof,adjust,vignette,fxaa": switch effects on for the capture.
         local e = scene.world.environment
         for name in os.getenv('KATSA_POST'):gmatch('[^,]+') do
-            local section = ({ glow = 'glow', ssao = 'ssao', dof = 'depthOfField', adjust = 'adjustments', vignette = 'vignette' })[name]
+            local section = ({ glow = 'glow', ssao = 'ssao', dof = 'depthOfField', adjust = 'adjustments', vignette = 'vignette', vfog = 'volumetricFog' })[name]
             if section then
                 e[section].enabled = true
+                if name == 'vfog' then
+                    e.volumetricFog.density, e.volumetricFog.maxDistance = 0.012, 90
+                end
             elseif name == 'fxaa' then
                 e.render.screenSpaceAA = 'FXAA'
             end

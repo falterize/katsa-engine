@@ -1,0 +1,90 @@
+// Volumetric fog: marches each pixel's view ray up to the scene depth, thinning the light by
+// the fog it crosses and adding sunlight scattered toward the camera (shadowed by the sun's
+// cascaded shadow map, which gives light shafts). Writes scatter colour in rgb and the light
+// that still passes through in alpha; the apply shader composites it over the scene.
+uniform highp Image depthTexture;
+uniform highp vec2 viewSize;
+uniform highp float focal;
+uniform highp float pixelsPerUnit;
+uniform highp vec2 depthRange;
+uniform bool orthographic;
+uniform highp vec3 cameraPosition;
+uniform highp vec3 cameraRight;
+uniform highp vec3 cameraUp;
+uniform highp vec3 cameraForward;
+uniform highp float density;
+uniform highp float heightFalloff;
+uniform highp float baseHeight;
+uniform highp vec3 fogColor;
+uniform highp float anisotropy;
+uniform highp float ambientEnergy;
+uniform highp float maxDistance;
+uniform highp float skyAffect;
+uniform int stepCount;
+uniform bool sunEnabled;
+uniform highp vec3 sunToward;     // unit vector from the scene toward the sun
+uniform highp vec3 sunRadiance;   // sun colour times brightness
+uniform int sunIndex;             // slot of the sun in the shadow tables (-1: no shadows)
+
+highp vec3 worldPosition;
+// @include assets/shaders/engine/shadowSampling.glsl
+
+highp float viewDepth(highp vec2 uv) {
+    highp float d=Texel(depthTexture,uv).r*2.0-1.0;
+    if(orthographic) return (d-depthRange.y)/depthRange.x;
+    return depthRange.y/(d-depthRange.x);
+}
+highp float noise(highp vec2 p) {
+    return fract(52.9829189*fract(dot(p,vec2(.06711056,.00583715))));
+}
+highp float henyeyGreenstein(highp float cosine) {
+    highp float g=anisotropy;
+    return (1.0-g*g)/(12.566371*pow(max(1.0+g*g-2.0*g*cosine,1e-4),1.5));
+}
+
+vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
+    highp vec2 centered=vec2(uv.x-.5,.5-uv.y)*viewSize;
+    highp vec3 viewRay;     // view-space direction with z = 1 (perspective) or the fixed axis
+    highp vec3 origin=cameraPosition;
+    highp vec3 direction;
+    highp float length;
+    highp float rawDepth=Texel(depthTexture,uv).r;
+    bool sky=rawDepth>=.99999;
+    if(orthographic) {
+        direction=cameraForward;
+        origin=cameraPosition+cameraRight*(centered.x/pixelsPerUnit)+cameraUp*(centered.y/pixelsPerUnit);
+        length=sky ? maxDistance : viewDepth(uv);
+    } else {
+        highp vec3 v=vec3(centered/focal,1.0);
+        direction=normalize(cameraRight*v.x+cameraUp*v.y+cameraForward*v.z);
+        length=sky ? maxDistance : viewDepth(uv)*sqrt(dot(v,v));
+    }
+    length=min(length,maxDistance);
+    highp float weight=sky ? skyAffect : 1.0;
+    highp float stepLength=length/float(stepCount);
+    highp float offset=noise(screen);
+    highp float phase=sunEnabled ? henyeyGreenstein(dot(direction,sunToward)) : 0.0;
+    highp float transmittance=1.0;
+    highp vec3 scatter=vec3(0.0);
+    for(int i=0;i<64;i++) {
+        if(i>=stepCount) break;
+        highp float t=(float(i)+offset)*stepLength;
+        worldPosition=origin+direction*t;
+        highp float dens=density*(heightFalloff>0.0 ?
+            exp(-heightFalloff*max(0.0,worldPosition.y-baseHeight)) : 1.0);
+        highp float extinction=dens*stepLength;
+        highp vec3 light=fogColor*ambientEnergy;
+        if(sunEnabled) {
+            highp float visibility=1.0;
+            if(sunIndex>=0) visibility=directionalVisibility(sunIndex,vec3(0.0,1.0,0.0),sunToward);
+            light+=fogColor*sunRadiance*visibility*phase;
+        }
+        highp float absorbed=1.0-exp(-extinction);
+        scatter+=transmittance*absorbed*light;
+        transmittance*=1.0-absorbed;
+        if(transmittance<.01) break;
+    }
+    transmittance=mix(1.0,transmittance,weight);
+    scatter*=weight;
+    return vec4(scatter,transmittance);
+}

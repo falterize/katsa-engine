@@ -88,6 +88,62 @@ Settings.sections = {
         },
     },
     {
+        field = 'volumetricFog',
+        title = 'VolumetricFog',
+        defaults = {
+            enabled = false,
+            density = 0.02,
+            heightFalloff = 0.0,
+            baseHeight = 0.0,
+            color = { 200, 214, 235 },
+            anisotropy = 0.6,
+            lightEnergy = 1.0,
+            ambient = 0.3,
+            maxDistance = 120,
+            shadows = true,
+            skyAffect = 0.0,
+            quality = 'Medium',
+        },
+        keys = {
+            'enabled',
+            'density',
+            'heightFalloff',
+            'baseHeight',
+            'color',
+            'anisotropy',
+            'lightEnergy',
+            'ambient',
+            'maxDistance',
+            'shadows',
+            'skyAffect',
+            'quality',
+        },
+        descriptors = {
+            density = { min = 0, max = 2, hint = 'Fog thickness per world unit. 0.02 is light haze, 0.2 is thick.' },
+            heightFalloff = {
+                min = 0,
+                max = 4,
+                hint = 'How fast the fog thins above baseHeight. 0 = the same density at every height.',
+            },
+            baseHeight = { hint = 'World height where the fog has full density.' },
+            color = { hint = 'Colour of the fog itself (0-255).' },
+            anisotropy = {
+                min = -0.95,
+                max = 0.95,
+                hint = 'Light scattering direction: positive brightens fog toward the sun (shafts), 0 is even.',
+            },
+            lightEnergy = { min = 0, max = 16, hint = 'Brightness of the sunlight scattered in the fog.' },
+            ambient = { min = 0, max = 4, hint = 'Fog light that does not depend on the sun.' },
+            maxDistance = { min = 1, hint = 'Fog is computed up to this distance from the camera.' },
+            shadows = { hint = 'Sunlight in the fog respects the shadow map (light shafts).' },
+            skyAffect = { min = 0, max = 1, hint = 'How much of the fog is also drawn over the sky.' },
+            quality = {
+                options = QUALITIES,
+                hint = 'Low: half resolution, 16 steps. Medium: half resolution, 32 steps. High: full resolution, 48 steps.',
+            },
+        },
+    },
+    {
         field = 'depthOfField',
         title = 'DepthOfField',
         defaults = {
@@ -212,7 +268,8 @@ function Settings.install(environment)
         values._settingsKind = section.kind
         for key, default in pairs(section.defaults) do
             if values[key] == nil then
-                values[key] = default
+                -- Colours are tables: each Environment gets its own copy.
+                values[key] = type(default) == 'table' and { unpack(default) } or default
             end
         end
     end

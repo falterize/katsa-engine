@@ -29,6 +29,14 @@ function RenderBindings.install(Renderer)
                 or image:getWidth() * 3 == image:getHeight() * 4,
             'Cross sky must have 4:3 aspect ratio'
         )
+        -- The sky shader builds texture coordinates per cube face (or from atan), so they jump at
+        -- face edges, the panorama seam and the poles. Mipmapping would read those jumps as
+        -- minification and sample the smallest level there: a line of the wrong colour. The sky
+        -- is sampled without mipmaps.
+        if self._skyUnmipped ~= image then
+            image:setMipmapFilter()
+            self._skyUnmipped = image
+        end
         local shader = self.sky
         g.setShader(shader)
         local yaw = math.rad(s.yaw)

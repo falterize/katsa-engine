@@ -106,6 +106,7 @@ local function children(node)
                 { 'Rendering', node.render },
                 { 'Glow', node.glow },
                 { 'SSAO', node.ssao },
+                { 'VolumetricFog', node.volumetricFog },
                 { 'DepthOfField', node.depthOfField },
                 { 'Adjustments', node.adjustments },
                 { 'Vignette', node.vignette },

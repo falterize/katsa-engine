@@ -1,6 +1,6 @@
 -- Post-processing chain between the scene canvas and the screen (or an offscreen result):
 --
---   scene -> SSAO -> depth of field -> glow / adjustments / vignette -> FXAA -> output
+--   scene -> SSAO -> volumetric fog -> depth of field -> glow / adjustments / vignette -> FXAA -> output
 --
 -- Only the enabled passes run; each reads the previous image and writes a pooled canvas, the
 -- last one writes the destination. Everything follows the Environment sections described in
@@ -13,6 +13,7 @@ local Post = {}
 Post.__index = Post
 
 local SSAO = require('./passes.ssao')
+local VolumetricFog = require('./passes.volumetricFog')
 local DOF = require('./passes.dof')
 local Finish = require('./passes.finish')
 local FXAA = require('./passes.fxaa')
@@ -26,6 +27,9 @@ local function plan(environment)
     local list = {}
     if environment.ssao.enabled then
         list[#list + 1] = SSAO
+    end
+    if environment.volumetricFog.enabled then
+        list[#list + 1] = VolumetricFog
     end
     if environment.depthOfField.enabled then
         list[#list + 1] = DOF
@@ -50,8 +54,17 @@ function Post.signature(environment, out)
     for _, section in ipairs(Settings.sections) do
         local values = environment[section.field]
         for _, key in ipairs(section.keys) do
-            count = count + 1
-            out[count] = values[key]
+            local value = values[key]
+            if type(value) == 'table' then
+                -- Colours are edited in place, so their components are the signature.
+                for i = 1, #value do
+                    count = count + 1
+                    out[count] = value[i]
+                end
+            else
+                count = count + 1
+                out[count] = value
+            end
         end
     end
     count = count + 1

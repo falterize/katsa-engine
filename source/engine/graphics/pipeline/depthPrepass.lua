@@ -156,7 +156,7 @@ function Prepass.draw(renderer)
 end
 
 -- Readable depth of the batched opaque scene for post-processing, drawn on demand (the early
--- pass is optional and skips MSAA targets). The canvas is kept for the renderer's lifetime.
+-- pass is optional and skips MSAA targets). Unlike the early pass it covers every opaque group. The canvas is kept for the renderer's lifetime.
 function Prepass.renderSceneDepth(renderer)
     local g = katsa.graphics
     local width, height = renderer.canvas:getPixelDimensions()
@@ -175,7 +175,10 @@ function Prepass.renderSceneDepth(renderer)
     end
     renderer.postDepthStats = renderer.postDepthStats
         or { depthPrepassDrawCalls = 0, depthPrepassTriangles = 0 }
-    drawGroups(renderer, depthShader(renderer), depth, renderer.postDepthStats, true)
+    -- Every opaque group, including custom materials and cutouts: depth-only drawing cannot copy
+    -- their vertex code or alpha test, but a close depth is far better than none (SSAO, DOF and fog
+    -- would treat those objects as sky).
+    drawGroups(renderer, depthShader(renderer), depth, renderer.postDepthStats, false)
     return depth
 end
 
