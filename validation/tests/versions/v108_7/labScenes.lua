@@ -1,8 +1,8 @@
 -- The AnimationTree and NavMesh demo scenes load, run and react to their controls.
 local Module = {}
 
-local function open(name)
-    local window = assert(katsa.window.create(480, 300, { title = name }))
+local function open(name, width, height)
+    local window = assert(katsa.window.create(width or 480, height or 300, { title = name }))
     local scene = window:runScene(name, { fps = 1000 })
     return window, scene, scene:getScene()
 end
@@ -53,6 +53,24 @@ function Module.run(self)
         'Every navMeshLab agent and its visible walker moves toward the moving goal'
     )
     self:check(fastest < 0.01, 'No navMeshLab agent ever exceeds its top speed (no sideways flings)')
+    window:close()
+
+    -- Painting: a click on the TileMap puts the selected brush into the cell under the pointer.
+    window, scene, hosted = open('tileMapLab', 1280, 720)
+    lab = hosted.demo
+    scene:step(0.05)
+    scene:step(0.05)
+    local map = lab.map
+    local x0, y0 = map._x, map._y
+    local cell = 32
+    local cellX, cellY = 3, 3
+    local px, py = x0 + cellX * cell + cell / 2, y0 + cellY * cell + cell / 2
+    lab.brush = 17
+    scene:receive('mousemoved', px, py, 0, 0)
+    scene:receive('mousepressed', px, py, 1, false, 1)
+    scene:receive('mousereleased', px, py, 1, false, 1)
+    scene:step(0.05)
+    self:check(map:getCell(cellX, cellY, 'Ground') == 17, 'A click on the tileMapLab map paints the brush tile')
     window:close()
 end
 

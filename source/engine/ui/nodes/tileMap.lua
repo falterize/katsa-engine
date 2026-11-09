@@ -20,6 +20,9 @@ local Terrain = require('../../tilemap.terrain')
 local Colliders = require('../../tilemap.colliders')
 
 local Class = Node.define('TileMap', 'Frame')
+-- Takes part in hit testing like a Slider; `interactable` (off by default) decides whether it
+-- really receives the pointer, so a plain tile background never blocks clicks.
+Class.interactive = true
 Class.propertySchema = {
     tileSet = {
         hint = 'Lua file that returns the tileset: image, tile grid, solid tiles and terrains.',
