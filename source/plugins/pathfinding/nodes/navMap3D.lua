@@ -1,7 +1,7 @@
--- NavMap: a baked navigation map for a region of the world, the engine's counterpart of Godot's
+-- NavMap3D: a baked navigation map for a region of the world, the engine's counterpart of Godot's
 -- NavigationRegion. The scene needs `plugins = { 'pathfinding' }` in its settings.
 --
---   local map = world:create('NavMap', { position = { 0, 0, 0 }, areaSize = { 120, 120 } })
+--   local map = world:create('NavMap3D', { position = { 0, 0, 0 }, areaSize = { 120, 120 } })
 --   map:bake()                                        -- samples the physics world
 --   local path = map:findPath({ x, y, z }, { x2, y2, z2 })
 --
@@ -17,9 +17,13 @@
 -- returns straight routes over it (corners only), `addObstacle` blocks shapes at run time (the
 -- affected tiles are rebuilt on the next query) and `getCrowd` steers NavAgent3D nodes around
 -- each other. `findPath` keeps using the cell grid.
+--
+-- NavArea3D boxes name regions ('water', 'mud'); NavLink3D nodes (or `addLink`) join places the
+-- mesh cannot walk between with an action ('jump', 'climb', 'door'). Neither carries a weight:
+-- every NavAgent3D weighs areas and actions itself (`areaCosts`, `actionCosts`).
 local Pathfinding = require('../../pathfinding')
 
-local NavMap = {
+local NavMap3D = {
     base = 'Node3D',
     properties = {
         areaSize = { default = { 100, 100 }, hint = 'Width and depth (X, Z) of the baked region, centered on the node.' },
@@ -39,7 +43,7 @@ local NavMap = {
 local RECENT = 8
 local NavMesh = Pathfinding.NavMesh
 
-function NavMap.initialize(self)
+function NavMap3D.initialize(self)
     self.map, self.baked, self.recent = nil, false, {}
 end
 
@@ -57,11 +61,11 @@ local function register(self)
     end
 end
 
-function NavMap:getMap()
+function NavMap3D:getMap()
     return self.map
 end
 
-function NavMap:isBaked()
+function NavMap3D:isBaked()
     return self.baked
 end
 
@@ -124,9 +128,9 @@ end
 
 -- Samples the physics world and builds the navigation layers. Returns the number of walkable
 -- cells. `physics` defaults to the node's world physics.
-function NavMap:bake(physics)
+function NavMap3D:bake(physics)
     physics = physics or (self._world or self._sceneWorld or {}).physics
-    assert(physics, 'NavMap needs a physics world to bake')
+    assert(physics, 'NavMap3D needs a physics world to bake')
     local size, cellSize = self.areaSize, self.cellSize
     local width, depth = math.ceil(size[1] / cellSize), math.ceil(size[2] / cellSize)
     local originX = self.position[1] - width * cellSize / 2
@@ -243,6 +247,7 @@ function NavMap:bake(physics)
         agentRadius = self.agentRadius,
     })
     self.mesh:load(blockedLayers, heightLayers)
+    self:applyAreas()
     for _, link in ipairs(joins) do
         self.mesh:link(link[1], link[2], link[3], link[4], link[5], link[6])
     end
@@ -258,11 +263,78 @@ function NavMap:bake(physics)
     return free
 end
 
+-- Stamps the area name of every enabled NavArea3D of the world into the cells it covers (the
+-- first listed wins where boxes overlap). Called by the bake and whenever an area changes.
+function NavMap3D:applyAreas()
+    local mesh = self.mesh
+    if not mesh then
+        return
+    end
+    local world = self._world or self._sceneWorld
+    local layers = {}
+    for level = 1, mesh.levels do
+        layers[level] = {}
+    end
+    for _, area in ipairs(world and world.navAreas or {}) do
+        if not area.destroyed and area.active and (area.navMap == nil or area.navMap == self) then
+            local matrix = area:getWorldMatrix()
+            local x, y, z = matrix[4], matrix[8], matrix[12]
+            local half = { area.size[1] / 2, area.size[2] / 2, area.size[3] / 2 }
+            local cx0, cz0 = mesh:toCell(x - half[1], z - half[3])
+            local cx1, cz1 = mesh:toCell(x + half[1], z + half[3])
+            for level = 1, mesh.levels do
+                local heights, layer = mesh.heights[level], layers[level]
+                for cz = math.max(1, cz0), math.min(mesh.depth, cz1) do
+                    for cx = math.max(1, cx0), math.min(mesh.width, cx1) do
+                        local index = mesh:index(cx, cz)
+                        local height = heights[index]
+                        if height and layer[index] == nil and math.abs(height - y) <= half[2] then
+                            layer[index] = area.area
+                        end
+                    end
+                end
+            end
+        end
+    end
+    mesh:setAreas(layers)
+end
+
+-- Joins two places with an action; see Mesh:addLink. `options.from` / `options.to` are
+-- { x, y, z } world points (snapped to the nearest walkable cell). Returns the link or nil.
+function NavMap3D:addLink(options)
+    assert(self.baked, 'NavMap3D is not baked: call bake() first')
+    local mesh = self.mesh
+    local from, to = options.from, options.to
+    local a, ax, az = mesh:locate(from[1], from[3], from[2], 3)
+    local b, bx, bz = mesh:locate(to[1], to[3], to[2], 3)
+    if not a or not b then
+        return nil
+    end
+    -- A point on a polygon border belongs to the next cell: pull it inside.
+    ax, az = math.min(ax, a.x1 - 1e-3), math.min(az, a.z1 - 1e-3)
+    bx, bz = math.min(bx, b.x1 - 1e-3), math.min(bz, b.z1 - 1e-3)
+    local copy = {}
+    for key, value in pairs(options) do
+        copy[key] = value
+    end
+    copy.level, copy.toLevel = a.level, b.level
+    copy.ax, copy.az, copy.bx, copy.bz = ax, az, bx, bz
+    return mesh:addLink(copy)
+end
+
+function NavMap3D:removeLink(link)
+    self.mesh:removeLink(link)
+end
+
+function NavMap3D:setLinkEnabled(link, enabled)
+    self.mesh:setLinkEnabled(link, enabled)
+end
+
 -- Route between { x, y, z } points (y = the height of the surface, or of a car above it).
 -- Returns a Path with { x, y, z } points and `levels`, or nil, reason. The last routes are kept
 -- for the debug view.
-function NavMap:findPath(from, to, options)
-    assert(self.baked, 'NavMap is not baked: call bake() first')
+function NavMap3D:findPath(from, to, options)
+    assert(self.baked, 'NavMap3D is not baked: call bake() first')
     local path, reason = self.map:findPath(from[1], from[2], from[3], to[1], to[2], to[3], options)
     if path then
         table.insert(self.recent, 1, path)
@@ -271,15 +343,15 @@ function NavMap:findPath(from, to, options)
     return path, reason
 end
 
-function NavMap:getMesh()
+function NavMap3D:getMesh()
     return self.mesh
 end
 
 -- Straight route over the NavMesh between { x, y, z } points: the corners of the shortest path,
 -- not a cell chain. Returns a Path (`levels`, `revision`) or nil, reason. Obstacles added with
 -- addObstacle are already respected.
-function NavMap:findSmoothPath(from, to, options)
-    assert(self.baked, 'NavMap is not baked: call bake() first')
+function NavMap3D:findSmoothPath(from, to, options)
+    assert(self.baked, 'NavMap3D is not baked: call bake() first')
     local path, reason = self.mesh:findPath(from, to, options)
     if path then
         table.insert(self.recent, 1, path)
@@ -291,35 +363,35 @@ end
 -- Blocks a shape until removed: { kind = 'circle', x, z, radius } or
 -- { kind = 'box', x, z, halfX, halfZ, angle }, optionally { y, height } to affect one floor.
 -- Returns a handle for moveObstacle / removeObstacle. NavObstacle3D nodes do this for you.
-function NavMap:addObstacle(shape)
-    assert(self.baked, 'NavMap is not baked: call bake() first')
+function NavMap3D:addObstacle(shape)
+    assert(self.baked, 'NavMap3D is not baked: call bake() first')
     return self.mesh:addObstacle(shape)
 end
 
-function NavMap:moveObstacle(handle, x, z, change)
+function NavMap3D:moveObstacle(handle, x, z, change)
     self.mesh:moveObstacle(handle, x, z, change)
 end
 
-function NavMap:removeObstacle(handle)
+function NavMap3D:removeObstacle(handle)
     self.mesh:removeObstacle(handle)
 end
 
 -- The crowd that steers this map's NavAgent3D nodes (created on first use).
-function NavMap:getCrowd()
-    assert(self.baked, 'NavMap is not baked: call bake() first')
+function NavMap3D:getCrowd()
+    assert(self.baked, 'NavMap3D is not baked: call bake() first')
     self.crowd = self.crowd or NavMesh.Crowd.new(self.mesh)
     return self.crowd
 end
 
 -- Runs the crowd every frame once something uses it.
-function NavMap:update(dt)
+function NavMap3D:update(dt)
     if self.crowd then
         self.crowd:update(dt)
     end
 end
 
-function NavMap:levelAt(x, y, z, tolerance)
+function NavMap3D:levelAt(x, y, z, tolerance)
     return self.map and self.map:levelAt(x, y, z, tolerance)
 end
 
-return NavMap
+return NavMap3D

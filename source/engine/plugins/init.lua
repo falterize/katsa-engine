@@ -69,7 +69,7 @@ end
 -- A manifest can extend the engine for the scenes that opt in with `plugins = { 'name' }` in
 -- their settings. Nothing is added for scenes that do not list the plugin.
 --
---   nodes = { NavMap = 'source.plugins.pathfinding.nodes.navMap' }
+--   nodes = { NavMap3D = 'source.plugins.pathfinding.nodes.navMap3D' }
 --       Node types, registered in the scene's world exactly like `world:registerNodeType`
 --       (the module returns the definition table).
 --   extend = { Body3D = 'source.plugins.pathfinding.extensions.body3D' }
@@ -82,7 +82,7 @@ end
 --       after the 3D scene each frame.
 
 -- Activates plugins for one world. Safe to call twice with the same names.
--- A manifest names its modules relative to the plugin folder ('./nodes.navMap') or absolutely.
+-- A manifest names its modules relative to the plugin folder ('./nodes.navMap3D') or absolutely.
 local function load(name, path)
     if path:sub(1, 2) == './' then
         path = 'source.plugins.' .. name .. '.' .. path:sub(3)

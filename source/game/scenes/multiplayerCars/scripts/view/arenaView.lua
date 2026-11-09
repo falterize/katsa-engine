@@ -59,7 +59,7 @@ local function garageBoxes()
     local r = g.ramp
     local boxes = {}
     local function box(name, cx, cy, cz, sx, sy, sz, rotation, color, floor)
-        -- floor = the NavMap floor the box is ground of (the deck, curbs and ramp are floor 2)
+        -- floor = the NavMap3D floor the box is ground of (the deck, curbs and ramp are floor 2)
         boxes[#boxes + 1] = { name, { cx, cy, cz }, { sx, sy, sz }, rotation, color, floor }
     end
     local width, depth = g.x1 - g.x0, g.z1 - g.z0

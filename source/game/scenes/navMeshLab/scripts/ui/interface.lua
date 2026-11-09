@@ -8,7 +8,7 @@ function Interface.create(state)
         _viewportAuthored = true,
         name = 'NavControls',
         position = { 0, 12, 0, 112 },
-        size = { 0, 270, 0, 176 },
+        size = { 0, 290, 0, 330 },
         backgroundColor = Theme.panel,
     }, ui.content)
     ui:create('UICorner', { radius = { 0, Theme.corner } }, panel)
@@ -36,9 +36,14 @@ function Interface.create(state)
     end
     ui:create('Label', {
         position = { 0, 8, 0, 88 },
-        size = { 1, -16, 0, 80 },
-        text = 'Blue walkers chase the yellow goal around the walls and each other. '
-            .. 'The red pillar is a NavObstacle3D: the mesh under it is rebuilt as it slides.',
+        size = { 1, -16, 0, 230 },
+        text = 'Blue walkers chase the yellow goal and jump the curbs when that is shorter. '
+            .. 'The red pillar is a NavObstacle3D.\n\n'
+            .. 'Yard (east, weights are set per agent): orange Jumper drops off the platform (jump 0.3); '
+            .. 'yellow Hiker never jumps and takes the stairs or ramp; green Walker avoids the pond '
+            .. '(water 50) while blue Wader wades through (water 1); purple Climber uses the '
+            .. 'NavLink3D ladder (climb 0.5).\n\n'
+            .. 'Orange arcs = jump links, magenta = the ladder.',
         fontSize = 13,
     }, panel)
 end

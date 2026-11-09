@@ -36,6 +36,13 @@ local routes = {
     OrbitNode = 'nodes',
 }
 local descriptions = {
+    NavMap3D = 'Bake the navigation mesh from physics; the debug view shows cells, links and routes.',
+    NavAgent3D = 'Edit areaCosts / actionCosts: weights belong to the agent. LinkReached hands over actions.',
+    NavObstacle3D = 'Blocks a circle or box; the mesh under it is rebuilt as it moves.',
+    NavLink3D = 'Names an action (jump, climb ...) between two places; agents price the action themselves.',
+    NavArea3D = 'Names a region (water, mud); each agent prices it with areaCosts.',
+    InverseKinematics3D = 'Pick the solver type and bones; targets and poles are node references.',
+    UIStyler = 'Edit the theme and style folder; the showcase restyles live.',
     SurfaceAppearance3D = 'Toggle normal, roughness, metalness and emission maps on the imported '
         .. 'cube.',
     Animator = 'Blend procedural states, toggle bone debug, inspect tracks and their masks.',
@@ -72,6 +79,58 @@ function Catalog.names()
     end
     table.sort(result)
     return result
+end
+
+-- Tabs of the catalog window, in order. Plugin nodes live in 'Plugins'.
+Catalog.TABS = { 'All', '3D', '2D', 'UI', 'Physics', 'Animation', 'Audio', 'Other', 'Plugins' }
+
+local function tabOf(name)
+    if name:match('^Sound') or name:find('Audio', 1, true) then
+        return 'Audio'
+    end
+    if name:find('Body', 1, true) or name:find('Collider', 1, true) or name:find('Constraint', 1, true) or name:find('Physics', 1, true) then
+        return 'Physics'
+    end
+    if name:find('Animat', 1, true) or name:find('Bone', 1, true) or name:find('Track', 1, true) or name == 'Ramp' then
+        return 'Animation'
+    end
+    local class = require('source.engine.nodes').classes[name]
+    local types = class and class._types or {}
+    if types.UINode or name:match('^UI') then
+        return 'UI'
+    end
+    if types.Node2D or name:match('2D$') then
+        return '2D'
+    end
+    if types.Node3D or name:match('3D$') then
+        return '3D'
+    end
+    return 'Other'
+end
+
+-- Every catalog entry: { name, tab, zone, plugin }. Plugin nodes come from the manifests of the
+-- plugins in this build and open the plugin's `demoScene`.
+function Catalog.entries()
+    local list = {}
+    for _, name in ipairs(Catalog.names()) do
+        list[#list + 1] = { name = name, tab = tabOf(name), zone = Catalog.zone(name) }
+    end
+    for _, info in ipairs(require('source.engine.plugins').list()) do
+        local names = {}
+        for typeName in pairs(info.nodes or {}) do
+            names[#names + 1] = typeName
+        end
+        table.sort(names)
+        for _, typeName in ipairs(names) do
+            list[#list + 1] = {
+                name = typeName,
+                tab = 'Plugins',
+                zone = info.demoScene or 'nodes',
+                plugin = info.name,
+            }
+        end
+    end
+    return list
 end
 
 function Catalog.zone(name)

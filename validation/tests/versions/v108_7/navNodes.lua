@@ -1,4 +1,4 @@
--- NavMap bakes a NavMesh from physics; NavObstacle3D and NavAgent3D drive it.
+-- NavMap3D bakes a NavMesh from physics; NavObstacle3D and NavAgent3D drive it.
 local Plugins = require('source.engine.plugins')
 local World = require('source.engine.world.world')
 
@@ -11,7 +11,7 @@ function Tests.run(tester)
     world:create('Body3D', { bodyType = 'Static', size = { 40, 1, 40 }, position = { 0, -0.5, 0 } })
     world:create('Body3D', { bodyType = 'Static', size = { 3, 4, 20 }, position = { 0, 2, -15 } })
     world:updateNodes(1 / 60)
-    local map = world:create('NavMap', {
+    local map = world:create('NavMap3D', {
         areaSize = { 40, 40 },
         cellSize = 1,
         agentRadius = 0,
@@ -19,7 +19,7 @@ function Tests.run(tester)
         castBottom = -5,
     })
     local free = map:bake()
-    tester:check(free > 1000 and map:getMesh():polygonCount() > 0, 'NavMap bake builds the NavMesh')
+    tester:check(free > 1000 and map:getMesh():polygonCount() > 0, 'NavMap3D bake builds the NavMesh')
     local from, to = { -10, 0, 0 }, { 10, 0, 0 }
     local straight = map:findSmoothPath(from, to)
     tester:check(straight ~= nil and #straight.points == 2, 'a straight route has only its end points')

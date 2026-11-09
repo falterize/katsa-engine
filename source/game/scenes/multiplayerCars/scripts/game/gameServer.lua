@@ -160,12 +160,12 @@ function GameServer:nextSpawnPoint()
     return point
 end
 
--- The bot's navigation: baked from the physics world by a NavMap node when there is one (so it
+-- The bot's navigation: baked from the physics world by a NavMap3D node when there is one (so it
 -- sees exactly what cars collide with); otherwise built from the arena data.
 function GameServer:buildNav(Pathfinding)
     local world = self.options.world
     if world and world.physics and world.plugins and world.plugins.names.pathfinding then
-        local map = world:create('NavMap', {
+        local map = world:create('NavMap3D', {
             name = 'ArenaNavMap',
             areaSize = { Arena.size, Arena.size },
             cellSize = Arena.cellSize,

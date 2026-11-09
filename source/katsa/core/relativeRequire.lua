@@ -1,6 +1,6 @@
 -- Relative module names: `require('./sibling')` is a module in the caller's folder,
 -- `require('../other.module')` one folder up, `require('../../x')` two up. The rest after the
--- leading `./` / `../` parts is an ordinary dotted name (`./nodes.navMap` is nodes/navMap.lua).
+-- leading `./` / `../` parts is an ordinary dotted name (`./nodes.navMap3D` is nodes/navMap3D.lua).
 -- Moving a folder then keeps every require inside it valid.
 --
 -- The caller is found from its chunk name, so a relative require must not be a tail call:

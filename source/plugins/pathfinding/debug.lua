@@ -1,12 +1,12 @@
 -- Pathfinding debug views, drawn after the 3D scene. This module is the grid view: the cells of
--- every baked NavMap (one color per floor), the links between floors and the routes, shown while
+-- every baked NavMap3D (one color per floor), the links between floors and the routes, shown while
 -- `Environment.debug.pathfinding.enabled` is on; drawCells / drawLinks / drawPaths pick the parts.
 local Debug = {}
 
 local FLOOR_COLORS = { { 0.2, 0.8, 0.4 }, { 0.3, 0.6, 1 }, { 1, 0.7, 0.2 }, { 0.9, 0.4, 0.9 } }
 
 local function eachMap(world, visit)
-    -- NavMaps register themselves (see nodes/navMap.lua), so no tree walk per frame.
+    -- NavMaps register themselves (see nodes/navMap3D.lua), so no tree walk per frame.
     for _, node in ipairs(world.navMaps or {}) do
         if not node.destroyed and node.baked and node.map then
             visit(node)
@@ -266,7 +266,57 @@ function Debug.drawAgents(node, camera)
     end
 end
 
--- Routes reported by games (a server's bot, for example) drawn with the NavMap routes:
+-- Action links of the NavMesh (jump, climb, door ...): an arc from the take-off to the landing,
+-- coloured by action, grey while the link is disabled; links made by hand (NavLink3D) also get
+-- their action's name. One-way links end in an arrowhead.
+local ACTION_COLORS = { jump = { 1, 0.6, 0.15 }, climb = { 0.9, 0.35, 1 } }
+local OTHER_ACTION = { 0.3, 0.9, 1 }
+
+function Debug.drawActionLinks(node, camera, settings)
+    local mesh = node.mesh
+    if not mesh then
+        return
+    end
+    local eye = camera.position or { 0, 0, 0 }
+    local range2 = settings.drawDistance ^ 2
+    local g = katsa.graphics
+    for _, link in ipairs(mesh.links) do
+        local ax, az = link.ax, link.az
+        if (ax - eye[1]) ^ 2 + (az - eye[3]) ^ 2 < range2 then
+            local ay = (mesh:heightAt(link.level, ax, az) or 0) + 0.15
+            local by = (mesh:heightAt(link.toLevel, link.bx, link.bz) or 0) + 0.15
+            local color = link.enabled and (ACTION_COLORS[link.action] or OTHER_ACTION) or { 0.5, 0.5, 0.5 }
+            local lift = math.max(link.arcHeight or 0, 0.2)
+            local previous = { ax, ay, az }
+            for step = 1, 8 do
+                local t = step / 8
+                local here = {
+                    ax + (link.bx - ax) * t,
+                    ay + (by - ay) * t + 4 * lift * t * (1 - t),
+                    az + (link.bz - az) * t,
+                }
+                line(camera, previous, here, color, 0.9)
+                previous = here
+            end
+            if not link.bidirectional then
+                local x, y = camera:project({ link.bx, by + 0.05, link.bz })
+                if x then
+                    g.setColor(color[1], color[2], color[3], 0.9)
+                    g.circle('fill', x, y, 3)
+                end
+            end
+            if not link.auto then
+                local x, y = camera:project({ (ax + link.bx) / 2, (ay + by) / 2 + lift + 0.4, (az + link.bz) / 2 })
+                if x then
+                    g.setColor(color[1], color[2], color[3], 1)
+                    g.print(link.action, x - 12, y - 6)
+                end
+            end
+        end
+    end
+end
+
+-- Routes reported by games (a server's bot, for example) drawn with the NavMap3D routes:
 -- `route = { points = { {x, y, z}, ... }, goal = { x, y, z }, color = { r, g, b } }`, or nil to
 -- remove it. Drawn while `Environment.debug.pathfinding.drawPaths` is on.
 function Debug.setRoute(world, key, route)
@@ -315,6 +365,9 @@ function Debug.draw(world, camera, settings)
     eachMap(world, function(node)
         if grid then
             Debug.drawMap(node.map, camera, settings)
+        end
+        if settings.drawLinks then
+            Debug.drawActionLinks(node, camera, settings)
         end
         if settings.drawPaths ~= false then
             Debug.drawPaths(node, camera)

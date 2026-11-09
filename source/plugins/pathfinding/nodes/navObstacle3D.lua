@@ -1,7 +1,7 @@
--- NavObstacle3D: blocks a circle or box on the NavMesh of a NavMap while it exists and is enabled.
+-- NavObstacle3D: blocks a circle or box on the NavMesh of a NavMap3D while it exists and is enabled.
 -- Routes and crowd agents go around it; the map rebuilds only the tiles it touches. Moving the
 -- node (a door, a crate, a parked car) moves the obstacle. The scene needs `plugins = { 'pathfinding' }`
--- and a baked NavMap.
+-- and a baked NavMap3D.
 --
 --   world:create('NavObstacle3D', { shape = 'Circle', radius = 2, position = { 10, 0, 4 } })
 local Definition = {
@@ -10,8 +10,8 @@ local Definition = {
         navMap = {
             default = nil,
             kind = 'node',
-            nodeClass = 'NavMap',
-            hint = 'NavMap to block. Empty = the first baked NavMap of the world.',
+            nodeClass = 'NavMap3D',
+            hint = 'NavMap3D to block. Empty = the first baked NavMap3D of the world.',
         },
         shape = { default = 'Circle', options = { 'Circle', 'Box' }, hint = 'Footprint on the ground.' },
         radius = { default = 1, min = 0.05, hint = 'Radius of the circle.', visibleWhen = { key = 'shape', equals = 'Circle' } },

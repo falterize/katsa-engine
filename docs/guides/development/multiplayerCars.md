@@ -72,7 +72,7 @@ Tuning lives in `scripts/game/physicsCar.lua` (`gravityScale`, `stiffness`, `dam
 ## The bot and the car park
 
 The bot (`scripts/game/bot.lua`) patrols and chases the nearest reachable human car on a
-`NavMap` baked from the real colliders (see [plugins](plugins.md)); the arena has a two-floor car
+`NavMap3D` baked from the real colliders (see [plugins](plugins.md)); the arena has a two-floor car
 park (deck, curbs, columns and a ramp, tagged `navFloor = 2`). It aims only at waypoints on its
 own floor, slows for sharp turns and on the deck, and re-plans after reversing out of a wall.
 `Environment.debug.pathfinding` (editor or F4 *Pathfinding*) is the only switch: it draws the whole map and the bot route (fed through `Pathfinding.Debug.setRoute`).

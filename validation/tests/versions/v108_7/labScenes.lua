@@ -52,6 +52,36 @@ function Module.run(self)
         lab.map:isBaked() and walking == #lab.agents and visualMoved > 1,
         'Every navMeshLab agent and its visible walker moves toward the moving goal'
     )
+    do
+        -- The scene's own scripts perform the actions: count them per agent and track heights.
+        local peak, jumps, climbs = {}, {}, {}
+        for _, agent in ipairs(lab.agents) do
+            local name = agent.name
+            peak[name], jumps[name], climbs[name] = 0, 0, 0
+            agent:connect('LinkReached', function(link)
+                local counts = link.action == 'jump' and jumps or climbs
+                counts[name] = counts[name] + 1
+            end)
+        end
+        for _ = 1, 500 do
+            scene:step(0.05)
+            for _, agent in ipairs(lab.agents) do
+                peak[agent.name] = math.max(peak[agent.name], agent.position[2])
+            end
+        end
+        local curbJumps = 0
+        for index = 1, lab.crowdCount do
+            curbJumps = curbJumps + jumps[lab.agents[index].name]
+        end
+        self:check(lab.jumpLinks > 20, 'The scene script generates jump links over curbs and platform edges')
+        self:check(curbJumps > 0, 'Crowd agents jump the curbs when that is the shorter way')
+        self:check(jumps.Jumper > 0 and climbs.Jumper == 0, 'The jump-loving agent drops from the platform')
+        self:check(peak.Hiker > 1.9 and jumps.Hiker == 0, 'An agent that forbids jumping reaches the platform by stairs or ramp')
+        self:check(climbs.Climber > 0 and peak.Climber > 1.9, 'The climber uses the NavLink3D ladder to reach the platform')
+        local pond = { lab.map:getMesh():findPath({ 18, 0, 36 }, { 38, 0, 36 }, { areaCosts = { water = 50 } }),
+            lab.map:getMesh():findPath({ 18, 0, 36 }, { 38, 0, 36 }, { areaCosts = { water = 1 } }) }
+        self:check(#pond[1].points > 2 and #pond[2].points == 2, 'Pricing water decides between walking around the pond and wading')
+    end
     self:check(fastest < 0.01, 'No navMeshLab agent ever exceeds its top speed (no sideways flings)')
     window:close()
 
@@ -72,6 +102,26 @@ function Module.run(self)
     scene:receive('mousereleased', px, py, 1, false, 1)
     scene:step(0.05)
     self:check(map:getCell(cellX, cellY, 'Ground') == 17, 'A click on the tileMapLab map paints the brush tile')
+    window:close()
+
+    -- The node catalog lists plugin nodes in their own tab and filters by search text.
+    window, scene, hosted = open('nodeCatalog', 800, 700)
+    scene:step(0.05)
+    local catalog = hosted
+    catalog.tab = 'Plugins'
+    catalog:refill()
+    local link = false
+    for _, entry in ipairs(catalog.entries) do
+        link = link or (entry.name == 'NavLink3D' and entry.tab == 'Plugins' and entry.zone == 'navMeshLab')
+    end
+    self:check(link, 'The node catalog lists NavLink3D under Plugins with its demo scene')
+    catalog.tab, catalog.query = 'All', 'navlink'
+    catalog:refill()
+    self:check(catalog.count.text == '1 nodes', 'The catalog search narrows the list')
+    catalog.query = ''
+    catalog.tab = '2D'
+    catalog:refill()
+    self:check(catalog.count.text ~= '0 nodes', 'The 2D tab lists 2D nodes')
     window:close()
 end
 

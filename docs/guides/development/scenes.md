@@ -330,7 +330,7 @@ editing the requires inside them:
 local Heap = require('./heap')              -- same folder: heap.lua (or heap/init.lua)
 local Path = require('../path')             -- one folder up
 local Grid = require('../../grid.cells')    -- two folders up, then grid/cells.lua
-local Nav = require('./nodes.navMap')       -- subfolder: nodes/navMap.lua
+local Nav = require('./nodes.navMap3D')       -- subfolder: nodes/navMap3D.lua
 ```
 
 - `./` is the folder of the calling file, each `../` goes one folder up; the remainder is an
@@ -339,7 +339,7 @@ local Nav = require('./nodes.navMap')       -- subfolder: nodes/navMap.lua
   scene stays valid wherever it is packed. Engine modules are still required absolutely.
 - Put relative requires at the top of the file. A relative name finds its caller with `debug.getinfo` on every call, so inside functions that run often use the absolute name (`source.…`, or `scene.…` in a scene).
 - The caller is found from its file, so never tail-call it: write `return (require('./part'))`.
-- Plugin manifests use the same form for their modules (`nodes = { NavMap = './nodes.navMap' }`),
+- Plugin manifests use the same form for their modules (`nodes = { NavMap3D = './nodes.navMap3D' }`),
   relative to the plugin folder.
 - Implementation: `source/katsa/core/relativeRequire.lua`, installed over `require` by the host
   boot and by the standalone katsa test runner.

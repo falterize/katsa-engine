@@ -476,9 +476,9 @@ function Tests:draw()
             deck and math.abs(deck.position[2] - g.deckY) < 0.05,
             'the car park deck is solid at its height (' .. tostring(deck and deck.position[2]) .. ')'
         )
-        -- NavMap bakes the same garage from the physics world, with two floors.
+        -- NavMap3D bakes the same garage from the physics world, with two floors.
         local scene = session.scene
-        local map = scene.world:create('NavMap', {
+        local map = scene.world:create('NavMap3D', {
             position = { 0, 0, 0 },
             areaSize = { Arena.size, Arena.size },
             cellSize = 2,
@@ -487,18 +487,18 @@ function Tests:draw()
             castBottom = -2,
         })
         local free = map:bake()
-        self:check(free > 1000, 'NavMap bakes the arena (' .. free .. ' free cells)')
+        self:check(free > 1000, 'NavMap3D bakes the arena (' .. free .. ' free cells)')
         local route = map:findPath({ -5, Arena.ground(-5, -40), -40 }, { -42, g.deckY, -48 })
         local decks = 0
         for index = 1, route and #route.points or 0 do
             decks = decks + (route.levels[index] == 2 and 1 or 0)
         end
-        self:check(route and decks > 0, 'NavMap routes up the ramp to the car park deck')
+        self:check(route and decks > 0, 'NavMap3D routes up the ramp to the car park deck')
         local registered = false
         for _, known in ipairs(scene.world.navMaps or {}) do
             registered = registered or known == map
         end
-        self:check(registered, 'a baked NavMap registers for the debug view')
+        self:check(registered, 'a baked NavMap3D registers for the debug view')
         scene.world.environment.debug.pathfinding.enabled = true
         self:check(select(1, pcall(function() scene.renderer:render() end)) or true, 'pathfinding debug draws')
         scene.world.environment.debug.pathfinding.enabled = false

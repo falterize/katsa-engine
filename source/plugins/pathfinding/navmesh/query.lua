@@ -5,6 +5,21 @@ local Funnel = require('./funnel')
 
 local Query = {}
 
+-- Cost multipliers used when an agent sets none: walking is 1, a jump costs a little more.
+Query.defaultActionCosts = { walk = 1, jump = 2 }
+
+-- Multiplier from a costs table (`false` or math.huge forbid; nil = default), or nil when forbidden.
+local function costOf(costs, key, default)
+    local value = costs and costs[key]
+    if value == nil then
+        value = default
+    end
+    if value == false or value == math.huge then
+        return nil
+    end
+    return value
+end
+
 local function distance(ax, az, bx, bz)
     return math.sqrt((ax - bx) ^ 2 + (az - bz) ^ 2)
 end
@@ -65,17 +80,20 @@ function Query.install(Mesh)
         end
     end
 
-    -- Neighbours of a polygon: { id, mx, mz, portal = edge or nil, via = link or nil }.
+    -- Neighbours of a polygon: visit(id, ax, az, bx, bz, edge, link): leave the polygon at
+    -- (ax, az) and enter the next one at (bx, bz), through a portal edge or an action link.
     local function expand(self, polygon, visit)
         for _, edge in ipairs(polygon.edges) do
-            visit(edge.to, edge.mx, edge.mz, edge, nil)
+            visit(edge.to, edge.mx, edge.mz, edge.mx, edge.mz, edge, nil)
         end
         for _, link in ipairs(polygon.links) do
-            local id = self:isFree(link.level, link.ocx, link.ocz)
+            local id = (not link.link or link.link.enabled)
+                and self:isFree(link.level, link.ocx, link.ocz)
                 and self.owner[link.level][self:index(link.ocx, link.ocz)]
             if id and self:isFree(polygon.level, link.cx, link.cz) then
-                local x, z = self:toWorld(link.cx, link.cz)
-                visit(id, x, z, nil, link)
+                local ax, az = self:toWorld(link.cx, link.cz)
+                local bx, bz = self:toWorld(link.ocx, link.ocz)
+                visit(id, ax, az, bx, bz, nil, link)
             end
         end
     end
@@ -98,8 +116,15 @@ function Query.install(Mesh)
                 local link = step.link
                 local ax, az = self:toWorld(link.cx, link.cz)
                 local bx, bz = self:toWorld(link.ocx, link.ocz)
-                portals[#portals + 1] = { lx = ax, lz = az, rx = ax, rz = az, level = from.level }
-                portals[#portals + 1] = { lx = bx, lz = bz, rx = bx, rz = bz, level = link.level }
+                local action = link.link -- nil for a plain floor join
+                portals[#portals + 1] = {
+                    lx = ax, lz = az, rx = ax, rz = az, level = from.level,
+                    link = action, role = action and 'start' or nil,
+                }
+                portals[#portals + 1] = {
+                    lx = bx, lz = bz, rx = bx, rz = bz, level = link.level,
+                    link = action, role = action and 'end' or nil,
+                }
             end
         end
         portals[#portals + 1] = { lx = gx, lz = gz, rx = gx, rz = gz, level = goalPolygon.level }
@@ -108,9 +133,13 @@ function Query.install(Mesh)
 
     -- Route between two world points. Returns a Path of { x, y, z } corners (`path.levels[i]`
     -- is the floor of corner i; `path.revision` the mesh revision it was found on), or nil and a
-    -- reason. options: limit (expanded polygons, default 4000), snap (cells, default 3).
+    -- reason. options: limit (expanded polygons, default 4000), snap (cells, default 3),
+    -- areaCosts ({ water = 50 }: cost per unit of walking in an area, default 1; false forbids) and
+    -- actionCosts ({ jump = 3 }: cost per unit crossing an action link, jump 2 and others 1 by
+    -- default; false forbids). Costs belong to the walker, so every agent can weigh them its way.
     function Mesh:findPath(from, to, options)
         options = options or {}
+        local areaCosts, actionCosts = options.areaCosts, options.actionCosts
         local start, sx, sz = self:locate(from[1], from[3], from[2], options.snap)
         local goal, gx, gz = self:locate(to[1], to[3], to[2], options.snap)
         if not start or not goal then
@@ -136,13 +165,24 @@ function Query.install(Mesh)
                         return nil, 'search limit reached'
                     end
                     local polygon, here = self.polygons[id], entry[id]
-                    expand(self, polygon, function(next, mx, mz, edge, link)
-                        if not closed[next] and self.polygons[next] then
-                            local g = best[id] + distance(here[1], here[2], mx, mz)
-                            if not best[next] or g < best[next] then
-                                best[next], entry[next] = g, { mx, mz }
-                                came[next] = { from = id, edge = edge, link = link }
-                                open:push(next, g + distance(mx, mz, gx, gz))
+                    -- Walking inside this polygon costs its area multiplier per unit.
+                    local walk = costOf(areaCosts, polygon.area, 1) or 1
+                    expand(self, polygon, function(next, ax, az, bx, bz, edge, link)
+                        local target = self.polygons[next]
+                        if not closed[next] and target then
+                            local pay = costOf(areaCosts, target.area, 1)
+                            local action = link and link.link and link.link.action or 'walk'
+                            local hop = costOf(actionCosts, action, Query.defaultActionCosts[action] or 1)
+                            if pay and hop then
+                                local g = best[id] + distance(here[1], here[2], ax, az) * walk
+                                if link then
+                                    g = g + distance(ax, az, bx, bz) * hop
+                                end
+                                if not best[next] or g < best[next] then
+                                    best[next], entry[next] = g, { bx, bz }
+                                    came[next] = { from = id, edge = edge, link = link }
+                                    open:push(next, g + distance(bx, bz, gx, gz))
+                                end
                             end
                         end
                     end)
@@ -161,14 +201,16 @@ function Query.install(Mesh)
             table.insert(chain, 1, { id = start.id })
         end
         local corners = Funnel.pull(portalsOf(self, chain, sx, sz, start, gx, gz, goal))
-        local points, levels = {}, {}
+        local points, levels, roles, links = {}, {}, {}, {}
         for index, corner in ipairs(corners) do
             local height = self:heightAt(corner.level, corner.x, corner.z) or 0
             points[index] = { corner.x, height, corner.z }
             levels[index] = corner.level
+            roles[index], links[index] = corner.role, corner.link
         end
         local path = Path.new(points)
-        path.levels, path.revision = levels, self.revision
+        -- roles[i] is 'start' / 'end' for the corners of an action link (links[i] is the link).
+        path.levels, path.roles, path.links, path.revision = levels, roles, links, self.revision
         return path
     end
 

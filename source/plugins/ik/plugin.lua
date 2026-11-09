@@ -6,6 +6,7 @@ return {
         .. 'CCD, Jacobian, Spline and FK solvers that run after animation sampling, with influence '
         .. 'blending, debug drawing and the InverseKinematics3D node.',
     requires = {},
+    demoScene = 'ikLab',
     -- Enabled per scene with `plugins = { 'ik' }`: adds the InverseKinematics3D node.
     nodes = { InverseKinematics3D = './nodes.inverseKinematics3D' },
 }

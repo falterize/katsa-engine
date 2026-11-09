@@ -94,7 +94,7 @@ Bone/particle visualization and animation/particle budgets are future system wor
 local profiler = scene.manager.profiler
 profiler:beginLoad('My scene')                    -- optional: starts a fresh list
 loadTerrain();  profiler:markLoad('Terrain')      -- time since the previous mark
-buildNavMap();  profiler:markLoad('NavMap bake')
+buildNavMap();  profiler:markLoad('NavMap3D bake')
 ```
 
 * Scopes with a name of your choice work anywhere, across frames, nested:

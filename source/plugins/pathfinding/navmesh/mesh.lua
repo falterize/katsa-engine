@@ -1,5 +1,5 @@
 -- NavMesh: a tiled, baked navigation mesh of convex polygons (merged rectangles of free cells),
--- one polygon layer per floor. It is built from the same cell samples a NavMap bakes (blocked
+-- one polygon layer per floor. It is built from the same cell samples a NavMap3D bakes (blocked
 -- flags and surface heights per floor) and answers routes as straight, string-pulled paths.
 --
 -- Tiles make it dynamic: obstacles cover cells and mark their tiles dirty; the next query (or
@@ -32,6 +32,8 @@ function Mesh.new(options)
         tilePolygons = {},
         dirty = {},
         cellLinks = {},
+        areas = {},
+        links = {},
         obstacles = {},
         revision = 0,
         nextId = 0,
@@ -41,6 +43,7 @@ function Mesh.new(options)
     for level = 1, self.levels do
         self.blocked[level], self.heights[level] = {}, {}
         self.dynamic[level], self.owner[level], self.cellLinks[level] = {}, {}, {}
+        self.areas[level] = {}
     end
     return self
 end
@@ -83,7 +86,7 @@ end
 
 -- Sets the static layers: blocked[level][index] flags and heights[level][index] surfaces, both
 -- indexed (cz - 1) * width + cx. The tables are copied.
-function Mesh:load(blocked, heights)
+function Mesh:load(blocked, heights, areas)
     for level = 1, self.levels do
         local b, h = {}, {}
         for index, value in pairs(blocked[level] or {}) do
@@ -93,6 +96,10 @@ function Mesh:load(blocked, heights)
             h[index] = value
         end
         self.blocked[level], self.heights[level] = b, h
+        self.areas[level] = {}
+        for index, name in pairs((areas or {})[level] or {}) do
+            self.areas[level][index] = name
+        end
     end
     for key = 1, self.tilesX * self.tilesZ do
         self.dirty[key] = true
@@ -100,24 +107,116 @@ function Mesh:load(blocked, heights)
     self:refresh()
 end
 
+local function addEntry(self, level, cx, cz, other, ocx, ocz, link)
+    local index = self:index(cx, cz)
+    local list = self.cellLinks[level][index] or {}
+    self.cellLinks[level][index] = list
+    for _, existing in ipairs(list) do
+        if
+            existing.link == link
+            and existing.level == other
+            and existing.ocx == ocx
+            and existing.ocz == ocz
+        then
+            return
+        end
+    end
+    list[#list + 1] = { level = other, ocx = ocx, ocz = ocz, link = link }
+    if link then
+        link.cells[#link.cells + 1] = { level, index }
+    end
+    self:markDirty(cx, cz)
+end
+
 -- Joins two floors at a pair of world points (a ramp foot and its top), in both directions.
 function Mesh:link(levelA, ax, az, levelB, bx, bz)
     local acx, acz = self:toCell(ax, az)
     local bcx, bcz = self:toCell(bx, bz)
-    local function add(level, cx, cz, other, ocx, ocz)
-        local index = self:index(cx, cz)
-        local list = self.cellLinks[level][index] or {}
-        self.cellLinks[level][index] = list
-        for _, existing in ipairs(list) do
-            if existing[1] == other and existing[2] == ocx and existing[3] == ocz then
-                return
+    addEntry(self, levelA, acx, acz, levelB, bcx, bcz, nil)
+    addEntry(self, levelB, bcx, bcz, levelA, acx, acz, nil)
+end
+
+-- An action link: agents walk to the cell of (ax, az) on `level`, perform `action` and arrive at
+-- the cell of (bx, bz) on `toLevel` (default the same floor). options: action ('jump'),
+-- bidirectional (true), arcHeight (jump only, default 1), duration (seconds, 0 = from speed),
+-- manual (the scene finishes the action), data (free table for the scene). Returns the link;
+-- routes pay the cost the *agent* assigns to its action (see findPath options).
+function Mesh:addLink(options)
+    local toLevel = options.toLevel or options.level
+    local link = {
+        action = options.action or 'jump',
+        level = options.level,
+        toLevel = toLevel,
+        ax = options.ax,
+        az = options.az,
+        bx = options.bx,
+        bz = options.bz,
+        bidirectional = options.bidirectional ~= false,
+        enabled = options.enabled ~= false,
+        arcHeight = options.arcHeight,
+        duration = options.duration or 0,
+        manual = options.manual == true,
+        auto = options.auto == true,
+        data = options.data,
+        cells = {},
+    }
+    local acx, acz = self:toCell(link.ax, link.az)
+    local bcx, bcz = self:toCell(link.bx, link.bz)
+    addEntry(self, link.level, acx, acz, toLevel, bcx, bcz, link)
+    if link.bidirectional then
+        addEntry(self, toLevel, bcx, bcz, link.level, acx, acz, link)
+    end
+    self.links[#self.links + 1] = link
+    return link
+end
+
+function Mesh:removeLink(link)
+    for _, cell in ipairs(link.cells) do
+        local list = self.cellLinks[cell[1]][cell[2]]
+        for i = #(list or {}), 1, -1 do
+            if list[i].link == link then
+                table.remove(list, i)
             end
         end
-        list[#list + 1] = { other, ocx, ocz }
-        self:markDirty(cx, cz)
+        self:markDirty((cell[2] - 1) % self.width + 1, math.floor((cell[2] - 1) / self.width) + 1)
     end
-    add(levelA, acx, acz, levelB, bcx, bcz)
-    add(levelB, bcx, bcz, levelA, acx, acz)
+    link.cells, link.removed = {}, true
+    for i, other in ipairs(self.links) do
+        if other == link then
+            table.remove(self.links, i)
+            break
+        end
+    end
+end
+
+-- Turns a link on or off. Routes found before are renewed (the revision changes).
+function Mesh:setLinkEnabled(link, enabled)
+    enabled = enabled ~= false
+    if link.enabled ~= enabled then
+        link.enabled = enabled
+        self.revision = self.revision + 1
+    end
+end
+
+-- Sets the area name of cells: areas[level][index] = 'water' (nil = 'ground'). Only the tiles
+-- whose cells changed are rebuilt on the next query.
+function Mesh:setAreas(areas)
+    for level = 1, self.levels do
+        local old, new = self.areas[level], areas[level] or {}
+        local copy = {}
+        for index, name in pairs(new) do
+            copy[index] = name
+            if old[index] ~= name then
+                self:markDirty((index - 1) % self.width + 1, math.floor((index - 1) / self.width) + 1)
+            end
+        end
+        for index in pairs(old) do
+            if copy[index] == nil then
+                self:markDirty((index - 1) % self.width + 1, math.floor((index - 1) / self.width) + 1)
+            end
+        end
+        self.areas[level] = copy
+    end
 end
 
 local function newPolygon(self, level, cx0, cz0, cx1, cz1, tile)
@@ -140,6 +239,7 @@ local function newPolygon(self, level, cx0, cz0, cx1, cz1, tile)
         centerZ = (z0 + z1) / 2,
         edges = {},
         links = {},
+        area = self.areas[level][self:index(cx0, cz0)] or 'ground',
     }
     self.polygons[polygon.id] = polygon
     for cz = cz0, cz1 do
@@ -149,7 +249,8 @@ local function newPolygon(self, level, cx0, cz0, cx1, cz1, tile)
             local list = self.cellLinks[level][index]
             if list then
                 for _, link in ipairs(list) do
-                    polygon.links[#polygon.links + 1] = { cx = cx, cz = cz, level = link[1], ocx = link[2], ocz = link[3] }
+                    polygon.links[#polygon.links + 1] =
+                        { cx = cx, cz = cz, level = link.level, ocx = link.ocx, ocz = link.ocz, link = link.link }
                 end
             end
         end
@@ -177,7 +278,7 @@ local function buildTile(self, key)
     local cx1, cz1 = math.min(self.width, cx0 + self.tile - 1), math.min(self.depth, cz0 + self.tile - 1)
     local list = {}
     for level = 1, self.levels do
-        local heights = self.heights[level]
+        local heights, areas = self.heights[level], self.areas[level]
         Merge.tile(
             cx0,
             cz0,
@@ -192,6 +293,9 @@ local function buildTile(self, key)
             self.flatness,
             function(a, b, c, d)
                 list[#list + 1] = newPolygon(self, level, a, b, c, d, key).id
+            end,
+            function(cx, cz)
+                return areas[self:index(cx, cz)]
             end
         )
     end

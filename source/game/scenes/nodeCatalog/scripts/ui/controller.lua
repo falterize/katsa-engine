@@ -36,29 +36,80 @@ function Scene:load()
             self.manager:switch(require('source.game.runtime.menu').new)
         end,
     }, self.panel)
+    self.entries = Samples.entries()
+    self.tab, self.query = 'All', ''
+    self.search = self.ui:create('TextBox', {
+        name = 'CatalogSearch',
+        position = { 0, 16, 0, 110 },
+        size = { 1, -32, 0, 34 },
+        text = '',
+        placeholderText = 'Search nodes or plugins',
+        fontSize = 16,
+        backgroundColor = { 0.08, 0.16, 0.24 },
+        backgroundTransparency = 0,
+        onTextChanged = function(_, text)
+            self.query = text:lower()
+            self:refill()
+        end,
+    }, self.panel)
+    self.tabButtons = {}
+    local tabs = Samples.TABS
+    for i, name in ipairs(tabs) do
+        self.tabButtons[name] = self.ui:button({
+            position = { (i - 1) / #tabs, (i == 1) and 16 or 2, 0, 152 },
+            size = { 1 / #tabs, (i == 1 or i == #tabs) and -18 or -4, 0, 32 },
+            text = name,
+            fontSize = 13,
+            onPress = function()
+                self.tab = name
+                self:refill()
+            end,
+        }, self.panel)
+    end
+    self.count = self.ui:text({
+        position = { 0, 16, 0, 190 },
+        size = { 1, -32, 0, 22 },
+        text = '',
+        textScaled = true,
+        maxTextSize = 14,
+    }, self.panel)
     self.list = self.ui:scroll(
-        { position = { 0, 16, 0, 112 }, size = { 1, -32, 1, -128 }, length = 0 },
+        { position = { 0, 16, 0, 216 }, size = { 1, -32, 1, -232 }, length = 0 },
         self.panel
     )
-    for i, name in ipairs(Samples.names()) do
-        local kind = name
-        self.ui:button({
-            position = { 0, 0, 0, (i - 1) * 46 },
-            size = { 1, 0, 0, 42 },
-            text = kind .. ' / ' .. Samples.zone(kind),
-            fontSize = 16,
-            align = 'left',
-            onPress = function()
-                self.manager:switch(
-                    require('source.game.runtime.game').new,
-                    Samples.zone(kind),
-                    kind
-                )
-            end,
-        }, self.list)
-        self.list.length = i * 46
-    end
+    self:refill()
     self:resize(katsa.graphics.getDimensions())
+end
+
+-- Rebuilds the list for the current tab and search text.
+function Scene:refill()
+    for _, child in ipairs(self.list:getChildren()) do
+        child:destroy()
+    end
+    local shown = 0
+    for _, entry in ipairs(self.entries) do
+        local plugin = entry.plugin or ''
+        local haystack = (entry.name .. ' ' .. plugin .. ' ' .. entry.tab):lower()
+        if (self.tab == 'All' or entry.tab == self.tab) and haystack:find(self.query, 1, true) then
+            shown = shown + 1
+            local label = entry.name .. ' / ' .. (entry.plugin and ('plugin ' .. entry.plugin .. ' / ') or '') .. entry.zone
+            self.ui:button({
+                position = { 0, 0, 0, (shown - 1) * 46 },
+                size = { 1, 0, 0, 42 },
+                text = label,
+                fontSize = 16,
+                align = 'left',
+                onPress = function()
+                    self.manager:switch(require('source.game.runtime.game').new, entry.zone, entry.name)
+                end,
+            }, self.list)
+        end
+    end
+    self.list.length = shown * 46
+    self.count.text = shown .. ' nodes'
+    for name, button in pairs(self.tabButtons) do
+        button.backgroundColor = name == self.tab and { 0.12, 0.32, 0.5 } or { 0.08, 0.16, 0.25 }
+    end
 end
 
 function Scene:resize(w, h)

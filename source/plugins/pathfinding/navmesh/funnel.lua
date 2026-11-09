@@ -1,7 +1,8 @@
 -- String pulling (the "simple stupid funnel algorithm"): turns a corridor of portals into the
 -- shortest path through it. Portals are { lx, lz, rx, rz, level } where "left" is the
 -- counter-clockwise endpoint in the (x, z) plane; the first and last portals are the start and
--- goal points (left == right).
+-- goal points (left == right). A portal may carry `link` and `role` ('start' or 'end' of an
+-- action link); the corner made from it keeps them.
 local Funnel = {}
 
 -- Twice the signed area of the triangle (a, b, c) in the convention of the algorithm: negative
@@ -39,7 +40,7 @@ function Funnel.pull(portals)
             else
                 -- The right side crossed the left: the left corner becomes the new apex.
                 local corner = portals[leftIndex]
-                points[#points + 1] = { x = leftX, z = leftZ, level = corner.level }
+                points[#points + 1] = { x = leftX, z = leftZ, level = corner.level, link = corner.link, role = corner.role }
                 apexX, apexZ, apexLevel, apexIndex = leftX, leftZ, corner.level, leftIndex
                 leftX, leftZ, rightX, rightZ = apexX, apexZ, apexX, apexZ
                 leftIndex, rightIndex = apexIndex, apexIndex
@@ -56,7 +57,7 @@ function Funnel.pull(portals)
                     leftX, leftZ, leftIndex = portal.lx, portal.lz, i
                 else
                     local corner = portals[rightIndex]
-                    points[#points + 1] = { x = rightX, z = rightZ, level = corner.level }
+                    points[#points + 1] = { x = rightX, z = rightZ, level = corner.level, link = corner.link, role = corner.role }
                     apexX, apexZ, apexLevel, apexIndex = rightX, rightZ, corner.level, rightIndex
                     leftX, leftZ, rightX, rightZ = apexX, apexZ, apexX, apexZ
                     leftIndex, rightIndex = apexIndex, apexIndex

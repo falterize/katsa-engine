@@ -33,7 +33,8 @@ function Tests.run(self)
         end
     end
     self:check(#blocked == 0, 'Joystick blocked in: ' .. table.concat(blocked, ', '))
-    self:check(hidden <= 4, 'Only full-screen tool scenes hide the joystick (' .. hidden .. ')')
+    -- Full-screen tool scenes and scenes without a 3D camera (tileMapLab) hide the joystick.
+    self:check(hidden <= 5, 'Only full-screen tool scenes and 2D scenes hide the joystick (' .. hidden .. ')')
     self:check(checked > 20, 'The touch audit covered the collection scenes')
 end
 
