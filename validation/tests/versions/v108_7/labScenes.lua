@@ -27,12 +27,19 @@ function Module.run(self)
     window, scene, hosted = open('navMeshLab')
     lab = hosted.demo
     local agent = lab.agents[1]
+    local visual = agent.children[1]
     local startX, startZ = agent.position[1], agent.position[3]
+    local startVisual = visual:getWorldPosition()
     for _ = 1, 60 do
         scene:step(0.05)
     end
     local moved = math.abs(agent.position[1] - startX) + math.abs(agent.position[3] - startZ)
-    self:check(lab.map:isBaked() and moved > 1, 'The navMeshLab agents walk toward the goal on the baked NavMesh')
+    local after = visual:getWorldPosition()
+    local visualMoved = math.abs(after[1] - startVisual[1]) + math.abs(after[3] - startVisual[3])
+    self:check(
+        lab.map:isBaked() and moved > 1 and visualMoved > 1,
+        'The navMeshLab agents and their visible walkers move toward the goal on the baked NavMesh'
+    )
     window:close()
 end
 
