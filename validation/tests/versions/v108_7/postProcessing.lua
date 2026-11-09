@@ -90,12 +90,13 @@ function Tests.run(tester)
         range = 90,
         radius = 5,
         brightness = 1,
+        fogClearing = 1,
         castShadow = false,
     })
     world:updateNodes(1 / 60)
-    e.fog.density, e.fog.lightClearing = 0.03, 0
+    e.fog.density, e.fog.lightClearing = 0.03, false
     local murky = shot()
-    e.fog.lightClearing = 1
+    e.fog.lightClearing = true
     local cleared = shot()
     local bx, by = camera:project({ 0, 10, 40 })
     tester:check(
@@ -103,6 +104,13 @@ function Tests.run(tester)
             and math.abs(luma(cleared, math.floor(bx), math.floor(by)) - luma(murky, math.floor(bx), math.floor(by)))
                 > 0.01,
         'A light thins the volumetric fog it shines through'
+    )
+    lamp.fogClearing = 0
+    local own = shot()
+    tester:check(
+        math.abs(luma(own, math.floor(bx), math.floor(by)) - luma(murky, math.floor(bx), math.floor(by)))
+            < 0.005,
+        'A light with fogClearing 0 leaves the fog as thick as with clearing off'
     )
     lamp:destroy()
     e.fog.volumetric = false

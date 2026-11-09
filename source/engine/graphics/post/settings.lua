@@ -99,7 +99,7 @@ Settings.sections = {
             baseHeight = 0.0,
             anisotropy = 0.6,
             lightEnergy = 1.0,
-            lightClearing = 0.5,
+            lightClearing = true,
             ambient = 0.3,
             volumetricDistance = 120,
             shadows = true,
@@ -172,9 +172,7 @@ Settings.sections = {
                 visibleWhen = when('volumetric'),
             },
             lightClearing = {
-                min = 0,
-                max = 1,
-                hint = 'How much point and spot lights burn the fog away where they shine (fog lamps). 0 = the fog stays as thick.',
+                hint = 'Lights burn the fog away where they shine, by each light\'s own fogClearing. Off: the fog stays as thick under every light.',
                 visibleWhen = when('volumetric'),
             },
             ambient = {

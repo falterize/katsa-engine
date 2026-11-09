@@ -288,6 +288,8 @@ function World3D:addLight(l)
     l.color = l.color or { 255, 255, 255 }
     l.range = l.range or 100
     l.radius = l.radius or 5
+    -- How much of the volumetric fog this light burns away where it shines (fog lamps).
+    l.fogClearing = l.fogClearing or 0.5
     require('source.engine.components.brightness').normalize(l, 3, 'Light')
     l.enabled = l.enabled ~= false
     Validate.vector(l.position, 'Light.position', 3)
@@ -295,6 +297,7 @@ function World3D:addLight(l)
     Validate.vector(l.color, 'Light.color', 3)
     Validate.number(l.range, 'Light.range', 0.001)
     Validate.number(l.radius, 'Light.radius', 0)
+    Validate.number(l.fogClearing, 'Light.fogClearing', 0, 1)
     self.lights[#self.lights + 1] = l
     return l
 end

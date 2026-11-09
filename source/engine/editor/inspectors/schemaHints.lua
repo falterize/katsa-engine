@@ -26,6 +26,8 @@ local hints = {
         .. 'culling opportunities without hiding additional objects.',
     occlusionTriangleBudget = 'Maximum actual occluder triangles inspected for coverage per '
         .. 'rendered frame. No GPU depth readback or previous-frame visibility.',
+    fogClearing = 'How much of the scene\'s volumetric fog this light burns away where it shines, like a '
+        .. 'fog lamp (0..1). Needs Fog > volumetric and lightClearing.',
     occlusionMinArea = 'Minimum projected candidate AABB area in logical pixels squared.',
 
     thickness = 'Vector2 Scale/Offset: min(parent width,height)*Scale + pixel Offset. Rendering '

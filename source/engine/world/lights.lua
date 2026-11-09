@@ -32,8 +32,12 @@ local function inputsChanged(self, light, save)
         old[1], old[2], old[3] = p[1], p[2], p[3]
         old[4], old[5], old[6] = d[1], d[2], d[3]
         old[7], old[8], old[9] = c[1], c[2], c[3]
-        old[10], old[11], old[12], old[13], old[14] =
-            light.range, light.radius, light.brightness, light.type, light.rainbow
+        old[10], old[11], old[12], old[13], old[14], old[15] = light.range,
+            light.radius,
+            light.brightness,
+            light.type,
+            light.rainbow,
+            light.fogClearing
         return true
     end
     return not old
@@ -51,6 +55,7 @@ local function inputsChanged(self, light, save)
         or old[12] ~= light.brightness
         or old[13] ~= light.type
         or old[14] ~= light.rainbow
+        or old[15] ~= light.fogClearing
 end
 
 function Lights.new()
@@ -228,7 +233,7 @@ function Lights:update(world, camera, visible, time, dependencies)
                     e[2], e[3], e[4] =
                         l.type == 'DirectionalLight3D' and 2 or l.type == 'PointLight3D' and 1 or 0,
                         l.rainbow and 1 or 0,
-                        0
+                        l.type == 'DirectionalLight3D' and 0 or l.fogClearing
                     -- Commit only after successful preparation so invalid edits retry.
                     inputsChanged(self, l, true)
                 end

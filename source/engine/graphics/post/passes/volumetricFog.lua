@@ -54,7 +54,7 @@ function VolumetricFog.run(ctx, input, destination)
     renderer.lights:send(shader)
     local shadowed = settings.shadows and renderer.shadows.enabled
     Fullscreen.send(shader, 'localEnergy', settings.lightEnergy)
-    Fullscreen.send(shader, 'lightClearing', settings.lightClearing)
+    Fullscreen.send(shader, 'lightClearing', settings.lightClearing == true)
     Fullscreen.send(shader, 'localShadows', shadowed and settings.quality == 'High')
     local slot = sun(renderer)
     Fullscreen.send(shader, 'sunEnabled', slot ~= nil)

@@ -81,6 +81,7 @@ local lightKeys = {
     'radius',
     'brightness',
     'rainbow',
+    'fogClearing',
     'castShadow',
     'priority',
     'forceUpdate',

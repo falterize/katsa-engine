@@ -53,6 +53,7 @@ local groups = {
         'castShadow',
         'shadowGroup',
         'rainbow',
+        'fogClearing',
     },
     UINode = {
         'interactable',
