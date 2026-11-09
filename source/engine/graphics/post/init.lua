@@ -1,6 +1,6 @@
 -- Post-processing chain between the scene canvas and the screen (or an offscreen result):
 --
---   scene -> SSAO -> volumetric fog -> depth of field -> glow / adjustments / vignette -> FXAA -> output
+--   scene -> SSAO -> volumetric fog -> depth of field -> glow / adjustments -> FXAA -> output
 --
 -- Only the enabled passes run; each reads the previous image and writes a pooled canvas, the
 -- last one writes the destination. Everything follows the Environment sections described in
@@ -28,7 +28,7 @@ local function plan(environment)
     if environment.ssao.enabled then
         list[#list + 1] = SSAO
     end
-    if environment.volumetricFog.enabled then
+    if environment.fog.enabled and environment.fog.volumetric then
         list[#list + 1] = VolumetricFog
     end
     if environment.depthOfField.enabled then

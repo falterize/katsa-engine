@@ -60,16 +60,28 @@ function Tests.run(tester)
     end
     local base = shot()
 
-    e.vignette.enabled, e.vignette.intensity, e.vignette.radius = true, 0.9, 0.8
-    e.vignette.softness = 0.3
-    local vignette = shot()
+    -- Glow with nothing above its threshold leaves the image unchanged (Softlight is neutral).
+    e.glow.enabled, e.glow.hdrThreshold, e.glow.intensity = true, 4, 1
+    local quiet = shot()
     tester:check(
-        luma(vignette, 1, 1) < luma(base, 1, 1) * 0.7
-            and math.abs(luma(vignette, WIDTH / 2, HEIGHT / 2) - luma(base, WIDTH / 2, HEIGHT / 2))
-                < 0.02,
-        'Vignette darkens the corners and keeps the centre'
+        math.abs(luma(quiet, WIDTH / 2, HEIGHT / 2) - luma(base, WIDTH / 2, HEIGHT / 2)) < 0.01
+            and math.abs(luma(quiet, WIDTH / 2, HEIGHT - 2) - luma(base, WIDTH / 2, HEIGHT - 2))
+                < 0.01,
+        'Glow without bright pixels does not darken the image'
     )
-    e.vignette.enabled = false
+    e.glow.enabled, e.glow.hdrThreshold, e.glow.intensity = false, 0.8, 0.8
+
+    e.fog.enabled, e.fog.volumetric, e.fog.density, e.fog.volumetricDistance =
+        true, true, 0.01, 300
+    local fogged = shot()
+    tester:check(
+        math.abs(luma(fogged, WIDTH / 2, HEIGHT - 2) - luma(base, WIDTH / 2, HEIGHT - 2)) > 0.02
+            and Schema.visible(e.fog, 'anisotropy'),
+        'Volumetric fog hazes the scene and shows its settings in the Fog section'
+    )
+    e.fog.volumetric = false
+    tester:check(not Schema.visible(e.fog, 'anisotropy'), 'Fog hides volumetric settings when it is off')
+    e.fog.enabled = false
 
     e.adjustments.enabled, e.adjustments.saturation = true, 0
     local grey = shot()
@@ -156,9 +168,12 @@ function Tests.run(tester)
     )
 
     -- A reused frame must pick up a changed setting.
-    local before = luma(shot(), 1, 1)
-    e.vignette.enabled, e.vignette.intensity = true, 1
-    tester:check(luma(shot(), 1, 1) < before * 0.7, 'A setting change rebuilds a reused frame')
+    local before = luma(shot(), WIDTH / 2, HEIGHT / 2)
+    e.adjustments.enabled, e.adjustments.brightness = true, 0.3
+    tester:check(
+        luma(shot(), WIDTH / 2, HEIGHT / 2) < before * 0.7,
+        'A setting change rebuilds a reused frame'
+    )
 
     tester:check(
         Schema.keys(e.glow, {})[5] == 'blendMode'

@@ -25,6 +25,13 @@ uniform bool sunEnabled;
 uniform highp vec3 sunToward;     // unit vector from the scene toward the sun
 uniform highp vec3 sunRadiance;   // sun colour times brightness
 uniform int sunIndex;             // slot of the sun in the shadow tables (-1: no shadows)
+uniform bool localShadows;        // point and spot lights also respect their shadow maps
+uniform highp float localEnergy;
+uniform highp vec4 lightPosition[32];   // xyz position, w range
+uniform highp vec4 lightDirection[32];  // xyz spot axis, w outer cone cosine
+uniform highp vec4 lightColor[32];
+uniform highp vec4 lightExtra[32];      // x inner cone / falloff start, y type (0 spot, 1 point, 2 sun)
+uniform int lightCount;
 
 highp vec3 worldPosition;
 // @include assets/shaders/engine/shadowSampling.glsl
@@ -40,6 +47,29 @@ highp float noise(highp vec2 p) {
 highp float henyeyGreenstein(highp float cosine) {
     highp float g=anisotropy;
     return (1.0-g*g)/(12.566371*pow(max(1.0+g*g-2.0*g*cosine,1e-4),1.5));
+}
+
+// Light of one point or spot light that reaches `worldPosition`, scattered toward the camera.
+highp vec3 localLight(int i,highp vec3 viewDirection) {
+    highp vec3 delta=(lightPosition[i].xyz-worldPosition)/max(lightPosition[i].w,0.001);
+    highp float distanceToLight=length(delta);
+    if(distanceToLight>=1.0) return vec3(0.0);
+    highp vec3 toward=delta/max(distanceToLight,0.00001);
+    highp float cone=1.0;
+    if(lightExtra[i].y<0.5) cone=smoothstep(lightDirection[i].w,lightExtra[i].x,dot(-toward,lightDirection[i].xyz));
+    if(cone<=0.0) return vec3(0.0);
+    highp float falloff=max(0.0,1.0-distanceToLight);
+    if(lightExtra[i].y>0.5) falloff=max(0.0,1.0-max(distanceToLight-lightExtra[i].x,0.0)/max(1.0-lightExtra[i].x,0.001));
+    highp float visibility=1.0;
+    if(localShadows && lightShadowData[i].x>=0.0) {
+        int side=lightShadowData[i].y>0.5 ? pointShadowFace(worldPosition-shadowLightPosition[i].xyz) : 0;
+        if((int(lightShadowData[i].z) & (1<<side))!=0) {
+            visibility=shadowVisibility(int(lightShadowData[i].x)+side,
+                localShadowProjection(i,side,toward),toward,toward,false,0);
+        }
+    }
+    return lightColor[i].rgb*lightColor[i].w*localEnergy*cone*falloff*falloff*visibility
+        *henyeyGreenstein(dot(viewDirection,toward));
 }
 
 vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
@@ -78,6 +108,11 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
             highp float visibility=1.0;
             if(sunIndex>=0) visibility=directionalVisibility(sunIndex,vec3(0.0,1.0,0.0),sunToward);
             light+=fogColor*sunRadiance*visibility*phase;
+        }
+        for(int i=0;i<32;i++) {
+            if(i>=lightCount) break;
+            if(lightExtra[i].y>1.5) continue;
+            light+=fogColor*localLight(i,direction);
         }
         highp float absorbed=1.0-exp(-extinction);
         scatter+=transmittance*absorbed*light;

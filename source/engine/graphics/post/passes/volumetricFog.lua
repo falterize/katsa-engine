@@ -1,6 +1,8 @@
 -- Volumetric fog: a ray march through the fog between the camera and the scene depth, lit by
--- the sun (with its cascaded shadows, so trees and walls cast light shafts) and an ambient term,
--- composited over the image. The march runs at half resolution on Low and Medium.
+-- the sun (with its cascaded shadows, so trees and walls cast light shafts), every point and spot
+-- light (visible as glowing cones and halos) and an ambient term, composited over the image. The
+-- settings are the scene's Fog (`fog.volumetric`). The march runs at half resolution on Low and
+-- Medium; point and spot lights respect their shadow maps on High only.
 local Targets = require('../targets')
 local Fullscreen = require('../fullscreen')
 
@@ -27,7 +29,7 @@ local function sun(renderer)
 end
 
 function VolumetricFog.run(ctx, input, destination)
-    local post, renderer, settings = ctx.post, ctx.renderer, ctx.environment.volumetricFog
+    local post, renderer, settings = ctx.post, ctx.renderer, ctx.environment.fog
     local quality = QUALITY[settings.quality] or QUALITY.Medium
     local target = Targets.get(post.targets, renderer, 'volumetricFog', quality.divisor)
     local shader = Fullscreen.shader(post, renderer, 'volumetricFog')
@@ -46,9 +48,13 @@ function VolumetricFog.run(ctx, input, destination)
     Fullscreen.send(shader, 'fogColor', { c[1] / 255, c[2] / 255, c[3] / 255 })
     Fullscreen.send(shader, 'anisotropy', settings.anisotropy)
     Fullscreen.send(shader, 'ambientEnergy', settings.ambient)
-    Fullscreen.send(shader, 'maxDistance', settings.maxDistance)
+    Fullscreen.send(shader, 'maxDistance', settings.volumetricDistance)
     Fullscreen.send(shader, 'skyAffect', settings.skyAffect)
     Fullscreen.send(shader, 'stepCount', quality.steps)
+    renderer.lights:send(shader)
+    local shadowed = settings.shadows and renderer.shadows.enabled
+    Fullscreen.send(shader, 'localEnergy', settings.lightEnergy)
+    Fullscreen.send(shader, 'localShadows', shadowed and settings.quality == 'High')
     local slot = sun(renderer)
     Fullscreen.send(shader, 'sunEnabled', slot ~= nil)
     if slot then
@@ -57,11 +63,10 @@ function VolumetricFog.run(ctx, input, destination)
         Fullscreen.send(shader, 'sunToward', { -direction[1], -direction[2], -direction[3] })
         local energy = color[4] * settings.lightEnergy
         Fullscreen.send(shader, 'sunRadiance', { color[1] * energy, color[2] * energy, color[3] * energy })
-        local shadowed = settings.shadows and renderer.shadows.enabled
         Fullscreen.send(shader, 'sunIndex', shadowed and slot - 1 or -1)
-        if shadowed then
-            renderer.shadows:send(shader, renderer.world.lighting)
-        end
+    end
+    if shadowed then
+        renderer.shadows:send(shader, renderer.world.lighting)
     end
     Fullscreen.draw(input, shader, target)
 

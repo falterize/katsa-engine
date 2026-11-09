@@ -53,10 +53,9 @@ function Interface.create(self)
     local effects = {
         { 'Glow', function(e) return e.glow end },
         { 'SSAO', function(e) return e.ssao end },
-        { 'Volumetric fog', function(e) return e.volumetricFog end },
         { 'Depth of field', function(e) return e.depthOfField end },
         { 'Adjustments', function(e) return e.adjustments end },
-        { 'Vignette', function(e) return e.vignette end },
+        { 'Volumetric fog', function(e) return e.fog end, 'volumetric' },
     }
     local y = 162
     for _, effect in ipairs(effects) do
@@ -69,7 +68,8 @@ function Interface.create(self)
             radius = Theme.corner,
             onPress = function()
                 local section = effect[2](scene.world.environment)
-                section.enabled = not section.enabled
+                local key = effect[3] or 'enabled'
+                section[key] = not section[key]
             end,
         }, panel)
         y = y + 42

@@ -1,7 +1,7 @@
 -- Post-processing settings, shaped like Godot's Environment: every effect is its own section
--- (Glow, SSAO, DepthOfField, Adjustments) with an `enabled` switch, plus a small Vignette and
--- the screen-space anti-aliasing mode kept beside MSAA in Rendering. Defaults leave every
--- effect off, so a scene looks unchanged until it opts in.
+-- (Glow, SSAO, DepthOfField, Adjustments) with an `enabled` switch, the screen-space
+-- anti-aliasing mode kept beside MSAA in Rendering, and the scene Fog with its volumetric mode.
+-- Defaults leave every effect off, so a scene looks unchanged until it opts in.
 --
 -- Each section also describes its inspector rows (`keys`, `descriptors`) so the schema layer
 -- needs no per-effect knowledge.
@@ -88,58 +88,102 @@ Settings.sections = {
         },
     },
     {
-        field = 'volumetricFog',
-        title = 'VolumetricFog',
+        -- The scene's distance fog. `volumetric` switches it from a per-pixel blend to a ray
+        -- march lit by the sun and every point/spot light; it is not a post effect by itself.
+        field = 'fog',
+        title = 'Fog',
+        chain = false,
         defaults = {
-            enabled = false,
-            density = 0.02,
+            volumetric = false,
             heightFalloff = 0.0,
             baseHeight = 0.0,
-            color = { 200, 214, 235 },
             anisotropy = 0.6,
             lightEnergy = 1.0,
             ambient = 0.3,
-            maxDistance = 120,
+            volumetricDistance = 120,
             shadows = true,
             skyAffect = 0.0,
             quality = 'Medium',
         },
         keys = {
             'enabled',
+            'color',
             'density',
+            'mode',
+            'offset',
+            'endDistance',
+            'maxOpacity',
+            'volumetric',
+            'quality',
+            'volumetricDistance',
             'heightFalloff',
             'baseHeight',
-            'color',
             'anisotropy',
             'lightEnergy',
             'ambient',
-            'maxDistance',
             'shadows',
             'skyAffect',
-            'quality',
         },
         descriptors = {
             density = { min = 0, max = 2, hint = 'Fog thickness per world unit. 0.02 is light haze, 0.2 is thick.' },
+            mode = { options = { 'Exponential', 'Linear' }, hint = 'Distance falloff of the plain fog.' },
+            offset = { min = 0, hint = 'Distance from the camera where the fog starts.' },
+            endDistance = {
+                min = 0,
+                hint = 'Distance where the Linear fog is fully opaque.',
+                visibleWhen = { key = 'mode', equals = 'Linear' },
+            },
+            maxOpacity = { min = 0, max = 1, hint = 'Largest share of the fog colour that covers a pixel.' },
+            volumetric = {
+                hint = 'Ray-marched fog that shows light shafts and glowing lights. Replaces the plain fog.',
+            },
+            quality = {
+                options = QUALITIES,
+                hint = 'Low: half resolution, 16 steps. Medium: half resolution, 32 steps. High: full resolution, 48 steps and shadowed point and spot lights.',
+                visibleWhen = when('volumetric'),
+            },
+            volumetricDistance = {
+                min = 1,
+                hint = 'The fog is computed up to this distance from the camera.',
+                visibleWhen = when('volumetric'),
+            },
             heightFalloff = {
                 min = 0,
                 max = 4,
                 hint = 'How fast the fog thins above baseHeight. 0 = the same density at every height.',
+                visibleWhen = when('volumetric'),
             },
-            baseHeight = { hint = 'World height where the fog has full density.' },
-            color = { hint = 'Colour of the fog itself (0-255).' },
+            baseHeight = {
+                hint = 'World height where the fog has full density.',
+                visibleWhen = when('volumetric'),
+            },
             anisotropy = {
                 min = -0.95,
                 max = 0.95,
-                hint = 'Light scattering direction: positive brightens fog toward the sun (shafts), 0 is even.',
+                hint = 'Light scattering direction: positive brightens fog toward a light (shafts), 0 is even.',
+                visibleWhen = when('volumetric'),
             },
-            lightEnergy = { min = 0, max = 16, hint = 'Brightness of the sunlight scattered in the fog.' },
-            ambient = { min = 0, max = 4, hint = 'Fog light that does not depend on the sun.' },
-            maxDistance = { min = 1, hint = 'Fog is computed up to this distance from the camera.' },
-            shadows = { hint = 'Sunlight in the fog respects the shadow map (light shafts).' },
-            skyAffect = { min = 0, max = 1, hint = 'How much of the fog is also drawn over the sky.' },
-            quality = {
-                options = QUALITIES,
-                hint = 'Low: half resolution, 16 steps. Medium: half resolution, 32 steps. High: full resolution, 48 steps.',
+            lightEnergy = {
+                min = 0,
+                max = 16,
+                hint = 'Brightness of the light scattered in the fog.',
+                visibleWhen = when('volumetric'),
+            },
+            ambient = {
+                min = 0,
+                max = 4,
+                hint = 'Fog light that does not depend on any light source.',
+                visibleWhen = when('volumetric'),
+            },
+            shadows = {
+                hint = 'Sunlight in the fog respects the shadow map (light shafts).',
+                visibleWhen = when('volumetric'),
+            },
+            skyAffect = {
+                min = 0,
+                max = 1,
+                hint = 'How much of the fog is also drawn over the sky.',
+                visibleWhen = when('volumetric'),
             },
         },
     },
@@ -230,22 +274,6 @@ Settings.sections = {
             },
         },
     },
-    {
-        field = 'vignette',
-        title = 'Vignette',
-        defaults = {
-            enabled = false,
-            intensity = 0.4,
-            radius = 0.8,
-            softness = 0.5,
-        },
-        keys = { 'enabled', 'intensity', 'radius', 'softness' },
-        descriptors = {
-            intensity = { min = 0, max = 1, hint = 'How dark the corners get.' },
-            radius = { min = 0, max = 2, hint = 'Distance from the centre where darkening starts.' },
-            softness = { min = 0.01, max = 2, hint = 'Width of the fade.' },
-        },
-    },
 }
 
 Settings.antialiasing = { 'Disabled', 'FXAA' }
@@ -282,9 +310,13 @@ end
 function Settings.active(environment)
     for _, section in ipairs(Settings.sections) do
         local values = environment[section.field]
-        if values and values.enabled == true then
+        if values and section.chain ~= false and values.enabled == true then
             return true
         end
+    end
+    local fog = environment.fog
+    if fog and fog.enabled and fog.volumetric then
+        return true
     end
     return environment.render.screenSpaceAA == 'FXAA'
 end

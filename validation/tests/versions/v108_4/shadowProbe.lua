@@ -45,15 +45,18 @@ function Tests:draw()
         scene.camera.position = { c[1], c[2], c[3] }
         if c[4] then scene.camera.rotation = { c[4], c[5], 0 } end
     end
+    if self.frame == 30 and os.getenv('KATSA_DENSITY') and scene and scene.world then
+        scene.world.environment.render.renderDensity = tonumber(os.getenv('KATSA_DENSITY'))
+    end
     if self.frame == 30 and os.getenv('KATSA_POST') and scene and scene.world then
-        -- KATSA_POST="glow,ssao,dof,adjust,vignette,fxaa": switch effects on for the capture.
+        -- KATSA_POST="glow,ssao,dof,adjust,vfog,fxaa": switch effects on for the capture.
         local e = scene.world.environment
         for name in os.getenv('KATSA_POST'):gmatch('[^,]+') do
-            local section = ({ glow = 'glow', ssao = 'ssao', dof = 'depthOfField', adjust = 'adjustments', vignette = 'vignette', vfog = 'volumetricFog' })[name]
+            local section = ({ glow = 'glow', ssao = 'ssao', dof = 'depthOfField', adjust = 'adjustments', vfog = 'fog' })[name]
             if section then
                 e[section].enabled = true
                 if name == 'vfog' then
-                    e.volumetricFog.density, e.volumetricFog.maxDistance = 0.012, 90
+                    e.fog.volumetric, e.fog.density, e.fog.volumetricDistance = true, 0.012, 90
                 end
             elseif name == 'fxaa' then
                 e.render.screenSpaceAA = 'FXAA'

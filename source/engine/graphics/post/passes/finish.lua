@@ -1,5 +1,5 @@
--- Glow blend, Adjustments (brightness, contrast, saturation, colour-correction lookup table)
--- and Vignette in one pass over the image.
+-- Glow blend and Adjustments (brightness, contrast, saturation, colour-correction lookup table)
+-- in one pass over the image.
 local Fullscreen = require('../fullscreen')
 local Glow = require('./glow')
 
@@ -23,15 +23,13 @@ local function lookupTable(ctx, path)
 end
 
 function Finish.needed(environment)
-    return environment.glow.enabled
-        or environment.adjustments.enabled
-        or environment.vignette.enabled
+    return environment.glow.enabled or environment.adjustments.enabled
 end
 
 function Finish.run(ctx, input, destination)
     local post, renderer, environment = ctx.post, ctx.renderer, ctx.environment
     local shader = Fullscreen.shader(post, renderer, 'finish')
-    local glow, adjust, vignette = environment.glow, environment.adjustments, environment.vignette
+    local glow, adjust = environment.glow, environment.adjustments
 
     Fullscreen.send(shader, 'glowEnabled', glow.enabled == true)
     if glow.enabled then
@@ -49,9 +47,6 @@ function Finish.run(ctx, input, destination)
         Fullscreen.send(shader, 'lutSize', lut:getHeight())
         Fullscreen.send(shader, 'lutStrength', adjust.colorCorrectionStrength)
     end
-    Fullscreen.send(shader, 'vignetteEnabled', vignette.enabled == true)
-    Fullscreen.send(shader, 'vignette', { vignette.intensity, vignette.radius, vignette.softness })
-    Fullscreen.send(shader, 'aspect', renderer.width / math.max(1, renderer.height))
     Fullscreen.draw(input, shader, destination)
 end
 

@@ -78,7 +78,8 @@ function RenderBindings.install(Renderer)
             self.ambient[i] = l.ambient[i] / 255
             self.fogColor[i] = f.color[i] / 255
         end
-        self.fogColor[4] = f.enabled and f.maxOpacity or 0
+        -- Volumetric fog replaces the per-pixel distance fog (post/passes/volumetricFog.lua).
+        self.fogColor[4] = (f.enabled and not f.volumetric) and f.maxOpacity or 0
         self.fogSettings[1], self.fogSettings[2], self.fogSettings[3], self.fogSettings[4] =
             f.density, f.offset, f.endDistance, f.mode == 'Linear' and 1 or 0
         if s:hasUniform('ambient') then

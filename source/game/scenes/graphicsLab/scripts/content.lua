@@ -38,14 +38,13 @@ function Lab.new(scene)
     e.lightSettings.maxActiveLights = 32
     -- Every post-processing effect on: this scene is the "everything at maximum" reference.
     e.glow.enabled, e.glow.intensity, e.glow.hdrThreshold = true, 0.7, 0.75
-    e.volumetricFog.enabled, e.volumetricFog.density, e.volumetricFog.maxDistance =
-        true, 0.006, 200
+    e.fog.enabled, e.fog.volumetric, e.fog.density, e.fog.volumetricDistance =
+        true, true, 0.006, 200
     e.ssao.enabled, e.ssao.quality, e.ssao.radius, e.ssao.intensity = true, 'High', 14, 2
     e.depthOfField.enabled, e.depthOfField.farDistance, e.depthOfField.farTransition =
         true, 600, 300
     e.depthOfField.quality = 'High'
     e.adjustments.enabled, e.adjustments.contrast, e.adjustments.saturation = true, 1.05, 1.1
-    e.vignette.enabled, e.vignette.intensity = true, 0.35
     e.render.screenSpaceAA = 'FXAA'
     local floor = w:create('Body3D', {
         name = 'GalleryFloor',

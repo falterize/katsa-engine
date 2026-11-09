@@ -62,7 +62,9 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         if(quv.x<0.||quv.x>1.||quv.y<0.||quv.y>1.) continue;
         highp float sceneZ=viewDepth(quv);
         highp float range=smoothstep(0.0,1.0,radius/max(abs(z-sceneZ),1e-4));
-        occlusion+=(sceneZ<=q.z-bias ? 1.0 : 0.0)*range;
+        // The bias grows with distance: a depth texel of a far, grazing surface spans many depth
+        // steps, which showed up as bands on floors at low render density.
+        occlusion+=(sceneZ<=q.z-bias-q.z*0.006 ? 1.0 : 0.0)*range;
     }
     return vec4(vec3(1.0-occlusion/float(sampleCount)),1.0);
 }

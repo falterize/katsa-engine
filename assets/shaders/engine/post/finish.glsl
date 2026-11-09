@@ -1,5 +1,5 @@
 // Final colour pass: glow blend, adjustments (brightness, contrast, saturation, colour
-// correction lookup table) and vignette, in one read of the image.
+// correction lookup table), in one read of the image.
 uniform bool glowEnabled;
 uniform highp Image glowTexture;
 uniform highp float glowIntensity;
@@ -11,9 +11,6 @@ uniform bool lutEnabled;
 uniform highp Image lutTexture;
 uniform highp float lutSize;      // slices per side
 uniform highp float lutStrength;
-uniform bool vignetteEnabled;
-uniform highp vec3 vignette;      // intensity, radius, softness
-uniform highp float aspect;
 
 highp vec3 lookup(highp vec3 c) {
     highp vec3 v=clamp(c,0.0,1.0)*(lutSize-1.0);
@@ -34,7 +31,7 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         highp vec3 g=Texel(glowTexture,uv).rgb*glowIntensity;
         if(glowMode==0) c+=g;
         else if(glowMode==1) c=1.0-(1.0-c)*(1.0-clamp(g,0.0,1.0));
-        else if(glowMode==2) c=softlight(clamp(c,0.0,1.0),clamp(g,0.0,1.0));
+        else if(glowMode==2) c=softlight(clamp(c,0.0,1.0),.5+.5*clamp(g,0.0,1.0)); // .5 is neutral: no glow, no change
         else if(glowMode==3) c=mix(c,g,clamp(glowIntensity,0.0,1.0));
         else c=mix(c,g,glowMix);
     }
@@ -45,10 +42,5 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         c=mix(vec3(lum),c,adjust.z);
     }
     if(lutEnabled) c=mix(c,lookup(c),lutStrength);
-    if(vignetteEnabled) {
-        highp vec2 p=(uv-.5)*vec2(aspect,1.0)*2.0/max(aspect,1.0);
-        highp float edge=smoothstep(vignette.y,vignette.y-vignette.z,length(p));
-        c*=mix(1.0-vignette.x,1.0,edge);
-    }
     return vec4(clamp(c,0.0,1.0),src.a);
 }
