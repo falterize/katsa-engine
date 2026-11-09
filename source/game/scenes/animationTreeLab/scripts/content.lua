@@ -8,7 +8,6 @@ local Lab = {}
 Lab.__index = Lab
 
 local CHARACTER = 'source/game/scenes/stareShooter/assets/models/character.glb'
-local AIR_SECONDS = 1.1
 
 local function definition()
     return {
@@ -21,7 +20,7 @@ local function definition()
                 points = { { 0, 'Player_Idle' }, { 1, 'Player_Walk' } },
             },
             Crouch = { clip = 'Player_Crouch' },
-            Air = { clip = 'Player_Jump' },
+            Air = { clip = 'Player_Jump', loop = false },
         },
         transitions = {
             { from = 'Ground', to = 'Crouch', when = 'crouching', fade = 0.2 },
@@ -54,6 +53,12 @@ function Lab.new(scene)
     })
     self.model = Models.load(CHARACTER, scene.resources)
     local _, root = Models.instantiate(world, self.model, { name = 'Hero', rotation = { 0, 0, 0 } })
+    for _, clip in ipairs(self.model.animations) do
+        if clip.name == 'Player_Jump' then
+            self.jumpLength = clip.duration
+        end
+    end
+    assert(self.jumpLength, 'Player_Jump is missing from the character')
     self.tree = world:create('AnimationTree', { name = 'HeroTree', definition = definition() }, root)
     self.tree:set('speed', 0)
     self.tree:set('crouching', false)
@@ -75,7 +80,8 @@ end
 function Lab:jump()
     if self.tree:get('grounded') then
         self.tree:set('grounded', false)
-        self.airTime = AIR_SECONDS
+        -- The jump clip plays once; the machine returns to Ground when it has finished.
+        self.airTime = self.jumpLength
     end
 end
 
