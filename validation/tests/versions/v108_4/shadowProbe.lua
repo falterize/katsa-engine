@@ -45,6 +45,18 @@ function Tests:draw()
         scene.camera.position = { c[1], c[2], c[3] }
         if c[4] then scene.camera.rotation = { c[4], c[5], 0 } end
     end
+    if self.frame == 30 and os.getenv('KATSA_POST') and scene and scene.world then
+        -- KATSA_POST="glow,ssao,dof,adjust,vignette,fxaa": switch effects on for the capture.
+        local e = scene.world.environment
+        for name in os.getenv('KATSA_POST'):gmatch('[^,]+') do
+            local section = ({ glow = 'glow', ssao = 'ssao', dof = 'depthOfField', adjust = 'adjustments', vignette = 'vignette' })[name]
+            if section then
+                e[section].enabled = true
+            elseif name == 'fxaa' then
+                e.render.screenSpaceAA = 'FXAA'
+            end
+        end
+    end
     if self.frame == 30 and os.getenv('KATSA_NORMALVIEW') and scene and scene.world then
         scene.world.lighting.debug.normalView = true
     end

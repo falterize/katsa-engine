@@ -2,12 +2,49 @@ local ipairs = require('../../math.array').ipairs
 -- Install one cohesive responsibility on the public class.
 local RenderFrame = {}
 
+local Post = require('source.engine.graphics.post')
+
+-- Post-processing runs when an effect is enabled (never in the wireframe debug view).
+local function postActive(world)
+    return Post.enabled(world.environment) and not (world.debug and world.debug.wireframe)
+end
+
+-- True when a post setting changed since the previous draw: a reused frame must then be
+-- rebuilt because its depth and passes depend on the settings.
+local function postChanged(renderer, world)
+    if not postActive(world) then
+        local was = renderer._postSignature ~= nil
+        renderer._postSignature = nil
+        return was
+    end
+    local fresh = Post.signature(world.environment, renderer._postScratch or {})
+    renderer._postScratch = fresh
+    local previous = renderer._postSignature
+    local changed = previous == nil or #previous ~= #fresh
+    if not changed then
+        for i = 1, #fresh do
+            if previous[i] ~= fresh[i] then
+                changed = true
+                break
+            end
+        end
+    end
+    if changed then
+        renderer._postSignature = {}
+        for i = 1, #fresh do
+            renderer._postSignature[i] = fresh[i]
+        end
+    end
+    return changed
+end
+
 function RenderFrame.install(Renderer)
     function Renderer:draw(world, camera, time, offscreen)
         if not camera then
             return nil
         end
         require('source.engine.animation.skeleton.skinLimits').prepare(world)
+        local settingsChanged = postChanged(self, world)
         local cacheModule = require('source.engine.graphics.pipeline.frameCache')
         local start = katsa.timer.getTime()
         local dependencies = cacheModule.inspect(self, world, camera, time, offscreen)
@@ -30,7 +67,11 @@ function RenderFrame.install(Renderer)
             self.stats.cacheCheckMaxMilliseconds = window.maximum
             window.start, window.sum, window.maximum, window.count = finished, 0, 0, 0
         end
-        if self.canvas and cacheModule.reusable(self, world, dependencies) then
+        if
+            self.canvas
+            and not settingsChanged
+            and cacheModule.reusable(self, world, dependencies)
+        then
             self.stats.frameReused = true
             self.stats.reusedFrames = (self.stats.reusedFrames or 0) + 1
             self.stats.mainTriangles, self.stats.shadowTriangles = 0, 0
@@ -44,6 +85,10 @@ function RenderFrame.install(Renderer)
             self.stats.shadowDrawCalls, self.stats.shadowFaces = 0, 0
             self.stats.shadowCasterTests, self.stats.shadowCasterSubmissions = 0, 0
             self.stats.shadowScanMilliseconds, self.stats.shadowBuildMilliseconds = 0, 0
+            if postActive(world) then
+                self.post = self.post or Post.new()
+                return self.post:apply(self, offscreen)
+            end
             if offscreen then
                 return self.canvas
             end
@@ -126,8 +171,13 @@ function RenderFrame.install(Renderer)
         g.setMeshCullMode('none')
         g.setWireframe(false)
         if offscreen then
+            local result = self.canvas
+            if postActive(world) then
+                self.post = self.post or Post.new()
+                result = self.post:apply(self, true)
+            end
             if self.renderOverlay and #(world.uis or {}) > 0 then
-                g.setCanvas({ self.canvas, stencil = true })
+                g.setCanvas({ result, stencil = true })
                 g.setScissor()
                 g.setStencilTest()
                 g.origin()
@@ -140,12 +190,17 @@ function RenderFrame.install(Renderer)
             g.pop()
             dependencies.valid = not dependencies.volatile
             self.stats.mainSubmissionMilliseconds = (katsa.timer.getTime() - mainStart) * 1000
-            return self.canvas
+            return result
         end
-        g.setCanvas()
-        g.setColor(1, 1, 1, 1)
-        g.setBlendMode('alpha', 'premultiplied')
-        g.draw(self.canvas)
+        if postActive(world) then
+            self.post = self.post or Post.new()
+            self.post:apply(self, false)
+        else
+            g.setCanvas()
+            g.setColor(1, 1, 1, 1)
+            g.setBlendMode('alpha', 'premultiplied')
+            g.draw(self.canvas)
+        end
         g.pop()
         dependencies.valid = not dependencies.volatile
         self.stats.mainSubmissionMilliseconds = (katsa.timer.getTime() - mainStart) * 1000

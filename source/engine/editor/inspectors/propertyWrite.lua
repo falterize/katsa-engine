@@ -84,7 +84,9 @@ function PropertyWrite.install(Properties)
             then
                 return false, 'Value is outside the property range'
             end
-            local bound = limits[field.key]
+            -- A descriptor with its own bounds replaces the shared per-name limit (a Glow
+            -- `strength` is not a 0..1 opacity).
+            local bound = not (descriptor.min or descriptor.max) and limits[field.key] or nil
             if
                 bound
                 and (

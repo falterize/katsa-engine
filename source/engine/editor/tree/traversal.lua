@@ -104,6 +104,11 @@ local function children(node)
                 { 'Sky', node.sky, 'Sky' },
                 { 'Fog', node.fog },
                 { 'Rendering', node.render },
+                { 'Glow', node.glow },
+                { 'SSAO', node.ssao },
+                { 'DepthOfField', node.depthOfField },
+                { 'Adjustments', node.adjustments },
+                { 'Vignette', node.vignette },
             }) do
                 entries[#entries + 1] = entry
             end

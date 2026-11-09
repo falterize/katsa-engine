@@ -90,6 +90,10 @@ function Renderer:release()
     require('source.engine.graphics.debug.wireframe').release(self)
     self.batches:release()
     self.shadows:release()
+    if self.post then
+        self.post:release()
+        self.post = nil
+    end
     if self.canvas then
         self.canvas:release()
         self.depth:release()

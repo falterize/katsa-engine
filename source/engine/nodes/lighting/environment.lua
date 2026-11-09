@@ -73,6 +73,7 @@ function C.initialize(self)
     if self.render.frameCache == nil then
         self.render.frameCache = true
     end
+    require('source.engine.graphics.post.settings').install(self)
 end
 
 -- Applies 'Low' | 'Medium' | 'High' (see graphics/quality/profiles.lua). Only numeric

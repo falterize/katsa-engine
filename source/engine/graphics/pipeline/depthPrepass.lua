@@ -14,6 +14,67 @@ local function eligible(object, renderer)
         and Opaque.eligible(object, renderer)
 end
 
+local function depthShader(renderer)
+    local shader = renderer.prepassShader
+    if not shader then
+        shader = renderer.resources:own(
+            katsa.graphics.newShader(
+                require('source.engine.graphics.shaders.shaderSource').read(
+                    'assets/shaders/engine/depthPrepass.glsl'
+                )
+            )
+        )
+        renderer.prepassShader = shader
+    end
+    return shader
+end
+
+-- Draws every batched opaque group into `depth` (depth only). `onlyEligible` skips groups the
+-- early pass could not reproduce exactly (alpha cutouts, custom shaders).
+local function drawGroups(renderer, shader, depth, stats, onlyEligible)
+    local g = katsa.graphics
+    g.push('all')
+    g.setCanvas({ depthstencil = depth })
+    g.clear(0, 0, 0, 0, 0, 1)
+    g.setColorMask(false, false, false, false)
+    g.setDepthMode('less', true)
+    g.setShader(shader)
+    shader:send('viewProjection', 'row', renderer.camera.viewProjection)
+    shader:send('instanced', true)
+    renderer.batches.drawing = true
+    for _, group in ipairs(renderer.batches.groups) do
+        if group.count > 0 and (not onlyEligible or eligible(group.example, renderer)) then
+            Skinning.bind(shader, group.example)
+            local object = group.example
+            local mesh
+            if object.geometry.eightWeights then
+                assert(group.count == 1, 'Extended skins require individual depth draws')
+                shader:send('instanced', false)
+                shader:send('model', 'row', object.combined or object.matrix)
+                mesh = object.geometry.mesh
+            else
+                shader:send('instanced', true)
+                mesh = renderer.batches:upload(group)
+            end
+            g.setMeshCullMode(group.example.doubleSided and 'none' or 'back')
+            if object.geometry.eightWeights then
+                g.draw(mesh)
+            else
+                g.drawInstanced(mesh, group.count)
+            end
+            stats.depthPrepassDrawCalls = stats.depthPrepassDrawCalls + 1
+            stats.depthPrepassTriangles = stats.depthPrepassTriangles
+                + Triangles.mesh(mesh) * group.count
+        end
+    end
+    renderer.batches.drawing = false
+    for mesh in pairs(renderer.batches.attached) do
+        renderer.batches:detach(mesh)
+        renderer.batches.attached[mesh] = nil
+    end
+    g.pop()
+end
+
 function Prepass.draw(renderer)
     renderer.depthPrepassActive = false
     renderer.stats.depthPrepassReused = false
@@ -82,57 +143,8 @@ function Prepass.draw(renderer)
         stats.depthPrepassReused = true
         return
     end
-    local shader = renderer.prepassShader
-    if not shader then
-        shader = renderer.resources:own(
-            g.newShader(
-                require('source.engine.graphics.shaders.shaderSource').read(
-                    'assets/shaders/engine/depthPrepass.glsl'
-                )
-            )
-        )
-        renderer.prepassShader = shader
-    end
-    g.push('all')
-    g.setCanvas({ depthstencil = depth })
-    g.clear(0, 0, 0, 0, 0, 1)
-    g.setColorMask(false, false, false, false)
-    g.setDepthMode('less', true)
-    g.setShader(shader)
-    shader:send('viewProjection', 'row', renderer.camera.viewProjection)
-    shader:send('instanced', true)
-    renderer.batches.drawing = true
-    for _, group in ipairs(renderer.batches.groups) do
-        if group.count > 0 then
-            Skinning.bind(shader, group.example)
-            local object = group.example
-            local mesh
-            if object.geometry.eightWeights then
-                assert(group.count == 1, 'Extended skins require individual depth draws')
-                shader:send('instanced', false)
-                shader:send('model', 'row', object.combined or object.matrix)
-                mesh = object.geometry.mesh
-            else
-                shader:send('instanced', true)
-                mesh = renderer.batches:upload(group)
-            end
-            g.setMeshCullMode(group.example.doubleSided and 'none' or 'back')
-            if object.geometry.eightWeights then
-                g.draw(mesh)
-            else
-                g.drawInstanced(mesh, group.count)
-            end
-            stats.depthPrepassDrawCalls = stats.depthPrepassDrawCalls + 1
-            stats.depthPrepassTriangles = stats.depthPrepassTriangles
-                + Triangles.mesh(mesh) * group.count
-        end
-    end
-    renderer.batches.drawing = false
-    for mesh in pairs(renderer.batches.attached) do
-        renderer.batches:detach(mesh)
-        renderer.batches.attached[mesh] = nil
-    end
-    g.pop()
+    local shader = depthShader(renderer)
+    drawGroups(renderer, shader, depth, stats)
     renderer.depthPrepassActive = true
     if reusable then
         renderer.prepassCache =
@@ -143,7 +155,35 @@ function Prepass.draw(renderer)
     stats.depthPrepassMilliseconds = (katsa.timer.getTime() - start) * 1000
 end
 
+-- Readable depth of the batched opaque scene for post-processing, drawn on demand (the early
+-- pass is optional and skips MSAA targets). The canvas is kept for the renderer's lifetime.
+function Prepass.renderSceneDepth(renderer)
+    local g = katsa.graphics
+    local width, height = renderer.canvas:getPixelDimensions()
+    local depth = renderer.postDepth
+    if not depth or depth:getPixelWidth() ~= width or depth:getPixelHeight() ~= height then
+        if depth then
+            depth:release()
+        end
+        depth = g.newCanvas(
+            renderer.width,
+            renderer.height,
+            { format = 'depth24', readable = true, dpiscale = renderer.density }
+        )
+        depth:setFilter('nearest', 'nearest')
+        renderer.postDepth = depth
+    end
+    renderer.postDepthStats = renderer.postDepthStats
+        or { depthPrepassDrawCalls = 0, depthPrepassTriangles = 0 }
+    drawGroups(renderer, depthShader(renderer), depth, renderer.postDepthStats, true)
+    return depth
+end
+
 function Prepass.release(renderer)
+    if renderer.postDepth then
+        renderer.postDepth:release()
+        renderer.postDepth = nil
+    end
     renderer.prepassCache = nil
     if renderer.prepassDepth then
         renderer.prepassDepth:release()

@@ -29,6 +29,7 @@ local entries = {
     ['--test-v108.7.debug'] = { module = 'validation.tests.versions.v108_7.debugCost', mode = 'default' },
     ['--test-v108.7.hills'] = { module = 'validation.tests.versions.v108_7.hillShots', mode = 'default' },
     ['--test-v108.7.resize'] = { module = 'validation.tests.versions.v108_7.resizeProbe', mode = 'default' },
+    ['--test-v108.7.post'] = { module = 'validation.tests.versions.v108_7.postFocused', mode = 'default' },
     ['--test-v108.7'] = { module = 'validation.tests.versions.v108_7.focused', mode = 'default' },
     ['--test-v108.6.shots'] = { module = 'validation.tests.versions.v108_6.carShots', mode = 'default' },
     ['--test-v108.6.poses'] = { module = 'validation.tests.versions.v108_6.posesProbe', mode = 'default' },

@@ -10,6 +10,16 @@ function Schema.keys(target, fallback)
     if pluginKeys then
         return pluginKeys
     end
+    local post = require('source.engine.graphics.post.settings').definition(target._settingsKind)
+    if post then
+        local result = {}
+        for _, key in ipairs(post.keys) do
+            if Schema.visible(target, key) then
+                result[#result + 1] = key
+            end
+        end
+        return result
+    end
     if target._settingsKind == 'Particles' then
         return { 'wind', 'maxParticles', 'collisionBudget', 'fixedDelta', 'maxSteps' }
     end
@@ -267,6 +277,16 @@ end
 local descriptions = require('./schemaDescriptors')
 
 function Schema.descriptor(target, key)
+    local post = require('source.engine.graphics.post.settings').definition(target._settingsKind)
+    if post then
+        return post.descriptors[key] or {}
+    end
+    if key == 'screenSpaceAA' and target.msaa ~= nil then
+        return {
+            options = require('source.engine.graphics.post.settings').antialiasing,
+            hint = 'Screen-space anti-aliasing applied to the finished image; works with MSAA.',
+        }
+    end
     if target._settingsKind == 'Shadows' then
         if key == 'filterSamples' then
             return {
