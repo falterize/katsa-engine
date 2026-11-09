@@ -230,6 +230,42 @@ function Debug.drawPaths(node, camera)
     end
 end
 
+-- The remaining route of every crowd agent (NavAgent3D): from the agent through the corners it has
+-- not reached yet to its goal, one colour per agent.
+local function crowdColor(index)
+    local hue = (index * 0.618034) % 1
+    return {
+        0.5 + 0.5 * math.sin(hue * 6.2832),
+        0.5 + 0.5 * math.sin(hue * 6.2832 + 2.0944),
+        0.5 + 0.5 * math.sin(hue * 6.2832 + 4.1888),
+    }
+end
+
+function Debug.drawAgents(node, camera)
+    local crowd = node.crowd
+    if not crowd then
+        return
+    end
+    for index, agent in ipairs(crowd.agents) do
+        local path = agent.path
+        if path then
+            local color = crowdColor(index)
+            local previous = { agent.x, agent.y + 0.4, agent.z }
+            for pointIndex = path.index or 1, #path.points do
+                local point = path.points[pointIndex]
+                local here = { point[1], point[2] + 0.4, point[3] }
+                line(camera, previous, here, color, 0.9)
+                local sx, sy = camera:project(here)
+                if sx then
+                    katsa.graphics.setColor(color[1], color[2], color[3], 0.9)
+                    katsa.graphics.circle('fill', sx, sy, 3)
+                end
+                previous = here
+            end
+        end
+    end
+end
+
 -- Routes reported by games (a server's bot, for example) drawn with the NavMap routes:
 -- `route = { points = { {x, y, z}, ... }, goal = { x, y, z }, color = { r, g, b } }`, or nil to
 -- remove it. Drawn while `Environment.debug.pathfinding.drawPaths` is on.
@@ -282,6 +318,7 @@ function Debug.draw(world, camera, settings)
         end
         if settings.drawPaths ~= false then
             Debug.drawPaths(node, camera)
+            Debug.drawAgents(node, camera)
         end
     end)
     katsa.graphics.pop()

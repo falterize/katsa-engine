@@ -79,7 +79,7 @@ function Lab.new(scene)
         name = 'Pillar',
         size = { 3, 3, 3 },
         color = { 0.8, 0.25, 0.2, 1 },
-        position = { 0, 1.5, 4 },
+        position = { 0, 1.5, -16 },
     })
     self.obstacle = world:create('NavObstacle3D', {
         name = 'PillarObstacle',
@@ -119,8 +119,10 @@ end
 function Lab:update(dt)
     self.time = self.time + dt
     local t = self.time
-    self.goal.position = { math.sin(t * 0.35) * 22, 0.5, math.cos(t * 0.35) * 6 + 4 }
-    self.pillar.position = { math.sin(t * 0.6) * 8, 1.5, 4 }
+    -- The goal patrols the open strip in front of the side walls; the pillar slides across the
+    -- way the walkers take around the front wall.
+    self.goal.position = { math.sin(t * 0.35) * 22, 0.5, -5 }
+    self.pillar.position = { math.sin(t * 0.6) * 14, 1.5, -16 }
     self.scene.world:updateNodes(dt)
 end
 

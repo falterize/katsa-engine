@@ -8,8 +8,9 @@
 -- Each update an agent walks toward the next corner of its path, then picks the velocity with the
 -- lowest penalty among a small sample (close to the wanted velocity and the current one, and far
 -- from collisions predicted within `horizon` seconds), accelerates toward it and moves; the move
--- is clamped to the mesh. Paths are found again when the mesh changed (an obstacle moved), a few
--- agents per update so a change never costs one big spike.
+-- is clamped to the mesh. Paths are found again when the mesh changed (an obstacle moved) or the
+-- target moved, a few agents per update (the longest-waiting first) so a change never costs one
+-- big spike. An agent keeps following its old path until the new one is ready.
 local Crowd = {}
 Crowd.__index = Crowd
 
@@ -45,6 +46,8 @@ function Crowd:add(options)
         avoidance = options.avoidance ~= false,
         state = 'idle',
         retry = 0,
+        waited = 0,
+        fresh = true,
     }
     self.agents[#self.agents + 1] = agent
     return agent
@@ -62,7 +65,8 @@ end
 
 function Crowd:setTarget(agent, x, y, z)
     agent.target = { x, y, z }
-    agent.path, agent.state, agent.retry = nil, 'moving', 0
+    agent.state, agent.retry, agent.fresh = 'moving', 0, false
+    agent.waited = agent.waited or 0
 end
 
 function Crowd:clearTarget(agent)
@@ -166,11 +170,13 @@ local function repath(self, agent)
         { agent.x, agent.y, agent.z },
         agent.target
     )
-    agent.path = path
     agent.failure = reason
+    agent.waited, agent.fresh = 0, true
     if path then
+        agent.path = path
         agent.state, agent.retry = 'moving', 0
     else
+        agent.path = nil
         agent.state, agent.retry = 'failed', RETRY_SECONDS
     end
     return path ~= nil
@@ -183,19 +189,34 @@ function Crowd:update(dt)
     local mesh = self.mesh
     mesh:refresh()
     local range = bin(self)
-    local repaths = 0
     local near = {}
+    -- Agents that need a new path, the longest-waiting first (a moving target asks every frame).
+    local needing = self.needing or {}
+    self.needing = needing
+    for i = #needing, 1, -1 do
+        needing[i] = nil
+    end
     for _, agent in ipairs(self.agents) do
-        local wantX, wantZ = 0, 0
         if agent.target then
             if agent.state == 'failed' then
                 agent.retry = agent.retry - dt
             end
             local stale = agent.path and agent.path.revision ~= mesh.revision
-            if (not agent.path and agent.retry <= 0 or stale) and repaths < self.repathsPerUpdate then
-                repaths = repaths + 1
-                repath(self, agent)
+            if not agent.fresh or stale or (not agent.path and agent.retry <= 0) then
+                agent.waited = agent.waited + 1
+                needing[#needing + 1] = agent
             end
+        end
+    end
+    table.sort(needing, function(a, b)
+        return a.waited > b.waited
+    end)
+    for i = 1, math.min(#needing, self.repathsPerUpdate) do
+        repath(self, needing[i])
+    end
+    for _, agent in ipairs(self.agents) do
+        local wantX, wantZ = 0, 0
+        if agent.target then
             local path = agent.path
             if path then
                 local tx, _, tz = path:target(agent.x, agent.y, agent.z, math.max(agent.radius, 0.4))
@@ -231,7 +252,14 @@ function Crowd:update(dt)
             local nx, nz = agent.x + agent.vx * dt, agent.z + agent.vz * dt
             local cx, cz, polygon = mesh:clamp(nx, nz, agent.y, 2)
             if cx then
-                agent.vx, agent.vz = (cx - agent.x) / dt, (cz - agent.z) / dt
+                -- The velocity that was really achieved, never above the top speed: a snap back
+                -- onto the mesh must not turn into a huge velocity that flings the agent aside.
+                local rx, rz = (cx - agent.x) / dt, (cz - agent.z) / dt
+                local speed = math.sqrt(rx * rx + rz * rz)
+                if speed > agent.maxSpeed then
+                    rx, rz = rx / speed * agent.maxSpeed, rz / speed * agent.maxSpeed
+                end
+                agent.vx, agent.vz = rx, rz
                 agent.x, agent.z = cx, cz
                 agent.y = mesh:heightAt(polygon.level, cx, cz) or agent.y
                 agent.level = polygon.level

@@ -26,20 +26,33 @@ function Module.run(self)
 
     window, scene, hosted = open('navMeshLab')
     lab = hosted.demo
-    local agent = lab.agents[1]
-    local visual = agent.children[1]
-    local startX, startZ = agent.position[1], agent.position[3]
+    local starts = {}
+    for index, agent in ipairs(lab.agents) do
+        starts[index] = { agent.position[1], agent.position[3] }
+    end
+    local visual = lab.agents[1].children[1]
     local startVisual = visual:getWorldPosition()
+    local fastest = 0
     for _ = 1, 60 do
         scene:step(0.05)
+        for _, agent in ipairs(lab.agents) do
+            local speed = math.sqrt(agent._agent.vx ^ 2 + agent._agent.vz ^ 2)
+            fastest = math.max(fastest, speed - agent.speed)
+        end
     end
-    local moved = math.abs(agent.position[1] - startX) + math.abs(agent.position[3] - startZ)
+    local walking = 0
+    for index, agent in ipairs(lab.agents) do
+        local moved = math.abs(agent.position[1] - starts[index][1])
+            + math.abs(agent.position[3] - starts[index][2])
+        walking = walking + (moved > 1 and 1 or 0)
+    end
     local after = visual:getWorldPosition()
     local visualMoved = math.abs(after[1] - startVisual[1]) + math.abs(after[3] - startVisual[3])
     self:check(
-        lab.map:isBaked() and moved > 1 and visualMoved > 1,
-        'The navMeshLab agents and their visible walkers move toward the goal on the baked NavMesh'
+        lab.map:isBaked() and walking == #lab.agents and visualMoved > 1,
+        'Every navMeshLab agent and its visible walker moves toward the moving goal'
     )
+    self:check(fastest < 0.01, 'No navMeshLab agent ever exceeds its top speed (no sideways flings)')
     window:close()
 end
 
