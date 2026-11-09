@@ -89,8 +89,13 @@ function Lab.new(scene)
 
     self.agents = {}
     for i = 1, AGENTS do
-        local holder = world:create('Node3D', {
-            name = 'Walker' .. i,
+        -- The agent node itself moves with autoMove, so its visual is a child of it.
+        local agent = world:create('NavAgent3D', {
+            name = 'Agent' .. i,
+            navMap = self.map,
+            speed = 5 + (i % 3),
+            radius = 0.7,
+            targetNode = self.goal,
             position = { -20 + i * 4.5, 0, -22 },
         })
         Mesh.create(world, {
@@ -99,14 +104,8 @@ function Lab.new(scene)
             size = { 1.4, 1.4, 1.4 },
             color = { 0.2 + 0.1 * i, 0.6, 1 - 0.1 * i, 1 },
             position = { 0, 0.7, 0 },
-        }, holder)
-        self.agents[i] = world:create('NavAgent3D', {
-            name = 'Agent' .. i,
-            navMap = self.map,
-            speed = 5 + (i % 3),
-            radius = 0.7,
-            targetNode = self.goal,
-        }, holder)
+        }, agent)
+        self.agents[i] = agent
     end
     scene.camera.position = { 0, 38, -34 }
     scene.camera.rotation = { -52, 0, 0 }
