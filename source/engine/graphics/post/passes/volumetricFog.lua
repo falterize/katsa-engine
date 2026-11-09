@@ -1,6 +1,6 @@
 -- Volumetric fog: a ray march through the fog between the camera and the scene depth, lit by
 -- the sun (with its cascaded shadows, so trees and walls cast light shafts), every point and spot
--- light (visible as glowing cones and halos) and an ambient term, composited over the image. The
+-- light (glowing cones and halos; they also thin the fog they shine through) and an ambient term, composited over the image. The
 -- settings are the scene's Fog (`fog.volumetric`). The march runs at half resolution on Low and
 -- Medium; point and spot lights respect their shadow maps on High only.
 local Targets = require('../targets')
@@ -54,6 +54,7 @@ function VolumetricFog.run(ctx, input, destination)
     renderer.lights:send(shader)
     local shadowed = settings.shadows and renderer.shadows.enabled
     Fullscreen.send(shader, 'localEnergy', settings.lightEnergy)
+    Fullscreen.send(shader, 'lightClearing', settings.lightClearing)
     Fullscreen.send(shader, 'localShadows', shadowed and settings.quality == 'High')
     local slot = sun(renderer)
     Fullscreen.send(shader, 'sunEnabled', slot ~= nil)

@@ -27,6 +27,7 @@ uniform highp vec3 sunRadiance;   // sun colour times brightness
 uniform int sunIndex;             // slot of the sun in the shadow tables (-1: no shadows)
 uniform bool localShadows;        // point and spot lights also respect their shadow maps
 uniform highp float localEnergy;
+uniform highp float lightClearing;   // how much a light thins the fog it shines through (0..1)
 uniform highp vec4 lightPosition[32];   // xyz position, w range
 uniform highp vec4 lightDirection[32];  // xyz spot axis, w outer cone cosine
 uniform highp vec4 lightColor[32];
@@ -50,7 +51,9 @@ highp float henyeyGreenstein(highp float cosine) {
 }
 
 // Light of one point or spot light that reaches `worldPosition`, scattered toward the camera.
-highp vec3 localLight(int i,highp vec3 viewDirection) {
+// `reach` (0..1) is how strongly the light reaches this point; the fog thins by it.
+highp vec3 localLight(int i,highp vec3 viewDirection,out highp float reach) {
+    reach=0.0;
     highp vec3 delta=(lightPosition[i].xyz-worldPosition)/max(lightPosition[i].w,0.001);
     highp float distanceToLight=length(delta);
     if(distanceToLight>=1.0) return vec3(0.0);
@@ -68,7 +71,8 @@ highp vec3 localLight(int i,highp vec3 viewDirection) {
                 localShadowProjection(i,side,toward),toward,toward,false,0);
         }
     }
-    return lightColor[i].rgb*lightColor[i].w*localEnergy*cone*falloff*falloff*visibility
+    reach=cone*falloff*falloff*visibility;
+    return lightColor[i].rgb*lightColor[i].w*localEnergy*reach
         *henyeyGreenstein(dot(viewDirection,toward));
 }
 
@@ -102,18 +106,23 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         worldPosition=origin+direction*t;
         highp float dens=density*(heightFalloff>0.0 ?
             exp(-heightFalloff*max(0.0,worldPosition.y-baseHeight)) : 1.0);
-        highp float extinction=dens*stepLength;
         highp vec3 light=fogColor*ambientEnergy;
         if(sunEnabled) {
             highp float visibility=1.0;
             if(sunIndex>=0) visibility=directionalVisibility(sunIndex,vec3(0.0,1.0,0.0),sunToward);
             light+=fogColor*sunRadiance*visibility*phase;
         }
+        highp float cleared=0.0;
         for(int i=0;i<32;i++) {
             if(i>=lightCount) break;
             if(lightExtra[i].y>1.5) continue;
-            light+=fogColor*localLight(i,direction);
+            highp float reach;
+            light+=fogColor*localLight(i,direction,reach);
+            cleared=max(cleared,reach);
         }
+        // Lights burn the fog away where they shine, like fog lamps: the beam stays readable.
+        dens*=1.0-clamp(lightClearing,0.0,1.0)*cleared;
+        highp float extinction=dens*stepLength;
         highp float absorbed=1.0-exp(-extinction);
         scatter+=transmittance*absorbed*light;
         transmittance*=1.0-absorbed;

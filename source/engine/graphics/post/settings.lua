@@ -99,6 +99,7 @@ Settings.sections = {
             baseHeight = 0.0,
             anisotropy = 0.6,
             lightEnergy = 1.0,
+            lightClearing = 0.5,
             ambient = 0.3,
             volumetricDistance = 120,
             shadows = true,
@@ -120,6 +121,7 @@ Settings.sections = {
             'baseHeight',
             'anisotropy',
             'lightEnergy',
+            'lightClearing',
             'ambient',
             'shadows',
             'skyAffect',
@@ -167,6 +169,12 @@ Settings.sections = {
                 min = 0,
                 max = 16,
                 hint = 'Brightness of the light scattered in the fog.',
+                visibleWhen = when('volumetric'),
+            },
+            lightClearing = {
+                min = 0,
+                max = 1,
+                hint = 'How much point and spot lights burn the fog away where they shine (fog lamps). 0 = the fog stays as thick.',
                 visibleWhen = when('volumetric'),
             },
             ambient = {

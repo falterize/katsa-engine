@@ -55,8 +55,11 @@ end
 
 function Tests.run(tester)
     local world, camera, renderer, e = build()
+    -- Light selection is throttled by the frame time, so every shot is a second later.
+    local clock = 0
     local function shot()
-        return renderer:draw(world, camera, 0, true):newImageData()
+        clock = clock + 1
+        return renderer:draw(world, camera, clock, true):newImageData()
     end
     local base = shot()
 
@@ -79,6 +82,29 @@ function Tests.run(tester)
             and Schema.visible(e.fog, 'anisotropy'),
         'Volumetric fog hazes the scene and shows its settings in the Fog section'
     )
+    -- A lamp near the box thins the fog it shines through: the box shows through more clearly.
+    local lamp = world:addLight({
+        name = 'FogLamp',
+        type = 'PointLight3D',
+        position = { 0, 25, 20 },
+        range = 90,
+        radius = 5,
+        brightness = 1,
+        castShadow = false,
+    })
+    world:updateNodes(1 / 60)
+    e.fog.density, e.fog.lightClearing = 0.03, 0
+    local murky = shot()
+    e.fog.lightClearing = 1
+    local cleared = shot()
+    local bx, by = camera:project({ 0, 10, 40 })
+    tester:check(
+        bx ~= nil
+            and math.abs(luma(cleared, math.floor(bx), math.floor(by)) - luma(murky, math.floor(bx), math.floor(by)))
+                > 0.01,
+        'A light thins the volumetric fog it shines through'
+    )
+    lamp:destroy()
     e.fog.volumetric = false
     tester:check(not Schema.visible(e.fog, 'anisotropy'), 'Fog hides volumetric settings when it is off')
     e.fog.enabled = false
