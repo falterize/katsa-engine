@@ -83,7 +83,7 @@ end
 function Lab:describe()
     local tree = self.tree
     return ('State: %s\nspeed %.2f  crouching %s  grounded %s'):format(
-        tostring(tree:get('state')),
+        tostring(tree.tree and tree.tree:state() or ''),
         tree:get('speed') or 0,
         tostring(tree:get('crouching')),
         tostring(tree:get('grounded'))
