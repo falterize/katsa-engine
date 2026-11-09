@@ -17,7 +17,7 @@ The engine is Lua code (`source/`) on top of a small native layer:
 | --- | --- | --- |
 | LuaJIT | the Lua VM | `luajit` executable (development) or built into the Katsa host |
 | Host `katsa` / `katsa.exe` | a tiny executable: LuaJIT plus the Lua runtime appended as a ZIP | built from `native/src/host` |
-| `katsa_native` | UTF-8 files, image, Ogg Vorbis and font decoding | built from `native/src/native` |
+| `katsa_native` | UTF-8 files, image, Ogg Vorbis, MP3, FLAC and font decoding | built from `native/src/native` |
 | `katsa_box2d` | 2D physics (Box2D) | built from `native/src/box2d` + `vendor/box2d` |
 | `katsa_net` | networking (ENet) | built from `native/src/net` + `vendor/enet` |
 | `katsa_threads` | worker threads for the Actor node | built from `native/src/threads` |

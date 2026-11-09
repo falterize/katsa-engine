@@ -1,4 +1,5 @@
--- katsa.sound: SoundData and decoders (Ogg Vorbis via stb_vorbis, PCM/float WAV in Lua).
+-- katsa.sound: SoundData and decoders (Ogg Vorbis via stb_vorbis, MP3 via dr_mp3, FLAC via dr_flac,
+-- PCM/float WAV in Lua).
 local ffi = require('ffi')
 local nativeLib = require('source.katsa.core.nativeLib')
 
@@ -88,15 +89,48 @@ local function decodeWav(data)
     return make(out, format.rate, format.bits == 8 and 8 or 16, format.channels, frames)
 end
 
-local function decodeOgg(data)
-    if data:sub(1, 4) ~= 'OggS' then
-        return nil
+-- Compressed formats, recognised by their first bytes. `decode` returns samples, channels, rate,
+-- frames or nil plus a message.
+local FORMATS = {
+    {
+        name = 'Ogg Vorbis',
+        matches = function(data)
+            return data:sub(1, 4) == 'OggS' and not data:find('OpusHead', 1, true)
+        end,
+        decode = nativeLib.decodeVorbis,
+    },
+    {
+        name = 'FLAC',
+        matches = function(data)
+            return data:sub(1, 4) == 'fLaC'
+        end,
+        decode = nativeLib.decodeFlac,
+    },
+    {
+        name = 'MP3',
+        matches = function(data)
+            -- An ID3 tag, or an MPEG audio frame header (11 set sync bits).
+            local a, b = data:byte(1, 2)
+            return data:sub(1, 3) == 'ID3' or (a == 0xFF and b ~= nil and b >= 0xE0)
+        end,
+        decode = nativeLib.decodeMp3,
+    },
+}
+
+local function decodeCompressed(data)
+    if data:sub(1, 4) == 'OggS' and data:find('OpusHead', 1, true) then
+        return nil, 'Ogg Opus is not supported: use Ogg Vorbis, MP3, FLAC or WAV'
     end
-    local samples, channels, rate, frames = nativeLib.decodeVorbis(data)
-    if not samples then
-        return nil, 'Could not decode Ogg Vorbis data'
+    for _, format in ipairs(FORMATS) do
+        if format.matches(data) then
+            local samples, channels, rate, frames = format.decode(data)
+            if not samples then
+                return nil, channels or ('Could not decode ' .. format.name .. ' data')
+            end
+            return make(samples, rate, 16, channels, frames)
+        end
     end
-    return make(samples, rate, 16, channels, frames)
+    return nil
 end
 
 local function sourceString(source)
@@ -125,10 +159,10 @@ function Sound.newSoundData(a, b, c, d)
     local data = sourceString(a)
     local decoded, message = decodeWav(data)
     if not decoded and not message then
-        decoded, message = decodeOgg(data)
+        decoded, message = decodeCompressed(data)
     end
     if not decoded then
-        error(message or 'Could not decode sound data: only Ogg Vorbis and WAV are supported', 2)
+        error(message or 'Could not decode sound data: only Ogg Vorbis, MP3, FLAC and WAV are supported', 2)
     end
     return decoded
 end

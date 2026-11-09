@@ -41,7 +41,8 @@ LUAJIT = os.environ.get('LUAJIT_PREFIX', '/usr/local')
 # Source lists and flags per library -------------------------------------------------------------
 
 NATIVE_SOURCES = sorted((SRC / 'native').glob('*.c'))
-NATIVE_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(VENDOR / 'stb'), '-I' + str(SRC)]
+NATIVE_FLAGS = ['-O2', '-fvisibility=hidden', '-I' + str(VENDOR / 'stb'),
+                '-I' + str(VENDOR / 'drlibs'), '-I' + str(SRC)]
 
 BOX2D_SOURCES = sorted((VENDOR / 'box2d' / 'Box2D').rglob('*.cpp')) + sorted((SRC / 'box2d').glob('*.cpp'))
 BOX2D_FLAGS = ['-O2', '-DNDEBUG', '-fvisibility=hidden', '-I' + str(VENDOR / 'box2d'), '-std=c++11']

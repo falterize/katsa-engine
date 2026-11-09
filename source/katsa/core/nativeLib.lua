@@ -1,4 +1,4 @@
--- LuaJIT binding to katsa_native (filesystem, image codecs, Vorbis).
+-- LuaJIT binding to katsa_native (filesystem, image codecs, Vorbis, MP3, FLAC).
 local ffi = require('ffi')
 local Native = require('source.katsa.core.native')
 
@@ -25,6 +25,8 @@ void katsa_font_hmetrics(void* font, int codepoint, int* advance, int* lsb);
 int katsa_font_kern(void* font, int cp1, int cp2);
 uint8_t* katsa_font_bitmap(void* font, int codepoint, float scale, int* w, int* h, int* xoff, int* yoff);
 int16_t* katsa_vorbis_decode(const uint8_t* data, int size, int* channels, int* rate, int* frames);
+int16_t* katsa_mp3_decode(const uint8_t* data, int size, int* channels, int* rate, int* frames);
+int16_t* katsa_flac_decode(const uint8_t* data, int size, int* channels, int* rate, int* frames);
 ]])
 
 local Lib = {}
@@ -140,18 +142,38 @@ function Lib.encodePng(buffer, width, height)
     return text
 end
 
--- Returns interleaved int16 samples (buffer), channels, sample rate and frame count.
-function Lib.decodeVorbis(data)
+-- Audio decoders: each returns interleaved int16 samples (buffer), channels, sample rate and frame
+-- count, or nil plus a message. A katsa_native built before MP3/FLAC existed lacks the symbol.
+local function decodeAudio(symbol, label, data)
+    local library = lib()
+    local ok, decoder = pcall(function()
+        return library[symbol]
+    end)
+    if not ok then
+        return nil, label .. ' decoding needs a newer katsa_native: rebuild the native libraries'
+    end
     local channels, rate, frames = ffi.new('int[1]'), ffi.new('int[1]'), ffi.new('int[1]')
-    local pointer = lib().katsa_vorbis_decode(data, #data, channels, rate, frames)
+    local pointer = decoder(data, #data, channels, rate, frames)
     if pointer == nil then
-        return nil, 'Invalid Ogg Vorbis data'
+        return nil, 'Invalid ' .. label .. ' data'
     end
     local count = frames[0] * channels[0]
-    local buffer = ffi.new('int16_t[?]', count)
+    local buffer = ffi.new('int16_t[?]', math.max(count, 1))
     ffi.copy(buffer, pointer, count * 2)
-    lib().katsa_free(pointer)
+    library.katsa_free(pointer)
     return buffer, channels[0], rate[0], frames[0]
+end
+
+function Lib.decodeVorbis(data)
+    return decodeAudio('katsa_vorbis_decode', 'Ogg Vorbis', data)
+end
+
+function Lib.decodeMp3(data)
+    return decodeAudio('katsa_mp3_decode', 'MP3', data)
+end
+
+function Lib.decodeFlac(data)
+    return decodeAudio('katsa_flac_decode', 'FLAC', data)
 end
 
 -- Fonts -----------------------------------------------------------------------------------------

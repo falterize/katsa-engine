@@ -14,7 +14,7 @@
 
 /* Bumped when an exported function is added, so Lua can tell an older library apart. */
 KATSA_EXPORT int katsa_version(void) {
-    return 1;
+    return 2;
 }
 
 /* Releases every buffer this library hands to Lua (file data, pixels, samples, glyph bitmaps). */
