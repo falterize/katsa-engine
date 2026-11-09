@@ -50,7 +50,9 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     // floor that is several world units per pixel, so a tap that lands a pixel or two away would
     // read the floor itself as an occluder (this drew bands). Every tap tolerates the surface
     // slope times its pixel distance from the centre.
-    highp float slope=max(abs(dx.z),abs(dy.z));
+    // The larger side of each axis: depth is stored in steps on far floors, and the smaller side
+    // is often zero there.
+    highp float slope=max(max(abs(px1.z-p.z),abs(p.z-px0.z)),max(abs(py1.z-p.z),abs(p.z-py0.z)));
     highp float angle=noise(screen)*6.2831853;
     highp float occlusion=0.0;
     for(int i=0;i<24;i++) {
@@ -70,5 +72,8 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         highp float tolerance=bias+slope*(1.0+length((quv-uv)*depthSize))+q.z*0.004;
         occlusion+=(sceneZ<=q.z-tolerance ? 1.0 : 0.0)*range;
     }
-    return vec4(vec3(1.0-occlusion/float(sampleCount)),1.0);
+    // When one pixel already spans more depth than the search radius (far, grazing floors) the
+    // depth cannot resolve occluders of that size: fade the effect out instead of striping.
+    highp float confidence=1.0-smoothstep(.5,1.5,slope/radius);
+    return vec4(vec3(1.0-confidence*occlusion/float(sampleCount)),1.0);
 }
