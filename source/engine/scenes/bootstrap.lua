@@ -209,6 +209,27 @@ function Bootstrap.install(project, options)
         manager:dispatch('textinput', text)
     end
 
+    -- Controllers: the platform reports instance ids, scenes receive katsa.gamepad objects.
+    function katsa.gamepadadded(id)
+        manager:dispatch('gamepadadded', katsa.gamepad.get(id))
+    end
+
+    function katsa.gamepadremoved(id)
+        manager:dispatch('gamepadremoved', katsa.gamepad.forget(id))
+    end
+
+    function katsa.gamepadpressed(id, button)
+        manager:dispatch('gamepadpressed', katsa.gamepad.get(id), button)
+    end
+
+    function katsa.gamepadreleased(id, button)
+        manager:dispatch('gamepadreleased', katsa.gamepad.get(id), button)
+    end
+
+    function katsa.gamepadaxis(id, axis, value)
+        manager:dispatch('gamepadaxis', katsa.gamepad.get(id), axis, value)
+    end
+
     function katsa.keyreleased(key)
         manager:dispatch('keyreleased', key)
     end

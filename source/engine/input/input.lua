@@ -36,6 +36,7 @@ function Input:reset()
 end
 require('./pointers').install(Input)
 require('./movement').install(Input)
+require('./gamepads').install(Input)
 
 function Input:keypressed(key)
     local focused = require('source.engine.ui.widgets.textFocus').current

@@ -184,6 +184,7 @@ function Platform.new(config)
         es = Native.os() == 'Android' or (config and config.gles) == true,
         rects = { ffi.new('int[1]'), ffi.new('int[1]') },
     }, Platform)
+    self:initGamepads()
     return self
 end
 
@@ -529,6 +530,9 @@ end
 
 function Platform:translate(e)
     local t = e.type
+    if self:isGamepadEvent(t) then
+        return self:translateGamepad(e)
+    end
     if self.subWindows and self:routeSubWindowEvent(e) then
         return nil
     end
@@ -756,6 +760,9 @@ function Platform:close()
     end
     self.sdl.SDL_Quit()
 end
+
+-- Game controllers, rumble and motion sensors (see sdl2gamepad.lua).
+require('./sdl2gamepad')(Platform)
 
 -- Extra windows and per-window opacity (see sdl2windows.lua).
 require('./sdl2windows')(Platform, {

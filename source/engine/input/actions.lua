@@ -6,13 +6,14 @@ Actions.__index = Actions
 function Actions.new()
     return setmetatable({
         keys = {},
+        padButtons = {},
         pressed = {},
         pendingLook = { 0, 0 },
         values = { Move = { 0, 0, 0 }, Look = { 0, 0 }, Jump = false, Interact = false },
         bindings = {
             Move = { left = 'a', right = 'd', forward = 'w', back = 's', up = 'e', down = 'q' },
-            Jump = { key = 'space' },
-            Interact = { key = 'f' },
+            Jump = { key = 'space', gamepad = 'a' },
+            Interact = { key = 'f', gamepad = 'x' },
         },
         listeners = {},
     }, Actions)
@@ -54,6 +55,22 @@ function Actions:keyreleased(key)
     self.keys[key] = nil
 end
 
+-- Gamepad buttons trigger the actions bound with `gamepad = '<button>'`, like keys do.
+function Actions:gamepadpressed(button)
+    if not self.padButtons[button] then
+        for name, binding in pairs(self.bindings) do
+            if binding.gamepad == button then
+                self:trigger(name)
+            end
+        end
+    end
+    self.padButtons[button] = true
+end
+
+function Actions:gamepadreleased(button)
+    self.padButtons[button] = nil
+end
+
 function Actions:held(key)
     return key and self.keys[key] and 1 or 0
 end
@@ -77,6 +94,7 @@ function Actions:updateMove(x, z, up, down)
     for name, binding in pairs(self.bindings) do
         if type(self.values[name]) == 'boolean' then
             self.values[name] = self:held(binding.key) > 0
+                or (binding.gamepad ~= nil and self.padButtons[binding.gamepad] == true)
         end
     end
     return m
@@ -94,7 +112,7 @@ function Actions:value(name)
 end
 
 function Actions:reset()
-    self.keys, self.pressed = {}, {}
+    self.keys, self.padButtons, self.pressed = {}, {}, {}
     self.pendingLook[1], self.pendingLook[2] = 0, 0
     local m, l = self.values.Move, self.values.Look
     m[1], m[2], m[3], l[1], l[2] = 0, 0, 0, 0, 0

@@ -54,7 +54,13 @@ function Movement.install(Input)
         if self.scene.freeDebugCamera and self.scene.character then
             self.scene.character:setMove(0, 0)
         end
-        local movement = self.actions:updateMove(self.axisX, self.axisY, self.up, self.down)
+        local padX, padZ = self:updateGamepads(dt)
+        local movement = self.actions:updateMove(
+            self.axisX + padX,
+            self.axisY + padZ,
+            self.up,
+            self.down
+        )
         local x, z = movement[1], movement[3]
         local look = self.actions.values.Look
         if hasWorldCamera(self.scene) and (look[1] ~= 0 or look[2] ~= 0) then

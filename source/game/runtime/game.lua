@@ -262,6 +262,18 @@ function Game:keyreleased(key)
     self.input:keyreleased(key)
 end
 
+function Game:gamepadpressed(pad, button)
+    if button == 'start' then
+        self.pauseMenu:toggle()
+        return
+    end
+    self.input:gamepadpressed(pad, button)
+end
+
+function Game:gamepadreleased(pad, button)
+    self.input:gamepadreleased(pad, button)
+end
+
 function Game:pointercancelled(id)
     self.input:cancel(id)
 end

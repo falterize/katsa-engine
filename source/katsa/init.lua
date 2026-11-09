@@ -16,6 +16,7 @@ local lazy = {
     window = 'source.katsa.core.window',
     keyboard = 'source.katsa.core.keyboard',
     mouse = 'source.katsa.core.mouse',
+    gamepad = 'source.katsa.core.gamepad',
     graphics = 'source.katsa.graphics',
     image = 'source.katsa.image',
     sound = 'source.katsa.sound',
@@ -136,6 +137,7 @@ function katsa.attachPlatform(platform)
     katsa.window.setPlatform(platform)
     katsa.keyboard.setPlatform(platform)
     katsa.mouse.setPlatform(platform)
+    katsa.gamepad.setPlatform(platform)
     katsa.system.setPlatform(platform)
     katsa.event.setSource(function()
         return platform:poll()
