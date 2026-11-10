@@ -63,7 +63,8 @@ local function inheritInitializers(class, instance)
     end
     require('source.engine.nodes.core.extensions').run(class.name, instance)
 end
--- Spatial properties a class never reads. They do not exist on its nodes: no default value, no
+-- Properties a class never reads (spatial ones, or `visible` on nodes that draw nothing and own no
+-- children). They do not exist on its nodes: no default value, no
 -- inspector row, no clone entry. A plugin class lists its own in `omit = { 'scale', ... }`.
 local omit = {
     NavMap3D = { 'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup' },
@@ -76,6 +77,8 @@ local omit = {
     Camera3D = { 'transparency', 'scale' },
     Beam3D = { 'position', 'rotation', 'scale', 'inheritScale' },
     Trail3D = { 'position', 'rotation', 'scale', 'inheritScale' },
+    NavAgent3D = { 'visible' },
+    InverseKinematics3D = { 'visible' },
 }
 
 local cache = setmetatable({}, { __mode = 'k' })

@@ -95,6 +95,7 @@ function Tests.run(tester)
         'lights omit scale and transparency entirely'
     )
     tester:check(not keys(agent):find(' position ') and agent.position == nil, 'NavAgent3D is a technical node without any transform')
+    tester:check(not keys(agent):find(' visible ') and agent.visible == nil, 'NavAgent3D has no visible property')
 end
 
 return Tests

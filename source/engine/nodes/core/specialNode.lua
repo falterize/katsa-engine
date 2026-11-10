@@ -51,7 +51,10 @@ function Registry.register(world, name, definition)
     end
     local initialize = definition.initialize
     class.initialize = function(node)
-        node.enabled, node.visible = node.enabled ~= false, node.visible ~= false
+        node.enabled = node.enabled ~= false
+        if not require('source.engine.nodes.core.classPolicy').omitted(class).visible then
+            node.visible = node.visible ~= false
+        end
         for key, descriptor in pairs(class.propertySchema) do
             if node[key] == nil and descriptor.default ~= nil then
                 node[key] = Tables.copyAuthored(descriptor.default)
