@@ -97,10 +97,12 @@ function Module.run(self)
         return session.mode == 'playing'
     end, 60)
     self:check(playing, 'the host session joins its own server process')
-    self:check(
-        session.client.hostId == session.client:getPlayerId(),
-        'the hosting player is the host of that server'
-    )
+    -- The claim travels after the connection: give the answer a moment to arrive.
+    local claimed = waitFor(function()
+        scene:update(1 / 60, 1 / 60)
+        return session.client.hostId == session.client:getPlayerId()
+    end, 10)
+    self:check(claimed, 'the hosting player is the host of that server')
     local child = session.serverProcess
     session:leave()
     self:check(
