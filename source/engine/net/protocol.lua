@@ -21,4 +21,7 @@ return {
     SNAPSHOT = 20,
     INPUT = 21,
     CLIENT_STATE = 22,
+    -- unreliable round trip probes: the receiver answers a PING with a PONG carrying the same time
+    PING = 23,
+    PONG = 24,
 }

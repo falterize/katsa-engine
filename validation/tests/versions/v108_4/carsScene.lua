@@ -108,6 +108,7 @@ function Tests:draw()
             focused = false,
             stack = { { update = function() end, updateInBackground = function() updated = updated + 1 end } },
             frameTime = 0,
+            inputMap = { pollGamepads = function() end, update = function() end },
             flushTransitions = function() end,
             time = { update = function(_, dt) return dt end },
             journal = {},
@@ -151,7 +152,7 @@ function Tests:draw()
         self:check(count == 2, 'the player car and the bot are drawn')
         self:shot('start')
         -- The bot only patrols here, so it cannot ram the test drive.
-        session.server.bot.sightRadius = 0
+        session.server.game.bot.sightRadius = 0
     elseif frame == 201 then
         local walker = session.walker
         self:check(
@@ -233,7 +234,7 @@ function Tests:draw()
         self:check(session.hud.info.text:find('Driving'), 'the HUD shows the seat')
         -- The car is a real rigid body: drive it at the east wall and it must stay inside.
         local netId = session.client:getCar()
-        local body = session.server.bodies[netId]
+        local body = session.client.bodies[netId]
         self:check(
             body and body.node.bodyType == 'Dynamic' and body.node.body:getMass() > 500,
             'the player car is a dynamic Body3D with real mass'
@@ -242,14 +243,14 @@ function Tests:draw()
         self.wall = netId
         host.input.actions.keys.w = true
     elseif frame == 392 then
-        local model = session.server.cars[self.wall]
+        local model = session.client.cars[self.wall]
         self:check(
             math.abs(model.heading - 90) < 3,
             'a car spawned with heading 90 faces +x (heading ' .. ('%.0f'):format(model.heading) .. ')'
         )
     elseif frame == 470 then
-        -- The hosting machine draws the server's own car: no network delay behind the bodies.
-        local model = session.server.cars[self.wall]
+        -- The hosting player drives like any client: the car is drawn at its own physics pose.
+        local model = session.client.cars[self.wall]
         local drawn = session.client.cars[self.wall]
         local gap = math.sqrt((drawn.rx - model.x) ^ 2 + (drawn.rz - model.z) ^ 2)
         self:check(
@@ -261,7 +262,7 @@ function Tests:draw()
         -- drawn at the same interpolated pose (the drawn car used to trail by a whole step).
         host:update(1 / 25, 1 / 25)
         local physics = host.world.physics
-        local body = session.server.bodies[self.wall]
+        local body = session.client.bodies[self.wall]
         local drawn = session.client.cars[self.wall]
         local gap = math.huge
         for _, entry in ipairs(physics:debugPoses() or {}) do
@@ -274,7 +275,7 @@ function Tests:draw()
             ('the car is drawn at its collision pose after a two-step frame (gap %.3f m)'):format(gap)
         )
     elseif frame == 560 then
-        local model = session.server.cars[self.wall]
+        local model = session.server.game.cars[self.wall]
         self:check(
             model.x > 45 and model.x < 61.5 and math.abs(model.z) < 61,
             'the wall stops the car inside the arena (x=' .. ('%.1f'):format(model.x) .. ')'
@@ -282,7 +283,7 @@ function Tests:draw()
         self:shot('wall')
         host.input.actions.keys.w = nil
     elseif frame == 580 then
-        local model = session.server.cars[self.wall]
+        local model = session.server.game.cars[self.wall]
         self:check(
             math.abs(model.pitch) < 30 and math.abs(model.roll) < 30 and model.y > 0.3,
             'the car rests on its wheels after the crash'
@@ -291,7 +292,7 @@ function Tests:draw()
     elseif frame == 596 then
         local walker = session.walker
         self:check(session.client:getCar() == nil, 'E in a car gets the player out')
-        local car = session.server.cars[self.wall]
+        local car = session.server.game.cars[self.wall]
         local apart = math.sqrt((walker.model.x - car.x) ^ 2 + (walker.model.z - car.z) ^ 2)
         self:check(
             walker.fsm.name ~= 'drive' and apart < 5,
@@ -512,7 +513,7 @@ function Tests:draw()
         end
         -- A hard hit beside a wheel tears it off on the server...
         local hitId, hitCar
-        for netId, candidate in pairs(session.server.cars) do
+        for netId, candidate in pairs(session.server.game.cars) do
             if candidate.damage and (not hitId or netId > hitId) then
                 hitId, hitCar = netId, candidate
             end
@@ -521,7 +522,7 @@ function Tests:draw()
         if session.client.cars[hitId] then
             session.client.cars[hitId].detached = 0
         end
-        session.server:addDent(hitId, hitCar, {
+        session.server.game:addDent(hitId, hitCar, {
             x = -0.9, y = 0.4, z = 1.3, nx = 1, ny = 0, nz = 0.2, speed = 32,
         }, 1e9)
         self:check(hitCar.detached ~= 0, 'a hard hit beside a wheel tears it off (server)')
@@ -574,7 +575,7 @@ function Tests:draw()
     elseif frame == 740 then
         local rc = self.remote.client
         local netId, car = rc:getCar()
-        local server = session.server
+        local server = session.server.game
         self:check(netId ~= nil, 'a second player joined and got a car')
         self.remoteId = netId
         self:check(
@@ -588,6 +589,17 @@ function Tests:draw()
         self.remoteStart = { car.x, car.z }
         self.remote.throttle = 1
     elseif frame == 745 then
+        -- The server reports every player's ping, and the connection can be degraded on demand.
+        local known = 0
+        for _, player in ipairs(session.client:getPlayers()) do
+            known = known + (type(player.ping) == 'number' and 1 or 0)
+        end
+        self:check(known == 2, 'the player list knows the ping of every player (' .. known .. ')')
+        local conditions = session.client.client:getConditions()
+        session.social.callbacks.cycleClientNet()
+        self:check(conditions:getPreset() == 'good', 'the connection button cycles the simulated preset')
+        conditions:set('off')
+        session:refreshNetwork()
         -- The host's player list has a working Kick button for the other player.
         local input, social = session.scene.input, session.social
         input:toggleMenu()
@@ -611,7 +623,7 @@ function Tests:draw()
         input:toggleMenu()
     elseif frame == 920 then
         -- A car driven by another client is a kinematic stand-in: it still carries riders.
-        local body = session.server.bodies[self.remoteId]
+        local body = session.server.game.bodies[self.remoteId]
         local v = body.node.body:getVelocity({})
         self:check(
             body.mode == 'follow' and math.sqrt(v[1] ^ 2 + v[3] ^ 2) > 3,
@@ -619,7 +631,7 @@ function Tests:draw()
         )
     elseif frame == 940 then
         local _, car = self.remote.client:getCar()
-        local server = session.server
+        local server = session.server.game
         local moved = math.sqrt((car.x - self.remoteStart[1]) ^ 2 + (car.z - self.remoteStart[2]) ^ 2)
         local mirror = server.cars[self.remoteId]
         self:check(moved > 10, 'the driver drives its own car (moved ' .. ('%.1f'):format(moved) .. ')')
@@ -655,7 +667,7 @@ function Tests:draw()
             print(('PROBE %-34s mean %.2f ms  peak %.2f'):format(stage.name, stage.meanMilliseconds or stage.mean or 0, stage.peakMilliseconds or stage.peak or 0))
         end
     elseif frame == 1060 then
-        local server = session.server
+        local server = session.server.game
         self:check(
             server.server:getAuthority(self.remoteId) == nil and server.bodies[self.remoteId].mode == 'dynamic',
             'a car without a driver goes back to server authority'

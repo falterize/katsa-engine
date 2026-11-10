@@ -64,7 +64,7 @@ function Social.create(scene, callbacks)
     self.players = styled(ui, ui:container({
         name = 'PlayersPanel',
         position = { 0.5, 0, 0.5, 0 },
-        size = { 0, 380, 0, 360 },
+        size = { 0, 380, 0, 410 },
         anchorPoint = { 0.5, 0.5 },
         backgroundColor = PANEL,
         backgroundTransparency = 0.1,
@@ -87,12 +87,12 @@ function Social.create(scene, callbacks)
     }, self.players)
     self.list = ui:scroll({
         position = { 0, 12, 0, 48 },
-        size = { 1, -24, 1, -146 },
+        size = { 1, -24, 1, -196 },
         length = 0,
     }, self.players)
     -- Host tools: shown to the host only (the server checks again).
     self.hostTools = ui:container({
-        position = { 0, 12, 1, -92 },
+        position = { 0, 12, 1, -142 },
         size = { 1, -24, 0, 60 },
         backgroundTransparency = 1,
         visible = false,
@@ -117,7 +117,40 @@ function Social.create(scene, callbacks)
             end)
         end
     end
+    -- Network simulation: the player's own connection, and (hosting) the whole server.
+    self.net = ui:container({
+        position = { 0, 12, 1, -80 },
+        size = { 1, -24, 0, 44 },
+        backgroundTransparency = 1,
+    }, self.players)
+    self.netClient = ui:button({
+        position = { 0, 0, 0, 0 },
+        size = { 0.5, -4, 1, 0 },
+        text = '',
+        fontSize = 13,
+        backgroundColor = { 0.2, 0.25, 0.3 },
+    }, self.net)
+    self.netClient:connect('press', function()
+        callbacks.cycleClientNet()
+    end)
+    self.netServer = ui:button({
+        position = { 0.5, 2, 0, 0 },
+        size = { 0.5, -2, 1, 0 },
+        text = '',
+        fontSize = 13,
+        backgroundColor = { 0.2, 0.25, 0.3 },
+    }, self.net)
+    self.netServer:connect('press', function()
+        callbacks.cycleServerNet()
+    end)
     return self
+end
+
+-- Labels of the network simulation buttons; serverLabel is nil when this process is no server.
+function Social:setNetwork(clientLabel, serverLabel)
+    self.netClient.text = 'My connection: ' .. clientLabel
+    self.netServer.visible = serverLabel ~= nil
+    self.netServer.text = 'Server: ' .. (serverLabel or '')
 end
 
 local function text(self)
@@ -224,7 +257,18 @@ function Social:isTyping()
     return self.typing == true
 end
 
--- players: array of { id, name }; hostId; myId. Only the host gets Kick buttons.
+local function pingColor(ping)
+    if not ping then
+        return { 0.6, 0.6, 0.6 }
+    elseif ping < 80 then
+        return { 0.45, 0.9, 0.5 }
+    elseif ping < 160 then
+        return { 1, 0.85, 0.35 }
+    end
+    return { 1, 0.45, 0.4 }
+end
+
+-- players: array of { id, name, ping }; hostId; myId. Only the host gets Kick buttons.
 function Social:setPlayers(players, hostId, myId)
     local ui = self.ui
     self.hostTools.visible = myId == hostId
@@ -239,11 +283,19 @@ function Social:setPlayers(players, hostId, myId)
         local tags = (player.id == hostId and ' [HOST]' or '') .. (player.id == myId and ' (you)' or '')
         ui:text({
             position = { 0, 6, 0, y },
-            size = { 1, -110, 0, 34 },
+            size = { 1, -170, 0, 34 },
             text = player.name .. tags,
             fontSize = 17,
             align = 'left',
             textColor = player.id == hostId and { 1, 0.8, 0.3 } or { 1, 1, 1 },
+        }, self.list)
+        ui:text({
+            position = { 1, -166, 0, y },
+            size = { 0, 64, 0, 34 },
+            text = player.ping and (math.floor(player.ping + 0.5) .. ' ms') or '-',
+            fontSize = 15,
+            align = 'right',
+            textColor = pingColor(player.ping),
         }, self.list)
         if myId == hostId and player.id ~= myId then
             do

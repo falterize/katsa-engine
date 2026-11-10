@@ -7,15 +7,12 @@
 --   client:connect()
 --   -- every frame: client:update(dt)
 --
--- Hosting: pass `localServer = server` (a Net.Server running in this process). Entities whose
--- definition has a `mirror(from, to)` function and that the server simulates itself (no client
--- has authority) are then read straight from the server's object each frame, with no
--- interpolation delay, instead of from a replica a fraction of a second behind the bodies the
--- server really steps. `client:isMirrored(id)` tells the game to blend them with the physics step.
 local Codec = require('./codec')
 local Link = require('./link')
+local Conditions = require('./conditions')
 local Channels = require('./channels')
 local P = require('./protocol')
+local Ping = require('./ping')
 local Registry = require('./registry')
 local Remote = require('./remote')
 local Signal = require('./signal')
@@ -53,6 +50,8 @@ function Client.new(context, options)
         maxExtrapolation = options.maxExtrapolation or 0.06,
         jitter = 0,
         netStats = {},
+        ping = Ping.new(),
+        conditions = Conditions.new(options.simulate),
         inputProvider = function()
             return {}
         end,
@@ -86,17 +85,23 @@ function Client:connect()
         port = self.options.port,
         timeout = self.options.timeout,
     })
-    self.link = Link.new(self.host.server, self.options.simulate)
+    self.link = Link.new(self.host.server, self.conditions)
     self.state = 'connecting'
     return self
+end
+
+-- The simulated network conditions of this connection (Conditions: latency, jitter, loss).
+function Client:getConditions()
+    return self.conditions
 end
 
 function Client:isConnected()
     return self.state == 'connected'
 end
 
+-- Round trip time in milliseconds, measured through the game link (simulated conditions count).
 function Client:getPing()
-    return self.host and self.host.server:getPing() or 0
+    return self.ping:get() or (self.host and self.host.server:getPing() or 0)
 end
 
 -- Estimated current server time (seconds), smoothed from snapshot timestamps.
@@ -303,6 +308,13 @@ local function handleMessage(self, data)
         end
     elseif kind == P.SNAPSHOT then
         handleSnapshot(self, reader)
+    elseif kind == P.PING then
+        local writer = Codec.writer()
+        writer:u8(P.PONG)
+        writer:f64(reader:f64())
+        send(self, writer, P.UNRELIABLE)
+    elseif kind == P.PONG then
+        self.ping:reply(reader:f64())
     elseif kind == P.PLAYER_JOIN then
         local player = { id = reader:u16(), name = reader:string() }
         self.players[player.id] = player
@@ -386,22 +398,6 @@ local function sendOwnedState(self)
     end
 end
 
--- True (after copying the server's state) when this entity is read from the local server.
-local function mirrorLocal(self, entity)
-    local server, definition = self.options.localServer, entity.definition
-    local source = server and definition.mirror and server.entities[entity.id]
-    entity.mirrored = source ~= nil and source.authority == nil
-    if entity.mirrored then
-        definition.mirror(source.object, entity.object)
-    end
-    return entity.mirrored
-end
-
-function Client:isMirrored(netId)
-    local entity = self.entities[netId]
-    return entity ~= nil and entity.mirrored == true
-end
-
 -- Moves the delay toward what the measured jitter needs: up quickly (a starved entity freezes),
 -- down slowly (so a quiet moment does not cause the next stall).
 local function adaptDelay(self, dt)
@@ -426,10 +422,7 @@ local function interpolate(self)
     local extrapolated = 0
     for _, entity in pairs(self.entities) do
         local definition = entity.definition
-        if
-            not mirrorLocal(self, entity)
-            and not (entity.local_ and (definition.simulate or definition.clientAuthoritative))
-        then
+        if not (entity.local_ and (definition.simulate or definition.clientAuthoritative)) then
             local buffer = entity.buffer
             local from, to = buffer[1], buffer[#buffer]
             for index = 1, #buffer - 1 do
@@ -554,7 +547,11 @@ function Client:update(dt)
         if event.type == 'connect' then
             sendHello(self)
         elseif event.type == 'receive' then
-            handleMessage(self, event.data)
+            self.link:receive(event.data, event.channel, function(data)
+                if self.host == host then
+                    handleMessage(self, data)
+                end
+            end)
         elseif event.type == 'disconnect' then
             finish(self, event.reason)
         end
@@ -576,6 +573,12 @@ function Client:update(dt)
         end
         adaptDelay(self, dt)
         interpolate(self)
+    end
+    if self.state == 'connected' and self.ping:isDue(dt) then
+        local writer = Codec.writer()
+        writer:u8(P.PING)
+        writer:f64(self.ping:stamp())
+        send(self, writer, P.UNRELIABLE)
     end
     self.link:update(dt)
     if self.host then

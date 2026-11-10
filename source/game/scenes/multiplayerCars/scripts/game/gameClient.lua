@@ -10,14 +10,13 @@ GameClient.__index = GameClient
 
 -- options: address, port, name, simulate, input = function() -> { throttle, steer, nitro },
 -- world (a World3D with physics: the client then simulates the cars it owns and keeps
--- kinematic stand-ins for the others; leave nil when a server in this process owns the bodies).
+-- kinematic stand-ins for the others).
 function GameClient.new(context, options)
     local client = Net.Client.new(context, {
         address = options.address,
         port = options.port,
         name = options.name,
         simulate = options.simulate,
-        localServer = options.localServer,
     })
     local self = setmetatable({
         client = client,
@@ -89,6 +88,15 @@ function GameClient.new(context, options)
         katsa.log.log(('[chat] %s%s: %s'):format(isHost and '[HOST] ' or '', name, text), 'multiplayerCars')
         if self.onChat then
             self.onChat(line)
+        end
+    end)
+    self.pings = {} -- player id -> round trip in ms, as the server measures it
+    client:remote('pings'):onClient(function(list)
+        for index = 1, #list, 2 do
+            self.pings[list[index]] = list[index + 1]
+        end
+        if self.onRoster then
+            self.onRoster()
         end
     end)
     client:remote('host'):onClient(function(id)
@@ -307,11 +315,14 @@ function GameClient:kickPlayer(id, callback, reason)
     self.client:remote('kick'):request(callback or function() end, id, reason or '')
 end
 
--- Players currently in the game: array of { id, name }.
+-- Players currently in the game: array of { id, name, ping } (ping in ms, nil until known).
+-- Our own entry uses the client's measurement, which is fresher than the server's broadcast.
 function GameClient:getPlayers()
     local list = {}
+    local myId = self:getPlayerId()
     for _, player in pairs(self.client.players) do
-        list[#list + 1] = { id = player.id, name = player.name }
+        local ping = player.id == myId and self.client:getPing() or self.pings[player.id]
+        list[#list + 1] = { id = player.id, name = player.name, ping = ping }
     end
     return list
 end

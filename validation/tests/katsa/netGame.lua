@@ -141,13 +141,12 @@ return function(T)
     end)
     server:start()
 
-    local function newClient(name, input, localServer)
+    local function newClient(name, input)
         local client = Net.Client.new({}, {
             address = '127.0.0.1',
             port = port,
             name = name,
             simulate = simulate,
-            localServer = localServer,
         })
         client:define('Avatar', avatar(true))
         client:define(
@@ -334,48 +333,6 @@ return function(T)
     end
     T.check(left == 1, 'netGame: the leaving player avatar is removed for others')
 
-    -- A client in the server's own process reads mirrored entities straight from the server.
-    local probe = {
-        fields = { 'position:vec2' },
-        create = function()
-            return { position = { 0, 0 } }
-        end,
-        mirror = function(from, to)
-            to.position[1], to.position[2] = from.position[1], from.position[2]
-        end,
-    }
-    server:define('Probe', probe)
-    local hostClient = newClient('Host', function()
-        return {}
-    end, server)
-    hostClient:define('Probe', probe)
-    one:define('Probe', probe)
-    local watched = server:spawn('Probe', {})
-    for _ = 1, 90 do
-        server:update(dt)
-        one:update(dt)
-        hostClient:update(dt)
-    end
-    watched.position[1] = 42
-    server:update(dt)
-    hostClient:update(dt)
-    local seen
-    for _, entity in pairs(hostClient.entities) do
-        if entity.kind == 'Probe' then
-            seen = entity
-        end
-    end
-    T.check(
-        seen and hostClient:isMirrored(seen.id) and seen.object.position[1] == 42,
-        'netGame: a local client reads the server entity with no delay'
-    )
-    server:setAuthority(watched, server:getPlayers()[1])
-    hostClient:update(dt)
-    T.check(
-        not hostClient:isMirrored(seen.id),
-        'netGame: an entity with a remote authority is interpolated again'
-    )
-    hostClient:disconnect()
     one:disconnect()
     three:disconnect()
     server:stop()

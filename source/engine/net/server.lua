@@ -8,8 +8,10 @@
 --   -- every frame: server:update(dt)
 local Codec = require('./codec')
 local Link = require('./link')
+local Conditions = require('./conditions')
 local Channels = require('./channels')
 local P = require('./protocol')
+local Ping = require('./ping')
 local Registry = require('./registry')
 local Remote = require('./remote')
 local Signal = require('./signal')
@@ -20,8 +22,10 @@ Server.__index = Server
 local Player = {}
 Player.__index = Player
 
+-- Round trip time in milliseconds, measured through the game link (so simulated conditions
+-- count); the transport's own estimate until the first answer.
 function Player:getPing()
-    return self.peer:getPing()
+    return self.ping:get() or self.peer:getPing()
 end
 
 function Player:kick(reason)
@@ -54,6 +58,8 @@ function Server.new(context, options)
         tick = 0,
         time = 0,
         accumulator = 0,
+        -- Simulated network conditions shared by every player's link (see conditions.lua).
+        conditions = Conditions.new(options.simulate),
         playerAdded = Signal.new(),
         playerRemoved = Signal.new(),
         ticked = Signal.new(),
@@ -68,6 +74,11 @@ end
 
 function Server:define(kind, definition)
     return self.registry:define(kind, definition)
+end
+
+-- The simulated network conditions of every connection (Conditions: latency, jitter, loss).
+function Server:getConditions()
+    return self.conditions
 end
 
 function Server:remote(name)
@@ -284,7 +295,7 @@ end
 local function handleHello(self, peer, reader)
     local version = reader:u8()
     local name = reader:string()
-    local link = Link.new(peer, self.options.simulate)
+    local link = Link.new(peer, self.conditions)
     local function reject(reason)
         local writer = Codec.writer()
         writer:u8(P.REJECT)
@@ -319,6 +330,7 @@ local function handleHello(self, peer, reader)
         lastInput = nil,
         lastReceivedSeq = 0,
         lastAppliedSeq = 0,
+        ping = Ping.new(),
         known = {},
         sent = {},
         data = {},
@@ -420,6 +432,13 @@ local function handleMessage(self, player, data)
         handleInput(player, reader)
     elseif kind == P.CLIENT_STATE then
         handleClientState(self, player, reader)
+    elseif kind == P.PING then
+        local writer = Codec.writer()
+        writer:u8(P.PONG)
+        writer:f64(reader:f64())
+        send(player, writer, P.UNRELIABLE)
+    elseif kind == P.PONG then
+        player.ping:reply(reader:f64())
     elseif kind == P.REMOTE then
         local remote = self.remotes[reader:string()]
         local args, count = reader:values()
@@ -451,7 +470,11 @@ function Server:poll()
                     handleHello(self, event.peer, Codec.reader(event.data:sub(2)))
                 end
             elseif player then
-                handleMessage(self, player, event.data)
+                player.link:receive(event.data, event.channel, function(data)
+                    if self.players[player.id] == player then
+                        handleMessage(self, player, data)
+                    end
+                end)
             end
         elseif event.type == 'disconnect' then
             local player = self.peerPlayers[event.peer.id]
@@ -600,6 +623,12 @@ function Server:update(dt)
         end
     end
     for _, player in pairs(self.players) do
+        if player.ready and player.ping:isDue(dt) then
+            local writer = Codec.writer()
+            writer:u8(P.PING)
+            writer:f64(player.ping:stamp())
+            send(player, writer, P.UNRELIABLE)
+        end
         player.link:update(dt)
     end
     if self.announcer then

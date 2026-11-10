@@ -28,7 +28,7 @@ local function live()
 end
 
 function Tests:report(label)
-    local server = self.session.server
+    local server = self.session.server.game
     local bots = 0
     for _ in pairs(server.bots) do
         bots = bots + 1
@@ -63,7 +63,7 @@ function Tests:draw()
     end
     self.host:update(1 / 60, 1 / 60)
     self.host:draw()
-    local server = self.session.server
+    local server = self.session.server.game
     local requester = server and server.hostPlayer
     if not requester then
         return

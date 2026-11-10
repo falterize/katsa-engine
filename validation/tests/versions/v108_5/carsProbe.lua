@@ -46,7 +46,7 @@ function Tests:draw()
         print(('RSTATS f%d %s | shadow updated=%s casters=%s tris=%s'):format(frame, table.concat(out, ' '), tostring(sh and sh.updatedFaces), tostring(sh and sh.casterSubmissions), tostring(sh and sh.triangles)))
     end
     if frame == 201 then
-        session.server.bot.sightRadius = 0
+        session.server.game.bot.sightRadius = 0
         session:changeCar()
     elseif frame == 215 then
         print('SEAT', session.client:getCar() ~= nil)

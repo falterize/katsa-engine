@@ -84,7 +84,7 @@ function Tests:measure(host, session)
     local client = session.client
     for netId, car in pairs(client.cars) do
         local view = session.views[netId]
-        local body = client.bodies[netId] or (session.server and session.server.bodies[netId])
+        local body = client.bodies[netId] or (session.server and session.server.game.bodies[netId])
         if view and body then
             local chassis = chassisOfView(view, car.config.rideHeight)
             local entry = entryFor(poses, body.node.body.raw)
@@ -117,7 +117,7 @@ function Tests:measure(host, session)
         local netId = client:getCar()
         if netId then
             car = client.cars[netId]
-            carBody = client.bodies[netId] or (session.server and session.server.bodies[netId])
+            carBody = client.bodies[netId] or (session.server and session.server.game.bodies[netId])
         end
         if entry and car and carBody and carBody.mode == 'dynamic' then
             local m = carBody.node.body:getRenderMatrix()

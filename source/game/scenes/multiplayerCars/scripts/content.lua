@@ -11,6 +11,7 @@ local Seats = require('./game.seats')
 local WalkerView = require('./walker.view')
 local WalkerProxy = require('./walker.proxy')
 local GameServer = require('./game.gameServer')
+local ServerHost = require('./game.serverHost')
 local GameClient = require('./game.gameClient')
 local PhysicsCar = require('./game.physicsCar')
 local CarAxes = require('./game.carAxes')
@@ -25,6 +26,7 @@ local Session = {}
 -- Exposed so tests can build a second, independent client and physics world.
 Session.GameClient, Session.ArenaView = GameClient, ArenaView
 Session.PhysicsCar = PhysicsCar
+Session.ServerHost = ServerHost
 Session.__index = Session
 
 local DEFAULT_PORT = 7777
@@ -139,6 +141,18 @@ function Session.new(scene)
                 self.client:hostCommand(command, function(ok, why)
                     self.hud:flash(ok and 'Done' or ('Cannot: ' .. tostring(why)))
                 end)
+            end
+        end,
+        cycleClientNet = function()
+            if self.client then
+                self.client.client:getConditions():cycle()
+                self:refreshNetwork()
+            end
+        end,
+        cycleServerNet = function()
+            if self.server then
+                self.server:getServer():getConditions():cycle()
+                self:refreshNetwork()
             end
         end,
         kick = function(id)
@@ -291,12 +305,13 @@ function Session:startClient(address, port, name)
         address = address,
         port = port,
         name = (name and name ~= '') and name or 'Player',
-        world = (not self.server) and self.scene.world or nil,
-        localServer = self.server and self.server.server or nil,
+        world = self.scene.world,
         input = function()
             return self:input()
         end,
     })
+    -- --sim-latency/--sim-jitter/--sim-loss/--sim-duplicate/--sim-preset degrade this connection.
+    client.client:getConditions():set(Net.Conditions.fromArguments(katsa.launchArguments))
     self.scene.netStats = function()
         return self.client == client and client.client:getStats() or nil
     end
@@ -376,10 +391,11 @@ end
 
 function Session:host(name, port)
     local ok, problem = pcall(function()
-        self.server = GameServer.new({}, {
+        -- The server runs in this process with a physics world of its own; the hosting player
+        -- joins it over the loopback like everybody else and is its admin (the first client).
+        self.server = ServerHost.new(self.scene.world.resources, {
             port = port,
             name = (name or 'Player') .. "'s game",
-            world = self.scene.world,
             hostsPlayer = true,
             profiler = self.scene.manager.profiler,
         })
@@ -607,10 +623,23 @@ function Session:updateVoice(dt)
     self.social:setSpeaking(meters)
 end
 
+-- Names the simulated network conditions on the player list's buttons ('off', 'poor' ...).
+function Session:refreshNetwork()
+    local function label(conditions)
+        return conditions:getPreset() or conditions:describe()
+    end
+    local client = self.client
+    self.social:setNetwork(
+        client and label(client.client:getConditions()) or 'off',
+        self.server and label(self.server:getServer():getConditions()) or nil
+    )
+end
+
 -- Rebuilds the player list (names, [HOST] tag, Kick buttons for the host).
 function Session:refreshPlayers()
     local client = self.client
     if client and self.social.open then
+        self:refreshNetwork()
         self.social:setPlayers(client:getPlayers(), client.hostId, client:getPlayerId())
     end
 end
@@ -620,14 +649,13 @@ function Session:updateNetwork(dt)
     local profiler = self.scene.manager.profiler
     local stamp = profiler:begin()
     if self.server then
-        -- The hosted cars are rigid bodies: step the world, then let the server read them.
-        self.scene.physics:update(dt)
-        profiler:finish('Cars: physics', stamp)
-        stamp = profiler:begin()
+        -- The hosted server steps its own world and reads the bodies.
         self.server:update(dt)
         profiler:finish('Cars: server', stamp)
-    elseif self.client and self.client:simulates() then
-        -- A joined player simulates the car it drives and keeps stand-ins for the others.
+        stamp = profiler:begin()
+    end
+    if self.client and self.client:simulates() then
+        -- A player simulates the car it drives and keeps stand-ins for the others.
         self.scene.physics:update(dt)
         self.client:afterPhysics()
         profiler:finish('Cars: physics', stamp)
@@ -683,14 +711,10 @@ function Session:watchJumps(dt)
     end
 end
 
--- The physics body that simulates a car in this process: the client's own driven car or, on the
--- hosting machine, the server's car. Nil for cars drawn from network interpolation.
+-- The physics body that simulates a car in this process: the client's own driven car. Nil for
+-- cars drawn from network interpolation.
 function Session:simulatingBody(netId)
-    local client = self.client
-    local body = client.bodies[netId]
-    if body == nil and self.server and client.client:isMirrored(netId) then
-        body = self.server.bodies[netId]
-    end
+    local body = self.client.bodies[netId]
     if body ~= nil and body.mode == 'dynamic' then
         return body
     end
@@ -708,12 +732,6 @@ function Session:updateRenderPoses(dt)
             else
                 if car.rx then
                     PhysicsCar.clearRenderPose(car)
-                end
-                -- A car another player drives is a kinematic stand-in on the hosting machine too:
-                -- it sits where the replica is drawn, like the stand-ins of joined clients.
-                local standIn = self.server and self.server.bodies[netId]
-                if standIn and standIn.mode == 'follow' then
-                    standIn:followDrawn(dt, car)
                 end
             end
         end
@@ -830,7 +848,7 @@ end
 
 -- HUD suffix for the host: where the bots' route searches run, and how many were made.
 function Session:routeInfo()
-    local server = self.server
+    local server = self.server and self.server.game
     if not server or not server.bot then
         return ''
     end

@@ -51,6 +51,8 @@ function Tests:draw()
     require('validation.tests.versions.v108_7.localization').run(self)
     require('validation.tests.versions.v108_7.hotReload').run(self)
     require('validation.tests.versions.v108_7.audioFormats').run(self)
+    require('validation.tests.versions.v108_7.netConditions').run(self)
+    require('validation.tests.versions.v108_7.dedicatedServer').run(self)
     print('PASSED ' .. self.count .. ' v108.7 focused checks')
     katsa.event.quit()
 end

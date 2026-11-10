@@ -26,7 +26,7 @@ function Tests:draw()
     end
     self.host:update(1 / 60, 1 / 60)
     self.host:draw()
-    local server = self.session.server
+    local server = self.session.server.game
     if not (server and server.hostPlayer) then
         return
     end

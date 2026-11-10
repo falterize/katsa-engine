@@ -81,10 +81,26 @@ each frame.
 
 ## Testing with bad networks
 
-`options.simulate = { latency = 0.04, jitter = 0.01, loss = 0.05 }` on `Server.new` or
-`Client.new` delays and drops packets deterministically (virtual clock, seedable `random`).
-`validation/tests/katsa/netGame.lua` covers handshake, prediction, interpolation, remotes,
-relevance, client authority, capacity and leaving over real loopback UDP.
+```lua
+local server = Net.Server.new(context, { simulate = { latency = 0.04, jitter = 0.01, loss = 0.05 } })
+server:getConditions():set('poor') -- change it while running; every player's link follows
+client:getConditions():cycle()     -- off -> good -> mobile -> poor -> terrible
+```
+
+`options.simulate` on `Server.new` or `Client.new` (a table or a preset name) delays and drops
+packets deterministically (virtual clock, seedable `random`). `latency` and `jitter` are seconds
+added in each direction, so the round trip grows by twice the latency; `loss` and `duplicate`
+(0..1) apply to the unreliable channels only, reliable packets are delayed but never lost or
+reordered. The server shares one `Net.Conditions` object between all its player links.
+Presets: `off`, `good`, `mobile`, `poor`, `terrible`. Launch options for any game that reads them
+(`Net.Conditions.fromArguments(katsa.launchArguments)`): `--sim-preset <name>`, `--sim-latency <ms>`,
+`--sim-jitter <ms>`, `--sim-loss <percent>`, `--sim-duplicate <percent>`.
+
+`client:getPing()` and `player:getPing()` are application-level round trips (`PING`/`PONG` through
+the link), so simulated conditions show up in them; the transport's own figure is only the fallback
+before the first answer. `validation/tests/katsa/netGame.lua` covers handshake, prediction,
+interpolation, remotes, relevance, client authority, capacity and leaving over real loopback UDP;
+`v108_7/netConditions.lua` covers the simulation.
 
 ## Changing the owner of an entity
 
@@ -93,16 +109,23 @@ every client that knows it receives `AUTHORITY`, its `local_` flag flips and
 `client.authorityChanged` fires. `server:getAuthority(object)` reads it. A car uses this when the
 driver changes.
 
-## Hosting: a client in the server's process
+## Hosting and dedicated servers
 
-A hosting machine runs a `Net.Server` and a `Net.Client` in one process. Pass the server to the
-client (`Net.Client.new(context, { ..., localServer = server })`) and give an entity definition a
-`mirror(from, to)` function. Entities with that function that the server simulates itself (no
-client has authority) are copied straight from the server's object every frame: no
-`interpolationDelay`, no replica a few frames behind the bodies the server really steps. Ask
-`client:isMirrored(netId)` to know when to blend the drawn pose with the physics step; entities
-owned by other players are interpolated as usual. `mirror` must not allocate (it runs per entity
-per frame). multiplayerCars uses it for cars (`CarEntity.mirror`).
+A server never shares state with a client by reference. A hosting player runs a server in the
+same process (multiplayerCars: `ServerHost`, a physics-only `World3D` of its own) and joins it
+through the loopback like everybody else, so host and guests see the same thing, ping included.
+The same server runs without a window:
+
+```
+luajit tools/dev/katsa.lua . --scene multiplayerCars --server 7777 --name "My arena" --max-players 8
+luajit tools/dev/katsa.lua . --scene multiplayerCars --server --sim-preset poor --no-bot
+```
+
+`--server` switches the runtime to headless (`Runtime.headless`): SDL's `offscreen` video driver
+(no X server or display needed), no drawing or presenting, the frame loop paced at the frame rate
+limit (60 by default). The process reads commands from stdin: `help`, `status`, `players`,
+`kick <id> [reason]`, `say <text>`, `bots add|clear`, `cars clear`, `net [preset | latency jitter
+loss duplicate]`, `quit`. Servers may be started from a script and stopped with Ctrl+C or `quit`.
 
 ## Smoothing, stats and validation
 
@@ -129,7 +152,10 @@ rate limited by the server) and a built-in LAN server list. Controls: WASD/arrow
 change car, N watch an ad.
 
 Launch options: `--host [port]` starts a server and joins it, `--connect address[:port]` joins one,
-`--name Name` sets the player name (scenes read them from `katsa.launchArguments`).
+`--server [port]` runs a dedicated headless server, `--name Name` sets the player name, `--sim-*`
+degrade the connection (see above); scenes read them from `katsa.launchArguments`. The Tab list
+shows every player's ping and has buttons to cycle the simulated network preset of your own
+connection and, when you host, of the whole server.
 Tests: `validation/tests/katsa/carsGame.lua` (rules over loopback UDP) and `--test-v108.4.cars`
 (the scene on the real renderer; `KATSA_CARS_SHOT=<dir>` saves screenshots).
 

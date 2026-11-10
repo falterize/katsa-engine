@@ -41,7 +41,7 @@ function Module.run(self)
     frames(host, 30)
     local netId = session.client:getCar()
     self:check(netId ~= nil, 'the player sits in a car')
-    local body, view = session.server.bodies[netId], session.views[netId]
+    local body, view = session.server.game.bodies[netId], session.views[netId]
     local car = session.client.cars[netId]
     local keys = host.input.actions.keys
     keys.up = true

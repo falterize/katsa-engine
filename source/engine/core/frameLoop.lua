@@ -59,7 +59,7 @@ function FrameLoop.run()
         local update = (drawn - updated) * 1000
         local draw, present, sleep = 0, 0, 0
         local reused = false
-        if katsa.graphics and katsa.graphics.isActive() then
+        if not Runtime.headless and katsa.graphics and katsa.graphics.isActive() then
             reused = not Runtime.windowFrameDirty
                     and Runtime.canReuseWindowFrame
                     and Runtime.canReuseWindowFrame()
@@ -84,7 +84,15 @@ function FrameLoop.run()
         end
         -- Uncapped foreground rendering already performs useful work. The default
         -- 1 ms sleep adds scheduler jitter to every frame, even with VSync disabled.
-        if not katsa.graphics.isActive() or not katsa.window.hasFocus() then
+        if Runtime.headless then
+            -- A server holds its tick rate: wait out the rest of the frame, never spin.
+            local idle = katsa.timer.getTime()
+            local interval = 1 / math.max(limit, 1)
+            if idle - started < interval then
+                Deadline.waitUntil(started + interval, katsa.timer)
+            end
+            sleep = (katsa.timer.getTime() - idle) * 1000
+        elseif not katsa.graphics.isActive() or not katsa.window.hasFocus() then
             local idle = katsa.timer.getTime()
             katsa.timer.sleep(0.01)
             sleep = (katsa.timer.getTime() - idle) * 1000

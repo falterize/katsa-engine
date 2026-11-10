@@ -154,7 +154,15 @@ function Boot.start(host)
     FS.setIdentity(config.identity or base)
 
     local Platform = require('source.katsa.platform.sdl2')
-    local platform, message = Platform.new({ title = config.window and config.window.title })
+    -- --server runs without a display (see Runtime.headless).
+    local headless = false
+    for _, value in ipairs(host.args or {}) do
+        headless = headless or value == '--server'
+    end
+    local platform, message = Platform.new({
+        title = config.window and config.window.title,
+        headless = headless,
+    })
     if not platform then
         report('Cannot start the platform layer: ' .. tostring(message))
         return 1

@@ -3,6 +3,10 @@
 -- The extended rig workload exceeds 8 MiB of code before reaching the trace limit.
 local Runtime = { traceBudget = 8000, machineCodeKiB = 32768, configured = false }
 
+-- True when started with --server: no drawing or presenting, the loop only updates and sleeps (at
+-- `frameRateLimit`, 60 by default), and a lost window focus never pauses the scene.
+Runtime.headless = false
+
 function Runtime.validateFrameRateLimit(value)
     assert(
         type(value) == 'number' and value >= 0 and value < math.huge and value % 1 == 0,

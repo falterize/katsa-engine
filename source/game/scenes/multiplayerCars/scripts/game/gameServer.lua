@@ -124,11 +124,28 @@ function GameServer:stop()
     end
 end
 
+local PING_INTERVAL = 1
+
+-- Tells every client how far each player is (round trip, ms): a flat list id1, ms1, id2, ms2 ...
+function GameServer:broadcastPings()
+    local list = {}
+    for _, player in ipairs(self.server:getPlayers()) do
+        list[#list + 1] = player.id
+        list[#list + 1] = math.floor(player:getPing() + 0.5)
+    end
+    self.server:remote('pings'):unreliable():fireAll(list)
+end
+
 function GameServer:update(dt)
     if self.planner then
         self.planner:update()
     end
     self.server:update(dt)
+    self.pingTimer = (self.pingTimer or 0) - dt
+    if self.pingTimer <= 0 then
+        self.pingTimer = PING_INTERVAL
+        self:broadcastPings()
+    end
 end
 
 local function seatList(car)
@@ -219,12 +236,13 @@ function GameServer:spawnBot(point)
     return model, netId
 end
 
--- Host tools (all host-only). Commands: clearCars, clearBots, spawnCar, spawnBot.
--- Returns ok, reason.
+-- Host tools (host-only; a dedicated server's console passes no requester). Commands: clearCars,
+-- clearBots, spawnCar, spawnBot. Returns ok, reason.
 function GameServer:hostCommand(requester, command)
-    if requester ~= self.hostPlayer then
+    if requester ~= nil and requester ~= self.hostPlayer then
         return false, 'only the host can do that'
     end
+    local who = requester and requester.name or 'console'
     if command == 'clearCars' or command == 'clearBots' then
         local onlyBots = command == 'clearBots'
         for _, player in ipairs(self.server:getPlayers()) do
@@ -242,11 +260,11 @@ function GameServer:hostCommand(requester, command)
         for _, netId in ipairs(doomed) do
             self:removeCar(netId)
         end
-        self:log('%s ran %s (%d cars removed)', requester.name, command, #doomed)
+        self:log('%s ran %s (%d cars removed)', who, command, #doomed)
         return true, #doomed
     elseif command == 'spawnCar' or command == 'spawnBot' then
         -- Six metres ahead of the host's walker, facing the same way.
-        local walker = self.walkers[requester.id]
+        local walker = requester and self.walkers[requester.id]
         local point
         if walker then
             local heading = math.rad(walker.heading)
@@ -263,7 +281,7 @@ function GameServer:hostCommand(requester, command)
         else
             self:spawnCar({ x = point[1], z = point[2], heading = point[3] })
         end
-        self:log('%s ran %s', requester.name, command)
+        self:log('%s ran %s', who, command)
         return true
     end
     return false, 'unknown command'
@@ -288,16 +306,14 @@ function GameServer:onPlayerAdded(player)
     self:log('spawned %s on foot at (%.0f, %.0f) with car %d', player.name, x, z, netId)
 end
 
--- Gives the car's physics to its driver's client, or back to the server (nil, or the hosting
--- machine's own player, whose input the server reads directly: it shares this physics world).
+-- Gives the car's physics to its driver's client, or back to the server (nil).
 function GameServer:assignDriver(netId, player)
     local car, body = self.cars[netId], self.bodies[netId]
-    local remote = player ~= nil and player ~= self.hostPlayer
-    self.server:setAuthority(netId, remote and player or nil)
+    self.server:setAuthority(netId, player)
     if body then
-        body:setMode(remote and 'follow' or 'dynamic')
+        body:setMode(player and 'follow' or 'dynamic')
     end
-    if not remote then
+    if not player then
         car.input = {}
     end
 end
@@ -450,9 +466,17 @@ function GameServer:chat(player, text)
     self.server:remote('chat'):fireAll(player.id, player.name, player == self.hostPlayer, text)
 end
 
--- Host-only: disconnects another player with a reason. They may join again. Returns ok, reason.
+-- A server message to every player's chat (the server console's `say`).
+function GameServer:say(text)
+    text = tostring(text or ''):gsub('[%c]', ' '):sub(1, CHAT_LIMIT)
+    self:log('chat <server> %s', text)
+    self.server:remote('chat'):fireAll(0, 'Server', true, text)
+end
+
+-- Host-only (or the server console, which passes no requester): disconnects another player with a
+-- reason. They may join again. Returns ok, reason.
 function GameServer:kickPlayer(requester, id, reason)
-    if requester ~= self.hostPlayer then
+    if requester ~= nil and requester ~= self.hostPlayer then
         return false, 'only the host can kick'
     end
     local target = self:findPlayer(id)
@@ -460,8 +484,14 @@ function GameServer:kickPlayer(requester, id, reason)
         return false, 'no such player'
     end
     reason = tostring(reason or ''):sub(1, 80)
-    local message = reason ~= '' and ('Kicked by the host: ' .. reason) or 'Kicked by the host'
-    self:log('%s was kicked by %s%s', target.name, requester.name, reason ~= '' and (' (' .. reason .. ')') or '')
+    local by = requester and 'the host' or 'the server'
+    local message = reason ~= '' and ('Kicked by ' .. by .. ': ' .. reason) or ('Kicked by ' .. by)
+    self:log(
+        '%s was kicked by %s%s',
+        target.name,
+        requester and requester.name or 'console',
+        reason ~= '' and (' (' .. reason .. ')') or ''
+    )
     self.server:kick(target, message)
     return true
 end
@@ -568,9 +598,6 @@ function GameServer:onTick(dt)
                 end
             elseif not car:getDriver() then
                 car.input = {} -- coast to a stop
-            elseif self.hostPlayer and car:getDriver() == self.hostPlayer.id then
-                -- The hosting player shares this physics world: drive from its input directly.
-                car.input = self.hostPlayer.lastInput or {}
             end
         end
     end

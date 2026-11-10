@@ -3,6 +3,14 @@
 local Scene = {}
 
 function Scene.create(scene, context)
+    -- `--server` runs the scene as a dedicated server: no menu, no views, no input.
+    local Dedicated = context:require('scripts.game.dedicated')
+    local options = Dedicated.parse(katsa.launchArguments)
+    if options then
+        local server = Dedicated.new(scene, options)
+        context.instance = server
+        return server
+    end
     local Session = context:require('scripts.content')
     -- Esc opens the pause menu without stopping time: the host's server must keep simulating.
     require('source.game.runtime.pauseMenu').attach(scene, true)

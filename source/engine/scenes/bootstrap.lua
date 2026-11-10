@@ -61,6 +61,11 @@ function Bootstrap.install(project, options)
                 )
             elseif argument == '--smoke-test' then
                 smoke, frames = true, 0
+            elseif argument == '--server' then
+                Runtime.headless = true
+                if Runtime.frameRateLimit == 0 then
+                    Runtime.frameRateLimit = 60
+                end
             end
         end
         if options.beforeLoad then
@@ -255,6 +260,9 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.focus(focused)
+        if Runtime.headless then
+            return -- a server has no window to lose focus
+        end
         Runtime.windowFrameDirty = true
         windowFocused = focused
         if manager then
@@ -263,6 +271,9 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.visible(visible)
+        if Runtime.headless then
+            return
+        end
         Runtime.windowFrameDirty = true
         windowVisible = visible
         if manager then

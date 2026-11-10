@@ -168,7 +168,18 @@ function Platform.new(config)
         return nil, message
     end
     sdl.SDL_SetHint('SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR', '0')
-    if sdl.SDL_Init(bit.bor(SDL_INIT_VIDEO, SDL_INIT_EVENTS)) ~= 0 then
+    -- A server has no display: SDL's offscreen video driver gives it a GL context without X or a
+    -- desktop. An explicit SDL_VIDEODRIVER wins; if the driver is missing, the default one is used.
+    local headless = config and config.headless and not os.getenv('SDL_VIDEODRIVER')
+    if headless then
+        sdl.SDL_SetHint('SDL_VIDEODRIVER', 'offscreen')
+    end
+    local initialized = sdl.SDL_Init(bit.bor(SDL_INIT_VIDEO, SDL_INIT_EVENTS)) == 0
+    if not initialized and headless then
+        sdl.SDL_SetHint('SDL_VIDEODRIVER', '')
+        initialized = sdl.SDL_Init(bit.bor(SDL_INIT_VIDEO, SDL_INIT_EVENTS)) == 0
+    end
+    if not initialized then
         return nil, 'SDL_Init failed: ' .. sdlError(sdl)
     end
     local self = setmetatable({
