@@ -31,6 +31,7 @@ function Module.run(self)
         _width = 400,
         _height = 170,
         _endMargin = 100,
+        emit = function() end,
         onExtend = function(time)
             lengthened[#lengthened + 1] = time
         end,

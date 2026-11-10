@@ -37,7 +37,7 @@ function T:draw()
             ui:hit(x * ui.scale + ui.offsetX, y * ui.scale + ui.offsetY) == last,
             'Last category remains tappable after rotation'
         )
-        last.onPress()
+        last:press()
         self:check(menu.category == 'Legacy', 'Last category selects the matching scene')
     end
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
@@ -78,7 +78,7 @@ function T:draw()
     for i = 1, 20 do
         draw()
     end
-    s.stressMotion.cubeButton.onPress()
+    s.stressMotion.cubeButton:press()
     local y = cube.position[2]
     s.stressMotion:update(0.1)
     draw()
@@ -86,8 +86,8 @@ function T:draw()
         cube.position[2] ~= y and not r.stats.frameReused and r.stats.updatedMeshes == 1,
         'Cube toggle animates and invalidates only its mesh'
     )
-    s.stressMotion.cubeButton.onPress()
-    s.stressMotion.lightButton.onPress()
+    s.stressMotion.cubeButton:press()
+    s.stressMotion.lightButton:press()
     local x = w.lights[1].position[1]
     s.stressMotion:update(0.1)
     draw()
@@ -95,7 +95,7 @@ function T:draw()
         w.lights[1].position[1] ~= x and not r.stats.frameReused and r.stats.updatedMeshes == 0,
         'Light toggle animates without rebuilding static meshes'
     )
-    s.stressMotion.lightButton.onPress()
+    s.stressMotion.lightButton:press()
     for i = 1, 40 do
         draw()
     end

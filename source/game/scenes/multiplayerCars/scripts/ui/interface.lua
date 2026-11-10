@@ -41,16 +41,18 @@ function Menu.create(scene, callbacks)
         fontSize = 16,
         backgroundColor = BUTTON,
     }, self.panel)
-    ui:button({
-        position = { 0.5, 6, 0, 84 },
-        size = { 0.5, -26, 0, 38 },
-        text = 'Host a game',
-        fontSize = 17,
-        backgroundColor = { 0.12, 0.35, 0.22 },
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0.5, 6, 0, 84 },
+            size = { 0.5, -26, 0, 38 },
+            text = 'Host a game',
+            fontSize = 17,
+            backgroundColor = { 0.12, 0.35, 0.22 },
+        }, self.panel)
+        node:connect('press', function()
             callbacks.host(self.name.text)
-        end,
-    }, self.panel)
+        end)
+    end
     ui:text({
         position = { 0, 20, 0, 134 },
         size = { 1, -40, 0, 22 },
@@ -79,19 +81,21 @@ function Menu.create(scene, callbacks)
         fontSize = 16,
         backgroundColor = BUTTON,
     }, self.panel)
-    ui:button({
-        position = { 0.5, 6, 0, 396 },
-        size = { 0.5, -26, 0, 38 },
-        text = 'Join address',
-        fontSize = 17,
-        backgroundColor = BUTTON,
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0.5, 6, 0, 396 },
+            size = { 0.5, -26, 0, 38 },
+            text = 'Join address',
+            fontSize = 17,
+            backgroundColor = BUTTON,
+        }, self.panel)
+        node:connect('press', function()
             local host, port = self.address.text:match('^%s*([^:%s]+):?(%d*)%s*$')
             if host then
                 callbacks.join(host, tonumber(port) or 7777, self.name.text)
             end
-        end,
-    }, self.panel)
+        end)
+    end
     self.status = ui:text({
         position = { 0, 20, 0, 448 },
         size = { 1, -40, 0, 50 },
@@ -141,10 +145,10 @@ function Menu:setServers(servers)
             ),
             fontSize = 15,
             backgroundColor = BUTTON,
-            onPress = function()
-                self.callbacks.join(server.address, server.port, self.name.text)
-            end,
         }, self.list)
+        self.rows[index]:connect('press', function()
+            self.callbacks.join(server.address, server.port, self.name.text)
+        end)
     end
     self.list.length = math.max(220, #servers * 46 + 16)
 end
@@ -221,8 +225,10 @@ function Hud.create(scene, callbacks)
         text = 'Enter car (E)',
         fontSize = 15,
         backgroundColor = { 0.085, 0.135, 0.19 },
-        onPress = callbacks.sit,
     }, self.root)
+    if callbacks.sit then
+        self.sitButton:connect('press', callbacks.sit)
+    end
     self.adButton = button(ui, {
         position = { 1, -16, 0, 158 },
         size = { 0, 170, 0, 40 },
@@ -230,17 +236,23 @@ function Hud.create(scene, callbacks)
         text = 'Nitro: watch ad (N)',
         fontSize = 15,
         backgroundColor = { 0.35, 0.2, 0.55 },
-        onPress = callbacks.ad,
     }, self.root)
-    button(ui, {
-        position = { 1, -16, 0, 204 },
-        size = { 0, 170, 0, 40 },
-        anchorPoint = { 1, 0 },
-        text = 'Leave game',
-        fontSize = 15,
-        backgroundColor = { 0.4, 0.15, 0.15 },
-        onPress = callbacks.leave,
-    }, self.root)
+    if callbacks.ad then
+        self.adButton:connect('press', callbacks.ad)
+    end
+    do
+        local node = button(ui, {
+            position = { 1, -16, 0, 204 },
+            size = { 0, 170, 0, 40 },
+            anchorPoint = { 1, 0 },
+            text = 'Leave game',
+            fontSize = 15,
+            backgroundColor = { 0.4, 0.15, 0.15 },
+        }, self.root)
+        if callbacks.leave then
+            node:connect('press', callbacks.leave)
+        end
+    end
     -- Touch jump for the on-foot player; hidden while riding.
     self.jumpButton = button(ui, {
         position = { 1, -16, 1, -150 },
@@ -249,8 +261,10 @@ function Hud.create(scene, callbacks)
         text = 'Jump',
         fontSize = 20,
         backgroundColor = { 0.12, 0.3, 0.45 },
-        onPress = callbacks.jump,
     }, self.root)
+    if callbacks.jump then
+        self.jumpButton:connect('press', callbacks.jump)
+    end
     -- Hold-to-drift for phones: handbrake and brake while the finger stays on it, in a car only.
     self.driftButton = button(ui, {
         position = { 1, -16, 1, -150 },
@@ -259,10 +273,16 @@ function Hud.create(scene, callbacks)
         text = 'Drift',
         fontSize = 20,
         backgroundColor = { 0.45, 0.25, 0.1 },
-        onPress = callbacks.driftDown,
-        onRelease = callbacks.driftUp,
-        onCancel = callbacks.driftUp,
     }, self.root)
+    if callbacks.driftDown then
+        self.driftButton:connect('press', callbacks.driftDown)
+    end
+    if callbacks.driftUp then
+        self.driftButton:connect('release', callbacks.driftUp)
+    end
+    if callbacks.driftUp then
+        self.driftButton:connect('cancel', callbacks.driftUp)
+    end
     self.driftButton.visible = false
     -- Toggle buttons: tap once to keep running / crouching, tap again to stop.
     self.runButton = button(ui, {
@@ -272,8 +292,10 @@ function Hud.create(scene, callbacks)
         text = 'Run: OFF',
         fontSize = 18,
         backgroundColor = HUD_OFF,
-        onPress = callbacks.run,
     }, self.root)
+    if callbacks.run then
+        self.runButton:connect('press', callbacks.run)
+    end
     self.crouchButton = button(ui, {
         position = { 1, -176, 1, -150 },
         size = { 0, 150, 0, 64 },
@@ -281,28 +303,30 @@ function Hud.create(scene, callbacks)
         text = 'Crouch: OFF',
         fontSize = 18,
         backgroundColor = HUD_OFF,
-        onPress = callbacks.crouch,
     }, self.root)
+    if callbacks.crouch then
+        self.crouchButton:connect('press', callbacks.crouch)
+    end
     self.zoomIn = button(ui, {
         position = { 0.5, 6, 1, -72 },
         size = { 0, 56, 0, 56 },
         text = '+',
         fontSize = 28,
         backgroundColor = HUD_OFF,
-        onPress = function()
-            callbacks.zoom(2)
-        end,
     }, self.root)
+    self.zoomIn:connect('press', function()
+        callbacks.zoom(2)
+    end)
     self.zoomOut = button(ui, {
         position = { 0.5, -62, 1, -72 },
         size = { 0, 56, 0, 56 },
         text = '-',
         fontSize = 28,
         backgroundColor = HUD_OFF,
-        onPress = function()
-            callbacks.zoom(-2)
-        end,
     }, self.root)
+    self.zoomOut:connect('press', function()
+        callbacks.zoom(-2)
+    end)
     -- Gives the cursor back (Tab does the same): the camera follows the mouse until then.
     self.menuButton = button(ui, {
         position = { 1, -16, 1, -16 },
@@ -311,8 +335,10 @@ function Hud.create(scene, callbacks)
         text = 'Menu (Tab)',
         fontSize = 18,
         backgroundColor = { 0.08, 0.16, 0.25 },
-        onPress = callbacks.menu,
     }, self.root)
+    if callbacks.menu then
+        self.menuButton:connect('press', callbacks.menu)
+    end
     -- Opens the chat box (Enter does the same).
     self.chatButton = button(ui, {
         position = { 1, -176, 1, -16 },
@@ -321,8 +347,10 @@ function Hud.create(scene, callbacks)
         text = 'Chat (Enter)',
         fontSize = 16,
         backgroundColor = { 0.08, 0.16, 0.25 },
-        onPress = callbacks.chat,
     }, self.root)
+    if callbacks.chat then
+        self.chatButton:connect('press', callbacks.chat)
+    end
     self.message = ui:text({
         position = { 0.5, 0, 0, 120 },
         size = { 0, 500, 0, 30 },

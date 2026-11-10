@@ -42,26 +42,30 @@ function PauseMenu:build()
         fontSize = 26,
         align = 'left',
     }, panel)
-    ui:button({
-        position = { 0, 12, 0, 62 },
-        size = { 1, -24, 0, 48 },
-        text = 'Resume',
-        fontSize = 19,
-        backgroundColor = { 0.1, 0.32, 0.45 },
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 12, 0, 62 },
+            size = { 1, -24, 0, 48 },
+            text = 'Resume',
+            fontSize = 19,
+            backgroundColor = { 0.1, 0.32, 0.45 },
+        }, panel)
+        node:connect('press', function()
             self:close()
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 12, 0, 122 },
-        size = { 1, -24, 0, 48 },
-        text = 'Return to menu',
-        fontSize = 19,
-        backgroundColor = { 0.085, 0.135, 0.19 },
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 12, 0, 122 },
+            size = { 1, -24, 0, 48 },
+            text = 'Return to menu',
+            fontSize = 19,
+            backgroundColor = { 0.085, 0.135, 0.19 },
+        }, panel)
+        node:connect('press', function()
             self.scene.manager:switch(require('source.game.runtime.menu').new)
-        end,
-    }, panel)
+        end)
+    end
 end
 
 function PauseMenu:open()

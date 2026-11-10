@@ -376,7 +376,7 @@ check(
     demo.sound._voice.source.pitch == 1.4,
     'Listening pitch preset changes the Source playback speed'
 )
-demo.spatialButton.onPress()
+demo.spatialButton:press()
 labAudio:update()
 check(
     demo.sound.spatial and demo.sound._voice.source.position[3] == -25,

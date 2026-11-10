@@ -104,16 +104,18 @@ function Social.create(scene, callbacks)
         { 'Clear cars', 'clearCars' },
     }
     for index, tool in ipairs(tools) do
-        ui:button({
-            position = { (index - 1) / 4, (index > 1 and 2 or 0), 0, 0 },
-            size = { 0.25, -4, 1, 0 },
-            text = tool[1],
-            fontSize = 14,
-            backgroundColor = index > 2 and { 0.5, 0.2, 0.15 } or { 0.1, 0.32, 0.45 },
-            onPress = function()
+        do
+            local node = ui:button({
+                position = { (index - 1) / 4, (index > 1 and 2 or 0), 0, 0 },
+                size = { 0.25, -4, 1, 0 },
+                text = tool[1],
+                fontSize = 14,
+                backgroundColor = index > 2 and { 0.5, 0.2, 0.15 } or { 0.1, 0.32, 0.45 },
+            }, self.hostTools)
+            node:connect('press', function()
                 callbacks.hostCommand(tool[2])
-            end,
-        }, self.hostTools)
+            end)
+        end
     end
     return self
 end
@@ -244,16 +246,18 @@ function Social:setPlayers(players, hostId, myId)
             textColor = player.id == hostId and { 1, 0.8, 0.3 } or { 1, 1, 1 },
         }, self.list)
         if myId == hostId and player.id ~= myId then
-            ui:button({
-                position = { 1, -96, 0, y },
-                size = { 0, 90, 0, 34 },
-                text = 'Kick',
-                fontSize = 15,
-                backgroundColor = { 0.5, 0.15, 0.15 },
-                onPress = function()
+            do
+                local node = ui:button({
+                    position = { 1, -96, 0, y },
+                    size = { 0, 90, 0, 34 },
+                    text = 'Kick',
+                    fontSize = 15,
+                    backgroundColor = { 0.5, 0.15, 0.15 },
+                }, self.list)
+                node:connect('press', function()
                     self.callbacks.kick(player.id)
-                end,
-            }, self.list)
+                end)
+            end
         end
     end
     self.list.length = #players * 40

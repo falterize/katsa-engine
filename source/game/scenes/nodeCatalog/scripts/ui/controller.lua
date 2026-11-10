@@ -28,14 +28,16 @@ function Scene:load()
         textScaled = true,
         maxTextSize = 26,
     }, self.panel)
-    self.ui:button({
-        position = { 0, 16, 0, 64 },
-        size = { 1, -32, 0, 38 },
-        text = 'Back to scenes',
-        onPress = function()
+    do
+        local node = self.ui:button({
+            position = { 0, 16, 0, 64 },
+            size = { 1, -32, 0, 38 },
+            text = 'Back to scenes',
+        }, self.panel)
+        node:connect('press', function()
             self.manager:switch(require('source.game.runtime.menu').new)
-        end,
-    }, self.panel)
+        end)
+    end
     self.entries = Samples.entries()
     self.tab, self.query = 'All', ''
     self.search = self.ui:create('TextBox', {
@@ -60,11 +62,11 @@ function Scene:load()
             size = { 1 / #tabs, (i == 1 or i == #tabs) and -18 or -4, 0, 32 },
             text = name,
             fontSize = 13,
-            onPress = function()
-                self.tab = name
-                self:refill()
-            end,
         }, self.panel)
+        self.tabButtons[name]:connect('press', function()
+            self.tab = name
+            self:refill()
+        end)
     end
     self.count = self.ui:text({
         position = { 0, 16, 0, 190 },
@@ -93,16 +95,18 @@ function Scene:refill()
         if (self.tab == 'All' or entry.tab == self.tab) and haystack:find(self.query, 1, true) then
             shown = shown + 1
             local label = entry.name .. ' / ' .. (entry.plugin and ('plugin ' .. entry.plugin .. ' / ') or '') .. entry.zone
-            self.ui:button({
-                position = { 0, 0, 0, (shown - 1) * 46 },
-                size = { 1, 0, 0, 42 },
-                text = label,
-                fontSize = 16,
-                align = 'left',
-                onPress = function()
+            do
+                local node = self.ui:button({
+                    position = { 0, 0, 0, (shown - 1) * 46 },
+                    size = { 1, 0, 0, 42 },
+                    text = label,
+                    fontSize = 16,
+                    align = 'left',
+                }, self.list)
+                node:connect('press', function()
                     self.manager:switch(require('source.game.runtime.game').new, entry.zone, entry.name)
-                end,
-            }, self.list)
+                end)
+            end
         end
     end
     self.list.length = shown * 46

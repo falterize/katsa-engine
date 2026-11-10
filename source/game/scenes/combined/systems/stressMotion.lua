@@ -81,20 +81,20 @@ function Motion:buildUI()
         text = 'Cube motion: OFF',
         textScaled = true,
         maxTextSize = 15,
-        onPress = function()
-            self:toggleCube()
-        end,
     }, self.panel)
+    self.cubeButton:connect('press', function()
+        self:toggleCube()
+    end)
     self.lightButton = ui:button({
         position = { 0.5, 4, 0, 0 },
         size = { 0.5, -4, 1, 0 },
         text = 'Light motion: OFF',
         textScaled = true,
         maxTextSize = 15,
-        onPress = function()
-            self:toggleLights()
-        end,
     }, self.panel)
+    self.lightButton:connect('press', function()
+        self:toggleLights()
+    end)
 end
 
 function Motion:resize()

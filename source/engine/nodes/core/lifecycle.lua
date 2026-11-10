@@ -74,7 +74,6 @@ function Lifecycle.destroy(self)
         attempt(self._cleanup[i], self)
     end
     self._cleanup, self._tags = {}, nil
-    self.onPress, self.onMove, self.onRelease, self.onChange = nil, nil, nil, nil
     if self.ui and self.ui.invalidate then
         attempt(self.ui.invalidate, self.ui)
     end

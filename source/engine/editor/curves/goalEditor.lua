@@ -14,19 +14,20 @@ local function clear(popup)
 end
 
 local function button(popup, text, x, y, w, callback)
-    return popup.ui:button({
+    local node = popup.ui:button({
         position = { x, 4, 0, y },
         size = { w, -8, 0, 34 },
         text = text,
         fontSize = 13,
         backgroundColor = { 0.085, 0.135, 0.19 },
-        onPress = function()
-            if popup.workspace.editing and not popup:commitInput() then
-                return
-            end
-            callback()
-        end,
     }, popup.body)
+    node:connect('press', function()
+        if popup.workspace.editing and not popup:commitInput() then
+            return
+        end
+        callback()
+    end)
+    return node
 end
 
 function Editor.choose(popup)

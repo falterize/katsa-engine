@@ -87,15 +87,17 @@ function BillboardDemo.build(scene)
     button.subtitle.position = { 0, 0, 0, 96 }
     button.subtitle.size = { 0, 240, 0, 24 }
     local clicks = 0
-    button.ui:create('Button', {
-        position = { 0, 16, 0, 40 },
-        size = { 0, 208, 0, 50 },
+    do
+        local node = button.ui:create('Button', {
+            position = { 0, 16, 0, 40 },
+            size = { 0, 208, 0, 50 },
 
-        backgroundColor = { 40 / 255, 160 / 255, 230 / 255 },
-        backgroundTransparency = 1 - 1,
-        text = 'CHANGE SIZE',
-        fontSize = 17,
-        onPress = function()
+            backgroundColor = { 40 / 255, 160 / 255, 230 / 255 },
+            backgroundTransparency = 1 - 1,
+            text = 'CHANGE SIZE',
+            fontSize = 17,
+        }, button.ui.content)
+        node:connect('press', function()
             clicks = clicks + 1
             button.subtitle.text = 'Clicks: ' .. clicks
             button.dirty = true
@@ -110,8 +112,8 @@ function BillboardDemo.build(scene)
             end
             moving.dirty = true
             scene.audio:play('assets/audio/effects/click.wav', { group = 'ui', timeScaled = false })
-        end,
-    }, button.ui.content)
+        end)
+    end
     local image = panel(
         'Image',
         { 65, -24, 170 },

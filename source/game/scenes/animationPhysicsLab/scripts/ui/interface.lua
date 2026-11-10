@@ -19,15 +19,19 @@ function Interface.create(self)
     local y = 8
 
     local function button(text, fn)
-        ui:button({
-            position = { 0, 8, 0, y },
-            size = { 1, -16, 0, 34 },
-            text = text,
-            textScaled = true,
-            maxTextSize = 14,
-            radius = Theme.corner,
-            onPress = fn,
-        }, panel)
+        do
+            local node = ui:button({
+                position = { 0, 8, 0, y },
+                size = { 1, -16, 0, 34 },
+                text = text,
+                textScaled = true,
+                maxTextSize = 14,
+                radius = Theme.corner,
+            }, panel)
+            if fn then
+                node:connect('press', fn)
+            end
+        end
         y = y + 40
     end
     button('Wave: play with FadeIn', function()
@@ -66,19 +70,21 @@ function Interface.create(self)
         fontSize = 14,
     }, panel)
     y = y + 30
-    ui:slider({
-        position = { 0, 8, 0, y },
-        size = { 1, -16, 0, 36 },
-        min = -2,
-        max = 3,
-        value = 1,
-        onChange = function(value)
+    do
+        local node = ui:slider({
+            position = { 0, 8, 0, y },
+            size = { 1, -16, 0, 36 },
+            min = -2,
+            max = 3,
+            value = 1,
+        }, panel)
+        node:connect('changed', function(value)
             for _, track in pairs(self.tracks) do
                 track.speed = value
             end
             label.text = string.format('Animation Speed: %.2f', value)
-        end,
-    }, panel)
+        end)
+    end
     y = y + 42
     self.info = ui:text({
         position = { 0, 8, 0, y },

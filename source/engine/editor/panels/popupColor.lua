@@ -49,15 +49,17 @@ function PopupColor.install(Popup)
             self.body
         )
         for i, c in ipairs(palette) do
-            self.ui:button({
-                position = { (i - 1) % 6 / 6, 4, 0, 40 + math.floor((i - 1) / 6) * 34 },
-                size = { 1 / 6, -8, 0, 30 },
-                text = '',
-                backgroundColor = c,
-                onPress = function()
+            do
+                local node = self.ui:button({
+                    position = { (i - 1) % 6 / 6, 4, 0, 40 + math.floor((i - 1) / 6) * 34 },
+                    size = { 1 / 6, -8, 0, 30 },
+                    text = '',
+                    backgroundColor = c,
+                }, self.body)
+                node:connect('press', function()
                     self:setRGB({ unpack(c) })
-                end,
-            }, self.body)
+                end)
+            end
         end
         for i, label in ipairs({ 'R', 'G', 'B' }) do
             local index = i
@@ -74,12 +76,12 @@ function PopupColor.install(Popup)
                 position = { 0.08, 4, 0, y },
                 size = { 0.6, -12, 0, 38 },
                 value = self.rgb[i],
-                onChange = function(v)
-                    local rgb = { unpack(self.rgb) }
-                    rgb[index] = v
-                    self:setRGB(rgb)
-                end,
             }, self.body)
+            self.channels[i]:connect('changed', function(v)
+                local rgb = { unpack(self.rgb) }
+                rgb[index] = v
+                self:setRGB(rgb)
+            end)
             local n = self:input(
                 '',
                 tostring(math.floor(self.rgb[i] * 255 + 0.5)),

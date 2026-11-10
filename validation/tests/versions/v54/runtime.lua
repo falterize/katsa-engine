@@ -35,7 +35,7 @@ function R:update(dt)
                 require('source.engine.editor.panels.groupEditor').open(self.scene.workspace)
             for _, button in ipairs(popup.body.children) do
                 if button.text == 'Table view' then
-                    button.onPress()
+                    button:press()
                     break
                 end
             end

@@ -111,7 +111,7 @@ function Tests:scenes()
             'Every numeric metric has its own clickable row: ' .. backend
         )
         for index, definition in ipairs(panel.definitions) do
-            panel.rows[index].onPress()
+            panel.rows[index]:press()
             assert(
                 panel.selected == index and panel.chart._history == panel.histories[definition.id]
             )

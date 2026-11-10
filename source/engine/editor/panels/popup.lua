@@ -26,15 +26,17 @@ function Popup.new(workspace, field)
             zIndex = 1000,
             _noOffscreen = true,
         })
-    self.ui:button({
-        size = { 1, 0, 1, 0 },
-        text = '',
-        backgroundColor = { 0, 0, 0 },
-        backgroundTransparency = 0.4,
-        onPress = function()
+    do
+        local node = self.ui:button({
+            size = { 1, 0, 1, 0 },
+            text = '',
+            backgroundColor = { 0, 0, 0 },
+            backgroundTransparency = 0.4,
+        }, self.group)
+        node:connect('press', function()
             self:close(false)
-        end,
-    }, self.group)
+        end)
+    end
     self.panel = self.ui:container({
         position = { 0.5, 0, 0.5, 0 },
         size = { 0, 380, 0, 350 },
@@ -62,28 +64,32 @@ function Popup.new(workspace, field)
         text = '',
         align = 'left',
     }, self.panel)
-    self.ui:button({
-        position = { 0, 10, 1, -38 },
-        size = { 0.5, -15, 0, 32 },
-        name = 'Confirm',
-        text = 'Apply',
-        fontSize = 15,
-        backgroundColor = { 0.1, 0.32, 0.45 },
-        onPress = function()
+    do
+        local node = self.ui:button({
+            position = { 0, 10, 1, -38 },
+            size = { 0.5, -15, 0, 32 },
+            name = 'Confirm',
+            text = 'Apply',
+            fontSize = 15,
+            backgroundColor = { 0.1, 0.32, 0.45 },
+        }, self.panel)
+        node:connect('press', function()
             self:close(true)
-        end,
-    }, self.panel)
-    self.ui:button({
-        position = { 0.5, 5, 1, -38 },
-        size = { 0.5, -15, 0, 32 },
-        name = 'Cancel',
-        text = 'Cancel',
-        fontSize = 15,
-        backgroundColor = { 0.1, 0.16, 0.23 },
-        onPress = function()
+        end)
+    end
+    do
+        local node = self.ui:button({
+            position = { 0.5, 5, 1, -38 },
+            size = { 0.5, -15, 0, 32 },
+            name = 'Cancel',
+            text = 'Cancel',
+            fontSize = 15,
+            backgroundColor = { 0.1, 0.16, 0.23 },
+        }, self.panel)
+        node:connect('press', function()
             self:close(false)
-        end,
-    }, self.panel)
+        end)
+    end
     workspace.scene.input:reset()
     self:resize()
     return self
@@ -173,21 +179,21 @@ function Popup:input(label, value, y, callback)
         text = value,
         fontSize = 14,
         backgroundColor = { 0.085, 0.135, 0.19 },
-        onPress = function()
-            local ws = self.workspace
-            if self.focusNode == node and ws.editing then
-                return
-            end
-            ws._editingNode = nil
-            ws.editing = { popup = true }
-            ws.buffer = node.text
-            node.onTextChanged = function(input)
-                ws.buffer = input.text
-            end
-            self.focusNode, self.inputCallback = node, callback
-            ws:showKeyboard()
-        end,
     }, self.body)
+    node:connect('press', function()
+        local ws = self.workspace
+        if self.focusNode == node and ws.editing then
+            return
+        end
+        ws._editingNode = nil
+        ws.editing = { popup = true }
+        ws.buffer = node.text
+        node.onTextChanged = function(input)
+            ws.buffer = input.text
+        end
+        self.focusNode, self.inputCallback = node, callback
+        ws:showKeyboard()
+    end)
     return node
 end
 

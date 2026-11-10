@@ -21,11 +21,11 @@ function Scrolling.create(ui, parent)
         textScaled = true,
         maxTextSize = 18,
     }, parent)
-    function button.onPress()
+    button:connect('press', function()
         index = index % #directions + 1
         frame.scrollingDirection = directions[index]
         button.text = 'Scroll: ' .. directions[index] .. ' / click to cycle'
-    end
+    end)
     for row = 1, 4 do
         for column = 1, 6 do
             ui:text({

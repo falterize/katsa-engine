@@ -66,12 +66,16 @@ function Interface.create(state)
     require('source.engine.ui.widgets.collapsible').create(state.scene, panel, 'TileMap / palette')
     local y = 8
     local function button(text, press)
-        ui:button({
-            position = { 0, 8, 0, y },
-            size = { 1, -16, 0, 34 },
-            text = text,
-            onPress = press,
-        }, panel)
+        do
+            local node = ui:button({
+                position = { 0, 8, 0, y },
+                size = { 1, -16, 0, 34 },
+                text = text,
+            }, panel)
+            if press then
+                node:connect('press', press)
+            end
+        end
         y = y + 40
     end
     for _, brush in ipairs(BRUSHES) do

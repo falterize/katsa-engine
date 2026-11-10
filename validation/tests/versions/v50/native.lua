@@ -91,9 +91,9 @@ return function(test)
     ui:layout()
     test:check(auto.length == 300, 'Manual Length remains authoritative')
     local presses = 0
-    button.onPress = function()
+    button:connect('press', function()
         presses = presses + 1
-    end
+    end)
     group.interactable = false
     ui:pointer(button, 'press', 50, 105, 'probe')
     test:check(presses == 0, 'Interactable false cancels descendant callbacks')

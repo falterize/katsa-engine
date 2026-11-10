@@ -58,7 +58,7 @@ function R:update()
         local function press(text)
             for _, child in ipairs(scene.demo.toolbar.children) do
                 if child.text == text then
-                    child.onPress()
+                    child:press()
                     return
                 end
             end

@@ -37,9 +37,9 @@ return function(test, scene)
         'Invisible CanvasGroup hides the entire subtree'
     )
     local presses = 0
-    b.onPress = function()
+    b:connect('press', function()
         presses = presses + 1
-    end
+    end)
     ui:pointer(b, 'press', 8, 8, 'disabled')
     test:check(presses == 0, 'Disabled or hidden ancestors cancel captured UI input')
     disabledPixels:release()

@@ -87,9 +87,9 @@ return function(test)
     local Input = require('source.engine.input.input')
     local input = Input.new({ ui = ui })
     local clicks = 0
-    button.onPress = function()
+    button:connect('press', function()
         clicks = clicks + 1
-    end
+    end)
     input:press('scroll', 1100, 345)
     input:move('scroll', 1100, 315, 0, -30)
     input:release('scroll')

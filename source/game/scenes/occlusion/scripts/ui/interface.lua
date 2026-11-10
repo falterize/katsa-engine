@@ -30,35 +30,39 @@ function Interface.create(self)
         textScaled = true,
         maxTextSize = 14,
         radius = Theme.corner,
-        onPress = function()
-            local render = scene.world.environment.render
-            render.occlusionCulling = not render.occlusionCulling
-            self.toggle.text = render.occlusionCulling and 'Occlusion ON' or 'Occlusion OFF'
-        end,
     }, panel)
-    ui:button({
-        position = { 0, 8, 0, 112 },
-        size = { 1, -16, 0, 34 },
-        text = 'Wall motion ON / OFF',
-        textScaled = true,
-        maxTextSize = 14,
-        radius = Theme.corner,
-        onPress = function()
+    self.toggle:connect('press', function()
+        local render = scene.world.environment.render
+        render.occlusionCulling = not render.occlusionCulling
+        self.toggle.text = render.occlusionCulling and 'Occlusion ON' or 'Occlusion OFF'
+    end)
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 112 },
+            size = { 1, -16, 0, 34 },
+            text = 'Wall motion ON / OFF',
+            textScaled = true,
+            maxTextSize = 14,
+            radius = Theme.corner,
+        }, panel)
+        node:connect('press', function()
             self.moving = not self.moving
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 8, 0, 154 },
-        size = { 1, -16, 0, 34 },
-        text = 'Partial mesh ON / OFF',
-        textScaled = true,
-        maxTextSize = 14,
-        radius = Theme.corner,
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 154 },
+            size = { 1, -16, 0, 34 },
+            text = 'Partial mesh ON / OFF',
+            textScaled = true,
+            maxTextSize = 14,
+            radius = Theme.corner,
+        }, panel)
+        node:connect('press', function()
             self.partialPanel.visible = not self.partialPanel.visible
             self.wall.size[1] = self.partialPanel.visible and 80 or 240
-        end,
-    }, panel)
+        end)
+    end
 end
 
 return Interface

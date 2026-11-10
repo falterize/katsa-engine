@@ -17,13 +17,13 @@ function Collapsible.create(scene, panel, title, position)
         zIndex = (panel.zIndex or 0) + 1,
         backgroundColor = { 0.09, 0.2, 0.29 },
         radius = require('source.engine.ui.theme').corner,
-        onPress = function()
-            expanded = not expanded
-            panel.visible = expanded
-            toggle.text = (expanded and '− ' or '+ ') .. title
-            scene.input:reset()
-        end,
     }, parent)
+    toggle:connect('press', function()
+        expanded = not expanded
+        panel.visible = expanded
+        toggle.text = (expanded and '− ' or '+ ') .. title
+        scene.input:reset()
+    end)
     panel:onDestroy(function()
         if not toggle.destroyed then
             toggle:destroy()

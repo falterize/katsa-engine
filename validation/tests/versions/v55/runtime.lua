@@ -86,7 +86,7 @@ function R:update()
         end
         assert(toggle)
         local old = bodyRow.body.settings.isTrigger or false
-        toggle.button.onPress()
+        toggle.button:press()
         ws:update(0.016)
         self:check(
             bodyRow.body.settings.isTrigger == not old and not toggle.button.destroyed,

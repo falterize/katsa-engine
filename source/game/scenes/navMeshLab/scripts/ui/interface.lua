@@ -18,22 +18,22 @@ function Interface.create(state)
         size = { 1, -16, 0, 32 },
         text = 'Pillar blocks: on',
     }, panel)
-    obstacle.onPress = function()
+    obstacle:connect('press', function()
         blocking = not blocking
         state:setObstacleBlocking(blocking)
         obstacle.text = 'Pillar blocks: ' .. (blocking and 'on' or 'off')
-    end
+    end)
     local debug = true
     local view = ui:button({
         position = { 0, 8, 0, 48 },
         size = { 1, -16, 0, 32 },
         text = 'Navigation view: on',
     }, panel)
-    view.onPress = function()
+    view:connect('press', function()
         debug = not debug
         scene.world.environment.debug.pathfinding.enabled = debug
         view.text = 'Navigation view: ' .. (debug and 'on' or 'off')
-    end
+    end)
     ui:create('Label', {
         position = { 0, 8, 0, 88 },
         size = { 1, -16, 0, 230 },

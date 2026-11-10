@@ -62,22 +62,24 @@ function Scene.new(scene)
         onTop = false,
         maxDistance = 250,
     })
-    b.ui:create('Button', {
-        position = { 0, 0, 0, 0 },
-        size = { 0, 360, 0, 100 },
+    do
+        local node = b.ui:create('Button', {
+            position = { 0, 0, 0, 0 },
+            size = { 0, 360, 0, 100 },
 
-        backgroundColor = { 0.15, 0.25, 0.4 },
-        backgroundTransparency = 1 - 1,
-        text = 'ANIMATED GLB\nTap to play spatial stereo',
-        fontSize = 26,
-        onPress = function()
+            backgroundColor = { 0.15, 0.25, 0.4 },
+            backgroundTransparency = 1 - 1,
+            text = 'ANIMATED GLB\nTap to play spatial stereo',
+            fontSize = 26,
+        }, b.ui.content)
+        node:connect('press', function()
             scene.audio:play('assets/audio/effects/stereoChime.wav', {
                 object = scene.model and scene.model.objects[1],
                 minDistance = 30,
                 maxDistance = 220,
             })
-        end,
-    }, b.ui.content)
+        end)
+    end
     return setmetatable({ scene = scene }, Scene)
 end
 

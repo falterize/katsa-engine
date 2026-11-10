@@ -20,22 +20,24 @@ function Interface.create(lab)
     }, ui.content)
     local actions = { 'Jump', 'Dash', 'Slide' }
     for i, action in ipairs(actions) do
-        ui:button({
-            _viewportAuthored = true,
-            name = action .. 'Action',
-            position = { 1, -12, 1, -18 - (i - 1) * 52 },
-            anchorPoint = { 1, 1 },
-            size = { 0, 112, 0, 44 },
-            textScaled = true,
-            maxTextSize = 16,
-            text = action,
-            backgroundColor = Theme.accent,
-            radius = Theme.corner,
-            zIndex = 20,
-            onPress = function()
+        do
+            local node = ui:button({
+                _viewportAuthored = true,
+                name = action .. 'Action',
+                position = { 1, -12, 1, -18 - (i - 1) * 52 },
+                anchorPoint = { 1, 1 },
+                size = { 0, 112, 0, 44 },
+                textScaled = true,
+                maxTextSize = 16,
+                text = action,
+                backgroundColor = Theme.accent,
+                radius = Theme.corner,
+                zIndex = 20,
+            }, ui.content)
+            node:connect('press', function()
                 scene.input:trigger(action)
-            end,
-        }, ui.content)
+            end)
+        end
     end
     local panel = ui:scroll({
         _viewportAuthored = true,
@@ -59,14 +61,16 @@ function Interface.create(lab)
             .. 'checkpoint',
         backgroundTransparency = 1,
     }, panel)
-    ui:button({
-        position = { 0, 8, 0, 68 },
-        size = { 1, -16, 0, 30 },
-        fontSize = 13,
-        text = 'Blend stone / bricks',
-        backgroundColor = Theme.button,
-        radius = Theme.corner,
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 68 },
+            size = { 1, -16, 0, 30 },
+            fontSize = 13,
+            text = 'Blend stone / bricks',
+            backgroundColor = Theme.button,
+            radius = Theme.corner,
+        }, panel)
+        node:connect('press', function()
             lab.materialProgress = 1 - lab.materialProgress
             local Tween = require('source.engine.animation.tween')
             if lab.mixA then
@@ -85,31 +89,35 @@ function Interface.create(lab)
             )
             lab.mixA:play()
             lab.mixB:play()
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 8, 0, 104 },
-        size = { 1, -16, 0, 30 },
-        fontSize = 13,
-        text = 'Shadows Standard / Realistic',
-        backgroundColor = Theme.button,
-        radius = Theme.corner,
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 104 },
+            size = { 1, -16, 0, 30 },
+            fontSize = 13,
+            text = 'Shadows Standard / Realistic',
+            backgroundColor = Theme.button,
+            radius = Theme.corner,
+        }, panel)
+        node:connect('press', function()
             local s = scene.world.environment.shadows
             s.mode = s.mode == 'Standard' and 'Realistic' or 'Standard'
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 8, 0, 140 },
-        size = { 1, -16, 0, 26 },
-        fontSize = 13,
-        text = 'Respawn checkpoint',
-        backgroundColor = Theme.button,
-        radius = Theme.corner,
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 140 },
+            size = { 1, -16, 0, 26 },
+            fontSize = 13,
+            text = 'Respawn checkpoint',
+            backgroundColor = Theme.button,
+            radius = Theme.corner,
+        }, panel)
+        node:connect('press', function()
             lab:respawn()
-        end,
-    }, panel)
+        end)
+    end
 end
 
 return Interface

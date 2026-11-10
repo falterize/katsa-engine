@@ -45,24 +45,28 @@ function Interface.create(state)
         textScaled = true,
         maxTextSize = 20,
     }, panel)
-    ui:button({
-        position = { 0, 16, 0, 180 },
-        size = { 0.5, -24, 0, 36 },
-        textKey = 'lab.more',
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 16, 0, 180 },
+            size = { 0.5, -24, 0, 36 },
+            textKey = 'lab.more',
+        }, panel)
+        node:connect('press', function()
             state.items = state.items + 1
             state.params.count = state.items
-        end,
-    }, panel)
-    ui:button({
-        position = { 0.5, 8, 0, 180 },
-        size = { 0.5, -24, 0, 36 },
-        textKey = 'lab.less',
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0.5, 8, 0, 180 },
+            size = { 0.5, -24, 0, 36 },
+            textKey = 'lab.less',
+        }, panel)
+        node:connect('press', function()
             state.items = math.max(0, state.items - 1)
             state.params.count = state.items
-        end,
-    }, panel)
+        end)
+    end
     ui:text({
         position = { 0, 16, 0, 232 },
         size = { 1, -32, 0, 24 },
@@ -72,14 +76,16 @@ function Interface.create(state)
     }, panel)
     local x = 16
     for _, code in ipairs(service:locales()) do
-        ui:button({
-            position = { 0, x, 0, 262 },
-            size = { 0, 150, 0, 36 },
-            text = service:getMeta(code).name or code,
-            onPress = function()
+        do
+            local node = ui:button({
+                position = { 0, x, 0, 262 },
+                size = { 0, 150, 0, 36 },
+                text = service:getMeta(code).name or code,
+            }, panel)
+            node:connect('press', function()
                 service:setLocale(code)
-            end,
-        }, panel)
+            end)
+        end
         x = x + 160
     end
     -- A key found only in English shows the fallback text in other languages.

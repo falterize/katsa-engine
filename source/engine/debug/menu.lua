@@ -33,18 +33,20 @@ function Debug.new(scene)
         text = 'DEBUG / RENDER / PHYSICS',
         fontSize = 28,
     }, panel)
-    ui:create('Button', {
-        position = { 0, 635, 0, 15 },
-        size = { 0, 85, 0, 44 },
+    do
+        local node = ui:create('Button', {
+            position = { 0, 635, 0, 15 },
+            size = { 0, 85, 0, 44 },
 
-        text = 'Close',
-        fontSize = 21,
-        backgroundColor = { 0.2, 0.3, 0.4 },
-        backgroundTransparency = 1 - 1,
-        onPress = function()
+            text = 'Close',
+            fontSize = 21,
+            backgroundColor = { 0.2, 0.3, 0.4 },
+            backgroundTransparency = 1 - 1,
+        }, panel)
+        node:connect('press', function()
             overlay.visible = false
-        end,
-    }, panel)
+        end)
+    end
     local y = 80
     local section, sections = '2D Physics', {}
     local function register(node)
@@ -60,8 +62,10 @@ function Debug.new(scene)
             fontSize = 21,
             backgroundColor = { 0.09, 0.18, 0.26 },
             backgroundTransparency = 1 - 1,
-            onPress = callback,
         }, panel)
+        if callback then
+            button:connect('press', callback)
+        end
         register(button)
         y = y + 54
         return button
@@ -234,11 +238,11 @@ function Debug.new(scene)
             value = value,
             min = min,
             max = max,
-            onChange = function(v)
-                callback(v)
-                text.text = string.format('%s %.2f', label, v)
-            end,
         }, panel)
+        control:connect('changed', function(v)
+            callback(v)
+            text.text = string.format('%s %.2f', label, v)
+        end)
         register(text)
         register(control)
         sliders[#sliders + 1] = {
@@ -513,10 +517,10 @@ function Debug.new(scene)
             size = { 0, 144, 0, 42 },
             text = name,
             fontSize = 16,
-            onPress = function()
-                overlay:setDebugSection(name)
-            end,
         }, overlay)
+        tabs[name]:connect('press', function()
+            overlay:setDebugSection(name)
+        end)
     end
     overlay:setDebugSection(scene.ui.physics2D and '2D Physics' or 'Rendering')
     overlay._syncDebug = function()

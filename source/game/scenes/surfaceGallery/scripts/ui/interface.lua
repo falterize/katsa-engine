@@ -39,10 +39,10 @@ function Interface.create(self)
             textScaled = true,
             maxTextSize = 30,
             backgroundColor = { 0.2, 0.45, 0.6 },
-            onPress = function()
-                self.clicks = self.clicks + 1
-            end,
         }, frame)
+        b:connect('press', function()
+            self.clicks = self.clicks + 1
+        end)
         ui:create('UICorner', { radius = { 0, 14 } }, b)
         ui:create('UIStroke', { target = 'Text', thickness = { 0, 1 }, color = { 0, 0, 0 } }, b)
     end
@@ -69,25 +69,27 @@ function Interface.create(self)
         textScaled = true,
         maxTextSize = 22,
         backgroundColor = { 0.1, 0.32, 0.4 },
-        onPress = function()
-            self.attachmentClicks = self.attachmentClicks + 1
-            self.attachmentButton.text = 'Clicks: ' .. self.attachmentClicks
-        end,
     }, board)
-    board.ui:button({
-        position = { 0, 8, 0, 110 },
-        size = { 1, -16, 0, 60 },
-        text = 'Switch offset',
-        textScaled = true,
-        maxTextSize = 20,
-        backgroundColor = { 0.13, 0.2, 0.32 },
-        onPress = function()
+    self.attachmentButton:connect('press', function()
+        self.attachmentClicks = self.attachmentClicks + 1
+        self.attachmentButton.text = 'Clicks: ' .. self.attachmentClicks
+    end)
+    do
+        local node = board.ui:button({
+            position = { 0, 8, 0, 110 },
+            size = { 1, -16, 0, 60 },
+            text = 'Switch offset',
+            textScaled = true,
+            maxTextSize = 20,
+            backgroundColor = { 0.13, 0.2, 0.32 },
+        }, board)
+        node:connect('press', function()
             self.offsetMode = self.offsetMode == 'Support' and 'World3D' or 'Support'
             board.offset = self.offsetMode == 'Support' and { 0, 18, 0 } or { 0, 0, 0 }
             board.offsetWorldSpace = self.offsetMode == 'World3D' and { 0, 18, 0 } or { 0, 0, 0 }
             self.attachmentTitle.text = 'Attachment3D / ' .. self.offsetMode .. ' offset'
-        end,
-    }, board)
+        end)
+    end
     local ui = self.scene.ui
     local controls = ui:container({
         _viewportAuthored = true,
@@ -97,42 +99,48 @@ function Interface.create(self)
         size = { 0, 260, 0, 150 },
     }, ui.content)
     require('source.engine.ui.widgets.collapsible').create(self.scene, controls, 'Surface controls')
-    ui:button({
-        position = { 0, 4, 0, 4 },
-        size = { 1, -8, 0, 44 },
-        text = 'Decal3D size: 75% / 40%',
-        textScaled = true,
-        maxTextSize = 18,
-        backgroundColor = { 0.1, 0.25, 0.35 },
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 4, 0, 4 },
+            size = { 1, -8, 0, 44 },
+            text = 'Decal3D size: 75% / 40%',
+            textScaled = true,
+            maxTextSize = 18,
+            backgroundColor = { 0.1, 0.25, 0.35 },
+        }, controls)
+        node:connect('press', function()
             local factor = self.litter.size[1] == 0.75 and 0.4 or 0.75
             self.litter.size = { factor, 0, factor, 0 }
-        end,
-    }, controls)
-    ui:button({
-        position = { 0, 4, 0, 54 },
-        size = { 1, -8, 0, 42 },
-        text = 'Panel extent: support / fixed',
-        textScaled = true,
-        maxTextSize = 16,
-        backgroundColor = { 0.1, 0.25, 0.35 },
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 4, 0, 54 },
+            size = { 1, -8, 0, 42 },
+            text = 'Panel extent: support / fixed',
+            textScaled = true,
+            maxTextSize = 16,
+            backgroundColor = { 0.1, 0.25, 0.35 },
+        }, controls)
+        node:connect('press', function()
             self.extentFixed = not self.extentFixed
             board.extentsOffset = self.extentFixed and { 0, 0, 0 } or { 0, 1, 0 }
             board.extentsOffsetWorldSpace = self.extentFixed and { 0, 1, 0 } or { 0, 0, 0 }
-        end,
-    }, controls)
-    ui:button({
-        position = { 0, 4, 0, 100 },
-        size = { 1, -8, 0, 42 },
-        text = 'Panel tilt: on / off',
-        textScaled = true,
-        maxTextSize = 16,
-        backgroundColor = { 0.1, 0.25, 0.35 },
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 4, 0, 100 },
+            size = { 1, -8, 0, 42 },
+            text = 'Panel tilt: on / off',
+            textScaled = true,
+            maxTextSize = 16,
+            backgroundColor = { 0.1, 0.25, 0.35 },
+        }, controls)
+        node:connect('press', function()
             board.rotation = board.rotation[1] == 0 and { 12, 20, 8 } or { 0, 0, 0 }
-        end,
-    }, controls)
+        end)
+    end
     self.status = self.scene.ui:text({
         position = { 0.5, 0, 1, -35 },
         size = { 1, -24, 0, 48 },

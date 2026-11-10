@@ -97,24 +97,24 @@ function WorkspaceRows.install(Workspace)
                     size = { 0, width, 0, ROW - 2 },
                     fontSize = 13,
                     backgroundColor = ROW_COLOR,
-                    onPress = function()
-                        if item.row then
-                            self:select(item.row.node)
-                        end
-                    end,
                 }, self.tree)
+                item.background:connect('press', function()
+                    if item.row then
+                        self:select(item.row.node)
+                    end
+                end)
                 item.fold = self.ui:button({
                     size = { 0, 24, 0, ROW - 6 },
                     fontSize = 15,
                     backgroundTransparency = 1,
-                    onPress = function()
-                        if item.row then
-                            local node = item.row.node
-                            self.collapsed[node] = not self.collapsed[node]
-                            self:refreshTree()
-                        end
-                    end,
                 }, self.tree)
+                item.fold:connect('press', function()
+                    if item.row then
+                        local node = item.row.node
+                        self.collapsed[node] = not self.collapsed[node]
+                        self:refreshTree()
+                    end
+                end)
                 item.chip = self.ui:container({
                     size = { 0, 8, 0, 18 },
                     backgroundColor = DEFAULT_CHIP,

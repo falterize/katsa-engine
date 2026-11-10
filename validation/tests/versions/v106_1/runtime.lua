@@ -162,7 +162,7 @@ function Tests:ui()
         { 'all', 5 },
         { 'all', 30 },
     }) do
-        panel.exportButtons[index].onPress()
+        panel.exportButtons[index]:press()
         local path = panel.lastExport
         local content = assert(path and katsa.filesystem.read(path))
         self:check(

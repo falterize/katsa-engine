@@ -102,33 +102,32 @@ function Methods:buildUI()
             text = text,
             textScaled = true,
             maxTextSize = 18,
-            onPress = function()
-                self.audio:play(
-                    'assets/audio/effects/click.wav',
-                    { group = 'ui', timeScaled = false }
-                )
-                callback()
-            end,
         }
         local node = ui:button(settings, primary and header or self.toolsPanel)
+        node:connect('press', function()
+            self.audio:play('assets/audio/effects/click.wav', { group = 'ui', timeScaled = false })
+            callback()
+        end)
         if not primary then
             row = row + 1
         end
         self.buttons[name] = node
         return x + width + 10
     end
-    ui:button({
-        position = { 0.6, 8, 0, 6 },
-        size = { 0.2, -12, 0, 42 },
-        text = 'Tools',
-        textScaled = true,
-        maxTextSize = 18,
-        backgroundColor = { 0.1, 0.25, 0.34 },
-        radius = 7,
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0.6, 8, 0, 6 },
+            size = { 0.2, -12, 0, 42 },
+            text = 'Tools',
+            textScaled = true,
+            maxTextSize = 18,
+            backgroundColor = { 0.1, 0.25, 0.34 },
+            radius = 7,
+        }, header)
+        node:connect('press', function()
             self.toolsPanel.visible = not self.toolsPanel.visible
-        end,
-    }, header)
+        end)
+    end
     local x = 16
     x = button('menu', 'Menu', x, 16, 85, function()
         self.manager:switch(require('source.game.runtime.menu').new)
@@ -209,25 +208,26 @@ function Methods:buildUI()
                 and self.zone ~= 'audioNodes'
                 and self.zone ~= 'surfaceGallery',
             fontSize = 24,
-            onPress = function()
-                if i == 1 then
-                    self.input.up = 1
-                else
-                    self.input.down = 1
-                end
-            end,
-            onRelease = function()
-                if i == 1 then
-                    self.input.up = 0
-                else
-                    self.input.down = 0
-                end
-            end,
         }, self.ui.content)
+        node:connect('press', function()
+            if i == 1 then
+                self.input.up = 1
+            else
+                self.input.down = 1
+            end
+        end)
+        local function releaseButton()
+            if i == 1 then
+                self.input.up = 0
+            else
+                self.input.down = 0
+            end
+        end
+        node:connect('release', releaseButton)
+        node:connect('cancel', releaseButton)
         node._cameraControlEligible = node.visible
         node.visible = node.visible and self.world.activeCamera ~= nil
         self.cameraButtons[#self.cameraButtons + 1] = node
-        node.onCancel = node.onRelease
     end
     self.statsLayer = ui:canvasGroup({
         name = 'StatsOverlay',
@@ -267,17 +267,19 @@ function Methods:buildMixer()
         fontSize = 22,
         align = 'left',
     }, self.mixerPanel)
-    ui:button({
-        position = { 1, -10, 0, 8 },
-        size = { 0, 80, 0, 36 },
-        anchorPoint = { 1, 0 },
-        text = 'Close',
-        fontSize = 16,
-        backgroundColor = { 0.085, 0.135, 0.19 },
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 1, -10, 0, 8 },
+            size = { 0, 80, 0, 36 },
+            anchorPoint = { 1, 0 },
+            text = 'Close',
+            fontSize = 16,
+            backgroundColor = { 0.085, 0.135, 0.19 },
+        }, self.mixerPanel)
+        node:connect('press', function()
             self.mixerOverlay.visible = false
-        end,
-    }, self.mixerPanel)
+        end)
+    end
     local body = ui:scroll(
         { position = { 0, 12, 0, 54 }, size = { 1, -24, 1, -66 }, length = 304 },
         self.mixerPanel
@@ -296,12 +298,12 @@ function Methods:buildMixer()
             position = { 0.35, 0, 0, y },
             size = { 0.65, -8, 0, 44 },
             value = self.audio:getGroupVolume(name),
-            onChange = function(value)
-                self.audio:setGroupVolume(name, value)
-                label.text = name:upper() .. ' ' .. math.floor(value * 100 + 0.5) .. '%'
-                self.audio:update(self.camera)
-            end,
         }, body)
+        self.groupSliders[name]:connect('changed', function(value)
+            self.audio:setGroupVolume(name, value)
+            label.text = name:upper() .. ' ' .. math.floor(value * 100 + 0.5) .. '%'
+            self.audio:update(self.camera)
+        end)
     end
     ui:text({
         position = { 0, 4, 0, 232 },

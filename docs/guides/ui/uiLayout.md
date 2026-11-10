@@ -89,8 +89,23 @@ ui:create('Label', {
 }, frame)
 ```
 
-Mouse hover exposes enter/leave/hover events and onEnter/onLeave/onHover handlers.
-Touch retains independent captures and press/move/release/cancel. The routing
+## Pointer signals
+
+Every UI node emits `enter`, `leave`, `hover`, `press`, `move`, `release`, `cancel` and `click`
+(a release over the node that was pressed). Connect to them with `node:connect(name, fn)`;
+callbacks receive `(node, x, y, pointerId)` and `connect` returns a connection with `:disconnect()`.
+A node with a `press` or `click` connection is an input target for hit-testing.
+
+```lua
+local button = ui:button({ text = 'Play', size = { 0, 120, 0, 40 } }, panel)
+local hover = button:connect('enter', function() button.backgroundColor = { 0.2, 0.4, 0.6 } end)
+button:connect('leave', function() button.backgroundColor = { 0.1, 0.2, 0.3 } end)
+button:connect('click', function(_, x, y, id) print('clicked by', id) end)
+hover:disconnect()
+button:click()   -- the same signals from code (press + release)
+```
+
+Mouse hover exposes enter/leave/hover. Touch retains independent captures and press/move/release/cancel. The routing
 order is screen UI, reserved joystick, world UI, then camera look. A captured
 world panel keeps local UI coordinates through release; focus loss cancels it.
 

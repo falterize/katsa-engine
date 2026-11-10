@@ -1,15 +1,18 @@
 local Interface = {}
 
 local function button(ui, parent, y, text, color, onPress)
-    return ui:button({
+    local node = ui:button({
         position = { 0, 10, 0, y },
         size = { 1, -20, 0, 40 },
         text = text,
         textScaled = true,
         maxTextSize = 16,
         backgroundColor = color,
-        onPress = onPress,
     }, parent)
+    if onPress then
+        node:connect('press', onPress)
+    end
+    return node
 end
 
 function Interface.create(self)

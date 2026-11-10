@@ -134,16 +134,16 @@ function Runtime:update(dt)
         local panel = scene.demo.toolbar
         local toggle = scene.demo.toolbarToggle
         local _, y = ui:position(panel)
-        toggle.onPress()
+        toggle:press()
         ui:layout()
         self:check(
             not panel.visible and ui:hit(panel._x + 5, y + 5) ~= panel,
             'Collapsed panel releases old input rectangle'
         )
-        toggle.onPress()
+        toggle:press()
         self:check(panel.visible, 'Lab toggle expands content')
     elseif scene.zone == 'collisionBox' then
-        scene.demo.focusButton.onPress()
+        scene.demo.focusButton:press()
         scene.renderer:prepare(scene.world, scene.camera, scene.time)
         local board = scene.demo.board
         self:check(

@@ -69,10 +69,10 @@ function Test:update()
             size = { 0, 100, 0, 40 },
             text = 'UI test',
             zIndex = 500,
-            onPress = function()
-                fired = true
-            end,
         }, scene.ui.content)
+        button:connect('press', function()
+            fired = true
+        end)
         scene.ui:layout()
         local x = (button._x + 50) * scene.ui.scale + scene.ui.offsetX
         local y = (button._y + 20) * scene.ui.scale + scene.ui.offsetY
@@ -103,7 +103,7 @@ function Test:update()
         require('source.engine.editor.curves.sequenceEditor').open(popup, 'position')
         for _, n in ipairs(popup.body.children) do
             if n.text == 'Interpolation: Curve' then
-                n.onPress()
+                n:press()
                 break
             end
         end

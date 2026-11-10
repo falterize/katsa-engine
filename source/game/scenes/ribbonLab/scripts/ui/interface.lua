@@ -30,15 +30,15 @@ local function cycle(ui, parent, slot, text, node, key, values, apply)
         textScaled = true,
         maxTextSize = 14,
         backgroundColor = { 0.1, 0.25, 0.35 },
-        onPress = function()
-            index = index % #values + 1
-            node[key] = values[index]
-            button.text = label(text, values[index])
-            if apply then
-                apply(values[index])
-            end
-        end,
     }, parent)
+    button:connect('press', function()
+        index = index % #values + 1
+        node[key] = values[index]
+        button.text = label(text, values[index])
+        if apply then
+            apply(values[index])
+        end
+    end)
     return button
 end
 
@@ -73,18 +73,20 @@ function Interface.create(self)
     cycle(ui, controls, slot(4, 1), 'Cast shadow', self.shade, 'castShadow', { true, false })
     cycle(ui, controls, slot(4, 2), 'Receive shadow', self.shade, 'receiveShadow', { true, false })
     cycle(ui, controls, slot(5, 1), 'Light influence', self.shade, 'lightInfluence', { 1, 0.5, 0 })
-    ui:button({
-        position = { 0, 4 + 152, 0, 4 + 4 * ROW_HEIGHT },
-        size = { 0, 148, 0, ROW_HEIGHT - 4 },
-        text = 'Clear trails',
-        textScaled = true,
-        maxTextSize = 14,
-        backgroundColor = { 0.35, 0.18, 0.12 },
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 4 + 152, 0, 4 + 4 * ROW_HEIGHT },
+            size = { 0, 148, 0, ROW_HEIGHT - 4 },
+            text = 'Clear trails',
+            textScaled = true,
+            maxTextSize = 14,
+            backgroundColor = { 0.35, 0.18, 0.12 },
+        }, controls)
+        node:connect('press', function()
             self.single:clear()
             self.dual:clear()
-        end,
-    }, controls)
+        end)
+    end
     return controls
 end
 

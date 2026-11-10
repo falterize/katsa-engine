@@ -148,14 +148,14 @@ function Runtime:update()
         self:check(s.world.byName['FBX.1'] ~= nil, 'Blender-converted FBX loads as GLB')
         self.screenshot = 'models'
     elseif self.frame == 35 then
-        s.buttons.effects.onPress()
+        s.buttons.effects:press()
         self.screenshot = 'materials'
     elseif self.frame == 36 then
         s.mixerOverlay.visible = true
         self.screenshot = 'mixer'
     elseif self.frame == 37 then
         s.mixerOverlay.visible = false
-        s.buttons.effects.onPress()
+        s.buttons.effects:press()
     elseif self.frame == 38 then
         m:switch(require('source.game.runtime.game').new, 'objects')
     elseif self.frame == 42 then

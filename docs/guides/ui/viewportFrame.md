@@ -16,14 +16,14 @@ root._world.environment.ambient = { 120, 140, 180 }
 root._world.environment.sky.enabled = false
 root:create('Mesh3D', { position = { 0, 10, 30 }, size = { 20, 20, 20 } })
 local overlay = root:create('World2D', { name = 'PreviewUI' })
-overlay:button({
+local preview = overlay:button({
     position = { 0, 8, 1, -40 },
     size = { 0, 100, 0, 32 },
     text = 'Preview input',
-    onPress = function()
-        print('Pressed')
-    end,
 }, overlay.content)
+preview:connect('press', function()
+    print('Pressed')
+end)
 ```
 
 World3D roots expose create(type, properties, parent), currentCamera and update(dt).

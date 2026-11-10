@@ -27,24 +27,26 @@ function Interface.create(self)
             min = 0,
             max = 1,
             value = 0,
-            onChange = function(value)
-                if not self.wave then
-                    self:setShape(name, value)
-                end
-            end,
         }, card)
+        self.sliders[name]:connect('changed', function(value)
+            if not self.wave then
+                self:setShape(name, value)
+            end
+        end)
     end
-    ui:button({
-        position = { 0, 14, 0, 18 + count * 58 },
-        size = { 1, -28, 0, 40 },
-        text = 'Wave (animate from code)',
-        textScaled = true,
-        maxTextSize = 16,
-        backgroundColor = { 0.1, 0.3, 0.2 },
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 14, 0, 18 + count * 58 },
+            size = { 1, -28, 0, 40 },
+            text = 'Wave (animate from code)',
+            textScaled = true,
+            maxTextSize = 16,
+            backgroundColor = { 0.1, 0.3, 0.2 },
+        }, card)
+        node:connect('press', function()
             self.wave = not self.wave
-        end,
-    }, card)
+        end)
+    end
 end
 
 return Interface

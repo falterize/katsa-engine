@@ -11,13 +11,13 @@ function Interface.create(self)
         textScaled = true,
         maxTextSize = 15,
         backgroundColor = { 0.09, 0.2, 0.29 },
-        onPress = function()
-            local p = self.board.position
-            self.scene.camera.position = { p[1], p[2], p[3] - 110 }
-            self.scene.camera.rotation = { 0, 0, 0 }
-            self.scene.input:reset()
-        end,
     }, self.scene.ui.content)
+    self.focusButton:connect('press', function()
+        local p = self.board.position
+        self.scene.camera.position = { p[1], p[2], p[3] - 110 }
+        self.scene.camera.rotation = { 0, 0, 0 }
+        self.scene.input:reset()
+    end)
     local ui = self.board.ui
     local panel =
         ui:container({ size = { 1, 0, 1, 0 }, backgroundColor = { 0.035, 0.08, 0.14 } }, self.board)
@@ -72,8 +72,10 @@ function Interface.create(self)
             size = { 1, -30, 0, 40 },
             text = b[1],
             backgroundColor = { 0.1, 0.24, 0.34 },
-            onPress = b[2],
         }, panel)
+        if b[2] then
+            button:connect('press', b[2])
+        end
         ui:create('UICorner', { radius = { 0, 8 } }, button)
     end
     self.count = ui:text({

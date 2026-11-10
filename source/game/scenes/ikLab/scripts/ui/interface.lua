@@ -18,33 +18,33 @@ function Interface.create(state)
         size = { 1, -16, 0, 32 },
         text = 'Arm solver: ' .. Content.armTypes[1],
     }, panel)
-    solver.onPress = function()
+    solver:connect('press', function()
         local index = state.armType % #Content.armTypes + 1
         state:setArmType(index)
         solver.text = 'Arm solver: ' .. Content.armTypes[index]
-    end
+    end)
     local levels, index = { 1, 0.5, 0 }, 1
     local influence = ui:button({
         position = { 0, 8, 0, 48 },
         size = { 1, -16, 0, 32 },
         text = 'IK influence: 100%',
     }, panel)
-    influence.onPress = function()
+    influence:connect('press', function()
         index = index % #levels + 1
         state:setInfluence(levels[index])
         influence.text = ('IK influence: %d%%'):format(levels[index] * 100)
-    end
+    end)
     local debug = true
     local toggle = ui:button({
         position = { 0, 8, 0, 88 },
         size = { 1, -16, 0, 32 },
         text = 'IK debug: on',
     }, panel)
-    toggle.onPress = function()
+    toggle:connect('press', function()
         debug = not debug
         state:setDebug(debug)
         toggle.text = 'IK debug: ' .. (debug and 'on' or 'off')
-    end
+    end)
     ui:create('Label', {
         position = { 0, 8, 0, 128 },
         size = { 1, -16, 0, 60 },

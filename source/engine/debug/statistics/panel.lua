@@ -43,15 +43,17 @@ function Panel.new(ui, parent, definitions)
     }, parent)
     self.header = text(ui, self.scroll, 8, 76)
     self.header.textScaled, self.header.minTextSize, self.header.maxTextSize = true, 10, 13
-    ui:button({
-        position = { 0, 8, 0, 84 },
-        size = { 1, -16, 0, 30 },
-        text = 'Export Stats logs...',
-        fontSize = 13,
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 84 },
+            size = { 1, -16, 0, 30 },
+            text = 'Export Stats logs...',
+            fontSize = 13,
+        }, self.scroll)
+        node:connect('press', function()
             self:showExport()
-        end,
-    }, self.scroll)
+        end)
+    end
     self.popup = ui:container({
         name = 'StatisticsHistory',
         _viewportAuthored = true,
@@ -73,34 +75,40 @@ function Panel.new(ui, parent, definitions)
     self.chart.size = { 1, -24, 1, -182 }
     self.legend = text(ui, self.popup, 320, 24, 12)
     self.legend.text = 'Bars: mean | whiskers: min/max | yellow line: window mean'
-    ui:button({
-        position = { 0, 12, 1, -34 },
-        size = { 0, 132, 0, 28 },
-        text = 'Export logs...',
-        fontSize = 12,
-        onPress = function()
-            self:showExport()
-        end,
-    }, self.popup)
-    ui:button({
-        position = { 1, -44, 0, 8 },
-        size = { 0, 32, 0, 28 },
-        text = 'X',
-        onPress = function()
-            self:close()
-        end,
-    }, self.popup)
-    for index, seconds in ipairs({ 5, 30 }) do
-        ui:button({
-            position = { 1, -184 + (index - 1) * 82, 1, -34 },
-            size = { 0, 76, 0, 28 },
-            text = 'Last ' .. seconds .. 's',
+    do
+        local node = ui:button({
+            position = { 0, 12, 1, -34 },
+            size = { 0, 132, 0, 28 },
+            text = 'Export logs...',
             fontSize = 12,
-            onPress = function()
+        }, self.popup)
+        node:connect('press', function()
+            self:showExport()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 1, -44, 0, 8 },
+            size = { 0, 32, 0, 28 },
+            text = 'X',
+        }, self.popup)
+        node:connect('press', function()
+            self:close()
+        end)
+    end
+    for index, seconds in ipairs({ 5, 30 }) do
+        do
+            local node = ui:button({
+                position = { 1, -184 + (index - 1) * 82, 1, -34 },
+                size = { 0, 76, 0, 28 },
+                text = 'Last ' .. seconds .. 's',
+                fontSize = 12,
+            }, self.popup)
+            node:connect('press', function()
                 self.seconds = seconds
                 self:refreshChart()
-            end,
-        }, self.popup)
+            end)
+        end
     end
     self:buildExport(parent)
     return self
@@ -145,35 +153,39 @@ function Panel:buildExport(parent)
             fontSize = 13,
             textScaled = true,
             maxTextSize = 13,
-            onPress = function()
-                self:export(scope, seconds)
-            end,
         }, self.exportDialog)
+        self.exportButtons[index]:connect('press', function()
+            self:export(scope, seconds)
+        end)
     end
     self.exportStatus = text(self.ui, self.exportDialog, 192, 58, 12)
     self.exportStatus.textScaled, self.exportStatus.maxTextSize = true, 12
-    self.ui:button({
-        position = { 0, 12, 1, -40 },
-        size = { 0.55, -18, 0, 30 },
-        text = 'Open log folder',
-        fontSize = 13,
-        onPress = function()
+    do
+        local node = self.ui:button({
+            position = { 0, 12, 1, -40 },
+            size = { 0.55, -18, 0, 30 },
+            text = 'Open log folder',
+            fontSize = 13,
+        }, self.exportDialog)
+        node:connect('press', function()
             katsa.filesystem.createDirectory('stats-logs')
             local path = (katsa.filesystem.getSaveDirectory() .. '/stats-logs'):gsub('\\', '/')
             katsa.system.openURL(
                 ('file://' .. (path:sub(1, 1) == '/' and '' or '/') .. path):gsub(' ', '%%20')
             )
-        end,
-    }, self.exportDialog)
-    self.ui:button({
-        position = { 0.55, 0, 1, -40 },
-        size = { 0.45, -12, 0, 30 },
-        text = 'Close',
-        onPress = function()
+        end)
+    end
+    do
+        local node = self.ui:button({
+            position = { 0.55, 0, 1, -40 },
+            size = { 0.45, -12, 0, 30 },
+            text = 'Close',
+        }, self.exportDialog)
+        node:connect('press', function()
             self.exportDialog.visible = false
             self.exportBlocker.visible = false
-        end,
-    }, self.exportDialog)
+        end)
+    end
 end
 
 function Panel:showExport()
@@ -227,10 +239,10 @@ function Panel:ensureRows()
             maxTextSize = 13,
             align = 'left',
             backgroundTransparency = 0.6,
-            onPress = function()
-                self:select(index)
-            end,
         }, self.scroll)
+        self.rows[index]:connect('press', function()
+            self:select(index)
+        end)
     end
 end
 

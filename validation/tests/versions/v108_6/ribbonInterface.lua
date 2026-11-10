@@ -27,7 +27,7 @@ function Module.run(self)
     local function press(text)
         for _, button in ipairs(buttons) do
             if button.text:find(text, 1, true) then
-                button.onPress()
+                button:press()
                 return button
             end
         end

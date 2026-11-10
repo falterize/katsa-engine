@@ -10,15 +10,17 @@ function Editor.open(popup)
     popup.title.text = 'Bone mask / ' .. popup.target.name
     local nodes = popup.target._animator.model.nodes
     local y = 0
-    popup.ui:button({
-        size = { 1, 0, 0, 32 },
-        text = 'Clear mask (all bones)',
-        fontSize = 13,
-        onPress = function()
+    do
+        local node = popup.ui:button({
+            size = { 1, 0, 0, 32 },
+            text = 'Clear mask (all bones)',
+            fontSize = 13,
+        }, popup.body)
+        node:connect('press', function()
             popup.target.boneMask = {}
             Editor.open(popup)
-        end,
-    }, popup.body)
+        end)
+    end
     y = 38
     popup.ui:text({
         position = { 0, 4, 0, y },
@@ -32,12 +34,14 @@ function Editor.open(popup)
         if node.isBone then
             local name = node.name
             local weight = popup.target.boneMask[name]
-            popup.ui:button({
-                position = { 0, 0, 0, y },
-                size = { 0.7, -4, 0, 32 },
-                text = (weight ~= nil and '- ' or '+ ') .. name,
-                fontSize = 11,
-                onPress = function()
+            do
+                local node = popup.ui:button({
+                    position = { 0, 0, 0, y },
+                    size = { 0.7, -4, 0, 32 },
+                    text = (weight ~= nil and '- ' or '+ ') .. name,
+                    fontSize = 11,
+                }, popup.body)
+                node:connect('press', function()
                     if popup.workspace.editing and not popup:commitInput() then
                         return
                     end
@@ -47,19 +51,21 @@ function Editor.open(popup)
                         popup.target.boneMask[name] = 1
                     end
                     Editor.open(popup)
-                end,
-            }, popup.body)
+                end)
+            end
             if weight ~= nil then
-                popup.ui:slider({
-                    position = { 0.7, 0, 0, y },
-                    size = { 0.3, 0, 0, 32 },
-                    min = 0,
-                    max = 1,
-                    value = weight,
-                    onChange = function(value)
+                do
+                    local node = popup.ui:slider({
+                        position = { 0.7, 0, 0, y },
+                        size = { 0.3, 0, 0, 32 },
+                        min = 0,
+                        max = 1,
+                        value = weight,
+                    }, popup.body)
+                    node:connect('changed', function(value)
                         popup.target.boneMask[name] = value
-                    end,
-                }, popup.body)
+                    end)
+                end
             end
             y = y + 36
         end

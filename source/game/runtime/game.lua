@@ -131,10 +131,10 @@ function Game:load()
         fontSize = 22,
         backgroundColor = { 0.08, 0.16, 0.25 },
         backgroundTransparency = 1 - 0.95,
-        onPress = function()
-            self.debugOverlay.visible = not self.debugOverlay.visible
-        end,
     }, debugControls)
+    self.debugButton:connect('press', function()
+        self.debugOverlay.visible = not self.debugOverlay.visible
+    end)
     self.ui:adaptReference(1280, 720)
     self.workspace = require('source.engine.editor.workspace').new(self)
     if self.settings.presentation and self.settings.presentation.navigation == false then

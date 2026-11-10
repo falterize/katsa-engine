@@ -27,7 +27,8 @@ A key missing in the current language falls back to the `fallback` locale (defau
 also while the game runs:
 
 ```lua
-ui:button({ textKey = 'lab.more', onPress = ... }, panel)
+local more = ui:button({ textKey = 'lab.more' }, panel)
+more:connect('click', function() print('more') end)
 ui:text({ textKey = 'lab.items', textParams = params }, panel)   -- change params.count in place
 ```
 

@@ -326,15 +326,15 @@ function Tests:draw()
             'walker gravity follows the world gravity (' .. ('%.2f'):format(g) .. ' m/s2)'
         )
         -- Phone toggles: tapping Run / Crouch latches the input.
-        session.hud.runButton.onPress()
-        session.hud.crouchButton.onPress()
+        session.hud.runButton:press()
+        session.hud.crouchButton:press()
         host.input:update(0.016)
         self:check(
             walker.input.sprint and walker.input.crouch,
             'the Run and Crouch buttons latch sprint and crouch'
         )
-        session.hud.runButton.onPress()
-        session.hud.crouchButton.onPress()
+        session.hud.runButton:press()
+        session.hud.crouchButton:press()
         host.input:update(0.016)
         self:check(
             not walker.input.sprint and not walker.input.crouch,
@@ -358,10 +358,10 @@ function Tests:draw()
         host.input.actions.keys.w = heldW
         -- Zoom: buttons and a two-finger pinch move the orbit camera.
         local before = session.orbit.distance
-        session.hud.zoomIn.onPress()
+        session.hud.zoomIn:press()
         self:check(session.orbit.distance < before, 'the zoom button brings the camera closer')
-        session.hud.zoomOut.onPress()
-        session.hud.zoomOut.onPress()
+        session.hud.zoomOut:press()
+        session.hud.zoomOut:press()
         local fx, fy = self:freeSpot(session.scene.ui, 260)
         session:pointerpressed(1, fx, fy)
         session:pointerpressed(2, fx + 100, fy)
@@ -604,10 +604,7 @@ function Tests:draw()
         end
         self:check(button ~= nil, 'the host sees a Kick button in the player list')
         if button then
-            session.scene.ui:pointer(button, 'press', 0, 0, 1) -- not reachable: use the handler
-        end
-        if button and button.onPress then
-            button.onPress()
+            button:press()
         end
         self:check(kicked ~= nil, 'the Kick button asks to kick that player')
         social.callbacks.kick = original

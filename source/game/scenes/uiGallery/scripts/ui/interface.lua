@@ -71,25 +71,27 @@ function Interface.create(self)
         size = { 1, -24, 0, 50 },
         text = 'Click / tap: 0',
         backgroundColor = { 0.1, 0.32, 0.45 },
-        onPress = function()
-            self.presses = self.presses + 1
-            self.button.text = 'Click / tap: ' .. self.presses
-        end,
     }, left)
+    self.button:connect('press', function()
+        self.presses = self.presses + 1
+        self.button.text = 'Click / tap: ' .. self.presses
+    end)
     self.value = ui:text({
         position = { 0, 12, 0, 270 },
         size = { 1, -24, 0, 35 },
         text = 'Slider: 50%',
         fontSize = 20,
     }, left)
-    ui:slider({
-        position = { 0, 12, 0, 312 },
-        size = { 1, -24, 0, 40 },
-        value = 0.5,
-        onChange = function(v)
+    do
+        local node = ui:slider({
+            position = { 0, 12, 0, 312 },
+            size = { 1, -24, 0, 40 },
+            value = 0.5,
+        }, left)
+        node:connect('changed', function(v)
             self.value.text = string.format('Slider: %.0f%%', v * 100)
-        end,
-    }, left)
+        end)
+    end
     self.fitImage = ui:image({
         name = 'FitModeExample',
         fitMode = 'Fit',
@@ -105,19 +107,21 @@ function Interface.create(self)
     }, left)
     local modes = { 'Fit', 'Crop', 'Stretch', 'Tile' }
     self.fitIndex = 1
-    ui:button({
-        position = { 0, 12, 0, 510 },
-        size = { 1, -24, 0, 36 },
-        text = 'Cycle FitMode / Pixel',
-        textScaled = true,
-        maxTextSize = 16,
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 12, 0, 510 },
+            size = { 1, -24, 0, 36 },
+            text = 'Cycle FitMode / Pixel',
+            textScaled = true,
+            maxTextSize = 16,
+        }, left)
+        node:connect('press', function()
             self.fitIndex = self.fitIndex % 4 + 1
             self.fitImage.imageMode = self.fitIndex == 4 and 'Tiles' or 'Decal'
             self.fitImage.fitMode = self.fitIndex == 4 and 'Stretch' or modes[self.fitIndex]
             self.fitImage.pixelate = not self.fitImage.pixelate
-        end,
-    }, left)
+        end)
+    end
     local group = ui:canvasGroup(
         { position = { 0, 12, 0, 556 }, size = { 1, -24, 0, 170 }, transparency = 0.35 },
         left
@@ -129,13 +133,15 @@ function Interface.create(self)
         textScaled = true,
         backgroundColor = { 0.15, 0.35, 0.5 },
     }, group)
-    ui:button({
-        position = { 0, 12, 0, 735 },
-        size = { 1, -24, 0, 44 },
-        text = 'Text gradient: fill / outline',
-        textScaled = true,
-        maxTextSize = 16,
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 12, 0, 735 },
+            size = { 1, -24, 0, 44 },
+            text = 'Text gradient: fill / outline',
+            textScaled = true,
+            maxTextSize = 16,
+        }, left)
+        node:connect('press', function()
             self.outlineOnly = not self.outlineOnly
             for _, node in ipairs(gradient.children) do
                 if node:isA('Ramp') and node.target == 'Text' then
@@ -147,8 +153,8 @@ function Interface.create(self)
                     node.thickness = { 0, 3 }
                 end
             end
-        end,
-    }, left)
+        end)
+    end
     local right = ui:scroll({
         position = { 0.5, 0, 0, 65 },
         size = { 0.5, -18, 1, -85 },

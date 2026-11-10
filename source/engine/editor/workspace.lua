@@ -60,10 +60,10 @@ function Workspace.new(scene)
         text = 'Groups',
         fontSize = 13,
         backgroundColor = buttonColor,
-        onPress = function()
-            require('source.engine.editor.panels.groupEditor').open(self)
-        end,
     }, self.panel)
+    self.groupsButton:connect('press', function()
+        require('source.engine.editor.panels.groupEditor').open(self)
+    end)
     self.shaderLayersButton = ui:button({
         position = { 1, -196, 0, 8 },
         size = { 0, 82, 0, 32 },
@@ -71,20 +71,20 @@ function Workspace.new(scene)
         text = 'Shaders',
         fontSize = 12,
         backgroundColor = buttonColor,
-        onPress = function()
-            require('source.engine.editor.panels.shaderLayers').open(self)
-        end,
     }, self.panel)
+    self.shaderLayersButton:connect('press', function()
+        require('source.engine.editor.panels.shaderLayers').open(self)
+    end)
     self.close = ui:button({
         position = { 1, -12, 0, 8 },
         size = { 0, 90, 0, 32 },
         anchorPoint = { 1, 0 },
         text = 'Close',
         backgroundColor = buttonColor,
-        onPress = function()
-            self:toggle(false)
-        end,
     }, self.panel)
+    self.close:connect('press', function()
+        self:toggle(false)
+    end)
     self.search = ui:button({
         position = { 0, 12, 0, 48 },
         size = { 1, -24, 0, 34 },
@@ -92,10 +92,10 @@ function Workspace.new(scene)
         fontSize = 16,
         align = 'left',
         backgroundColor = buttonColor,
-        onPress = function()
-            self:beginSearch()
-        end,
     }, self.panel)
+    self.search:connect('press', function()
+        self:beginSearch()
+    end)
     self.tree = ui:scroll({
         position = { 0, 12, 0, 94 },
         size = { 0.42, -18, 1, -174 },
@@ -136,10 +136,10 @@ function Workspace.new(scene)
         onTextChanged = function(node)
             self.buffer = node.text
         end,
-        onPress = function()
-            self:showKeyboard()
-        end,
     }, self.panel)
+    self.entry:connect('press', function()
+        self:showKeyboard()
+    end)
     self.apply = ui:button({
         position = { 1, -170, 1, -40 },
         size = { 0, 76, 0, 32 },
@@ -147,10 +147,10 @@ function Workspace.new(scene)
         visible = false,
         fontSize = 15,
         backgroundColor = { 0.1, 0.3, 0.4 },
-        onPress = function()
-            self:commit()
-        end,
     }, self.panel)
+    self.apply:connect('press', function()
+        self:commit()
+    end)
     self.cancel = ui:button({
         position = { 1, -88, 1, -40 },
         size = { 0, 76, 0, 32 },
@@ -158,10 +158,10 @@ function Workspace.new(scene)
         visible = false,
         fontSize = 15,
         backgroundColor = buttonColor,
-        onPress = function()
-            self:cancelEdit()
-        end,
     }, self.panel)
+    self.cancel:connect('press', function()
+        self:cancelEdit()
+    end)
     self.tab = ui:button({
         name = 'WorkspaceToggle',
         position = { 1, -8, 0, 6 },
@@ -173,10 +173,10 @@ function Workspace.new(scene)
         minTextSize = 12,
         maxTextSize = 17,
         backgroundColor = buttonColor,
-        onPress = function()
-            self:toggle()
-        end,
     }, self.group)
+    self.tab:connect('press', function()
+        self:toggle()
+    end)
     self.settingsRoot = { name = 'Debug / Input', className = 'Settings', children = {} }
     scene.controls.joystick._inputKind = 'Joystick'
     scene.controls._inputKind = 'Input'

@@ -107,10 +107,10 @@ function Tests:scrolling(ui, scale)
     local child = ui:button({
         size = { 0, 600, 0, 500 },
         text = 'Content',
-        onPress = function()
-            clicks = clicks + 1
-        end,
     }, frame)
+    child:connect('press', function()
+        clicks = clicks + 1
+    end)
     for _, axis in ipairs({ 'X', 'Y' }) do
         for _, side in ipairs({ 'Left', 'Right' }) do
             frame.verticalScrollBarPosition = side

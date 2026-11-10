@@ -42,17 +42,17 @@ local panel = world:create('SurfaceUI', {
     interactable = true,
     onTop = false,
 }, box)
-panel.ui:create('Button', {
+local activate = panel.ui:create('Button', {
     position = { 0.5, 0, 0.5, 0 },
     size = { 0.8, 0, 0.4, 0 },
     anchorPoint = { 0.5, 0.5 },
     text = 'Activate',
     textScaled = true,
     backgroundColor = { 0.1, 0.3, 0.5 },
-    onPress = function()
-        print('Activated')
-    end,
 }, panel)
+activate:connect('click', function()
+    print('Activated')
+end)
 ```
 
 Size UDim2 defaults to filling the selected face. Match CanvasSize aspect ratio

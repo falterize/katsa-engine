@@ -15,14 +15,16 @@ function Viewport.run(tests, ui, density)
         canvasSize = { 0, 600, 0, 500 },
         scrollBarThickness = 12,
     }, inner.content)
-    inner:button({
-        size = { 0, 600, 0, 500 },
-        text = 'Viewport text',
-        fontSize = 13,
-        onPress = function()
+    do
+        local node = inner:button({
+            size = { 0, 600, 0, 500 },
+            text = 'Viewport text',
+            fontSize = 13,
+        }, scroll)
+        node:connect('press', function()
             clicks = clicks + 1
-        end,
-    }, scroll)
+        end)
+    end
     local canvas = katsa.graphics.newCanvas(480 * density, 320 * density, { dpiscale = 1 })
     local function render()
         katsa.graphics.push('all')

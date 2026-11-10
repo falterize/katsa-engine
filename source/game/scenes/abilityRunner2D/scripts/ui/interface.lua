@@ -34,70 +34,84 @@ function Interface.create(state)
         textScaled = true,
         maxTextSize = 14,
     }, panel)
-    ui:button({
-        position = { 0, 8, 0, 110 },
-        size = { 1, -16, 0, 36 },
-        text = 'Respawn checkpoint',
-        onPress = function()
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 110 },
+            size = { 1, -16, 0, 36 },
+            text = 'Respawn checkpoint',
+        }, panel)
+        node:connect('press', function()
             state.controller:request('respawn')
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 8, 0, 154 },
-        size = { 1, -16, 0, 36 },
-        text = 'Physics debug ON/OFF',
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 154 },
+            size = { 1, -16, 0, 36 },
+            text = 'Physics debug ON/OFF',
+        }, panel)
+        node:connect('press', function()
             state.physics.debug.enabled = not state.physics.debug.enabled
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 8, 0, 198 },
-        size = { 1, -16, 0, 36 },
-        text = 'Player visual layer ON/OFF',
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 198 },
+            size = { 1, -16, 0, 36 },
+            text = 'Player visual layer ON/OFF',
+        }, panel)
+        node:connect('press', function()
             local groups = scene.world.layerGroups
             groups:set(
                 ui.currentCamera.layerGroup,
                 'Player',
                 not groups:interacts(ui.currentCamera.layerGroup, 'Player')
             )
-        end,
-    }, panel)
+        end)
+    end
     for i, action in ipairs({ 'Jump', 'Dash', 'Slide' }) do
-        ui:button({
-            name = action .. 'Action',
-            position = { 1, -12, 1, -18 - (i - 1) * 52 },
-            anchorPoint = { 1, 1 },
-            size = { 0, 112, 0, 44 },
-            text = action,
-            backgroundColor = Theme.accent,
-            radius = Theme.corner,
-            zIndex = 20,
-            onPress = function()
+        do
+            local node = ui:button({
+                name = action .. 'Action',
+                position = { 1, -12, 1, -18 - (i - 1) * 52 },
+                anchorPoint = { 1, 1 },
+                size = { 0, 112, 0, 44 },
+                text = action,
+                backgroundColor = Theme.accent,
+                radius = Theme.corner,
+                zIndex = 20,
+            }, ui.content)
+            node:connect('press', function()
                 state.controller:request(action:lower())
-            end,
-        }, ui.content)
+            end)
+        end
     end
     for i, direction in ipairs({ 'Left', 'Right' }) do
         local held = direction == 'Left' and state.touchLeft or state.touchRight
         local function release(_, _, _, id)
             held[id or 'mouse'] = nil
         end
-        ui:button({
-            name = direction .. 'Action',
-            position = { 0, 12 + (i - 1) * 100, 1, -18 },
-            anchorPoint = { 0, 1 },
-            size = { 0, 88, 0, 54 },
-            text = direction,
-            backgroundColor = Theme.button,
-            radius = Theme.corner,
-            zIndex = 20,
-            onPress = function(_, _, _, id)
+        do
+            local node = ui:button({
+                name = direction .. 'Action',
+                position = { 0, 12 + (i - 1) * 100, 1, -18 },
+                anchorPoint = { 0, 1 },
+                size = { 0, 88, 0, 54 },
+                text = direction,
+                backgroundColor = Theme.button,
+                radius = Theme.corner,
+                zIndex = 20,
+            }, ui.content)
+            node:connect('press', function(_, _, _, id)
                 held[id or 'mouse'] = true
-            end,
-            onRelease = release,
-            onCancel = release,
-        }, ui.content)
+            end)
+            if release then
+                node:connect('release', release)
+            end
+            if release then
+                node:connect('cancel', release)
+            end
+        end
     end
 end
 

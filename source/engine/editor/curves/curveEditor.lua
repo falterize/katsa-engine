@@ -185,9 +185,7 @@ function Curve:pointer(ui, phase, x, y, id)
         end
         self.selected = best
         self._rangeLock = { range(self) }
-        if self.onChange then
-            self.onChange()
-        end
+        self:emit('changed')
         self.drag = { id = id, index = best }
     elseif phase == 'move' and self.drag and self.drag.id == id then
         local index = self.drag.index
@@ -230,9 +228,7 @@ function Curve:pointer(ui, phase, x, y, id)
                 self.points[index + 1].incoming = nil
             end
         end
-        if self.onChange then
-            self.onChange()
-        end
+        self:emit('changed')
     elseif phase == 'release' or phase == 'cancel' then
         self.drag, self._rangeLock = nil, nil
         local last = self.points[#self.points]
@@ -242,9 +238,7 @@ function Curve:pointer(ui, phase, x, y, id)
         if self.onSettle then
             self.onSettle()
         end
-        if self.onChange then
-            self.onChange()
-        end
+        self:emit('changed')
     end
 end
 

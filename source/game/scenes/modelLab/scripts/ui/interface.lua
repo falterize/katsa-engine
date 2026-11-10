@@ -25,15 +25,19 @@ function Interface.create(self)
     local y = 0
 
     local function button(text, callback)
-        ui:button({
-            position = { 0, 6, 0, y },
-            size = { 1, -12, 0, 32 },
-            fontSize = 12,
-            text = text,
-            backgroundColor = Theme.button,
-            radius = Theme.corner,
-            onPress = callback,
-        }, body)
+        do
+            local node = ui:button({
+                position = { 0, 6, 0, y },
+                size = { 1, -12, 0, 32 },
+                fontSize = 12,
+                text = text,
+                backgroundColor = Theme.button,
+                radius = Theme.corner,
+            }, body)
+            if callback then
+                node:connect('press', callback)
+            end
+        end
         y = y + 38
     end
     for _, name in ipairs({ 'Idle', 'Walk', 'Run', 'Jump', 'Fall', 'Wave' }) do

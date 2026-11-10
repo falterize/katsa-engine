@@ -31,13 +31,17 @@ function Panel.new(ui, parent)
         { 'Clear', function() katsa.log.clear() end },
     }
     for index, button in ipairs(buttons) do
-        ui:button({
-            position = { 0, 8 + (index - 1) * 88, 0, 8 },
-            size = { 0, 82, 0, 26 },
-            text = button[1],
-            fontSize = 12,
-            onPress = button[2],
-        }, self.root)
+        do
+            local node = ui:button({
+                position = { 0, 8 + (index - 1) * 88, 0, 8 },
+                size = { 0, 82, 0, 26 },
+                text = button[1],
+                fontSize = 12,
+            }, self.root)
+            if button[2] then
+                node:connect('press', button[2])
+            end
+        end
     end
     self.status = ui:text({
         position = { 0, 8 + #buttons * 88, 0, 8 },

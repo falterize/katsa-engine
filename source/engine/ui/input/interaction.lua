@@ -49,7 +49,7 @@ function Interaction.install(UI)
                 end
                 if
                     inClip
-                    and (n.interactive or n.onPress or n.capture)
+                    and (n.interactive or n.capture or n:hasConnections('press') or n:hasConnections('click'))
                     and UI.contains(n, x, y)
                 then
                     return n
@@ -179,16 +179,6 @@ function Interaction.install(UI)
             then
                 node:emit('click', node, x, y, id)
             end
-        end
-        local handler = phase == 'enter' and node.onEnter
-            or phase == 'leave' and node.onLeave
-            or phase == 'hover' and node.onHover
-            or phase == 'press' and node.onPress
-            or phase == 'move' and node.onMove
-            or phase == 'release' and node.onRelease
-            or phase == 'cancel' and node.onCancel
-        if handler then
-            handler(node, x, y, id)
         end
     end
 end

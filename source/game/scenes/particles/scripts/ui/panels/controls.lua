@@ -18,11 +18,11 @@ function Controls.build(lab)
         size = { 0, 210, 0, 32 },
         text = '− Particle controls',
         fontSize = 14,
-        onPress = function(node)
-            lab.panel.visible = not lab.panel.visible
-            node.text = lab.panel.visible and '− Particle controls' or '+ Particle controls'
-        end,
     }, ui.content)
+    lab.collapse:connect('press', function(node)
+        lab.panel.visible = not lab.panel.visible
+        node.text = lab.panel.visible and '− Particle controls' or '+ Particle controls'
+    end)
     lab.status = ui:text({
         position = { 0, 8, 0, 6 },
         size = { 1, -16, 0, 58 },
@@ -49,12 +49,12 @@ function Controls.build(lab)
             text = e.name,
             fontSize = 12,
             backgroundColor = { 0.07, 0.14, 0.2 },
-            onPress = function()
-                lab.selected = i
-                lab.emitter = e
-                lab.syncControls = true
-            end,
         }, body)
+        lab.tabs[i]:connect('press', function()
+            lab.selected = i
+            lab.emitter = e
+            lab.syncControls = true
+        end)
     end
     y = 72
 
@@ -65,11 +65,11 @@ function Controls.build(lab)
             text = key,
             fontSize = 12,
             backgroundColor = { 0.07, 0.14, 0.2 },
-            onPress = function()
-                fn()
-                lab.syncControls = true
-            end,
         }, body)
+        b:connect('press', function()
+            fn()
+            lab.syncControls = true
+        end)
         lab.buttons[key] = b
         y = y + 34
         return b
@@ -90,11 +90,11 @@ function Controls.build(lab)
             min = min,
             max = max,
             value = get(),
-            onChange = function(value)
-                set(value)
-                lab.syncControls = true
-            end,
         }, body)
+        s:connect('changed', function(value)
+            set(value)
+            lab.syncControls = true
+        end)
         lab.sliders[key] = { node = s, label = label, get = get, text = text }
         y = y + 34
     end

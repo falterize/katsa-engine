@@ -60,17 +60,19 @@ function Examples.create(state, left)
     state.surfaceTextBox =
         input(surface.ui, surface.ui.content, 'SurfaceTextBox', 70, 'Editable SurfaceUI', false)
     board.visible, mesh.visible = false, false
-    ui:button({
-        name = 'WorldTextBoxExamples',
-        position = { 0, 12, 0, 84 },
-        size = { 0, 280, 0, 36 },
-        text = 'Test world TextBoxes',
-        fontSize = 17,
-        onPress = function(button)
+    do
+        local node = ui:button({
+            name = 'WorldTextBoxExamples',
+            position = { 0, 12, 0, 84 },
+            size = { 0, 280, 0, 36 },
+            text = 'Test world TextBoxes',
+            fontSize = 17,
+        }, ui.content)
+        node:connect('press', function(button)
             local show = not board.visible
             board.visible, mesh.visible, state.root.visible = show, show, not show
             button.text = show and 'Return to UI Gallery' or 'Test world TextBoxes'
-        end,
-    }, ui.content)
+        end)
+    end
 end
 return Examples

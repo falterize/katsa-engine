@@ -92,27 +92,31 @@ function Interface.create(self)
             fontSize = 12,
             backgroundColor = { 0.04, 0.06, 0.1 },
         }, overlay.content)
-        overlay:button({
-            position = { 0, 8, 1, -42 },
-            size = { 0.5, -12, 0, 32 },
-            text = 'Camera',
-            fontSize = 12,
-            backgroundColor = { 0.12, 0.3, 0.42 },
-            onPress = function()
+        do
+            local node = overlay:button({
+                position = { 0, 8, 1, -42 },
+                size = { 0.5, -12, 0, 32 },
+                text = 'Camera',
+                fontSize = 12,
+                backgroundColor = { 0.12, 0.3, 0.42 },
+            }, overlay.content)
+            node:connect('press', function()
                 root.currentCamera = root.currentCamera == camera and second or camera
-            end,
-        }, overlay.content)
-        overlay:button({
-            position = { 0.5, 4, 1, -42 },
-            size = { 0.5, -12, 0, 32 },
-            text = 'Burst',
-            fontSize = 12,
-            backgroundColor = { 0.34, 0.16, 0.08 },
-            onPress = function()
+            end)
+        end
+        do
+            local node = overlay:button({
+                position = { 0.5, 4, 1, -42 },
+                size = { 0.5, -12, 0, 32 },
+                text = 'Burst',
+                fontSize = 12,
+                backgroundColor = { 0.34, 0.16, 0.08 },
+            }, overlay.content)
+            node:connect('press', function()
                 emitter:emit(50)
                 label.text = 'Burst in World ' .. i
-            end,
-        }, overlay.content)
+            end)
+        end
         local type = world:registerNodeType('PreviewSpin', {
             base = 'Node',
             update = function(_, dt)

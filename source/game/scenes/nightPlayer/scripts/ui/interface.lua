@@ -19,8 +19,10 @@ function Interface.create(self)
             text = text,
             fontSize = 17,
             backgroundColor = { 0.085, 0.135, 0.19 },
-            onPress = callback,
         }, self.toolbar)
+        if callback then
+            node:connect('press', callback)
+        end
         row = row + 1
         self.toolbar.length = row * 52 + 12
         return node
@@ -58,10 +60,10 @@ function Interface.create(self)
         value = self.dayHour,
         backgroundColor = { 0.04, 0.1, 0.16 },
         backgroundTransparency = 1 - 0.9,
-        onChange = function(value)
-            self:setTimeOfDay(value)
-        end,
     }, self.toolbar)
+    self.daySlider:connect('changed', function(value)
+        self:setTimeOfDay(value)
+    end)
     ui:text({
         position = { 0, 8, 0, 268 },
         size = { 1, -16, 0, 52 },
@@ -81,22 +83,24 @@ function Interface.create(self)
         fontSize = 24,
         backgroundColor = { 0.12, 0.3, 0.45 },
         backgroundTransparency = 1 - 0.95,
-        onPress = function()
-            scene.input:trigger('Jump')
-        end,
     }, ui.content)
-    ui:button({
-        _viewportAuthored = true,
-        position = { 1, -14, 1, -204 },
-        size = { 0, 90, 0, 42 },
-        anchorPoint = { 1, 1 },
-        text = 'INTERACT',
-        fontSize = 14,
-        backgroundColor = { 0.085, 0.135, 0.19 },
-        onPress = function()
+    self.jumpButton:connect('press', function()
+        scene.input:trigger('Jump')
+    end)
+    do
+        local node = ui:button({
+            _viewportAuthored = true,
+            position = { 1, -14, 1, -204 },
+            size = { 0, 90, 0, 42 },
+            anchorPoint = { 1, 1 },
+            text = 'INTERACT',
+            fontSize = 14,
+            backgroundColor = { 0.085, 0.135, 0.19 },
+        }, ui.content)
+        node:connect('press', function()
             scene.input:trigger('Interact')
-        end,
-    }, ui.content)
+        end)
+    end
     self.toolbar.automaticLength = true
     self.toolbar.contentPadding = 8
     self.toolbar.size = { 0, math.min(340, ui.width - 24), 0.45, -24 }

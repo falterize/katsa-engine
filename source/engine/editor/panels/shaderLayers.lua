@@ -26,7 +26,7 @@ function Editor.open(workspace)
     local render
 
     local function button(text, x, y, width, fn, enabled)
-        return popup.ui:button({
+        local node = popup.ui:button({
             position = { x, 4, 0, y },
             size = { width, -8, 0, 34 },
             text = text,
@@ -35,13 +35,14 @@ function Editor.open(workspace)
             maxTextSize = 12,
             enabled = enabled ~= false,
             backgroundColor = { 0.09, 0.16, 0.23 },
-            onPress = function()
-                local ok, err = pcall(fn)
-                if not ok then
-                    popup.message.text = tostring(err)
-                end
-            end,
         }, popup.body)
+        node:connect('press', function()
+            local ok, err = pcall(fn)
+            if not ok then
+                popup.message.text = tostring(err)
+            end
+        end)
+        return node
     end
     local function isDefault(name)
         return name == 'Default2D' or name == 'Default3D'

@@ -19,8 +19,10 @@ function Interface.create(self)
             text = text,
             fontSize = 17,
             backgroundColor = { 0.085, 0.135, 0.19 },
-            onPress = callback,
         }, self.toolbar)
+        if callback then
+            node:connect('press', callback)
+        end
         row = row + 1
         self.toolbar.length = row * 52 + 12
         return node

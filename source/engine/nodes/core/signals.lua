@@ -40,6 +40,20 @@ function Signals.connect(self, event, callback)
     return connection
 end
 
+-- Whether the event has at least one live connection (UI hit-testing treats such nodes as input
+-- targets).
+function Signals.hasConnections(self, event)
+    local list = self._signals and self._signals[event]
+    if list then
+        for _, connection in ipairs(list) do
+            if connection.connected then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 function Signals.emit(self, event, ...)
     local list = self._signals and self._signals[event]
     if not list then

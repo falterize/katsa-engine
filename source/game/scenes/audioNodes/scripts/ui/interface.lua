@@ -78,10 +78,10 @@ function Interface.create(self)
             maxTextSize = 20,
             backgroundColor = { 0.12, 0.25, 0.34 },
             backgroundTransparency = 1 - 1,
-            onPress = function()
-                self:choose(unpack(preset))
-            end,
         }, body)
+        button:connect('press', function()
+            self:choose(unpack(preset))
+        end)
         button._audioControl = true
         self.presetButtons[#self.presetButtons + 1] = button
         ui:create('UICorner', { radius = { 0, 10 } }, button)
@@ -102,8 +102,10 @@ function Interface.create(self)
             maxTextSize = 19,
             backgroundColor = { 0.12, 0.25, 0.34 },
             backgroundTransparency = 1 - 1,
-            onPress = callback,
         }, body)
+        if callback then
+            node:connect('press', callback)
+        end
         node._audioControl = true
         self.actionButtons[#self.actionButtons + 1] = node
         return node
@@ -138,16 +140,18 @@ function Interface.create(self)
         maxTextSize = 18,
         align = 'left',
     }, body)
-    ui:slider({
-        position = { 0.34, 0, 0, 216 },
-        size = { 0.66, -4, 0, 38 },
-        min = 0,
-        max = 1,
-        value = 0.8,
-        onChange = function(value)
+    do
+        local node = ui:slider({
+            position = { 0.34, 0, 0, 216 },
+            size = { 0.66, -4, 0, 38 },
+            min = 0,
+            max = 1,
+            value = 0.8,
+        }, body)
+        node:connect('changed', function(value)
             self.group.volume = value
-        end,
-    }, body)
+        end)
+    end
     ui:text({
         position = { 0, 4, 0, 270 },
         size = { 0.33, -4, 0, 30 },
@@ -157,16 +161,18 @@ function Interface.create(self)
         maxTextSize = 18,
         align = 'left',
     }, body)
-    ui:slider({
-        position = { 0.34, 0, 0, 266 },
-        size = { 0.66, -4, 0, 38 },
-        min = 0.5,
-        max = 2,
-        value = 1,
-        onChange = function(value)
+    do
+        local node = ui:slider({
+            position = { 0.34, 0, 0, 266 },
+            size = { 0.66, -4, 0, 38 },
+            min = 0.5,
+            max = 2,
+            value = 1,
+        }, body)
+        node:connect('changed', function(value)
             self.sound.playbackSpeed = value
-        end,
-    }, body)
+        end)
+    end
     self.status = ui:text({
         position = { 0, 4, 0, 320 },
         size = { 1, -8, 0, 96 },

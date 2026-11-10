@@ -147,11 +147,11 @@ function Interface.create(self)
             fontSize = 13,
             backgroundColor = Theme.button,
             radius = Theme.corner,
-            onPress = function()
-                callback()
-                self:sync()
-            end,
         }, self.controls)
+        node:connect('press', function()
+            callback()
+            self:sync()
+        end)
         self.buttons[key] = node
         y = y + 40
         return node
@@ -182,11 +182,11 @@ function Interface.create(self)
             min = min,
             max = max,
             value = value,
-            onChange = function(v)
-                callback(v)
-                self:sync()
-            end,
         }, self.controls)
+        node:connect('changed', function(v)
+            callback(v)
+            self:sync()
+        end)
         self.sliders[key] = { node = node, label = label }
         y = y + 38
     end

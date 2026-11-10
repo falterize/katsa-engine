@@ -162,7 +162,7 @@ function R:update()
                 and scene.demo.sliders.gravity.node.value == scene.demo.emitter.gravityScale,
             'Particle controls show the selected effect state and actual gravity multiplier'
         )
-        scene.demo.buttons.Attraction.onPress()
+        scene.demo.buttons.Attraction:press()
         scene:update(1 / 60, 1 / 60)
         self:check(
             scene.demo.buttons.Attraction.text == 'Point attraction: ON',

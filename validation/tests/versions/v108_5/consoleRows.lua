@@ -4,6 +4,7 @@ local Panel = require('source.engine.debug.consolePanel')
 local Module = {}
 
 local function node(props)
+    props.connect = function() end
     return props
 end
 

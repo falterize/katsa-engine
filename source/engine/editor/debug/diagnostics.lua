@@ -19,13 +19,17 @@ function D.open(workspace)
     local y = 0
 
     local function button(text, fn, x, width)
-        popup.ui:button({
-            position = { x or 0, 4, 0, y },
-            size = { width or 1, -8, 0, 34 },
-            text = text,
-            fontSize = 13,
-            onPress = fn,
-        }, popup.body)
+        do
+            local node = popup.ui:button({
+                position = { x or 0, 4, 0, y },
+                size = { width or 1, -8, 0, 34 },
+                text = text,
+                fontSize = 13,
+            }, popup.body)
+            if fn then
+                node:connect('press', fn)
+            end
+        end
     end
     local function row(buttons)
         for index, entry in ipairs(buttons) do

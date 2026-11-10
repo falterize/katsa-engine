@@ -70,6 +70,7 @@ function Node:setProcess(enabled)
     return self
 end
 Node.connect, Node.emit = Signals.connect, Signals.emit
+Node.hasConnections = Signals.hasConnections
 
 local function unlink(node)
     local parent = rawget(node, '_parent')
@@ -222,6 +223,7 @@ for _, key in ipairs({
     'attachment',
     'clone',
     'connect',
+    'hasConnections',
     'emit',
     'setProcess',
     'trackConnection',

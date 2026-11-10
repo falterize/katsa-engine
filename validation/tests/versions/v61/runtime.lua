@@ -36,7 +36,7 @@ end
 
 local function button(popup, text)
     for _, n in ipairs(popup.body.children) do
-        if n.text == text and n.onPress then
+        if n.text == text and n:hasConnections('press') then
             return n
         end
     end
@@ -58,8 +58,8 @@ function Test:update()
         scene.workspace:select(ramp)
         scene.workspace:openPopup(field(ramp, 'goals'))
         local popup = scene.workspace.popup
-        button(popup, '+ Add goal').onPress()
-        button(popup, 'position').onPress()
+        button(popup, '+ Add goal'):press()
+        button(popup, 'position'):press()
         self:check(
             ramp.goals.position and #ramp.bindings.position == 2,
             'Empty Goals editor adds a selected target property'
@@ -90,7 +90,7 @@ function Test:update()
             graph and graph.dragCapture,
             'Points graph explicitly captures its touch gesture'
         )
-        button(popup, '+ Add point').onPress()
+        button(popup, '+ Add point'):press()
         self:check(
             #self.ramp.points == 3 and graph.selected == 2,
             'Explicit Add point inserts and selects time 0.5'

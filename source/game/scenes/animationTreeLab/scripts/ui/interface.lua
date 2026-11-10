@@ -18,27 +18,31 @@ function Interface.create(state)
         size = { 1, -16, 0, 32 },
         text = 'Speed: 0.00',
     }, panel)
-    speedButton.onPress = function()
+    speedButton:connect('press', function()
         speed = speed >= 1 and 0 or speed + 0.25
         state:setSpeed(speed)
         speedButton.text = ('Speed: %.2f'):format(speed)
-    end
-    ui:button({
-        position = { 0, 8, 0, 48 },
-        size = { 1, -16, 0, 32 },
-        text = 'Crouch ON / OFF',
-        onPress = function()
+    end)
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 48 },
+            size = { 1, -16, 0, 32 },
+            text = 'Crouch ON / OFF',
+        }, panel)
+        node:connect('press', function()
             state:toggleCrouch()
-        end,
-    }, panel)
-    ui:button({
-        position = { 0, 8, 0, 88 },
-        size = { 1, -16, 0, 32 },
-        text = 'Jump',
-        onPress = function()
+        end)
+    end
+    do
+        local node = ui:button({
+            position = { 0, 8, 0, 88 },
+            size = { 1, -16, 0, 32 },
+            text = 'Jump',
+        }, panel)
+        node:connect('press', function()
             state:jump()
-        end,
-    }, panel)
+        end)
+    end
     local status = ui:create('Label', {
         position = { 0, 8, 0, 130 },
         size = { 1, -16, 0, 44 },

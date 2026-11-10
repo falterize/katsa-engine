@@ -82,15 +82,15 @@ function Runtime:update()
         local hit = panel:hit(scene.world, scene.camera, x, y)
         self:check(hit == button, 'Surface ray hit transforms to local UI coordinates')
         local entered, hoverY, left = false, nil, false
-        button.onEnter = function()
+        button:connect('enter', function()
             entered = true
-        end
-        button.onHover = function(_, _, hy)
+        end)
+        button:connect('hover', function(_, _, hy)
             hoverY = hy
-        end
-        button.onLeave = function()
+        end)
+        button:connect('leave', function()
             left = true
-        end
+        end)
         scene.input:hover(x, y)
         scene.input:hover(10, 700)
         self:check(
@@ -98,9 +98,9 @@ function Runtime:update()
             'Surface mouse hover uses local coordinates and leave events'
         )
         local released
-        button.onRelease = function(_, rx, ry)
+        button:connect('release', function(_, rx, ry)
             released = { rx, ry }
-        end
+        end)
         scene:pointerpressed('surface-test', x, y)
         scene:pointerreleased('surface-test', x, y)
         self:check(
@@ -167,7 +167,7 @@ function Runtime:update()
         local demo = scene.demo
         scene.ui:layout()
         self:check(demo.button._width > 100, 'UDim2 gallery resolves scale dimensions')
-        demo.button.onPress()
+        demo.button:press()
         self:check(demo.presses == 1, 'Gallery button remains interactive')
         katsa.window.setMode(
             1600,

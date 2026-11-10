@@ -41,19 +41,20 @@ function Editor.open(popup, property)
     end
 
     local function button(text, x, y, width, callback)
-        return popup.ui:button({
+        local node = popup.ui:button({
             position = { x, 4, 0, y },
             size = { width, -8, 0, 34 },
             text = text,
             fontSize = 13,
             backgroundColor = { 0.085, 0.135, 0.19 },
-            onPress = function()
-                if popup.workspace.editing and not popup:commitInput() then
-                    return
-                end
-                callback()
-            end,
         }, popup.body)
+        node:connect('press', function()
+            if popup.workspace.editing and not popup:commitInput() then
+                return
+            end
+            callback()
+        end)
+        return node
     end
     local mode = button('Interpolation: ' .. interpolation, 0, 0, 0.62, function()
         points.interpolation = interpolation == 'Curve' and 'Linear' or 'Curve'
@@ -124,7 +125,7 @@ function Editor.open(popup, property)
         end
         popup.ui:invalidate()
     end
-    graph.onChange = refresh
+    local change = graph:connect('changed', refresh)
     timeInput = popup:input(seconds and 'Time (s)' or 'Time 0..1', timeText(points[1].time), 308, function(text)
         local ok, err = commit(function()
             local typed = tonumber(text)
@@ -151,27 +152,28 @@ function Editor.open(popup, property)
         min = 0,
         max = 1,
         value = points[1].time,
-        onChange = function(v)
-            local index = graph.selected
-            if index == 1 or index == #points then
-                return
-            end
-            v = math.max(
-                points[index - 1].time + 0.0001,
-                math.min(points[index + 1].time - 0.0001, v)
-            )
-            commit(function()
-                Model.time(points, index, v)
-            end)
-            refresh()
-        end,
     }, popup.body)
+    slider:connect('changed', function(v)
+        local index = graph.selected
+        if index == 1 or index == #points then
+            return
+        end
+        v = math.max(
+            points[index - 1].time + 0.0001,
+            math.min(points[index + 1].time - 0.0001, v)
+        )
+        commit(function()
+            Model.time(points, index, v)
+        end)
+        refresh()
+    end)
     local originalRefresh = refresh
     refresh = function()
         slider.value = points[graph.selected].time
         originalRefresh()
     end
-    graph.onChange = refresh
+    change:disconnect()
+    graph:connect('changed', refresh)
     local y = 386
     local value = points[1].value
     local dimensions = Array.is(value) and #value or 1
@@ -289,11 +291,7 @@ function Editor.open(popup, property)
         end
         popup.body.length = y + #points * 38 + 12
     end
-    local previous = graph.onChange
-    graph.onChange = function()
-        previous()
-        list()
-    end
+    graph:connect('changed', list)
     -- Buttons and typed edits keep the point list synchronized as well as the graph.
     local baseRefresh = refresh
     refresh = function()

@@ -233,8 +233,8 @@ function Tests:allScenes()
                         'Stress controls retain their public scene handle'
                     )
                     local motion = scene.stressMotion
-                    motion.cubeButton.onPress()
-                    motion.lightButton.onPress()
+                    motion.cubeButton:press()
+                    motion.lightButton:press()
                     local cubeY = motion.cube.position.y
                     self.manager:update(1 / 60)
                     self:check(

@@ -33,9 +33,6 @@ function Class:pointer(ui, phase, x, y, id)
     if value ~= self.value then
         self.value = value
         ui:invalidate()
-        if self.onChange then
-            self.onChange(value, self, id)
-        end
         self:emit('changed', value, self)
     end
 end

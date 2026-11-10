@@ -7,13 +7,15 @@ function PopupValues.install(Popup)
     function Popup:enum()
         self.body.length = #self.field.options * 40
         for i, option in ipairs(self.field.options) do
-            self.ui:button({
-                position = { 0, 4, 0, (i - 1) * 40 },
-                size = { 1, -8, 0, 36 },
-                text = tostring(option),
-                fontSize = 16,
-                backgroundColor = { 0.085, 0.135, 0.19 },
-                onPress = function()
+            do
+                local node = self.ui:button({
+                    position = { 0, 4, 0, (i - 1) * 40 },
+                    size = { 1, -8, 0, 36 },
+                    text = tostring(option),
+                    fontSize = 16,
+                    backgroundColor = { 0.085, 0.135, 0.19 },
+                }, self.body)
+                node:connect('press', function()
                     local ok, err = require('source.engine.editor.inspectors.properties').set(
                         self.workspace.scene,
                         self.target,
@@ -25,8 +27,8 @@ function PopupValues.install(Popup)
                     else
                         self.message.text = err
                     end
-                end,
-            }, self.body)
+                end)
+            end
         end
     end
 
@@ -126,14 +128,16 @@ function PopupValues.install(Popup)
         end
         self.body.length = offset + #rows * 44
         for i, row in ipairs(rows) do
-            self.ui:button({
-                position = { 0, 4, 0, offset + (i - 1) * 44 },
-                size = { 1, -8, 0, 40 },
-                text = row.label,
-                textScaled = true,
-                maxTextSize = 13,
-                backgroundColor = { 0.085, 0.135, 0.19 },
-                onPress = function()
+            do
+                local node = self.ui:button({
+                    position = { 0, 4, 0, offset + (i - 1) * 44 },
+                    size = { 1, -8, 0, 40 },
+                    text = row.label,
+                    textScaled = true,
+                    maxTextSize = 13,
+                    backgroundColor = { 0.085, 0.135, 0.19 },
+                }, self.body)
+                node:connect('press', function()
                     self.workspace:cancelEdit()
                     self.focusNode, self.inputCallback = nil, nil
                     local ok, err = require('source.engine.editor.inspectors.properties').set(
@@ -147,8 +151,8 @@ function PopupValues.install(Popup)
                     else
                         self.message.text = err
                     end
-                end,
-            }, self.body)
+                end)
+            end
         end
     end
 end

@@ -24,15 +24,19 @@ function Interface.create(self)
     local y = 0
 
     local function button(text, callback)
-        ui:button({
-            position = { 0, 0, 0, y },
-            size = { 1, 0, 0, 36 },
-            text = text,
-            fontSize = 13,
-            backgroundColor = Theme.button,
-            radius = Theme.corner,
-            onPress = callback,
-        }, list)
+        do
+            local node = ui:button({
+                position = { 0, 0, 0, y },
+                size = { 1, 0, 0, 36 },
+                text = text,
+                fontSize = 13,
+                backgroundColor = Theme.button,
+                radius = Theme.corner,
+            }, list)
+            if callback then
+                node:connect('press', callback)
+            end
+        end
         y = y + 42
     end
     button('Prepared Ramp: play', function()

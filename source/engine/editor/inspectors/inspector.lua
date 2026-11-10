@@ -115,18 +115,20 @@ function Inspector.install(Workspace)
             'Attributes',
         }) do
             if groups[name] then
-                self.ui:button({
-                    position = { 0, 6, 0, y },
-                    size = { 1, -12, 0, 30 },
-                    text = (self.categoryCollapsed[name] and '+ ' or '- ') .. name,
-                    fontSize = 15,
-                    align = 'left',
-                    backgroundColor = buttonColor,
-                    onPress = function()
+                do
+                    local node = self.ui:button({
+                        position = { 0, 6, 0, y },
+                        size = { 1, -12, 0, 30 },
+                        text = (self.categoryCollapsed[name] and '+ ' or '- ') .. name,
+                        fontSize = 15,
+                        align = 'left',
+                        backgroundColor = buttonColor,
+                    }, self.properties)
+                    node:connect('press', function()
                         self.categoryCollapsed[name] = not self.categoryCollapsed[name]
                         self:select(node)
-                    end,
-                }, self.properties)
+                    end)
+                end
                 y = y + 34
                 if not self.categoryCollapsed[name] then
                     for _, field in ipairs(groups[name]) do
@@ -151,29 +153,31 @@ function Inspector.install(Workspace)
                             local blockedHint = blocker
                                 and ('Blocked: ancestor "%s" has Interactable off, so this node and its '
                                     .. 'descendants take no input.'):format(tostring(blocker.name))
-                            self.ui:text({
-                                position = { 0, 8, 0, y },
-                                size = compact and { 0.42, -12, 0, 40 } or { 1, -16, 0, 24 },
-                                text = blocker and (field.key .. '  !') or field.key,
-                                textColor = blocker and { 1, 0.72, 0.2 } or nil,
-                                onPress = function()
+                            do
+                                local node = self.ui:text({
+                                    position = { 0, 8, 0, y },
+                                    size = compact and { 0.42, -12, 0, 40 } or { 1, -16, 0, 24 },
+                                    text = blocker and (field.key .. '  !') or field.key,
+                                    textColor = blocker and { 1, 0.72, 0.2 } or nil,
+                                    fontSize = 13,
+                                    textScaled = true,
+                                    maxTextSize = 13,
+                                    align = 'left',
+                                }, self.properties)
+                                node:connect('press', function()
                                     if blockedHint then
                                         self.status.text = blockedHint
                                     end
                                     self:showHint(field)
-                                end,
-                                onEnter = function()
+                                end)
+                                node:connect('enter', function()
                                     if blockedHint then
                                         self.status.text = blockedHint
                                     elseif field.hint then
                                         self.status.text = field.hint
                                     end
-                                end,
-                                fontSize = 13,
-                                textScaled = true,
-                                maxTextSize = 13,
-                                align = 'left',
-                            }, self.properties)
+                                end)
+                            end
                             if not compact then
                                 y = y + 26
                             end
@@ -216,38 +220,38 @@ function Inspector.install(Workspace)
                                     textScaled = true,
                                     maxTextSize = 13,
                                     backgroundColor = buttonColor,
-                                    onPress = function()
-                                        if field.readOnly then
-                                            self.status.text = field.reason or 'Read-only property'
-                                            return
-                                        end
-                                        if
-                                            field.options
-                                            or field.colorMaximum
-                                            or field.kind == 'node'
-                                            or field.kind == 'gradient'
-                                            or field.kind == 'sequence'
-                                            or field.kind == 'bindings'
-                                        then
-                                            self:openPopup(field)
-                                            return
-                                        end
-                                        if field.kind == 'boolean' then
-                                            local ok, err = Properties.set(
-                                                self.scene,
-                                                node._editorTarget or node,
-                                                field,
-                                                not self:value(field)
-                                            )
-                                            self.status.text = ok and (field.key .. ' updated')
-                                                or err
-                                        elseif field.kind == 'vector' then
-                                            self:openPopup(field)
-                                        else
-                                            self:beginEdit(field, component)
-                                        end
-                                    end,
                                 }, self.properties)
+                                button:connect('press', function()
+                                    if field.readOnly then
+                                        self.status.text = field.reason or 'Read-only property'
+                                        return
+                                    end
+                                    if
+                                        field.options
+                                        or field.colorMaximum
+                                        or field.kind == 'node'
+                                        or field.kind == 'gradient'
+                                        or field.kind == 'sequence'
+                                        or field.kind == 'bindings'
+                                    then
+                                        self:openPopup(field)
+                                        return
+                                    end
+                                    if field.kind == 'boolean' then
+                                        local ok, err = Properties.set(
+                                            self.scene,
+                                            node._editorTarget or node,
+                                            field,
+                                            not self:value(field)
+                                        )
+                                        self.status.text = ok and (field.key .. ' updated')
+                                            or err
+                                    elseif field.kind == 'vector' then
+                                        self:openPopup(field)
+                                    else
+                                        self:beginEdit(field, component)
+                                    end
+                                end)
                                 self.propertyButtons[#self.propertyButtons + 1] =
                                     { button = button, field = field, component = component }
                             end

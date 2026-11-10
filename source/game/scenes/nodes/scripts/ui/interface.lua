@@ -21,8 +21,10 @@ function Interface.create(self)
             text = text,
             fontSize = 17,
             backgroundColor = { 0.085, 0.135, 0.19 },
-            onPress = callback,
         }, self.toolbar)
+        if callback then
+            node:connect('press', callback)
+        end
         row = row + 1
         self.toolbar.length = row * 52 + 12
         return node
@@ -60,10 +62,10 @@ function Interface.create(self)
             fontSize = 22,
             backgroundColor = { 0.1, 0.25, 0.35 },
             backgroundTransparency = 1 - 1,
-            onPress = function(n)
-                n.text = 'Pressed ' .. i
-            end,
         }, panel)
+        row:connect('press', function(n)
+            n.text = 'Pressed ' .. i
+        end)
         ui:create('UICorner', { radius = { 0, 12 } }, row)
     end
     self.toolbar.automaticLength = true

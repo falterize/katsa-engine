@@ -29,13 +29,17 @@ function Interface.create(state)
     require('source.engine.ui.widgets.collapsible').create(scene, panel, 'Physics / controls')
     local y = 8
     local function button(text, callback)
-        ui:button({
-            position = { 0, 8, 0, y },
-            size = { 1, -16, 0, 35 },
-            text = text,
-            fontSize = 15,
-            onPress = callback,
-        }, panel)
+        do
+            local node = ui:button({
+                position = { 0, 8, 0, y },
+                size = { 1, -16, 0, 35 },
+                text = text,
+                fontSize = 15,
+            }, panel)
+            if callback then
+                node:connect('press', callback)
+            end
+        end
         y = y + 42
         panel.length = y + 8
     end

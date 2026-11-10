@@ -123,7 +123,7 @@ function Tests:draw()
         end
         local button = find(scene.ui.content)
         if button then
-            button.onPress(button)
+            button:press()
         end
     end
     if self.frame == 70 and os.getenv('KATSA_EXPORT') and scene then

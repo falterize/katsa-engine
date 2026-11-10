@@ -22,8 +22,10 @@ local function toolButton(ui, parent, x, label, icon, onPress)
         size = { 0, 100, 1, -8 },
         text = label,
         verticalAlign = 'bottom',
-        onPress = onPress,
     }, parent, 'tool')
+    if onPress then
+        button:connect('press', onPress)
+    end
     make(ui, 'ImageRect', {
         position = { 0.5, 0, 0, 4 },
         size = { 0, 30, 0, 30 },
@@ -74,11 +76,11 @@ function Interface.create(state)
     toolButton(ui, toolbar, x + 432, 'Update', 'update', function() end)
     local themeButton = toolButton(ui, toolbar, 0, 'Theme: dark', 'gear', nil)
     themeButton.position = { 1, -330, 0, 4 }
-    themeButton.onPress = function()
+    themeButton:connect('press', function()
         local next = styler:getTheme() == 'dark' and 'light' or 'dark'
         stylerNode:setTheme(next)
         themeButton.text = 'Theme: ' .. next
-    end
+    end)
     local account = toolButton(ui, toolbar, 0, 'Account', 'account', function() end)
     account.position = { 1, -222, 0, 4 }
 
@@ -223,9 +225,9 @@ function Interface.create(state)
         styler:apply(root)
     end
     for _, entry in ipairs(rows) do
-        entry.row.onPress = function()
+        entry.row:connect('press', function()
             select(entry.index)
-        end
+        end)
     end
     state.select = select
     styler:setTheme('dark')

@@ -275,43 +275,49 @@ function Catalog.prepare(scene, name)
         textScaled = true,
         maxTextSize = 13,
     }, root)
-    scene.ui:button({
-        position = { 0, 8, 0, 58 },
-        size = { 0.5, -12, 0, 38 },
-        text = 'Select sample',
-        fontSize = 14,
-        onPress = function()
+    do
+        local node = scene.ui:button({
+            position = { 0, 8, 0, 58 },
+            size = { 0.5, -12, 0, 38 },
+            text = 'Select sample',
+            fontSize = 14,
+        }, root)
+        node:connect('press', function()
             if node.destroyed then
                 label.text = 'Sample was destroyed; reopen this lab to recreate it'
                 return
             end
             scene.workspace:toggle(true)
             scene.workspace:select(node)
-        end,
-    }, root)
-    scene.ui:button({
-        position = { 0.5, 4, 0, 58 },
-        size = { 0.5, -12, 0, 38 },
-        text = 'Node catalog',
-        fontSize = 14,
-        onPress = function()
+        end)
+    end
+    do
+        local node = scene.ui:button({
+            position = { 0.5, 4, 0, 58 },
+            size = { 0.5, -12, 0, 38 },
+            text = 'Node catalog',
+            fontSize = 14,
+        }, root)
+        node:connect('press', function()
             scene.manager:switch(require('source.game.runtime.nodeCatalog').new)
-        end,
-    }, root)
+        end)
+    end
     if name == 'Node' then
         local count = 0
         node:connect('sample', function()
             count = count + 1
             label.text = 'Node sample event count: ' .. count
         end)
-        scene.ui:button({
-            position = { 0, 8, 0, 102 },
-            size = { 1, -16, 0, 38 },
-            text = 'Emit event',
-            onPress = function()
+        do
+            local node = scene.ui:button({
+                position = { 0, 8, 0, 102 },
+                size = { 1, -16, 0, 38 },
+                text = 'Emit event',
+            }, root)
+            node:connect('press', function()
                 node:emit('sample')
-            end,
-        }, root)
+            end)
+        end
         root.length = 148
     end
     scene.workspace:toggle(true)

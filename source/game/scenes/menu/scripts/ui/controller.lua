@@ -104,10 +104,10 @@ function Menu:load()
                     text = '',
                     backgroundColor = { 0.075, 0.15, 0.23 },
                     radius = 8,
-                    onPress = function()
-                        self:choose(entry.title, entry.id)
-                    end,
                 }, list)
+                button:connect('press', function()
+                    self:choose(entry.title, entry.id)
+                end)
                 -- Title above, tags below; labels do not take input, the button stays pressable.
                 self.ui:text({
                     position = { 0, 14, 0, 5 },
@@ -163,18 +163,20 @@ function Menu:load()
             chip.backgroundColor = self.selectedTags[tag] and { 0.12, 0.34, 0.5 } or { 0.075, 0.15, 0.23 }
         end
     end
-    self.ui:button({
-        position = { 0, 4, 0, 0 },
-        size = { 1, -8, 0, 32 },
-        text = 'Clear tags',
-        fontSize = 16,
-        backgroundColor = { 0.35, 0.18, 0.12 },
-        onPress = function()
+    do
+        local node = self.ui:button({
+            position = { 0, 4, 0, 0 },
+            size = { 1, -8, 0, 32 },
+            text = 'Clear tags',
+            fontSize = 16,
+            backgroundColor = { 0.35, 0.18, 0.12 },
+        }, chooser)
+        node:connect('press', function()
             self.selectedTags = {}
             refreshChips()
             rebuild()
-        end,
-    }, chooser)
+        end)
+    end
     for i, item in ipairs(all) do
         local chip = self.ui:button({
             position = { 0, 4, 0, i * 36 },
@@ -183,16 +185,16 @@ function Menu:load()
             fontSize = 16,
             align = 'left',
             padding = 10,
-            onPress = function()
-                if self.selectedTags[item.tag] then
-                    self.selectedTags[item.tag] = nil
-                else
-                    self.selectedTags[item.tag] = true
-                end
-                refreshChips()
-                rebuild()
-            end,
         }, chooser)
+        chip:connect('press', function()
+            if self.selectedTags[item.tag] then
+                self.selectedTags[item.tag] = nil
+            else
+                self.selectedTags[item.tag] = true
+            end
+            refreshChips()
+            rebuild()
+        end)
         chip.label = item.tag .. '  (' .. item.count .. ')'
         chips[item.tag] = chip
     end
@@ -203,9 +205,9 @@ function Menu:load()
         refreshChips()
         rebuild()
     end
-    tagButton.onPress = function()
+    tagButton:connect('press', function()
         chooser.visible = not chooser.visible
-    end
+    end)
 
     self.ui:text({
         position = { 0, 20, 1, -34 },
