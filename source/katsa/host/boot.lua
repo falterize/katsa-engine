@@ -103,7 +103,7 @@ local function report(message)
 end
 
 -- Returns the process exit status.
-function Boot.start(host)
+local function run(host)
     -- LuaJIT's default collector lets a game with a small live heap balloon to hundreds of MB of
     -- garbage and then pause for tens of milliseconds. Start cycles earlier and sweep faster so
     -- the heap stays near its live size and each step is short.
@@ -240,6 +240,23 @@ function Boot.start(host)
         end
     end
     platform:close()
+    return status
+end
+
+-- A server runs in a console window of its own that closes with the process, which hides why it
+-- stopped: after a failure it waits for Enter so the message can be read.
+function Boot.start(host)
+    local status = run(host)
+    if status ~= 0 and status ~= INTERRUPTED then
+        for _, value in ipairs(host.args or {}) do
+            if value == '--server' then
+                io.stderr:write('\nThe server stopped (status ', tostring(status), '). Press Enter to close.\n')
+                io.stderr:flush()
+                io.read()
+                break
+            end
+        end
+    end
     return status
 end
 

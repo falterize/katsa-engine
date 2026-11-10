@@ -171,11 +171,14 @@ function Platform.new(config)
     -- A server has no display: SDL's offscreen video driver gives it a GL context without X or a
     -- desktop. An explicit SDL_VIDEODRIVER wins; if the driver is missing, the default one is used.
     local headless = config and config.headless and not os.getenv('SDL_VIDEODRIVER')
-    if headless then
+    -- The offscreen driver needs EGL, which only Linux reliably has. Windows and macOS keep their
+    -- normal driver and the server's window is created hidden instead.
+    local offscreen = headless and ffi.os == 'Linux'
+    if offscreen then
         sdl.SDL_SetHint('SDL_VIDEODRIVER', 'offscreen')
     end
     local initialized = sdl.SDL_Init(bit.bor(SDL_INIT_VIDEO, SDL_INIT_EVENTS)) == 0
-    if not initialized and headless then
+    if not initialized and offscreen then
         sdl.SDL_SetHint('SDL_VIDEODRIVER', '')
         initialized = sdl.SDL_Init(bit.bor(SDL_INIT_VIDEO, SDL_INIT_EVENTS)) == 0
     end
@@ -192,6 +195,7 @@ function Platform.new(config)
         textInput = false,
         mouseX = 0,
         mouseY = 0,
+        hidden = headless == true and not offscreen,
         es = Native.os() == 'Android' or (config and config.gles) == true,
         rects = { ffi.new('int[1]'), ffi.new('int[1]') },
     }, Platform)
@@ -253,7 +257,7 @@ function Platform:setMode(width, height, flags)
     -- Destination alpha is on unless `transparent = false`, so a window can be made transparent
     -- later without recreating its context; every window shares this pixel format.
     sdl.SDL_GL_SetAttribute(ATTR.ALPHA, flags.transparent == false and 0 or 8)
-    local windowFlags = bit.bor(WINDOW_OPENGL, WINDOW_SHOWN)
+    local windowFlags = bit.bor(WINDOW_OPENGL, self.hidden and WINDOW_HIDDEN or WINDOW_SHOWN)
     if flags.highdpi ~= false then
         windowFlags = bit.bor(windowFlags, WINDOW_ALLOW_HIGHDPI)
     end

@@ -72,7 +72,7 @@ function Bootstrap.install(project, options)
             options.beforeLoad(arguments)
         end
         if not testing and not smoke then
-            require('source.engine.debug.session').start()
+            require('source.engine.debug.session').start(Runtime.headless and 'server' or nil)
         end
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
@@ -307,6 +307,12 @@ function Bootstrap.install(project, options)
             katsa.log.error(traceback, 'errorhandler')
         end
         print(traceback)
+        if Runtime.headless then
+            -- A server has no error screen: the traceback is in the console and the log; exit.
+            return function()
+                return 1
+            end
+        end
         if testing or smoke then
             katsa.filesystem.write('testError.txt', traceback)
             return function()

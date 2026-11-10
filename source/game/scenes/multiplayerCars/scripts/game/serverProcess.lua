@@ -82,7 +82,10 @@ function ServerProcess:isReady(dt)
     end
     self.waited = self.waited + (dt or 0)
     if not self.child:isRunning() then
-        return nil, 'The server process stopped while starting (see its console or server-' .. self.port .. '.log)'
+        return nil,
+            'The server process stopped while starting. Its console shows why, and so does '
+                .. katsa.filesystem.getSaveDirectory()
+                .. '/logs/server-latest.log'
     elseif self.waited > READY_TIMEOUT then
         return nil, 'The server process did not start listening in time'
     end
