@@ -2,33 +2,18 @@ local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 -- Install one cohesive responsibility on the public class.
 local Capture = require('./uiCapture')
+local Picking = require('../world.picking')
 local Routing = require('./pointerRouting')
 local hasWorldCamera, visualPanelAt = Routing.hasWorldCamera, Routing.visualPanelAt
 local Pointers = {}
 
 function Pointers.install(Input)
-    -- Screen position of a UI node's centre, for press/move/release from code. The point is
-    -- where a finger would touch, so another node on top of it takes the touch as usual.
-    function Input:nodeCenter(node)
-        local ui = self.scene.ui
-        ui:layout()
-        local x, y = ui:position(node)
-        return ui.offsetX + (x + node._width / 2) * ui.scale,
-            ui.offsetY + (y + node._height / 2) * ui.scale
-    end
-
     -- A tap at a screen point from code: the same path as a finger, so it reaches UI nodes,
     -- billboard UI and ClickDetector3D meshes under the point (and respects what covers them).
     function Input:tap(x, y, id)
         id = id or 'code'
         self:press(id, x, y)
         self:release(id, x, y)
-    end
-
-    -- A tap on the centre of a UI node from code.
-    function Input:click(node, id)
-        local x, y = self:nodeCenter(node)
-        self:tap(x, y, id)
     end
 
     function Input:press(id, x, y)
@@ -93,13 +78,15 @@ function Pointers.install(Input)
             end
         end
         local covered = worldUICovered or scene.ui and scene.ui:blocksWorldClick(x, y)
-        local detector = not covered
-            and hasWorldCamera(scene)
-            and require('source.engine.world.picking').detector(scene.world, scene.camera, x, y)
-        local pending = detector and { detector = detector, startX = x, startY = y, moved = false }
+        local detectors = not covered
+                and hasWorldCamera(scene)
+                and require('source.engine.world.picking').detectors(scene.world, scene.camera, x, y)
+            or nil
+        local pending = detectors and { detectors = detectors, startX = x, startY = y, moved = false }
         if not self.layout or not hasWorldCamera(scene) then
             if pending then
                 self.captures[id] = { kind = 'click', pendingClick = pending }
+                Picking.each(pending.detectors, 'press', id)
             end
             return
         end
@@ -125,8 +112,12 @@ function Pointers.install(Input)
         then
             self.cameraId = id
             self.captures[id] = { kind = 'camera', pendingClick = pending }
+            if pending then
+                Picking.each(pending.detectors, 'press', id)
+            end
         elseif pending and not self.cameraId then
             self.captures[id] = { kind = 'click', pendingClick = pending }
+            Picking.each(pending.detectors, 'press', id)
         end
     end
 
@@ -148,6 +139,7 @@ function Pointers.install(Input)
             )
         then
             c.pendingClick.moved = true
+            Picking.each(c.pendingClick.detectors, 'cancel', id)
         end
         if c.node then
             c.lastX, c.lastY = x, y
@@ -197,19 +189,23 @@ function Pointers.install(Input)
                     end
                 end
             end
-            if
-                not blocked
-                and hasWorldCamera(scene)
-                and require('source.engine.world.picking').detector(
-                        scene.world,
-                        scene.camera,
-                        x,
-                        y
-                    )
-                    == pending.detector
-            then
-                pending.detector:activate(id)
+            -- Detectors still under the pointer are released (a click); the others are cancelled.
+            local under = not blocked
+                    and hasWorldCamera(scene)
+                    and Picking.detectors(scene.world, scene.camera, x, y)
+                or {}
+            for _, detector in ipairs(pending.detectors) do
+                local stays = false
+                for _, other in ipairs(under) do
+                    stays = stays or other == detector
+                end
+                if stays then
+                    detector:release(id)
+                end
             end
+        end
+        if pending then
+            Picking.each(pending.detectors, 'cancel', id)
         end
         if c.kind == 'joystick' then
             self.axisX, self.axisY = 0, 0

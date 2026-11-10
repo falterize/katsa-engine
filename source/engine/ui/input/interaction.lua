@@ -171,6 +171,15 @@ function Interaction.install(UI)
         end
         node:pointer(self, phase, px, py, id)
         node:emit(phase, node, x, y, id)
+        if phase == 'release' then
+            -- A release over the node that was pressed is a click.
+            local lx, ly = (px - self.offsetX) / self.scale, (py - self.offsetY) / self.scale
+            if lx >= node._x and lx < node._x + node._width
+                and ly >= node._y and ly < node._y + node._height
+            then
+                node:emit('click', node, x, y, id)
+            end
+        end
         local handler = phase == 'enter' and node.onEnter
             or phase == 'leave' and node.onLeave
             or phase == 'hover' and node.onHover

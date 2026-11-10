@@ -38,6 +38,9 @@ function Input:reset()
         if c.node then
             c.node.ui:pointer(c.node, 'cancel', 0, 0, id)
         end
+        if c.pendingClick then
+            require('source.engine.world.picking').each(c.pendingClick.detectors, 'cancel', id)
+        end
     end
     if self.hovered and not self.hovered.destroyed then
         self.hovered.ui:pointer(self.hovered, 'leave', 0, 0, 'mouse')

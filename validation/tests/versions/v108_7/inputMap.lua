@@ -136,6 +136,26 @@ function Tests.run(tester)
     virtual:update()
     tester:check(virtual:justPressed('fire') and virtual:justReleased('fire') and not virtual:isDown('fire'), 'triggerAction() is a press and release')
 
+    -- ClickDetector3D: one detector on a Node3D covers every mesh below it; press, release, click
+    local World = require('source.engine.world.world')
+    local world = World.new(tester.manager.resources:scope())
+    local car = world:create('Node3D', { name = 'Car' })
+    local wheel = world:create('Mesh3D', { name = 'Wheel', shape = 'Cube' }, car)
+    local other = world:create('Mesh3D', { name = 'Other', shape = 'Cube' })
+    local whole = world:create('ClickDetector3D', {}, car)
+    local part = world:create('ClickDetector3D', {}, wheel)
+    tester:check(whole:contains(wheel) and part:contains(wheel) and not whole:contains(other), 'a detector on a Node3D covers the meshes below it')
+    local log = {}
+    for _, name in ipairs({ 'press', 'release', 'click', 'cancel' }) do
+        whole:connect(name, function(id) log[#log + 1] = name .. ':' .. tostring(id) end)
+    end
+    whole:click()
+    tester:check(table.concat(log, ',') == 'press:code,release:code,click:code', 'click() emits press, release and click for the pointer "code"')
+    log = {}
+    whole:press('finger')
+    whole:cancel('finger')
+    tester:check(table.concat(log, ',') == 'press:finger,cancel:finger' and not whole:release('finger'), 'a cancelled press never clicks')
+
     local copy = InputMap.new(map:toData())
     tester:check(table.concat(copy:getEvents('jump'), ',') == table.concat(map:getEvents('jump'), ','), 'toData and loadData round-trip')
     tester:check(not pcall(map.isDown, map, 'jmup'), 'an unknown action name is an error')

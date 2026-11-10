@@ -16,6 +16,8 @@ function Class.mount(world, properties, parent)
     require('source.engine.world.surfaces.support').initialize(node, node._requestedAdornee)
     node._requestedAdornee = nil
     world.clickDetectors = world.clickDetectors or {}
+    world._clickDetectorCount = (world._clickDetectorCount or 0) + 1
+    node._order = world._clickDetectorCount -- creation order: detectors fire in it
     world.clickDetectors[node] = true
     node:onDestroy(function()
         world.clickDetectors[node] = nil
@@ -24,7 +26,7 @@ function Class.mount(world, properties, parent)
 end
 
 function Class:setAdornee(node)
-    assert(node == nil or node:isA('Mesh3D'), 'ClickDetector3D Adornee must be a Mesh3D')
+    assert(node == nil or node:isA('Node3D'), 'ClickDetector3D Adornee must be a Node3D')
     return require('source.engine.world.surfaces.support').set(self, node)
 end
 
@@ -44,7 +46,12 @@ function Class:canActivate()
         'ClickDetector3D Radius must be finite and nonnegative'
     )
     local object = self:getTarget()
-    if not object or not object:isA('Mesh3D') or not object:isVisible() then
+    if
+        not object
+        or not object:isA('Node3D')
+        or object.visible == false
+        or object.isVisible and not object:isVisible()
+    then
         return false
     end
     local world = self._sceneWorld or object._world
@@ -62,15 +69,63 @@ function Class:canActivate()
         <= self.radius ^ 2
 end
 
--- Fires `clicked` from code. `force` skips the distance and visibility checks (a scripted or
--- on-screen-button press): only an enabled, live detector still answers.
-function Class:activate(pointerId, force)
-    local alive = self.enabled and not self.destroyed and not self._destroying
-    if force and alive or not force and self:canActivate() then
-        self:emit('clicked', pointerId, self:getTarget())
-        return true
+-- True when `mesh` is the target or lies anywhere below it, so one detector on a Node3D covers a
+-- whole model of many parts.
+function Class:contains(mesh)
+    local target = self:getTarget()
+    while mesh do
+        if mesh == target then
+            return true
+        end
+        mesh = mesh.parent
     end
     return false
+end
+
+local function alive(self)
+    return self.enabled and not self.destroyed and not self._destroying
+end
+
+-- Pointer verbs, the same three as on UI nodes. A pointer `id` ('mouse', a touch id, or 'code')
+-- presses, then either releases (a `click` follows) or is cancelled (it left the object or turned
+-- into a camera drag). Signals: press, release, click, cancel; each gets (pointerId, target).
+-- `checked` = true also requires the activation rules (radius, visibility, an interaction
+-- source), like a player's click; calls from code skip them by default.
+function Class:press(id, checked)
+    id = id or 'code'
+    if not alive(self) or checked and not self:canActivate() then
+        return false
+    end
+    self._held = self._held or {}
+    self._held[id] = true
+    self:emit('press', id, self:getTarget())
+    return true
+end
+
+function Class:release(id)
+    id = id or 'code'
+    if not (self._held and self._held[id]) then
+        return false
+    end
+    self._held[id] = nil
+    self:emit('release', id, self:getTarget())
+    self:emit('click', id, self:getTarget())
+    return true
+end
+
+function Class:cancel(id)
+    id = id or 'code'
+    if not (self._held and self._held[id]) then
+        return false
+    end
+    self._held[id] = nil
+    self:emit('cancel', id, self:getTarget())
+    return true
+end
+
+-- Press and release in one go: emits press, release and click.
+function Class:click(id, checked)
+    return self:press(id, checked) and self:release(id)
 end
 
 return Class

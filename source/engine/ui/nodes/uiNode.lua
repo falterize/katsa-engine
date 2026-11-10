@@ -57,6 +57,34 @@ end
 
 function UINode:pointer(ui, phase, x, y, id) end
 
+-- Centre of the node in screen pixels, where a finger would touch (screen UI only).
+function UINode:getScreenCenter()
+    local ui = self.ui
+    ui:layout()
+    local x, y = ui:position(self)
+    return ui.offsetX + (x + self._width / 2) * ui.scale,
+        ui.offsetY + (y + self._height / 2) * ui.scale
+end
+
+-- Pointer verbs for code, the same three as ClickDetector3D: the node gets the events a touch at
+-- its centre would give (`press`, `release`, and `click` when released over the node). `id` names the pointer ('code' by
+-- default). They go straight to this node, whatever covers it; use `input:tap(x, y)` for a touch
+-- that respects what is on top.
+function UINode:press(id)
+    local x, y = self:getScreenCenter()
+    self.ui:pointer(self, 'press', x, y, id or 'code')
+end
+
+function UINode:release(id)
+    local x, y = self:getScreenCenter()
+    self.ui:pointer(self, 'release', x, y, id or 'code')
+end
+
+function UINode:click(id)
+    self:press(id)
+    self:release(id)
+end
+
 function UINode:getChildOffsetX()
     return 0
 end

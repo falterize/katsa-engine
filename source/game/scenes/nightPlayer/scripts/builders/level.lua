@@ -144,7 +144,7 @@ function NightPlayer.build(self, scene)
         { name = 'ToggleFlashlight', radius = 140 },
         self.interactCube
     )
-    detector:connect('clicked', function()
+    detector:connect('click', function()
         self.flashlight.enabled = not self.flashlight.enabled
     end)
     self:setTimeOfDay(0)

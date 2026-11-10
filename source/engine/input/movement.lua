@@ -105,16 +105,17 @@ function Movement.install(Input)
                             end
                         end
                     end
-                    local detector = not covered
-                        and scene.world
-                        and require('source.engine.world.picking').detector(
-                            scene.world,
-                            camera,
-                            cx,
-                            cy
-                        )
-                    if detector then
-                        detector:activate('action:Interact')
+                    local detectors = not covered
+                            and scene.world
+                            and require('source.engine.world.picking').detectors(
+                                scene.world,
+                                camera,
+                                cx,
+                                cy
+                            )
+                        or {}
+                    for _, detector in ipairs(detectors) do
+                        detector:click('action:Interact')
                     end
                 end
             end

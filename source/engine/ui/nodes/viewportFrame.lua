@@ -159,16 +159,12 @@ function Class:pointer(ui, phase, x, y, id)
                 return
             end
         end
-        self._captures[id] = {
-            click = world.activeCamera and require('source.engine.world.picking').detector(
-                world,
-                world.activeCamera,
-                lx,
-                ly
-            ),
-            x = lx,
-            y = ly,
-        }
+        local click = world.activeCamera
+            and require('source.engine.world.picking').detectors(world, world.activeCamera, lx, ly)
+        self._captures[id] = { click = click, x = lx, y = ly }
+        if click then
+            require('source.engine.world.picking').each(click, 'press', id)
+        end
     else
         local capture = self._captures[id]
         if not capture then
@@ -183,22 +179,24 @@ function Class:pointer(ui, phase, x, y, id)
             else
                 capture.ui:pointer(capture.node, phase, px, py, id)
             end
-        elseif
-            phase == 'release'
-            and capture.click
-            and (lx - capture.x) ^ 2 + (ly - capture.y) ^ 2 < 64
-        then
-            if
-                world.activeCamera
-                and require('source.engine.world.picking').detector(
-                        world,
-                        world.activeCamera,
-                        lx,
-                        ly
-                    )
-                    == capture.click
-            then
-                capture.click:activate(id)
+        elseif capture.click then
+            local Picking = require('source.engine.world.picking')
+            local under = phase == 'release'
+                    and (lx - capture.x) ^ 2 + (ly - capture.y) ^ 2 < 64
+                    and world.activeCamera
+                    and Picking.detectors(world, world.activeCamera, lx, ly)
+                or {}
+            for _, detector in ipairs(capture.click) do
+                local stays = false
+                for _, other in ipairs(under) do
+                    stays = stays or other == detector
+                end
+                if stays then
+                    detector:release(id)
+                end
+            end
+            if phase == 'release' or phase == 'cancel' then
+                Picking.each(capture.click, 'cancel', id)
             end
         end
         if phase == 'release' or phase == 'cancel' then

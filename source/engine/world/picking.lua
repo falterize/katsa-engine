@@ -38,7 +38,9 @@ function Picking.raycast(world, camera, x, y)
     return nearest, depth
 end
 
-function Picking.detector(world, camera, x, y)
+-- Every ClickDetector3D whose target contains the nearest mesh under the point (the mesh itself
+-- or a descendant of it) and that may activate, in creation order. Nil when nothing is hit.
+function Picking.detectors(world, camera, x, y)
     if not world.clickDetectors or not next(world.clickDetectors) then
         return
     end
@@ -46,10 +48,25 @@ function Picking.detector(world, camera, x, y)
     if not object then
         return
     end
+    local found
     for detector in pairs(world.clickDetectors) do
-        if detector:getTarget() == object and detector:canActivate() then
-            return detector
+        if detector:contains(object) and detector:canActivate() then
+            found = found or {}
+            found[#found + 1] = detector
         end
+    end
+    if found then
+        table.sort(found, function(a, b)
+            return a._order < b._order
+        end)
+    end
+    return found
+end
+
+-- Calls one pointer verb (`press`, `release`, `cancel`) on every detector of a list.
+function Picking.each(detectors, method, id)
+    for i = 1, #detectors do
+        detectors[i][method](detectors[i], id)
     end
 end
 

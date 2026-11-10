@@ -151,7 +151,7 @@ function Demo.new(scene)
     })
     self.detector =
         world:create('ClickDetector3D', { name = 'CubeClick', radius = 300 }, clickTarget)
-    self.detector:connect('clicked', function()
+    self.detector:connect('click', function()
         self.clicks = self.clicks + 1
         clickTarget.color = { 0.2, 0.7, 0.4, 1 }
     end)
