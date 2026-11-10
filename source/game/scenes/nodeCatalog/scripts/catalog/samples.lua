@@ -34,6 +34,19 @@ local routes = {
     BouncePad = 'nightPlayer',
     SceneButton = 'nightPlayer',
     OrbitNode = 'nodes',
+    Beam3D = 'ribbonLab',
+    Trail3D = 'ribbonLab',
+    TileMap = 'tileMapLab',
+    Actor = 'actorLab',
+    AnimationTree = 'animationTreeLab',
+    AudioSource = 'audioNodes',
+    AudioListener = 'audioNodes',
+    ParticleEmitter2D = 'physics2D',
+    Camera2D = 'physics2D',
+    Body2D = 'physics2D',
+    Collider2D = 'physics2D',
+    Attachment2D = 'physics2D',
+    Node2D = 'physics2D',
 }
 local descriptions = {
     NavMap3D = 'Bake the navigation mesh from physics; the debug view shows cells, links and routes.',
@@ -134,6 +147,9 @@ function Catalog.entries()
 end
 
 function Catalog.zone(name)
+    if name:find('Constraint2D', 1, true) then
+        return 'physics2D'
+    end
     if name:find('Constraint') then
         return 'animationPhysicsLab'
     end
@@ -154,6 +170,36 @@ local function exact(root, name)
     end
 end
 
+-- A 2D constraint between a static anchor and a free body, both with an Attachment2D. The labs
+-- only carry a few constraint kinds, so the others get this pair; a GearConstraint2D couples two
+-- hinges built the same way.
+local function constraint2D(scene, name)
+    local ui, count = scene.ui, 0
+    local function pair(kind, options)
+        count = count + 1
+        local function body(label, bodyType, x)
+            return ui:create('Body2D', {
+                name = 'Catalog' .. label .. count,
+                position = { x, -300 },
+                size = { 24, 24 },
+                bodyType = bodyType,
+            })
+        end
+        local anchor, weight = body('Anchor', 'Static', 600 + count * 60), body('Weight', 'Dynamic', 640 + count * 60)
+        options.name = options.name or ('Catalog' .. kind)
+        options.attachment0 = ui:create('Attachment2D', { name = 'Attachment0' }, anchor)
+        options.attachment1 = ui:create('Attachment2D', { name = 'Attachment1' }, weight)
+        return ui:create(kind, options)
+    end
+    if name == 'GearConstraint2D' then
+        return pair(name, {
+            joint0 = pair('HingeConstraint2D', { name = 'CatalogGearHinge0' }),
+            joint1 = pair('HingeConstraint2D', { name = 'CatalogGearHinge1' }),
+        })
+    end
+    return pair(name, { name = 'Catalog' .. name })
+end
+
 function Catalog.prepare(scene, name)
     if scene.nodeSampleControls then
         scene.nodeSampleControls:destroy()
@@ -162,16 +208,30 @@ function Catalog.prepare(scene, name)
         or exact(scene.world.root, name)
         or exact(scene.ui, name)
     if not node then
-        if name == 'Constraint3D' then
+        if name:find('Constraint3D$') then
             local source = scene.demo.constraints[1]
-            node = scene.world:create('Constraint3D', {
-                name = 'BaseConstraint',
+            node = scene.world:create(name, {
+                name = 'Catalog' .. name,
                 attachment0 = source.attachment0,
                 attachment1 = source.attachment1,
             }, scene.world.root)
-            node.kind = 'Spherical'
-        elseif name == 'Node' or name == 'Node3D' then
+            if name == 'Constraint3D' then
+                node.kind = 'Spherical'
+            end
+        elseif name == 'Node' or name == 'Node3D' or name == 'Folder' then
             node = scene.world:create(name, { name = 'Catalog' .. name })
+        elseif name == 'Node2D' then
+            node = scene.ui:create('Node2D', { name = 'CatalogNode2D', position = { 640, -300 } })
+        elseif name == 'VirtualJoystick' then
+            node = scene.ui:create('VirtualJoystick', {
+                name = 'CatalogJoystick',
+                position = { 0, 140, 1, -220 },
+                size = { 0, 160, 0, 160 },
+            }, scene.ui.content)
+        elseif name == 'AudioListener' or name == 'AudioSource' then
+            node = scene.world:create(name, { name = 'Catalog' .. name })
+        elseif name:find('Constraint2D$') then
+            node = constraint2D(scene, name)
         elseif name == 'SoundEffect' then
             node = scene.world:create(
                 name,

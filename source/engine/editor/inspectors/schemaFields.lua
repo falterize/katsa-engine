@@ -55,6 +55,16 @@ local groups = {
         'rainbow',
         'fogClearing',
     },
+    SpotLight3D = {
+        'color',
+        'brightness',
+        'range',
+        'radius',
+        'castShadow',
+        'shadowGroup',
+        'rainbow',
+        'fogClearing',
+    },
     UINode = {
         'interactable',
         'position',

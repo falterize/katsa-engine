@@ -94,6 +94,11 @@ function Tests.run(tester)
         not keys(light):find(' scale ') and light.scale == nil and keys(light):find(' position '),
         'lights omit scale and transparency entirely'
     )
+    local spot = world:create('SpotLight3D', {})
+    tester:check(
+        not keys(light):find(' rotation ') and light.rotation == nil and keys(spot):find(' rotation '),
+        'a point light has no rotation while a spot light keeps it'
+    )
     tester:check(not keys(agent):find(' position ') and agent.position == nil, 'NavAgent3D is a technical node without any transform')
     tester:check(not keys(agent):find(' visible ') and agent.visible == nil, 'NavAgent3D has no visible property')
     tester:check(not keys(map):find(' visible ') and not keys(world:create('NavArea3D', {})):find(' visible '), 'navigation nodes have no visible property')

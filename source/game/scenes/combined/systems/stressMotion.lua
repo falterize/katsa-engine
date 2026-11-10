@@ -32,7 +32,7 @@ function Motion:toggleLights()
                 node = light,
                 x = light.position.x,
                 z = light.position.z,
-                yaw = light.rotation.y,
+                yaw = light.rotation and light.rotation.y,
             }
         end
     end
@@ -57,7 +57,9 @@ function Motion:update3D(dt)
                 -- Subtract the initial phase so enabling causes no position jump.
                 light.position.x = entry.x + (math.sin(t * 2 + i) - math.sin(i)) * 16
                 light.position.z = entry.z + (math.cos(t * 2 + i) - math.cos(i)) * 12
-                light.rotation.y = entry.yaw + math.sin(t * 1.5) * 25
+                if light.rotation then
+                    light.rotation.y = entry.yaw + math.sin(t * 1.5) * 25
+                end
             end
         end
     end

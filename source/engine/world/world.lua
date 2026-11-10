@@ -284,7 +284,12 @@ function World3D:addLight(l)
         'Unknown light type'
     )
     l.position = l.position or { 0, 0, 0 }
-    l.rotation = l.rotation or { 0, 0, 0 }
+    local omitted = require('source.engine.nodes.core.classPolicy').omitted(l._class)
+    if omitted.rotation then
+        l.rotation = nil -- a point light has no direction; creation input naming one is ignored
+    else
+        l.rotation = l.rotation or { 0, 0, 0 }
+    end
     l.color = l.color or { 255, 255, 255 }
     l.range = l.range or 100
     l.radius = l.radius or 5
@@ -293,7 +298,9 @@ function World3D:addLight(l)
     require('source.engine.components.brightness').normalize(l, 3, 'Light')
     l.enabled = l.enabled ~= false
     Validate.vector(l.position, 'Light.position', 3)
-    Validate.vector(l.rotation, 'Light.rotation', 3)
+    if not omitted.rotation then
+        Validate.vector(l.rotation, 'Light.rotation', 3)
+    end
     Validate.vector(l.color, 'Light.color', 3)
     Validate.number(l.range, 'Light.range', 0.001)
     Validate.number(l.radius, 'Light.radius', 0)

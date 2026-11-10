@@ -1,4 +1,8 @@
 local Node = require('../core.baseNode')
+local Light = require('../../components.light')
 
-local Class = Node.define('SpotLight3D', 'PointLight3D')
+-- The cone points along the node's rotation; range and radius shape it.
+local Class = Node.define('SpotLight3D', 'Node3D')
+Light.install(Class)
+
 return Class

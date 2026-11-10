@@ -30,7 +30,6 @@ function Motion:update3D(dt)
         l.position[1] = motion.center[1] + math.sin(angle) * motion.amplitude
         l.position[2] = motion.center[2]
         l.position[3] = motion.center[3] + (math.cos(angle) - 1) * motion.amplitude
-        l.rotation[2] = math.deg(angle)
     end
     if scene.billboardMotion then
         scene.billboardPhase = (scene.billboardPhase or 0) + dt * 40
