@@ -17,10 +17,12 @@ local Child = {}
 Child.__index = Child
 
 local launchBase
+local launchBaseHasPath = true
 
 -- Called once at startup with the program that started this process: the executable, the
 -- launcher script a development run has (`luajit tools/dev/katsa.lua`) and the game source path.
-function Process.setLaunchBase(parts)
+function Process.setLaunchBase(parts, hasGamePath)
+    launchBaseHasPath = hasGamePath ~= false
     launchBase = {}
     for index, value in ipairs(parts) do
         launchBase[index] = tostring(value)
@@ -35,6 +37,11 @@ function Process.getLaunchCommand(extra)
     local command = {}
     for index, value in ipairs(launchBase) do
         command[index] = value
+    end
+    -- Without a game path on the command line (a packaged executable), a lone `--` tells the
+    -- runtime that what follows are game arguments, not a path.
+    if not launchBaseHasPath and extra and #extra > 0 then
+        command[#command + 1] = '--'
     end
     for _, value in ipairs(extra or {}) do
         command[#command + 1] = tostring(value)

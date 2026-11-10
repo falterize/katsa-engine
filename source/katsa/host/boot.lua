@@ -43,7 +43,9 @@ local function chooseSource(host, FS, nativeLib)
     local args = host.args or {}
     local positional
     for _, value in ipairs(args) do
-        if value ~= '--' and not value:find('^%-%-') then
+        if value == '--' then
+            break -- everything after a lone `--` is a game argument, never the game path
+        elseif not value:find('^%-%-') then
             positional = value
             break
         end
@@ -141,13 +143,17 @@ local function run(host)
     for _, value in ipairs(host.prefix or {}) do
         launch[#launch + 1] = value
     end
+    local explicit = false
     for _, value in ipairs(host.args or {}) do
-        if value ~= '--' and not value:find('^%-%-') then
+        if value == '--' then
+            break
+        elseif not value:find('^%-%-') then
             launch[#launch + 1] = source
+            explicit = true
             break
         end
     end
-    katsa.process.setLaunchBase(launch)
+    katsa.process.setLaunchBase(launch, explicit)
 
     local config = defaultConfig()
     if FS.getInfo('conf.lua', 'file') then
