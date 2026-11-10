@@ -42,7 +42,7 @@ function Tests.run(tester)
     )
     tester:check(#seen == 2 and named == 1, 'AttributeChanged fires for every change and per attribute name')
     a:setAttribute('label', nil)
-    tester:check(not a:hasAttribute('label') and a:getAttributes().alive == true, 'setting nil removes an attribute')
+    tester:check(a:getAttribute('label') == nil and a:getAttributes().alive == true, 'setting nil removes an attribute')
     local copy = a:clone({ name = 'Copy' })
     tester:check(
         copy:getAttribute('health') == 70 and copy:getAttribute('target') == b and copy:getAttribute('spawn') ~= a:getAttribute('spawn'),
@@ -75,7 +75,7 @@ function Tests.run(tester)
     Properties.set(scene, c, add, 'flag =')
     tester:check(
         c:getAttribute('level') == 3 and c:getAttribute('title') == 'hello world' and c:getAttribute('size3')[3] == 3
-            and c:isAttributeReference('owner') and not c:hasAttribute('flag'),
+            and c:isAttributeReference('owner') and c:getAttribute('flag') == nil,
         'the add row creates typed attributes, node slots and removes with an empty value'
     )
     tester:check(Schema.signature(c) ~= Schema.signature(world:create('Node3D', {})), 'attribute changes alter the inspector signature')

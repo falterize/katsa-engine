@@ -70,7 +70,6 @@ Names use `:` because the instance is passed as self.
 | `getTags()` | Sorted snapshot array of tag strings. |
 | `setAttribute(name, value)` | Store a named value (boolean, number, string, vector, any table or function, or a node reference); `nil` removes it. Emits `AttributeChanged(name, value)` and `AttributeChanged:<name>(value)`. |
 | `getAttribute(name, default)` | Read an attribute; a reference to a destroyed node reads as nil. |
-| `hasAttribute(name)` | Test whether the attribute exists (`setAttribute(name, nil)` removes it). |
 | `getAttributes()`, `getAttributeNames()` | A fresh `{ name = value }` table / the sorted names. |
 | `onAttributeChanged(name, callback)` | Subscribe to one attribute; return a connection. |
 | `setAttributeReference(name, node)` | Keep a node-typed slot that may be empty (the inspector's "None"). |

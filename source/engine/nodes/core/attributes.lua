@@ -83,11 +83,6 @@ function Attributes.get(self, name, default)
     return value
 end
 
-function Attributes.has(self, name)
-    return Attributes.get(self, name) ~= nil
-        or (self._attributeSlots ~= nil and self._attributeSlots[name] == true)
-end
-
 -- A fresh { name = value } table of the live attributes.
 function Attributes.all(self)
     local result = {}
