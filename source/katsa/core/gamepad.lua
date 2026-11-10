@@ -60,8 +60,23 @@ function Gamepad.first()
     return id and Gamepad.get(id) or nil
 end
 
+-- The n-th connected pad (1-based, connection order), or nil. Allocation-free, for per-frame use.
+function Gamepad.byIndex(number)
+    local id = supported() and platform:gamepadIds()[number]
+    return id and Gamepad.get(id) or nil
+end
+
 function Gamepad.getCount()
     return supported() and #platform:gamepadIds() or 0
+end
+
+-- 1-based position among the connected pads: the number `pad:a@2` and `axis:leftx.left@2` use.
+function Pad:getIndex()
+    for number, id in ipairs(platform:gamepadIds()) do
+        if id == self.id then
+            return number
+        end
+    end
 end
 
 function Pad:getID()

@@ -4,18 +4,31 @@ local Input = {}
 Input.__index = Input
 
 function Input.new(scene, layout)
+    -- The map belongs to the scene manager, so bindings survive scene changes; a standalone
+    -- Input (tests, tools) gets its own.
+    local manager = scene.manager
+    local map = manager and manager.inputMap or require('source.engine.input.inputMap').new()
     return setmetatable({
         scene = scene,
         layout = layout,
         actions = require('source.engine.input.actions').new(),
-        -- Named actions of the game; the scene's `settings.input` defines the first ones.
-        map = require('source.engine.input.inputMap').new(scene.settings and scene.settings.input),
+        map = map,
+        -- Actions the scene's `settings.input` added; `close` removes them with the scene.
+        sceneActions = map:addMissing(scene.settings and scene.settings.input),
         captures = {},
         axisX = 0,
         axisY = 0,
         up = 0,
         down = 0,
     }, Input)
+end
+
+-- Called when the scene ends: its own actions leave the shared map, project actions stay.
+function Input:close()
+    for _, name in ipairs(self.sceneActions) do
+        self.map:removeAction(name)
+    end
+    self.sceneActions = {}
 end
 
 function Input:reset()

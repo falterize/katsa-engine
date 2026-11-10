@@ -24,6 +24,8 @@ function Manager.new(options)
         resources = resources,
         data = Data.new(),
         audio = Audio.new({ clock = clock, resources = resources:scope() }),
+        -- Project-wide named actions (see input/inputMap.lua); scenes read and extend it.
+        inputMap = require('source.engine.input.inputMap').new(),
     }, Manager)
     -- Development aid (see debug/hotReload.lua); `options.hotReload` carries its settings.
     if options.hotReload then
@@ -37,6 +39,7 @@ local function dispose(scene)
         function()
             if scene.input then
                 scene.input:reset()
+                scene.input:close()
             end
         end,
         function()
@@ -188,6 +191,9 @@ function Manager:update(dt, realDt)
     )
     self.frameDelta = frameDelta
     self.frameTime = self.frameTime + frameDelta
+    -- Axes and edges of the named actions are published once per frame, before any scene reads them.
+    self.inputMap:pollGamepads(katsa.gamepad)
+    self.inputMap:update()
     local scene = self.stack[#self.stack]
     if scene and (self.focused or self:runsInBackground()) and scene.update then
         self._busy = true
