@@ -13,7 +13,7 @@ function Application.new(manager, source, options)
     end
     return require('source.game.runtime.game').new(
         manager,
-        package.settings.id,
+        package.id,
         { _package = package }
     )
 end

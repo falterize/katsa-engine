@@ -1,21 +1,21 @@
--- Scene tags: every scene lists lowercase tags in its settings.lua (`tags = { 'physics', '2d' }`).
+-- Scene tags: every scene lists lowercase tags in its menu-settings.lua (`tags = { 'physics', '2d' }`).
 -- The menu filters by selected tags (a scene needs all of them) and by search words (each word
 -- must appear in the title, the id or a tag). A scene without `tags` falls back to its old
 -- `category` as the only tag, so existing scene packages keep showing up.
 local Tags = {}
 
-function Tags.of(settings)
+function Tags.of(menu)
     local list = {}
     local seen = {}
-    for _, tag in ipairs(settings.tags or {}) do
+    for _, tag in ipairs(menu.tags or {}) do
         tag = tostring(tag):lower()
         if tag ~= '' and not seen[tag] then
             seen[tag] = true
             list[#list + 1] = tag
         end
     end
-    if #list == 0 and settings.category then
-        list[1] = tostring(settings.category):lower()
+    if #list == 0 and menu.category then
+        list[1] = tostring(menu.category):lower()
     end
     return list
 end

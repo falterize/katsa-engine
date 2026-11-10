@@ -26,9 +26,9 @@ end
 
 function Host:load()
     local profiler = self.manager.profiler
-    profiler:beginLoad(self.package.settings.id)
+    profiler:beginLoad(self.package.id)
     self.settings = self.package.settings
-    self.zone = self.settings.id
+    self.zone = self.package.id
     self.resources =
         self.manager.resources:scope(Loader.manifest({}, self.settings.assets), self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())

@@ -7,7 +7,7 @@ function Interface.create(state)
         name = 'Title',
         position = { 0, 24, 0, 60 },
         size = { 1, -48, 0, 36 },
-        text = scene.settings.title .. ' | Box2D | F3: Stats',
+        text = scene.package.menu.title .. ' | Box2D | F3: Stats',
         fontSize = 25,
     }, ui.content)
     state.triggerLabel = ui:text({

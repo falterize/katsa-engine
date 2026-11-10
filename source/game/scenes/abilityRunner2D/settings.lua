@@ -1,9 +1,5 @@
 local Settings = {
     layoutVersion = 3,
-    id = 'abilityRunner2D',
-    title = 'Ability Runner 2D / checkpoints, dash and pixel animation',
-    category = 'Physics',
-    tags = { 'game', '2d', 'physics', 'animation', 'platformer' },
     frameRateLimit = 144,
     physics2D = {
         unitsPerMeter = 64,

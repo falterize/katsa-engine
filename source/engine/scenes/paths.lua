@@ -16,6 +16,11 @@ function Paths.normalize(path)
     return table.concat(parts, '/')
 end
 
+-- The last segment of a path ('a/b/scene' -> 'scene').
+function Paths.basename(path)
+    return (path:gsub('\\', '/'):match('([^/]+)/*$')) or path
+end
+
 function Paths.resolve(path, roots)
     local scheme, relative = path:match('^(%a+)://(.*)$')
     if not scheme then

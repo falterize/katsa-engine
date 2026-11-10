@@ -36,12 +36,24 @@ function Module.run(self)
     local missing = {}
     for _, entry in ipairs(Catalog.entries) do
         local package = Loader.open(entry.id, Catalog)
-        if not package.settings.tags or #package.settings.tags == 0 then
+        if not package.menu.tags or #package.menu.tags == 0 then
             missing[#missing + 1] = entry.id
         end
         package:release()
     end
     self:check(#missing == 0, 'Every catalog scene lists tags' .. (#missing > 0 and (': ' .. table.concat(missing, ',')) or ''))
+    -- Launcher metadata lives in menu-settings.lua, never in settings.lua.
+    local Layout = require('source.engine.scenes.layout')
+    self:check(
+        not pcall(Layout.validate, 'x', { title = 'Misplaced' }),
+        'settings.lua rejects launcher metadata such as title'
+    )
+    local package = Loader.open('multiplayerCars', Catalog)
+    self:check(
+        package.id == 'multiplayerCars' and package.menu.title ~= nil and package.settings.title == nil,
+        'a scene package exposes id and menu metadata separately from settings'
+    )
+    package:release()
 end
 
 return Module

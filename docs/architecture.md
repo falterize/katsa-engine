@@ -28,7 +28,7 @@ The renderer, UI and other multi-part classes use explicit named `install` metho
 
 SceneManager owns scene lifetime and safe transitions. Resource scopes release Canvas/Mesh/Shader/audio objects. Worlds own node collections and their physics services. Fixed-step simulation is independent of rendering frequency. Public mutable values remain observable through snapshots and revisions; cache optimizations must preserve in-place edits.
 
-Scene packages use `settings.lua` for metadata/configuration and `main.lua` for
+Scene packages use `settings.lua` for engine configuration (physics, world, plugins, nodes, frame rate), `menu-settings.lua` for what only launchers read (id, title, category, tags) and `main.lua` for
 creation, general/3D/2D updates and destruction only. Private builders and nodes
 live inside each scene; all category folders are present. System discovery,
 ordering and startup are explicit loops inside that scene's `main.lua`. Systems are

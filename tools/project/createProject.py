@@ -25,7 +25,7 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
         shutil.copy2(source / 'conf.lua', stage / 'conf.lua')
         scene = stage / 'source/game/scenes/start'
         shutil.copytree(source / 'source/game/scenes/starterGame', scene)
-        scene_settings = scene / 'settings.lua'
+        scene_settings = scene / 'menu-settings.lua'
         scene_settings.write_text(
             scene_settings.read_text(encoding='utf-8').replace(
                 "id = 'starterGame'", "id = 'start'"

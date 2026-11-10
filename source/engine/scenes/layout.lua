@@ -15,7 +15,16 @@ local Layout = {
     hooks = { 'create', 'update', 'update3D', 'update2D', 'destroy' },
 }
 
+-- Launcher metadata moved out of settings.lua; naming it there is a mistake worth reporting.
+local MENU_KEYS = { 'id', 'title', 'category', 'tags', 'description' }
+
 function Layout.validate(root, settings)
+    for _, key in ipairs(MENU_KEYS) do
+        assert(
+            settings[key] == nil,
+            ('settings.lua must not set `%s`: it belongs in menu-settings.lua'):format(key)
+        )
+    end
     assert(
         settings.runInBackground == nil or type(settings.runInBackground) == 'boolean',
         'runInBackground must be a boolean'

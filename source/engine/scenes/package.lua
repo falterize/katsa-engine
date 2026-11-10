@@ -72,11 +72,13 @@ function Package.open(source)
     local ok, message = pcall(function()
         assert(rootAt(root), 'Scene requires settings.lua and main.lua: ' .. root)
         self.settings = self:require('settings')
+        assert(type(self.settings) == 'table', 'Scene settings.lua must return a table')
+        -- menu-settings.lua holds what only launchers and menus read (id, title, tags ...).
+        self.menu = self:loadMenu()
+        self.id = self.menu.id or Paths.basename(root)
         assert(
-            type(self.settings) == 'table'
-                and type(self.settings.id) == 'string'
-                and self.settings.id:match('^[%w_-]+$'),
-            'Scene settings require a non-empty stable id'
+            type(self.id) == 'string' and self.id:match('^[%w_-]+$'),
+            'Scene id in menu-settings.lua must be a non-empty stable name'
         )
         Layout.validate(root, self.settings)
         -- `version` is the engine version the scene was made for; a mismatch is reported, not fatal.
@@ -85,7 +87,7 @@ function Package.open(source)
         if status == 'newer' or (status == 'older' and note) then
             katsa.log.write(
                 status == 'newer' and 'warn' or 'log',
-                ('Scene %s: %s'):format(self.settings.id, note)
+                ('Scene %s: %s'):format(self.id, note)
             )
         end
         self.paths = { scene = root .. '/assets', shared = 'assets', package = self }
@@ -95,6 +97,20 @@ function Package.open(source)
         error(message, 0)
     end
     return self
+end
+
+-- Reads the optional menu-settings.lua next to settings.lua; an empty table when it is absent.
+function Package:loadMenu()
+    local path = self.root .. '/menu-settings.lua'
+    if not katsa.filesystem.getInfo(path, 'file') then
+        return {}
+    end
+    local chunk, message = katsa.filesystem.load(path)
+    assert(chunk, message)
+    setfenv(chunk, {})
+    local value = chunk()
+    assert(type(value) == 'table', 'menu-settings.lua must return a table')
+    return value
 end
 
 function Package:require(name)

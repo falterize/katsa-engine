@@ -33,7 +33,7 @@ end
 function Tests:package(source)
     local package = Package.open(source)
     local root = package.root
-    self:check(package.settings.id == 'packageFixture', 'Package metadata: ' .. root)
+    self:check(package.id == 'packageFixture', 'Package metadata: ' .. root)
     local resources =
         self.manager.resources:scope(Loader.manifest(nil, package.settings.assets), package.paths)
     local second = self.manager.resources:scope(nil, package.paths)
@@ -218,7 +218,7 @@ function Tests:allScenes()
                 end
                 self:check(scene ~= nil, entry.id .. ': ' .. tostring(message or backend))
                 self:check(
-                    scene.settings.id == entry.id and scene.package.root == entry.path,
+                    scene.package.id == entry.id and scene.package.root == entry.path,
                     'Catalog selects the correct folder'
                 )
                 self.manager:update(1 / 60)

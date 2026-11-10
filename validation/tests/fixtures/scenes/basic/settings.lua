@@ -1,7 +1,4 @@
 local Settings = {
-    id = 'packageFixture',
-    title = 'Scene package fixture',
-    category = 'Validation',
     physics = { backend = 'oimo' },
     nodes = { 'Counter' },
     assets = {

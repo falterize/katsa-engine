@@ -26,7 +26,8 @@ MyGame/
     game/
       data/project.lua            title, unique identity, start scene, shared assets
       scenes/start/
-        settings.lua              scene metadata, physics, environment, asset aliases
+        settings.lua              engine settings: physics, environment, asset aliases
+        menu-settings.lua         id, title, tags for menus and launchers
         main.lua                  create/update/update3D/update2D/destroy only
         assets/                   models/textures/audio/shaders/fonts
         nodes/                    scene-specific custom node modules

@@ -66,7 +66,7 @@ function Game:load()
             require('source.game.data.assetRoots').shared
         )
     self.settings = self.package.settings
-    self.zone = self.settings.id
+    self.zone = self.package.id
     local manifest = Loader.manifest(require('source.game.data.manifest'), self.settings.assets)
     self.resources = self.manager.resources:scope(manifest, self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())

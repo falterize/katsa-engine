@@ -1,9 +1,5 @@
 local Settings = {
     layoutVersion = 3,
-    id = 'physicsMixed',
-    title = 'Physics 2D + 3D',
-    category = 'Physics',
-    tags = { 'physics', '2d', '3d' },
     frameRateLimit = 144,
     physics = { backend = 'jolt' },
     physics2D = { units = 64, gravity = { 0, -627.84 }, fixedDelta = 1 / 60, debug = true },

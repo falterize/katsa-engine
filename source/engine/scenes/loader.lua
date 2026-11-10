@@ -5,9 +5,9 @@ local Loader = {}
 function Loader.open(source, catalog, sharedRoot)
     local entry = type(source) == 'string' and catalog and catalog.byId[source]
     local package = Package.open(entry and entry.path or source)
-    if entry and package.settings.id ~= entry.id then
+    if entry and package.id ~= entry.id then
         package:release()
-        error('Catalog ID differs from scene settings: ' .. entry.id, 0)
+        error('Catalog ID differs from menu-settings id: ' .. entry.id, 0)
     end
     package.paths.shared = sharedRoot or 'assets'
     return package

@@ -47,8 +47,8 @@ function Menu:load()
     local entries = {}
     for _, entry in ipairs(Catalog.entries) do
         local package = Loader.open(entry.id, Catalog)
-        local settings = package.settings
-        entries[#entries + 1] = { title = settings.title, id = settings.id, tags = Tags.of(settings) }
+        local menu = package.menu
+        entries[#entries + 1] = { title = menu.title or package.id, id = package.id, tags = Tags.of(menu) }
         package:release()
     end
 

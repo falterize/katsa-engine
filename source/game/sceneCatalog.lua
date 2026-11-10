@@ -1,4 +1,4 @@
--- Stable IDs map to scene packages; display metadata lives in settings.lua.
+-- Stable IDs map to scene packages; display metadata lives in menu-settings.lua.
 local Catalog = {
     entries = {
         { id = 'abilityRunner2D', path = 'source/game/scenes/abilityRunner2D' },

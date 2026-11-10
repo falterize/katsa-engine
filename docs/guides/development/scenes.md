@@ -6,7 +6,8 @@ or a shared full-scene factory. Shared engine services remain in `source/engine`
 
 ```text
 source/game/scenes/exampleScene/
-    settings.lua
+    settings.lua          engine configuration
+    menu-settings.lua     id, title, category, tags (read by menus and launchers)
     main.lua
     assets/
         models/
@@ -100,7 +101,21 @@ local Settings = {
 return Settings
 ```
 
-Scene tags: `tags = { 'physics', '2d', 'game' }` in `settings.lua` lists lowercase tags. The menu shows
+`settings.lua` holds only what the engine needs, like LÖVE's `conf.lua`:
+
+```lua
+return { layoutVersion = 3, nodes = { 'vehicle' }, plugins = { 'pathfinding' }, physics = { backend = 'jolt' } }
+```
+
+`menu-settings.lua` (optional) holds the launcher metadata and nothing else; `id` defaults to the folder
+name, and naming `id`, `title`, `category`, `tags` or `description` in `settings.lua` is an error. Read it
+from code as `scene.package.menu` (`scene.package.id` is the resolved id):
+
+```lua
+return { id = 'multiplayerCars', title = 'Multiplayer cars', category = 'Multiplayer', tags = { 'game', 'network' } }
+```
+
+Scene tags: `tags = { 'physics', '2d', 'game' }` in `menu-settings.lua` lists lowercase tags. The menu shows
 them under each scene title and filters by them: the search box matches title, id and tag words, and the
 Tags chooser keeps the scenes that have every selected tag. A scene without `tags` shows its old `category`
 as its only tag. Filtering lives in `source/game/sceneTags.lua`.

@@ -1,2 +1,2 @@
-local Settings = { layoutVersion = 3, id = 'lifecycleFixture', nodes = { 'probe' } }
+local Settings = { layoutVersion = 3, nodes = { 'probe' } }
 return Settings
