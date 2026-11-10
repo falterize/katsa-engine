@@ -70,7 +70,7 @@ on mobile. No phone FPS target is promised.
 
 ## Adornee
 
-ClickDetector3D.adornee selects the Mesh3D tested against the nearest raycast hit.
+ClickDetector3D.adornee selects the Node3D (a mesh or a group of meshes) tested against the nearest raycast hit.
 Without it, a valid Parent Mesh3D is used. Other geometry still occludes the target.
 positionSource remains the player/observer used for the radius check, with an
 explicit world.interactionSource fallback. Distance is measured to the target's

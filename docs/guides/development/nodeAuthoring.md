@@ -158,10 +158,11 @@ calling them again from gameplay can double-update the same work.
 | `Constraint3D:releaseJoint(preserveInputs)` | Remove its native joint and invalidate construction state. |
 | `Constraint3D:step(dt)` | Physics-managed joint creation/reconfiguration. |
 | `Environment:destroy()` | Required environment cannot be deleted independently; deletion is allowed during world teardown. |
-| `ClickDetector3D:setAdornee(node)` | Set its target mesh or clear the explicit reference. |
+| `ClickDetector3D:setAdornee(node)` | Set its target Node3D (a Mesh3D or a group of meshes) or clear the explicit reference. |
 | `ClickDetector3D:getTarget()` | Resolve explicit target or parent. |
 | `ClickDetector3D:canActivate()` | Check enabled/live target, visibility, interaction source and radius. |
-| `ClickDetector3D:activate(pointerId)` | Emit clicked if activation is allowed; return success. |
+| `ClickDetector3D:contains(mesh)` | True when the mesh is the target or lies below it. |
+| `ClickDetector3D:press(id, checked)` / `release(id)` / `cancel(id)` / `click(id, checked)` | Pointer verbs; signals `press`, `release`, `click`, `cancel`; `checked` applies `canActivate`. |
 | `Decal3D:setAdornee(node)` | Change its surface support node. |
 | `Decal3D:update(world, camera)` | Renderer-managed surface/projection refresh. |
 | `SurfaceUI:update(world, camera)` | Renderer-managed canvas and face projection refresh. |
