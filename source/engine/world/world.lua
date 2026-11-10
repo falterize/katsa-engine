@@ -295,7 +295,7 @@ function World3D:addLight(l)
     l.radius = l.radius or 5
     -- How much of the volumetric fog this light burns away where it shines (fog lamps).
     l.fogClearing = l.fogClearing or 0.5
-    require('source.engine.components.brightness').normalize(l, 3, 'Light')
+    require('source.engine.components.rendering.brightness').normalize(l, 3, 'Light')
     l.enabled = l.enabled ~= false
     Validate.vector(l.position, 'Light.position', 3)
     if not omitted.rotation then

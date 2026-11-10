@@ -1,7 +1,7 @@
 local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 local M = require('../../math.math3d')
-local Lighting = require('../../components.lighting')
+local Lighting = require('../../components.illumination.lighting')
 
 local L = {}
 

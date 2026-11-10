@@ -1,8 +1,8 @@
 -- Layer groups and render range are shared components used by every node kind.
-local Layering = require('source.engine.components.layering')
-local RenderRange = require('source.engine.components.renderRange')
-local Brightness = require('source.engine.components.brightness')
-local Tint = require('source.engine.components.tint')
+local Layering = require('source.engine.components.rendering.layering')
+local RenderRange = require('source.engine.components.rendering.renderRange')
+local Brightness = require('source.engine.components.rendering.brightness')
+local Tint = require('source.engine.components.rendering.tint')
 local Tables = require('source.engine.core.tables')
 local Math = require('source.engine.math.math3d')
 local World = require('source.engine.world.world')

@@ -4,7 +4,7 @@ local Class = Node.define('BillboardUI', 'Node3D')
 Class.propertySchema = {
     pixelate = {
         get = function(node)
-            return require('source.engine.components.image').pixelate(node, node._world.environment)
+            return require('source.engine.components.media.image').pixelate(node, node._world.environment)
         end,
     },
 }

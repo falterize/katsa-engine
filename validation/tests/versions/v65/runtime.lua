@@ -25,7 +25,7 @@ function T:update()
         assert(scene, err)
         self.scene = scene
         local sky = scene.world.environment.sky
-        local Image = require('source.engine.components.image')
+        local Image = require('source.engine.components.media.image')
         self:check(
             not Image.pixelate({}, { pixelate = true }),
             'Legacy global Pixelate no longer affects nodes'

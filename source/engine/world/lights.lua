@@ -1,8 +1,9 @@
-local Layering = require('../components.layering')
+local Layering = require('../components.rendering.layering')
 local unpack = require('../math.array').unpack
 local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 local M = require('../math.math3d')
+local Priority = require('../components.ordering.priority')
 
 local Lights = {}
 Lights.__index = Lights
@@ -12,8 +13,11 @@ local function nearer(a, b)
     if ad ~= bd then
         return ad
     end
-    if ad and (a.priority or 0) ~= (b.priority or 0) then
-        return (a.priority or 0) > (b.priority or 0)
+    if ad then
+        local first = Priority.higher(a, b)
+        if first ~= nil then
+            return first
+        end
     end
     if a.selectionDistance ~= b.selectionDistance then
         return a.selectionDistance < b.selectionDistance

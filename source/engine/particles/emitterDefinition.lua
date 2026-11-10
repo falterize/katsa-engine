@@ -50,7 +50,7 @@ local defaults = {
     offscreenBehavior = 'Pause',
     liveCount = 0,
 }
-for key, value in pairs(require('../components.shadowing').defaults) do
+for key, value in pairs(require('../components.illumination.shadowing').defaults) do
     defaults[key] = value
 end
 local enums = {

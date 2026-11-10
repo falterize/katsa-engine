@@ -67,7 +67,7 @@ function ShadowDepthPass.install(Shadows)
                     or false
             )
             shader:send('alphaCutoff', object._effectiveCutoff or object.alphaCutoff or 0)
-            require('source.engine.components.image').bindUV(
+            require('source.engine.components.media.image').bindUV(
                 shader,
                 object._surfaceAppearance or object,
                 object.image

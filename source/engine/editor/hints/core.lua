@@ -8,8 +8,4 @@ return {
         script = 'Lua file the worker threads run. It registers handlers with Actor.on(topic, fn).',
         workers = 'Worker threads running the script. Requests go to the least busy one.',
     },
-    ClickDetector3D = {
-        priority = 'Order when several detectors cover the same click: higher runs first, equal '
-            .. 'priorities run in creation order.',
-    },
 }

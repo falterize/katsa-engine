@@ -213,7 +213,7 @@ function Test:update()
         )
         local scene = self:load('uiGallery')
         scene:update(0.1, 0.1)
-        local component = require('source.engine.components.image')
+        local component = require('source.engine.components.media.image')
         local source = 'assets/textures/ui/litter.png'
         local nearest =
             component.resolve(scene.resources, { pixelate = true }, source, scene.world.environment)

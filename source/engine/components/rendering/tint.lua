@@ -1,7 +1,7 @@
 -- Colour and transparency of every visual node (Mesh3D, Decal3D, SurfaceAppearance3D, ribbons).
 -- `color` is stored as exactly three channels; an alpha written by older scenes (a fourth
 -- channel) is folded into `transparency` once and dropped, so renderers never see it.
-local V = require('../core.validate')
+local V = require('../../core.validate')
 
 local Tint = {}
 

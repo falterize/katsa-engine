@@ -1,6 +1,6 @@
 local readValue = require('../../math.managedValue').read
 local ipairs = require('../../math.array').ipairs
-local Image = require('../../components.image')
+local Image = require('../../components.media.image')
 local Bounds = require('../geometry.objectBounds')
 
 local Surface = {}

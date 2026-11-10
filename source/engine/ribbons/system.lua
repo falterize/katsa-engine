@@ -1,7 +1,7 @@
-local RenderRange = require('../components.renderRange')
+local RenderRange = require('../components.rendering.renderRange')
 -- Per-World3D registry of Beam3D and Trail3D nodes. `prepare` builds each visible ribbon's centre
 -- line once per rendered frame and hands it to the transparent draw list.
-local Layering = require('../components.layering')
+local Layering = require('../components.rendering.layering')
 local Geometry = require('./geometry')
 local Source = require('./source')
 

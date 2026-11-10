@@ -2,7 +2,7 @@
 -- the shared shadow atlas (see graphics/shadows/casterProxy.lua).
 local CasterProxy = require('../graphics.shadows.casterProxy')
 local Geometry = require('./geometry')
-local Image = require('../components.image')
+local Image = require('../components.media.image')
 local Renderer = require('./renderer')
 
 local S = {}

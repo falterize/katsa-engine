@@ -3,10 +3,11 @@ local M = require('../../math.math3d')
 
 local Class = Node.define('ClickDetector3D', 'Node')
 
+require('../../components.ordering.priority').describe(Class)
+
 function Class.initialize(self)
     self.radius = self.radius or 32
-    self.priority = self.priority or 0
-    assert(type(self.priority) == 'number', 'ClickDetector3D priority must be a number')
+    require('source.engine.components.ordering.priority').normalize(self)
     self.enabled = self.enabled ~= false
     self._requestedAdornee = rawget(self, 'adornee')
     rawset(self, 'adornee', nil)

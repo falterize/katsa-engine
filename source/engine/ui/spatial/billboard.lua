@@ -3,9 +3,9 @@ local M = require('../../math.math3d')
 local UI = require('../../ui')
 local Node = require('../../nodes')
 local Validate = require('../../core.validate')
-local Brightness = require('../../components.brightness')
-local Tint = require('../../components.tint')
-local RenderRange = require('../../components.renderRange')
+local Brightness = require('../../components.rendering.brightness')
+local Tint = require('../../components.rendering.tint')
+local RenderRange = require('../../components.rendering.renderRange')
 
 local BillboardUI = Node.getClass('BillboardUI')
 BillboardUI.__index = BillboardUI

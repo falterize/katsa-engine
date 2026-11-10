@@ -3,7 +3,7 @@ local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 local Sim = require('./simulation')
 local V = require('../core.validate')
-local Brightness = require('../components.brightness')
+local Brightness = require('../components.rendering.brightness')
 
 local Settings = require('./settings')
 

@@ -1,4 +1,4 @@
-local Lighting = require('../../components.lighting')
+local Lighting = require('../../components.illumination.lighting')
 local readValue = require('../../math.managedValue').read
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs

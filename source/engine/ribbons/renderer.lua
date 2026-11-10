@@ -1,7 +1,7 @@
 -- Draws one Beam3D / Trail3D as a single stream mesh through the particle sprite shader, so shader
 -- layers, fog-free world lighting and shadow reception behave exactly like particles.
 local Geometry = require('./geometry')
-local Image = require('../components.image')
+local Image = require('../components.media.image')
 local Resolver = require('../graphics.shaders.materialResolver')
 
 local R = {}

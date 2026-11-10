@@ -3,10 +3,10 @@ local Node = require('../../nodes')
 
 local Class = Node.define('Button', 'Label')
 Class.interactive = true
-require('../../components.image').describe(Class)
+require('../../components.media.image').describe(Class)
 
 function Class.initialize(self)
-    require('source.engine.components.image').initialize(self)
+    require('source.engine.components.media.image').initialize(self)
     if
         not self._backgroundAuthored
         and (not self.image or self.image == '')

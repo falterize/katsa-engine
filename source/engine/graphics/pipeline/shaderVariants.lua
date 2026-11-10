@@ -1,4 +1,4 @@
-local Lighting = require('../../components.lighting')
+local Lighting = require('../../components.illumination.lighting')
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 -- Constant-disabled paths remove unused uniforms and branches from the GPU program.

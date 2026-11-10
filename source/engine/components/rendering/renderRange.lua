@@ -1,6 +1,6 @@
 -- Render cutoff distance (`maxDistance`) shared by Mesh3D, Decal3D, particles and ribbons.
 -- 0 means unlimited. A node is kept while its bounding sphere still reaches into the range.
-local V = require('../core.validate')
+local V = require('../../core.validate')
 
 local RenderRange = {}
 

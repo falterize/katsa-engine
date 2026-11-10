@@ -1,5 +1,5 @@
 -- lightInfluence replaces the boolean unlit everywhere through one component.
-local Lighting = require('source.engine.components.lighting')
+local Lighting = require('source.engine.components.illumination.lighting')
 local Schema = require('source.engine.editor.inspectors.schema')
 local World = require('source.engine.world.world')
 

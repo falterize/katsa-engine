@@ -1,10 +1,10 @@
 local Node = require('../../nodes')
 
 local Class = Node.define('ImageRect', 'Frame')
-require('../../components.image').describe(Class)
+require('../../components.media.image').describe(Class)
 
 function Class.initialize(self)
-    require('source.engine.components.image').initialize(self)
+    require('source.engine.components.media.image').initialize(self)
 end
 
 function Class:drawSelf(ui)

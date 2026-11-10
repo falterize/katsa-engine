@@ -8,7 +8,7 @@ Class.interactive = true
 Class.propertySchema = {
     pixelate = {
         get = function(node)
-            return require('source.engine.components.image').pixelate(
+            return require('source.engine.components.media.image').pixelate(
                 node,
                 node._sceneWorld.environment
             )
@@ -56,7 +56,7 @@ function Class:drawSelf(ui)
     local ratio = math.min(1, limits.texturesize / math.max(w, h), math.sqrt(budget / (w * h)))
     w, h = math.max(1, math.floor(w * ratio)), math.max(1, math.floor(h * ratio))
     self._canvasWidth, self._canvasHeight = w, h
-    local filter = require('source.engine.components.image').pixelate(self, world.environment)
+    local filter = require('source.engine.components.media.image').pixelate(self, world.environment)
             and 'nearest'
         or 'linear'
     local canvas

@@ -1,6 +1,6 @@
 local ipairs = require('../../math.array').ipairs
 local Node = require('../core.baseNode')
-local Tint = require('../../components.tint')
+local Tint = require('../../components.rendering.tint')
 
 local C = Node.define('SurfaceAppearance3D', 'Node')
 C.propertySchema = {
@@ -26,10 +26,10 @@ C.propertySchema = {
     alphaMode = { options = { 'Inherit', 'Opaque', 'Mask', 'Blend' } },
     alphaCutoff = { min = 0, max = 1, visibleWhen = { key = 'alphaMode', equals = 'Mask' } },
 }
-require('../../components.image').describe(C)
+require('../../components.media.image').describe(C)
 
 function C.initialize(self)
-    require('source.engine.components.image').initialize(self)
+    require('source.engine.components.media.image').initialize(self)
     for _, key in ipairs({
         'colorMap',
         'normalMap',

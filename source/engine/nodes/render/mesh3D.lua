@@ -19,9 +19,9 @@ Class.propertySchema = {
     skinDrawCount = { readOnly = true },
 }
 
-require('../../components.lighting').describe(Class)
-require('../../components.renderRange').describe(Class)
-require('../../components.shadowing').describe(Class, { cutoff = false })
+require('../../components.illumination.lighting').describe(Class)
+require('../../components.rendering.renderRange').describe(Class)
+require('../../components.illumination.shadowing').describe(Class, { cutoff = false })
 
 function Class.initialize(self)
     self.maxBoneInfluences = self.maxBoneInfluences or 8

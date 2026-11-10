@@ -1,4 +1,4 @@
-local ipairs = require('../math.array').ipairs
+local ipairs = require('../../math.array').ipairs
 -- Shared sampler/mode policy; variants never mutate an image owned by another node.
 local Image = {}
 

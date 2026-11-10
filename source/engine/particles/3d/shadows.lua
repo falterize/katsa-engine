@@ -3,7 +3,7 @@ local ipairs = require('../../math.array').ipairs
 local M = require('../../math.math3d')
 local Sequence = require('../../animation.sequence')
 local CasterProxy = require('../../graphics.shadows.casterProxy')
-local Image = require('../../components.image')
+local Image = require('../../components.media.image')
 
 local S = {}
 local bounds = { 0, 0, 0, 0 }

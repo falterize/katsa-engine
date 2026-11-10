@@ -1,4 +1,4 @@
-local Lighting = require('../../components.lighting')
+local Lighting = require('../../components.illumination.lighting')
 local M = require('../../math.math3d')
 local Sequence = require('../../animation.sequence')
 local Visibility = require('./visibility')
@@ -19,7 +19,7 @@ function Renderer.draw(system)
     for _, e in ipairs(system.emitters) do
         if Visibility.relevant(e, ui.currentCamera, true) then
             local image =
-                require('source.engine.components.image').resolve(ui.resources, e, e.texture)
+                require('source.engine.components.media.image').resolve(ui.resources, e, e.texture)
             local count, capacity = #e.particles, e._batchCapacity or 0
             if count > capacity then
                 if e._spriteBatch then

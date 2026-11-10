@@ -133,7 +133,7 @@ function Tests.scenes(tester)
     local scene = Application.new(tester.manager, 'abilityRunner2D')
     scene:load()
     local state, controller = scene.demo, scene.demo.controller
-    local Image = require('source.engine.components.image')
+    local Image = require('source.engine.components.media.image')
     local Schema = require('source.engine.editor.inspectors.schema')
     tester:check(
         state.sprite.imageMode == 'XML' and state.sprite.xml == 'scene://animations/player.xml',

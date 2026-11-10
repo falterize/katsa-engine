@@ -6,10 +6,10 @@ local V = require('../../core.validate')
 
 local Ribbon = {}
 
-local Lighting = require('../../components.lighting')
-local Shadowing = require('../../components.shadowing')
-local RenderRange = require('../../components.renderRange')
-local Brightness = require('../../components.brightness')
+local Lighting = require('../../components.illumination.lighting')
+local Shadowing = require('../../components.illumination.shadowing')
+local RenderRange = require('../../components.rendering.renderRange')
+local Brightness = require('../../components.rendering.brightness')
 
 Ribbon.defaults = {
     color = { 1, 1, 1 },
@@ -34,7 +34,7 @@ end
 
 -- Declares schema entries (hints, options, conditional visibility) for a ribbon class.
 function Ribbon.describe(class, extra)
-    require('../../components.image').describe(class)
+    require('../../components.media.image').describe(class)
     local schema = class.propertySchema
     for key in pairs(Ribbon.defaults) do
         schema[key] = schema[key] or {}
@@ -45,8 +45,8 @@ function Ribbon.describe(class, extra)
         return node.imageMode == 'Decal' and node.textureMode ~= 'Stretch'
     end
     schema.lightEmission.min, schema.lightEmission.max = 0, 1
-    require('../../components.lighting').describe(class)
-    require('../../components.shadowing').describe(class)
+    require('../../components.illumination.lighting').describe(class)
+    require('../../components.illumination.shadowing').describe(class)
     RenderRange.describe(class)
     Brightness.describe(class)
     for _, key in ipairs({ 'atlasFPS', 'atlasLoop' }) do
@@ -88,7 +88,7 @@ function Ribbon.validate(node)
     V.number(node.lightEmission, name .. '.lightEmission', 0, 1)
     Brightness.check(node.brightness, name)
     RenderRange.normalize(node, 0)
-    require('source.engine.components.shadowing').validate(node, name)
+    require('source.engine.components.illumination.shadowing').validate(node, name)
     assert(
         node.textureMode == 'Stretch' or node.textureMode == 'Wrap' or node.textureMode == 'Static',
         name .. '.textureMode must be Stretch, Wrap or Static'

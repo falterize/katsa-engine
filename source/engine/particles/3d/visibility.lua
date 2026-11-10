@@ -1,5 +1,5 @@
-local RenderRange = require('../../components.renderRange')
-local Layering = require('../../components.layering')
+local RenderRange = require('../../components.rendering.renderRange')
+local Layering = require('../../components.rendering.layering')
 local ipairs = require('../../math.array').ipairs
 -- Test existing particles as well as the source: world-space trails can outlive an offscreen
 -- emitter.

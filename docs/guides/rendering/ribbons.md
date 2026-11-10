@@ -58,10 +58,10 @@ frame and aged with the world's simulation time, so `timeScale` and pause apply.
   coordinate (Beam: 0 at `attachment0` to 1 at `attachment1`; Trail: age of the point divided by `lifetime`).
   `color` multiplies it, Node3D `transparency` fades the whole ribbon.
 - **Light**: `lightEmission` 0..1 blends from normal alpha to additive glow; `lightInfluence` 0..1 (default 0)
-  blends from unlit to fully lit (the shared `components/lighting.lua`, used by Mesh3D, Decal3D, particles and
+  blends from unlit to fully lit (the shared `components/illumination/lighting.lua`, used by Mesh3D, Decal3D, particles and
   ribbons); `brightness` scales the result. `zOffset` shifts the transparency sort.
 - **Shadows**: the same four options as particles, from one shared component
-  (`components/shadowing.lua`): `castShadow`, `receiveShadow`, `shadowGroup` and `shadowAlphaCutoff`.
+  (`components/illumination/shadowing.lua`): `castShadow`, `receiveShadow`, `shadowGroup` and `shadowAlphaCutoff`.
   `castShadow` writes the ribbon into the shadow maps as an alpha tested strip, `receiveShadow` darkens it
   with shadows (it only shows when `lightInfluence` is above 0). `shadowAlphaCutoff` is a shadow-pass-only
   threshold: texels more transparent than it cast no shadow. It is not Mesh3D `alphaCutoff`, which is a

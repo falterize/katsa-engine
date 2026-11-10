@@ -53,7 +53,7 @@ function BillboardCanvas.install(BillboardUI)
     end
 
     function BillboardUI:refresh()
-        local filter = require('source.engine.components.image').pixelate(
+        local filter = require('source.engine.components.media.image').pixelate(
             self,
             self._world.environment
         ) and 'nearest' or 'linear'

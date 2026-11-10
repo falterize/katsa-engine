@@ -1,7 +1,7 @@
 -- The shadow options of every node that casts or receives shadows (Mesh3D, lights, particles,
 -- ribbons): defaults, schema and validation in one place. Nodes that draw procedural geometry
 -- (particles, ribbons) also have shadowAlphaCutoff; meshes use their material's alphaCutoff.
-local V = require('../core.validate')
+local V = require('../../core.validate')
 
 local Shadowing = {}
 

@@ -36,14 +36,14 @@ function Objects.install(World3D)
         Validate.vector(o.rotation, 'Object.rotation', 3)
         Validate.vector(o.size, 'Object.size', 3)
         o.doubleSided = o.doubleSided == true
-        require('source.engine.components.lighting').normalize(o, 1)
-        require('source.engine.components.shadowing').normalize(
+        require('source.engine.components.illumination.lighting').normalize(o, 1)
+        require('source.engine.components.illumination.shadowing').normalize(
             o,
             { castShadow = true, receiveShadow = true }
         )
         o.visible = o.visible ~= false
-        require('source.engine.components.renderRange').normalize(o, 0)
-        require('source.engine.components.tint').normalize(o, 'Object')
+        require('source.engine.components.rendering.renderRange').normalize(o, 0)
+        require('source.engine.components.rendering.tint').normalize(o, 'Object')
         if not o.geometry and not self.geometry[o.kind or 'cube'] then
             local factory = Geometry[o.kind]
             assert(type(factory) == 'function', 'Unknown geometry: ' .. tostring(o.kind))
@@ -86,7 +86,7 @@ function Objects.install(World3D)
 
     function World3D:updateObject(o, renderPose, geometryOnly)
         o._batchRevision = (o._batchRevision or 0) + 1
-        require('source.engine.components.tint').stripAlpha(o)
+        require('source.engine.components.rendering.tint').stripAlpha(o)
         o._renderVisible, o._renderOpacity = o:getVisibilityState()
         if not geometryOnly then
             self:updateAppearance(o)

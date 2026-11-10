@@ -68,6 +68,9 @@ local keys = {
     poseMode = 'Collision debug pose. Render: where the visuals are drawn (interpolated between '
         .. 'physics steps). Solver: the newest physics step, which contacts and queries use. Both: '
         .. 'solver shapes in magenta over the normal colours.',
+    priority = 'Ranking when nodes compete for one role (the main sun among directional lights, the '
+        .. 'detectors answering one click): higher goes first, equal priorities fall back to the '
+        .. 'usual order.',
     positionSource = 'Player position source for the Radius check, not the clicked target. None '
         .. 'uses World3D.interactionSource. The target is Parent Mesh3D; distance is measured to '
         .. 'its origin. No camera fallback.',

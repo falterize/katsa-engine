@@ -1,7 +1,7 @@
 -- Light response of every node that is shaded by scene lights (Mesh3D, Decal3D, particles, ribbons):
 -- one number, `lightInfluence`, from 0 (unlit: the node shows its own colour) to 1 (fully lit).
 -- This is the only place that knows how it is stored, validated, described and read by renderers.
-local V = require('../core.validate')
+local V = require('../../core.validate')
 
 local Lighting = {}
 

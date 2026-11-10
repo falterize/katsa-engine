@@ -13,7 +13,7 @@ function RenderBindings.install(Renderer)
             return
         end
         local g = katsa.graphics
-        local image = require('source.engine.components.image').resolve(
+        local image = require('source.engine.components.media.image').resolve(
             world.resources,
             s,
             s.texture,

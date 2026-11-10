@@ -278,7 +278,7 @@ function B.resolve(world, object, nodes)
                 cache.shader:send('opaque', node.alphaMode == 'Opaque')
                 cache.shader:send('accumulatedMap', canvas)
                 g.setCanvas(cache.scratch)
-                require('source.engine.components.image').bindUV(cache.shader, node, source)
+                require('source.engine.components.media.image').bindUV(cache.shader, node, source)
                 local w, h = source:getDimensions()
                 g.draw(source, 0, 0, 0, size / w, size / h)
                 canvas, cache.scratch = cache.scratch, canvas

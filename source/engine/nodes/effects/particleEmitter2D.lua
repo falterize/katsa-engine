@@ -41,7 +41,7 @@ Class.propertySchema.adornee = {
 }
 
 function Class.initialize(self)
-    require('source.engine.components.lighting').normalize(self, 0)
+    require('source.engine.components.illumination.lighting').normalize(self, 0)
     for key, value in pairs(Class.defaults) do
         if self[key] == nil then
             self[key] = Array.is(value) and { Array.unpack(value) } or value

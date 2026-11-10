@@ -1,7 +1,8 @@
-local Layering = require('../components.layering')
+local Layering = require('../components.rendering.layering')
 local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 local M = require('../math.math3d')
+local Priority = require('../components.ordering.priority')
 
 local Picking = {}
 
@@ -63,8 +64,9 @@ end
 
 -- Detector order: higher `priority` first, then creation order.
 function Picking.before(a, b)
-    if a.priority ~= b.priority then
-        return a.priority > b.priority
+    local first = Priority.higher(a, b)
+    if first ~= nil then
+        return first
     end
     return a._order < b._order
 end

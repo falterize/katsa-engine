@@ -1,12 +1,12 @@
 local Node = require('../core.baseNode')
 local Math = require('../../math.math3d')
-local Brightness = require('../../components.brightness')
-local Tint = require('../../components.tint')
+local Brightness = require('../../components.rendering.brightness')
+local Tint = require('../../components.rendering.tint')
 
 local Class = Node.define('Decal3D', 'Node3D')
-require('../../components.image').describe(Class)
-require('../../components.lighting').describe(Class)
-require('../../components.renderRange').describe(Class)
+require('../../components.media.image').describe(Class)
+require('../../components.illumination.lighting').describe(Class)
+require('../../components.rendering.renderRange').describe(Class)
 Brightness.describe(Class)
 Class.propertySchema.mode = {
     visibleWhen = function()
@@ -25,8 +25,8 @@ function Class.mount(world, properties, parent)
     properties.imageMode = properties.mode
     Tint.normalize(properties, 'Decal3D')
     properties.onTop = properties.onTop == true
-    require('source.engine.components.lighting').normalize(properties, 0)
-    require('source.engine.components.renderRange').normalize(properties, 500)
+    require('source.engine.components.illumination.lighting').normalize(properties, 0)
+    require('source.engine.components.rendering.renderRange').normalize(properties, 500)
     properties.zIndex = properties.zIndex or 0
     properties.atlasGrid = properties.atlasGrid or { 1, 1 }
     properties.atlasFrame = properties.atlasFrame or 0
@@ -54,14 +54,14 @@ function Class.mount(world, properties, parent)
         or (properties.surfaceSize and { 0, properties.surfaceSize[1], 0, properties.surfaceSize[2] })
         or { 1, 0, 1, 0 }
     properties.surfaceSize = nil
-    require('source.engine.components.image').initialize(properties)
+    require('source.engine.components.media.image').initialize(properties)
     properties._decalMode = properties.imageMode
     properties._world = world
     properties.matrix = Math.identity()
     properties.normal = {}
     properties.geometry = world.surfaceQuad
     properties.image = properties.image or ''
-    properties.textureImage = require('source.engine.components.image').resolve(
+    properties.textureImage = require('source.engine.components.media.image').resolve(
         world.resources,
         properties,
         properties.image,
@@ -104,10 +104,10 @@ function Class:update(world, camera)
         self.image ~= self._imagePath
         or self.xml ~= self._xmlPath
         or self.imageMode ~= self._decalMode
-        or require('source.engine.components.image').pixelate(self, world.environment)
+        or require('source.engine.components.media.image').pixelate(self, world.environment)
             ~= self._imagePixel
     then
-        self.textureImage = require('source.engine.components.image').resolve(
+        self.textureImage = require('source.engine.components.media.image').resolve(
             world.resources,
             self,
             self.image,
@@ -115,7 +115,7 @@ function Class:update(world, camera)
         )
         self._xmlPath, self._decalMode = self.xml, self.imageMode
         self._imagePath, self._imagePixel =
-            self.image, require('source.engine.components.image').pixelate(self, world.environment)
+            self.image, require('source.engine.components.media.image').pixelate(self, world.environment)
     end
     assert(
         self.mode == 'Decal'

@@ -1,5 +1,5 @@
-local Lighting = require('../../components.lighting')
-local Brightness = require('../../components.brightness')
+local Lighting = require('../../components.illumination.lighting')
+local Brightness = require('../../components.rendering.brightness')
 local white = { 1, 1, 1, 1 }
 local RenderItems = {}
 
@@ -65,7 +65,7 @@ function RenderItems.install(Renderer)
         if s:hasUniform('canvasTexture') then
             s:send('canvasTexture', billboard)
         end
-        require('source.engine.components.image').bindUV(
+        require('source.engine.components.media.image').bindUV(
             s,
             o._surfaceAppearance or o,
             o.textureImage or o.image or o.canvas
@@ -121,7 +121,7 @@ function RenderItems.install(Renderer)
             end
             local iw, ih = node.textureImage:getDimensions()
             ox, oy, sx, sy =
-                require('source.engine.components.image').uv(node, iw, ih, width, height)
+                require('source.engine.components.media.image').uv(node, iw, ih, width, height)
             if node.mode == 'Decal' then
                 ox, oy = node.imageOffset[1], node.imageOffset[2]
             end
@@ -142,7 +142,7 @@ function RenderItems.install(Renderer)
         if s:hasUniform('debugWireframe') then
             s:send('debugWireframe', false)
         end
-        require('source.engine.components.image').bindUV(s, o._surfaceAppearance or o, o.image)
+        require('source.engine.components.media.image').bindUV(s, o._surfaceAppearance or o, o.image)
         require('source.engine.graphics.shaders.systemLayers').bind(s, o)
         self:sendDecal(s)
         require('source.engine.animation.skeleton.skinning').bind(s, o)

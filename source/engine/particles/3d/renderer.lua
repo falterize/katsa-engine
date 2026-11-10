@@ -1,5 +1,5 @@
-local RenderRange = require('../../components.renderRange')
-local Layering = require('../../components.layering')
+local RenderRange = require('../../components.rendering.renderRange')
+local Layering = require('../../components.rendering.layering')
 local ipairs = require('../../math.array').ipairs
 local M = require('../../math.math3d')
 
@@ -113,7 +113,7 @@ function R.draw(system, camera, emitter)
             end
             local vertices = emitter._vertices or {}
             emitter._vertices = vertices
-            local image = require('source.engine.components.image').resolve(
+            local image = require('source.engine.components.media.image').resolve(
                 world.resources,
                 emitter,
                 emitter.texture,

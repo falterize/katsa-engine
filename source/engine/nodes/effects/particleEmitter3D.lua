@@ -12,7 +12,7 @@ C.defaults = defaults
 C.propertySchema = {
     pixelate = {
         get = function(node)
-            return require('source.engine.components.image').pixelate(node, node._world.environment)
+            return require('source.engine.components.media.image').pixelate(node, node._world.environment)
         end,
     },
     adornee = {},
@@ -45,10 +45,10 @@ C.propertySchema.surfaceOnly.visibleWhen =
 C.propertySchema.shapeSize.visibleWhen =
     { key = 'shape', oneOf = { 'Box', 'Sphere', 'Disc', 'Cylinder' } }
 C.propertySchema.gravity.visibleWhen = { key = 'useWorldGravity', equals = false }
-require('../../components.image').describe(C)
-require('../../components.lighting').describe(C)
-require('../../components.brightness').describe(C)
-require('../../components.shadowing').describe(C, { extra = { 'shadowMaxParticles' } })
+require('../../components.media.image').describe(C)
+require('../../components.illumination.lighting').describe(C)
+require('../../components.rendering.brightness').describe(C)
+require('../../components.illumination.shadowing').describe(C, { extra = { 'shadowMaxParticles' } })
 C.propertySchema.atlasAnimation = { visibleWhen = { key = 'imageMode', equals = 'XML' } }
 C.propertySchema.atlasGrid.visibleWhen = function(node)
     return node.imageMode == 'Atlas' or node.atlasEnabled and node.imageMode == 'Decal'
@@ -62,7 +62,7 @@ for _, key in ipairs({ 'sizeCurve', 'transparencyCurve', 'startColor', 'midColor
 end
 
 function C.initialize(self)
-    require('source.engine.components.lighting').normalize(self, 0)
+    require('source.engine.components.illumination.lighting').normalize(self, 0)
     local legacyQuality = self.quality
     if legacyQuality then
         local limit = ({ Low = 128, Medium = 512, High = 2048 })[legacyQuality]
