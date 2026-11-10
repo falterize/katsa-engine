@@ -135,7 +135,7 @@ local groups = {
         'collisionGroup',
     },
     Collider3D = { 'shape', 'size', 'radius', 'height', 'position', 'rotation' },
-    ClickDetector3D = { 'adornee', 'radius', 'enabled', 'positionSource' },
+    ClickDetector3D = { 'adornee', 'radius', 'priority', 'enabled', 'positionSource' },
     Slider = { 'value' },
     ScrollFrame = {
         'scrollingDirection',

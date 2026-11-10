@@ -145,6 +145,11 @@ function Tests.run(tester)
     local whole = world:create('ClickDetector3D', {}, car)
     local part = world:create('ClickDetector3D', {}, wheel)
     tester:check(whole:contains(wheel) and part:contains(wheel) and not whole:contains(other), 'a detector on a Node3D covers the meshes below it')
+    local Picking = require('source.engine.world.picking')
+    part.priority = 5
+    tester:check(whole.priority == 0 and Picking.before(part, whole) and not Picking.before(whole, part), 'a higher priority runs before the earlier-created detector')
+    part.priority = 0
+    tester:check(Picking.before(whole, part), 'equal priorities run in creation order')
     local log = {}
     for _, name in ipairs({ 'press', 'release', 'click', 'cancel' }) do
         whole:connect(name, function(id) log[#log + 1] = name .. ':' .. tostring(id) end)

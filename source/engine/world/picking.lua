@@ -39,7 +39,7 @@ function Picking.raycast(world, camera, x, y)
 end
 
 -- Every ClickDetector3D whose target contains the nearest mesh under the point (the mesh itself
--- or a descendant of it) and that may activate, in creation order. Nil when nothing is hit.
+-- or a descendant of it) and that may activate, by priority and then creation order. Nil when nothing is hit.
 function Picking.detectors(world, camera, x, y)
     if not world.clickDetectors or not next(world.clickDetectors) then
         return
@@ -56,11 +56,17 @@ function Picking.detectors(world, camera, x, y)
         end
     end
     if found then
-        table.sort(found, function(a, b)
-            return a._order < b._order
-        end)
+        table.sort(found, Picking.before)
     end
     return found
+end
+
+-- Detector order: higher `priority` first, then creation order.
+function Picking.before(a, b)
+    if a.priority ~= b.priority then
+        return a.priority > b.priority
+    end
+    return a._order < b._order
 end
 
 -- Calls one pointer verb (`press`, `release`, `cancel`) on every detector of a list.
