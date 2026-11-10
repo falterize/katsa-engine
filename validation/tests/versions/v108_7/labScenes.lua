@@ -70,9 +70,18 @@ function Module.run(self)
                 peak[agent.name] = math.max(peak[agent.name], agent:getWorldPosition()[2])
             end
         end
-        local landed, missed = 0, 0
-        for _, w in ipairs(lab.walkers) do landed, missed = landed + (w.landed or 0), missed + (w.missed or 0) end
-        self:check(landed == 0 or missed <= landed / 3, 'Planned jumps land near their target (' .. landed .. ' landings, ' .. missed .. ' missed)')
+        -- Walkers press jump like players; most presses must end with a landing at the link end.
+        local pressed, crossed = 0, 0
+        for _, w in ipairs(lab.walkers) do
+            pressed = pressed + w.jumps
+        end
+        for _, count in pairs(jumps) do
+            crossed = crossed + count
+        end
+        self:check(
+            pressed > 0 and crossed >= pressed * 0.6,
+            'Walkers jump by pressing jump and land on the link end (' .. crossed .. ' landings of ' .. pressed .. ' jumps)'
+        )
         local curbJumps = 0
         for index = 1, lab.crowdCount do
             curbJumps = curbJumps + jumps[lab.agents[index].name]

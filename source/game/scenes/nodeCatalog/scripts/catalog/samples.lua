@@ -37,7 +37,7 @@ local routes = {
 }
 local descriptions = {
     NavMap3D = 'Bake the navigation mesh from physics; the debug view shows cells, links and routes.',
-    NavAgent3D = 'Edit areaCosts / actionCosts: weights belong to the agent. LinkReached hands over actions.',
+    NavAgent3D = 'Edit areaCosts / actionCosts: weights belong to the agent. It only advises: next position, next action, velocity.',
     NavObstacle3D = 'Blocks a circle or box; the mesh under it is rebuilt as it moves.',
     NavLink3D = 'Names an action (jump, climb ...) between two places; agents price the action themselves.',
     NavArea3D = 'Names a region (water, mud); each agent prices it with areaCosts.',

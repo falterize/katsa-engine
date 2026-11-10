@@ -69,6 +69,15 @@ function NavMap3D:isBaked()
     return self.baked
 end
 
+-- What a walker may be like to fit the baked mesh: blocked cells grew by whole cells of
+-- `agentRadius`, so a walker's centre stays at least `radius` from any wall, and `height` is the
+-- free space above every cell.
+function NavMap3D:getClearance()
+    local cellSize = self.cellSize
+    local rings = math.floor(self.agentRadius / cellSize)
+    return (rings + 0.5) * cellSize, self.agentHeight
+end
+
 -- Colliders can opt out with `navWalkable`; `navFloor` picks the floor a collider is ground of.
 local function blocksHeadroom(body)
     local node = body.object or body

@@ -47,12 +47,19 @@ function Tests.run(tester)
     world:updateNodes(1 / 60)
     agent:setTarget(to)
     for _ = 1, 600 do
-        map:update(1 / 60)
         world:updateNodes(1 / 60)
+        -- Like a script would: step toward the advised corner at the agent's speed.
+        if not agent:isNavigationFinished() then
+            local next, at = agent:getNextPathPosition(), agent.position
+            local dx, dz = next[1] - at[1], next[3] - at[3]
+            local length = math.max(1e-6, math.sqrt(dx * dx + dz * dz))
+            local step = math.min(length, 6 / 60)
+            agent.position = { at[1] + dx / length * step, at[2], at[3] + dz / length * step }
+        end
     end
     tester:check(
-        arrived == 1 and math.abs(agent.position[1] - 10) < 0.6 and agent.state == 'arrived',
-        'a NavAgent3D walks to its target and reports Arrived'
+        arrived == 1 and math.abs(agent.position[1] - 10) < 0.6 and agent:isTargetReached(),
+        'a NavAgent3D advises the way and reports Arrived while the script moves the body'
     )
     agent:destroy()
     map:destroy()

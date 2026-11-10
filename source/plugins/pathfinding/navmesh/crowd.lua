@@ -15,10 +15,17 @@
 -- Costs belong to the agent: `agent.areaCosts` ({ water = 50 }) and `agent.actionCosts`
 -- ({ jump = 3, climb = false }) weigh routes for that agent only; unset values use the defaults.
 --
--- Action links (jump, climb, door ...) are not performed here. When an agent reaches the start of
--- one it stops, `agent.link` is set, `agent.state` stays 'moving' and `agent.acting` is true; the
--- game performs the action however it likes (moving the agent with `place`) and then calls
--- `finishLink` (the agent continues from the far end) or `cancelLink` (the route is renewed).
+-- Action links (jump, climb, door ...) are crossed one of two ways. A simulated agent (the default)
+-- teleports to the far end of the link when it reaches the start. An `external` agent is moved by
+-- the game (a physical body, like Godot's NavigationAgent): the crowd only reads its position
+-- (`x, y, z`, plus the measured velocity `vx, vz`) and writes what to do next:
+--   agent.nextPoint   the corner to walk to (a link start while an action is ahead)
+--   agent.link        the link whose action is ahead or under way, nil otherwise
+--   agent.linkIndex   index of the link start in the path (the far end is the next point)
+--   agent.safeX/safeZ the wanted velocity after avoiding neighbours
+--   agent.crossed     counts finished links; agent.lastLink is the latest one
+-- A link is finished when the agent stands near its far end; leaving the route by more than
+-- `pathMaxDistance` (or falling below a link) renews the path.
 local Crowd = {}
 Crowd.__index = Crowd
 
@@ -39,7 +46,8 @@ function Crowd.new(mesh, options)
 end
 
 -- options: x, y, z, radius (0.5), maxSpeed (4), acceleration (16), stopDistance (0.3),
--- avoidance (true).
+-- avoidance (true), external (false), pathDistance (corner reach, default max(radius, 0.4)),
+-- pathMaxDistance (3, external agents: farthest allowed from the route before a new path).
 function Crowd:add(options)
     local agent = {
         x = options.x or 0,
@@ -52,10 +60,13 @@ function Crowd:add(options)
         acceleration = options.acceleration or 16,
         stopDistance = options.stopDistance or 0.3,
         avoidance = options.avoidance ~= false,
+        external = options.external == true,
+        pathDistance = options.pathDistance,
+        pathMaxDistance = options.pathMaxDistance or 3,
         state = 'idle',
         areaCosts = options.areaCosts,
         actionCosts = options.actionCosts,
-        acting = false,
+        crossed = 0,
         retry = 0,
         waited = 0,
         fresh = true,
@@ -82,55 +93,110 @@ end
 
 function Crowd:clearTarget(agent)
     agent.target, agent.path, agent.state = nil, nil, 'idle'
-    agent.acting, agent.link = false, nil
+    agent.link, agent.linkIndex, agent.nextPoint = nil, nil, nil
 end
 
--- Moves an agent that is performing an action (a jump arc) to a world position.
-function Crowd:place(agent, x, y, z)
-    agent.x, agent.y, agent.z = x, y, z
-end
-
--- The action is done: the agent stands at the far end of its link and walks on.
-function Crowd:finishLink(agent)
-    local link = agent.link
-    if not link then
-        return false
+-- The agent has crossed the link that starts at `index` of its path: it continues after the far
+-- end. A simulated agent is put there; an external one has already arrived.
+local function cross(agent, path, index)
+    local far = path.points[index + 1]
+    if not agent.external then
+        agent.x, agent.y, agent.z = far[1], far[2], far[3]
+        agent.vx, agent.vz = 0, 0
     end
-    local path = agent.path
-    local index = agent.linkIndex
-    if path and index and path.points[index + 1] then
-        local point = path.points[index + 1]
-        agent.x, agent.y, agent.z = point[1], point[2], point[3]
-        agent.level = path.levels[index + 1]
-        path.index = index + 2
-    end
-    agent.vx, agent.vz = 0, 0
-    agent.acting, agent.link, agent.linkIndex = false, nil, nil
-    return true
+    agent.level = path.levels[index + 1]
+    agent.lastLink = path.links[index]
+    agent.crossed = agent.crossed + 1
+    path.index = index + 2
 end
 
--- The action failed or was abandoned: the agent stays where it is and finds a new route.
-function Crowd:cancelLink(agent)
-    agent.acting, agent.link, agent.linkIndex = false, nil, nil
-    agent.path, agent.fresh = nil, false
-    agent.retry = 0
-end
-
--- Next corner of the route: corners within reach are passed, except the start of an action link,
--- which is returned until the agent has really arrived there (isStart is true then).
+-- Next corner of the route: corners within reach are passed. At the start of an action link a
+-- simulated agent crosses as soon as it is there; an external agent keeps heading for the start
+-- (the game performs the action) until it stands near the far end. `isStart` is true while the
+-- returned corner is a link start.
 local function nextCorner(path, agent, reach)
     while path.index <= #path.points do
-        local point = path.points[path.index]
+        local index = path.index
+        local point = path.points[index]
         local dx, dz = point[1] - agent.x, point[3] - agent.z
         local near = math.sqrt(dx * dx + dz * dz) <= reach
-        if path.roles and path.roles[path.index] == 'start' then
-            return point, true, near
+        if path.roles and path.roles[index] == 'start' then
+            local far = path.points[index + 1]
+            if agent.external and far then
+                local fx, fz = far[1] - agent.x, far[3] - agent.z
+                if math.sqrt(fx * fx + fz * fz) <= reach and math.abs(far[2] - agent.y) <= 1 then
+                    cross(agent, path, index)
+                    goto continue
+                end
+            elseif near and far then
+                cross(agent, path, index)
+                goto continue
+            end
+            return point, true
         end
         if not near then
-            return point, false, false
+            return point, false
         end
-        path.index = path.index + 1
+        path.index = index + 1
+        ::continue::
     end
+end
+
+local function segmentDistance(px, pz, ax, az, bx, bz)
+    local dx, dz = bx - ax, bz - az
+    local length = dx * dx + dz * dz
+    local t = length > 1e-9 and math.max(0, math.min(1, ((px - ax) * dx + (pz - az) * dz) / length)) or 0
+    local qx, qz = ax + dx * t, az + dz * t
+    return math.sqrt((px - qx) ^ 2 + (pz - qz) ^ 2)
+end
+
+-- True while the agent is clearly above the walkable surface under it.
+local function inAir(mesh, agent)
+    local cx, cz, polygon = mesh:clamp(agent.x, agent.z, agent.y, 2)
+    if not cx then
+        return true
+    end
+    local ground = mesh:heightAt(polygon.level, cx, cz)
+    return ground ~= nil and agent.y - ground > 0.3
+end
+
+-- An action is under way: the body left the link start toward the far end (or is in the air). A
+-- new route would start from the ground below and forget the landing, so changes of the target or
+-- the mesh wait until the body stands at the far end.
+local function committed(mesh, agent)
+    local path, index = agent.path, agent.linkIndex
+    local a, b = path.points[index], path.points[index + 1]
+    local dx, dz = b[1] - a[1], b[3] - a[3]
+    local length = dx * dx + dz * dz
+    if length > 1e-9 and ((agent.x - a[1]) * dx + (agent.z - a[3]) * dz) / length > 0.1 then
+        return true
+    end
+    return inAir(mesh, agent)
+end
+
+-- How far an external agent is from the stretch of the route it is on (huge after falling below
+-- a link it should have crossed).
+local function deviation(path, agent)
+    local index = path.index
+    local points = path.points
+    local here = points[index]
+    if not here then
+        return 0
+    end
+    local best = math.huge
+    local before = points[index - 1]
+    local isLink = path.roles and path.roles[index] == 'start'
+    if before then
+        best = segmentDistance(agent.x, agent.z, before[1], before[3], here[1], here[3])
+    end
+    if isLink and points[index + 1] then
+        local far = points[index + 1]
+        if agent.y < math.min(here[2], far[2]) - 1.5 then
+            return math.huge
+        end
+        best = math.min(best, segmentDistance(agent.x, agent.z, here[1], here[3], far[1], far[3]))
+    end
+    return best == math.huge and 0 or best
 end
 
 -- Earliest time within `horizon` at which an agent moving with (vx, vz) touches neighbour b.
@@ -256,13 +322,29 @@ function Crowd:update(dt)
     for i = #needing, 1, -1 do
         needing[i] = nil
     end
+    -- Corners (and finished actions) are passed before anything asks for a new route.
     for _, agent in ipairs(self.agents) do
-        if agent.target and not agent.acting then
+        if agent.target and agent.path then
+            nextCorner(agent.path, agent, agent.pathDistance or math.max(agent.radius, 0.4))
+        end
+    end
+    for _, agent in ipairs(self.agents) do
+        if agent.target then
             if agent.state == 'failed' then
                 agent.retry = agent.retry - dt
             end
-            local stale = agent.path and agent.path.revision ~= mesh.revision
-            if not agent.fresh or stale or (not agent.path and agent.retry <= 0) then
+            local path = agent.path
+            local wants = not agent.fresh
+                or (path and path.revision ~= mesh.revision)
+                or (not path and agent.retry <= 0)
+            if wants and path and agent.external and agent.link and committed(mesh, agent) then
+                wants = false
+            end
+            -- Straying from the route (a missed jump, a fall) always asks for a new one.
+            if agent.external and path and agent.fresh and deviation(path, agent) > agent.pathMaxDistance then
+                wants = true
+            end
+            if wants then
                 agent.waited = agent.waited + 1
                 needing[#needing + 1] = agent
             end
@@ -276,42 +358,39 @@ function Crowd:update(dt)
     end
     for _, agent in ipairs(self.agents) do
         local wantX, wantZ = 0, 0
-        if agent.target then
-            local path = agent.path
-            if path and agent.acting then
-                -- Waiting for the game to finish the action.
-            elseif path then
-                local point, isStart, arrived = nextCorner(path, agent, math.max(agent.radius, 0.4))
-                local tx, tz = point and point[1], point and point[3]
-                if isStart and arrived then
-                    agent.acting, agent.link, agent.linkIndex = true, path.links[path.index], path.index
+        agent.nextPoint, agent.link, agent.linkIndex = nil, nil, nil
+        local path = agent.target and agent.path
+        if path then
+            local point, isStart = nextCorner(path, agent, agent.pathDistance or math.max(agent.radius, 0.4))
+            local last = path.points[#path.points]
+            local toGoalX, toGoalZ = last[1] - agent.x, last[3] - agent.z
+            local remaining = math.sqrt(toGoalX ^ 2 + toGoalZ ^ 2)
+            -- Standing above the last corner in the middle of an action is not arriving.
+            if not point or (remaining <= agent.stopDistance and not isStart) then
+                agent.path, agent.state = nil, 'arrived'
+                agent.target = nil
+            else
+                agent.nextPoint = point
+                if isStart then
+                    agent.link, agent.linkIndex = path.links[path.index], path.index
                 end
-                local last = path.points[#path.points]
-                local toGoalX, toGoalZ = last[1] - agent.x, last[3] - agent.z
-                local remaining = math.sqrt(toGoalX ^ 2 + toGoalZ ^ 2)
-                if agent.acting then
-                    wantX, wantZ = 0, 0
-                elseif not tx or remaining <= agent.stopDistance then
-                    agent.path, agent.state = nil, 'arrived'
-                    agent.target = nil
-                else
-                    local dx, dz = tx - agent.x, tz - agent.z
-                    local length = math.sqrt(dx * dx + dz * dz)
-                    if length > 1e-6 then
-                        -- Slow down over the last stretch so the agent stops instead of orbiting.
-                        local speed = math.min(agent.maxSpeed, remaining / 0.4)
-                        wantX, wantZ = dx / length * speed, dz / length * speed
-                    end
+                local dx, dz = point[1] - agent.x, point[3] - agent.z
+                local length = math.sqrt(dx * dx + dz * dz)
+                if length > 1e-6 then
+                    -- Slow down over the last stretch so the agent stops instead of orbiting.
+                    local speed = math.min(agent.maxSpeed, remaining / 0.4)
+                    wantX, wantZ = dx / length * speed, dz / length * speed
                 end
             end
-        end
-        if agent.acting then
-            agent.vx, agent.vz = 0, 0
-            goto continue
         end
         local vx, vz = wantX, wantZ
         if agent.avoidance and (wantX ~= 0 or wantZ ~= 0 or agent.vx ~= 0 or agent.vz ~= 0) then
             vx, vz = steer(self, agent, wantX, wantZ, neighbours(self, agent, range, near))
+        end
+        if agent.external then
+            -- The game moves the agent; it only learns the velocity it should aim for.
+            agent.safeX, agent.safeZ = vx, vz
+            goto continue
         end
         local ax, az = vx - agent.vx, vz - agent.vz
         local change = math.sqrt(ax * ax + az * az)

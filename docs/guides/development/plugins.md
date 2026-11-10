@@ -202,11 +202,18 @@ only those tiles, so doors and crates cost little. `findPath` keeps using the ce
 Nodes (the scene needs the plugin; both look for the first baked NavMap3D when `navMap` is empty):
 
 - `NavObstacle3D`: `shape` Circle/Box, `radius`, `size`, `height`, `blocking`. It follows the node's transform.
-- `NavAgent3D`: `speed`, `acceleration`, `radius`, `stoppingDistance`, `avoidance`, `autoMove`, `targetNode`,
-  `areaCosts`, `actionCosts`, methods `setTarget({x, y, z})`, `clearTarget()`, `getVelocity()`, signals `Arrived`,
-  `PathFailed` and `LinkReached`.
-  Agents of one map form a crowd: velocity-sampling avoidance, repaths when the mesh changes (at most four
-  agents per frame), movement clamped to the mesh. Put agents under an untransformed parent when `autoMove` is on.
+- `NavAgent3D` (Godot style): plans routes and advises; it never moves anything. Put it at the body's feet and
+  move the body yourself each step: `getNextPathPosition()` (corner to walk to), `getVelocity()` (wanted velocity
+  with neighbours avoided), `getNextAction()` / `getActionTarget()` (link action ahead and where it ends),
+  `isNavigationFinished()`, `isTargetReached()`, `getDistanceToTarget()`, `getPath()`. Properties: `speed`,
+  `radius`, `height`, `pathDesiredDistance`, `targetDesiredDistance`, `pathMaxDistance`, `avoidance`, `targetNode`,
+  `areaCosts`, `actionCosts`; methods `setTarget({x, y, z})`, `clearTarget()`; signals `Arrived`, `PathFailed`,
+  `LinkReached`. The route is renewed when the mesh changes, the target moves or the body strays more than
+  `pathMaxDistance` (never while a body is in the air during an action).
+  Agents of one map form a crowd: velocity-sampling avoidance, at most four repaths per frame.
+- Size: the agent's size is **not** measured. The map is baked for one body (`NavMap3D.agentRadius`, `agentHeight`,
+  `maxStep`, `maxSlope`); `NavAgent3D.radius`/`height` only describe the agent so the read-only `fits` /
+  `fitProblem` can say when the baked clearance is too tight (`NavMap3D:getClearance()`).
 
 Tests: `v108_7/navMesh.lua` (core) and `v108_7/navNodes.lua` (real bake, obstacle, agent).
 
@@ -227,18 +234,16 @@ differently. Anything not set uses a default (every area costs 1, `jump` 2, othe
   `agent:setAreaCost('water', false)` / `setActionCost`) forbids it. A large number is a last resort: the agent
   wades through water only when no other way exists. Routes use `mesh:findPath(from, to, { areaCosts = ..., actionCosts = ... })`.
 
-**The plugin does not perform actions.** An agent that routes over a link walks to its start, stops, sets
-`agent.action` and emits `LinkReached(link)`. Your script does the action (a jump arc, a climb, opening a door) with
-`agent:placeAt(x, y, z)` and ends it with `agent:finishLink()` (the agent continues from the far end) or
-`agent:cancelLink()` (a new route is found). `agent:getLinkEnd()` gives the landing point. This keeps *when* and *how*
-to jump in the scene. `navMeshLab` shows the physical version: its walkers are dynamic capsule bodies driven by the
-engine's `Character` controller (`behaviors/physicalWalker.lua`). The NavAgent3D (`autoMove = false`, a child of
-the body at foot level) supplies the wanted velocity; at `LinkReached` the script waits for a free landing spot,
-computes the ballistic launch velocity that clears the obstacle and lands on `agent:getLinkEnd()`, throws the body
-with `Character:launch(vx, vy, vz)` and calls `finishLink()` once it has really landed near the target (or
-`cancelLink()` when it missed). The jump links themselves are found by `behaviors/jumpLinks.lua` (a step too high
-to walk, a pit or an obstacle between two walkable cells). Keep `maxStep` at what the body can climb, since the
-mesh must not offer routes the physics cannot walk.
+**The plugin does not perform actions.** While an agent is on its way to a link start, `getNextAction()` returns
+the action ('jump', 'climb', 'door' ...), `getNextPathPosition()` is the link start and `getActionTarget()` the far
+end. Your script does the action however it likes (a Character that presses jump, a tween, an animation); the
+agent goes on as soon as the body stands near the far end (`LinkReached` is emitted then). A missed jump simply
+leaves the route and a new one is planned. `navMeshLab` shows the physical version
+(`behaviors/physicalWalker.lua`): walkers are dynamic capsule bodies driven by `Character`. They follow the advised
+velocity; at a jump link they press jump close to the start, so the body leaves with the character's fixed jump
+speed and its running speed, and steer in the air toward the landing like a player (less input when the landing
+is near); a climb link drives the body up the ladder with gravity off. The jump links themselves are found by
+`behaviors/jumpLinks.lua`. Keep `maxStep` at what the body can climb and `agentHeight` at the body height.
 
 The debug view draws action links under `drawLinks` (orange arcs for `jump`, magenta for `climb`, cyan for other
 actions, grey while disabled; hand-made links show their action's name) and agent routes under `drawPaths`.

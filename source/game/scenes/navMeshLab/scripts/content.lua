@@ -112,6 +112,7 @@ function Lab.new(scene)
         name = 'ArenaNav',
         areaSize = { Arena.SIZE, Arena.SIZE },
         cellSize = 0.5,
+        agentHeight = 1.8, -- the capsules' height
         agentRadius = 0.5, -- one cell of margin around walls and drops for the physical capsules
         castTop = 10,
         castBottom = -2,
@@ -202,9 +203,6 @@ function Lab:update(dt)
     self.pillar.position = { math.sin(t * 0.6) * 14, 1.5, -16 }
     for _, patrol in ipairs(self.patrols) do
         patrol:update(dt)
-    end
-    for _, made in ipairs(self.walkers) do
-        made:update(dt)
     end
     self.scene.physics:update(dt)
     self.scene.world:updateNodes(dt)

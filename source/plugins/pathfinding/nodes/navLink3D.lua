@@ -1,9 +1,10 @@
 -- NavLink3D: joins two places a NavMap3D cannot walk between and names the action that crosses
 -- them ('jump', 'climb', 'door', 'teleport' or your own word). The link carries no cost: every
 -- NavAgent3D prices actions itself (`actionCosts`), so one agent may jump gladly while another
--- never does. The plugin does not perform the action. An agent that routes through the link walks
--- to its start, stops and emits `LinkReached(link)`; your script does the action and calls
--- `agent:finishLink()`. The scene needs `plugins = { 'pathfinding' }` and a baked NavMap3D.
+-- never does. The plugin does not perform the action. An agent that routes through the link reports
+-- it as its next action (`agent:getNextAction()`, `getActionTarget()`); your script moves the body
+-- (a jump, a climb) and the agent carries on once the body stands at the far end. The scene needs
+-- `plugins = { 'pathfinding' }` and a baked NavMap3D.
 --
 --   world:create('NavLink3D', { action = 'jump', position = { 0, 0, 0 }, endNode = landing })
 local Definition = {
