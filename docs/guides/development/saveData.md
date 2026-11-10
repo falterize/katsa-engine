@@ -18,6 +18,15 @@ The old files remain untouched. Startup prints a migration failure to the consol
 check folder permissions if it appears. New logs and caches always use the new
 identity. Migration never uploads or deletes user data.
 
+## Example
+
+```lua
+print(katsa.filesystem.getSaveDirectory())          -- where the files live on this machine
+
+local data = scene.data:scope('shooter')
+data:write('best.txt', '120')                       -- saves/shooter/best.txt
+print(data:read('best.txt'))                        -- '120', also in the next run
+```
 ## Game progress and preferences
 
 Use the [persistence API](persistence.md) for versioned progress slots and settings.

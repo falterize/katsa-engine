@@ -16,6 +16,19 @@ Attachment3D remains a named socket specialization of Node3D: inheritScale defau
 
 UI visible controls drawing; enabled controls interaction. Disabling a CanvasGroup does not hide its subtree. Captured pointers are cancelled when their ancestor becomes disabled, invisible or fully transparent. Use visible for show/hide. Debug callbacks read the current camera each draw; DebugControls sits above the capturing DebugMenu.
 
+## Example
+
+```lua
+local ball = world:create('Body3D', { position = { 0, 20, 0 }, size = { 2, 2, 2 }, restitution = 0.4 })
+world:create('Collider3D', { shape = 'Sphere', radius = 1, size = { 2, 2, 2 } }, ball)
+require('source.engine.composition.mesh').create(world, { kind = 'sphere', size = { 2, 2, 2 } }, ball)   -- the visual rides the body
+
+local zone = world:create('Body3D', {
+    bodyType = 'Static', isTrigger = true, position = { 0, 1, 0 }, size = { 6, 2, 6 },
+})
+zone:connect('triggerEntered', function(other) print('entered', other) end)
+ball.body:teleport({ 0, 20, 0 })   -- moves the solver body and the visual together
+```
 ## v44 lifecycle
 
 All World3D-owned nodes retain scene identity across detach. `docs/nodeLifecycle.md` specifies queries, tags, processing and destruction ordering. Body insertion/removal inside contact callbacks is queued until the solver step completes; hierarchy destruction is immediate. Other physical edits still use the documented API restrictions.

@@ -9,3 +9,21 @@ update(dt, realDt) separates scaled simulation time from real-time UI and camera
 Input checks screen UI, reserved joystick, world UI, then 3D click/camera areas. Each pointer retains its capture until release/cancel. UI drags scroll without activating buttons; taps activate on release. WASD and Q/E control the free camera; touch layout belongs to the scene.
 
 The .katsa file is a ZIP with main.lua at its root. All source modules, assets, dependencies and documentation ship inside. Source CCode containers are not required to run the game.
+
+## Example
+
+```lua
+-- A scene factory receives the manager and returns a table with optional hooks.
+local function createPause(manager)
+    return {
+        update = function(self, dt, realDt) end,
+        draw = function(self) end,
+        exit = function(self) print('pause closed') end,
+    }
+end
+
+manager:push(createPause)          -- stacked above the current scene (which is paused)
+manager:pop()                      -- back to the scene below
+manager:switch(createPause)        -- replaces the whole stack
+manager:requestSwitch(createPause) -- the same, but safe inside physics callbacks
+```

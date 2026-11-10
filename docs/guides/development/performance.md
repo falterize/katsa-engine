@@ -148,3 +148,12 @@ are unchanged. Failed preparation preserves the running scene and its code.
 The real-time soak tests weak references to retired scenes as well as resource
 counts and post-finalizer Lua retention. It does not flush code itself. See
 [validation](validation.md) and the official [LuaJIT cache API](https://luajit.org/ext_jit.html).
+
+## Example: frame ceiling
+
+```lua
+-- settings.lua of a scene (a project can set the same key in its project module)
+return {
+    frameRateLimit = 60,   -- 0 = uncapped; the scene value wins over the project value
+}
+```

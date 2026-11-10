@@ -12,3 +12,20 @@ Vector2 and UDim2 are array-compatible values with named components and arithmet
 UDim2 has four Scale/Offset components. Scalar UI lengths use Vector2 Scale/Offset;
 AnchorPoint uses Vector2 X/Y. UI.udim2 forwards to the same UDim2.new constructor.
 See [UI layout](../ui/uiLayout.md) for units, assignment and inspector editing.
+
+## Examples
+
+```lua
+local Vector3 = require('source.engine.math.vector3')
+local CFrame = require('source.engine.math.cframe')
+
+local a, b = Vector3.new(1, 0, 0), Vector3.new(0, 1, 0)
+print(a:dot(b), a:cross(b), (a + b):unit(), a:lerp(b, 0.5))
+
+local frame = CFrame.lookAt(Vector3.new(0, 5, 10), Vector3.new(0, 0, 0))
+print(frame:pointToObjectSpace(Vector3.new(0, 0, 0)))   -- the origin as the camera sees it
+local half = CFrame.new(0, 0, 0):lerp(frame, 0.5)
+
+scene.audio:play('assets/audio/effects/click.wav', { group = 'ui', volume = 0.6 })
+scene.audio:play('assets/audio/effects/hit.wav', { position = { 4, 0, 2 }, maxDistance = 60 })
+```

@@ -14,3 +14,27 @@ For scene/game custom types use world:registerNodeType(name,definition), not the
 global Node.define registry. Each World3D holds independent names and property
 descriptors; World3D:create registers update processing automatically for these
 types. See the reusable game BouncePad module and its explicit `register` entry point.
+
+## Example: a custom node type
+
+```lua
+-- nodes/bouncePad.lua: one table is the whole definition.
+local BouncePad = {
+    base = 'Mesh3D',
+    properties = { force = { default = 12, min = 0, hint = 'Upward speed given to a body.' } },
+}
+
+function BouncePad.initialize(self)
+    self.color = self.color or { 0.2, 0.8, 0.4, 1 }
+end
+
+function BouncePad.register(world)
+    return world:registerNodeType('BouncePad', BouncePad)
+end
+
+-- In the scene:
+BouncePad.register(world)
+local pad = world:create('BouncePad', { position = { 0, 0.5, 0 }, force = 20 })
+local connection = pad:connect('destroying', function() print('pad removed') end)
+connection:disconnect()      -- every connect returns a connection with :disconnect()
+```

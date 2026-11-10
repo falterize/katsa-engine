@@ -78,3 +78,28 @@ frame and aged with the world's simulation time, so `timeScale` and pause apply.
 
 Known limits: ribbon lighting uses the camera-facing normal, like particles; shadows are cast by the strip
 geometry at the current frame, so very thin ribbons give thin shadows; `Wrap` and `Static` need `Decal` mode.
+
+## Example
+
+```lua
+local Mesh = require('source.engine.composition.mesh')
+local ball = Mesh.create(world, { kind = 'sphere', size = { 1, 1, 1 }, position = { -6, 2, 0 } })
+world:create('Trail3D', {          -- Single: put it under the moving node
+    trailMode = 'Single',
+    texture = 'assets/textures/particles/trail.png',
+    width = 0.9,
+    lifetime = 1.4,
+}, ball)
+
+local a = world:create('Node3D', { position = { -8, 4, -6 } })
+local b = world:create('Node3D', { position = { 8, 4, -6 } })
+world:create('Beam3D', {
+    attachment0 = a,
+    attachment1 = b,
+    width0 = 0.6,
+    width1 = 1.4,
+    curveSize0 = 7,
+    curveSize1 = 7,
+    texture = 'assets/textures/particles/beam.png',
+})
+```

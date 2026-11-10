@@ -65,6 +65,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
   `KATSA_SHOT=tmp/<dir> KATSA_SCENE=<scene> KATSA_FRAMES=<n> xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.4.shadow`
   Env hooks: `KATSA_CAM="x,y,z,pitch,yaw"`, `KATSA_SHADOWVIEW`, `KATSA_NORMALVIEW`. Look at the PNGs (Read tool) for anything visual; build contact sheets when comparing frames.
 - Long runs: use `timeout`, background tasks and a log file. A stray `cat` or any command waiting on stdin hangs the shell. `pkill -f` can kill your own shell if the pattern matches the command line.
+- Guides in `docs/guides` carry short usage examples with real API names (copy them from scene code or tests, never invent calls); a new or changed API updates its guide example in the same commit.
 - Every feature needs: a short test in the current `validation/tests/versions/vNNN/` folder wired into `focused.lua`, an entry in `registry.lua` when it adds a flag, a docs update, and a `docs/changelog.md` line under the current version.
 - Shared physics/spatial infrastructure changes need regression tests for **both** dimensions, scene smoke tests, mixed-world lifecycle checks and current docs.
 

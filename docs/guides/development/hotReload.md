@@ -20,5 +20,13 @@ change so editors can finish writing, and applies a burst of edits together. A s
 the watch list. Archives never change, so a packaged game does nothing. Messages go to the log with the prefix
 `[hot reload]`; a failing restart is recorded in the journal and the error screen shows it.
 
+## Example
+
+```
+luajit tools/dev/katsa.lua . --hot-reload
+```
+
+Open `assets/locales/en.lua`, change a string and save: the open scene shows the new text a moment later,
+without a restart. Change a scene script and the scene is created again from disk.
 Limits: game state is not kept on a scene restart (position, score), and shaders cause a scene restart rather than an
 in-place rebuild. `source/engine/debug/hotReload.lua` has the details; test: `v108_7/hotReload.lua`.

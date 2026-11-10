@@ -52,3 +52,15 @@ Screen UI, BillboardUI/SurfaceUI and ViewportFrame share the capture service in
 `source/engine/input/uiCapture.lua`. Host adapters convert pointer coordinates;
 the shared service distinguishes content panning, scrollbar dragging and widget
 capture. See [scrolling](scrolling.md) for gesture semantics.
+
+## Example
+
+```lua
+local font, scale = ui:rasterFont(18)   -- cached native Font and the physical-to-logical scale
+-- Custom widgets: let the shared path draw the text.
+function MyWidget:drawSelf(ui)
+    ui:drawText(self)
+end
+-- Or just use a Label; rich text is a documented subset of tags.
+ui:create('Label', { text = '<b>Score</b> 120', richText = true, fontSize = 18 }, panel)
+```

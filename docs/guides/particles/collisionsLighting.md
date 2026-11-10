@@ -27,3 +27,16 @@ use Workspace for the named CollisionGroup and response properties. Its existing
 static floor participates in physics. Lower the shared collision budget to inspect
 retained sweeps. No FPS or real Android GPU compatibility is asserted without device
 measurements.
+
+
+Example:
+
+```lua
+world:create('ParticleEmitter3D', {
+    rate = 40,
+    lifetime = { 0.8, 1.4 },
+    collisionEnabled = true,    -- point-segment rays against colliders
+    lightInfluence = 1,         -- lit by ambient, the sun and up to eight local lights
+    brightness = 1.5,
+})
+```

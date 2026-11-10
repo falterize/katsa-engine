@@ -34,6 +34,15 @@ multiple requests before one update. `value(name)` returns the current value;
 using its default/custom adapters. Forward keyboard events with `input:keypressed`
 and `input:keyreleased`; do not poll the operating system's held keys in gameplay.
 
+For named, rebindable actions shared by the whole project (keys, mouse, gamepad, chords, vectors) use the
+[InputMap](inputMap.md); this page covers the built-in movement/look/jump adapters.
+
+```lua
+local map = scene.input.map
+map:addAction('dash', { 'key:lshift', 'pad:b' })
+map:onPressed('dash', function() scene.character:jump() end)
+if map:isDown('dash') then print('dashing') end
+```
 World interaction retains explicit world.interactionSource or detector.positionSource,
 Radius, nearest-hit occlusion and UI blocking. A pointer click remains supported.
 Joystick, camera and UI own distinct pointer IDs until release/cancel. Vertical scroll

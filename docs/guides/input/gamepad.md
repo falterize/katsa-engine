@@ -30,6 +30,16 @@ The first pad drives the scene input: the left stick walks, the right stick look
 0.2) and buttons feed the named actions through `gamepad = '<button>'` bindings (`Jump` is `a`,
 `Interact` is `x`). Start opens the pause menu. Other pads are read through `katsa.gamepad`.
 
+Pads also work as named-action bindings (`pad:a`, `axis:leftx.left`, `pad:a@2` for the second pad):
+
+```lua
+local map = scene.input.map
+map:addAction('jump', { 'key:space', 'pad:a' })
+map:addAction('left', { 'key:a', { 'axis:leftx.left', deadzone = 0.3 } })
+local move = map:getVector('left', 'right', 'up', 'down')     -- Vector2, Y down
+katsa.gamepad.byIndex(2):setVibration(0.4, 0.4, 0.2)          -- second pad rumbles
+```
+
 ## Requirements
 
 Rumble needs SDL 2.0.9 and sensors SDL 2.0.14. With an older `SDL2.dll` those calls return
