@@ -1,4 +1,4 @@
-local Machine = require('../fsm.machine')
+local Machine = require('./machine')
 local Math = require('./math')
 local StepValue = require('source.engine.animation.stepValue')
 
@@ -38,7 +38,7 @@ function Player.new(body, collider, camera, settings)
     }, Player)
     local states = {}
     for _, name in ipairs({ 'idle', 'walk', 'run', 'jump', 'fall', 'crouch' }) do
-        states[name] = require('scene.scripts.fsm.states.' .. name)
+        states[name] = require('source.game.characters.states.' .. name)
     end
     self.fsm = Machine.new(self, states)
     return self

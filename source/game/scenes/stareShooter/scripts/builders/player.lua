@@ -1,5 +1,5 @@
 local Models = require('source.engine.import.models')
-local Player = require('../controller.player')
+local Player = require('source.game.characters.controller')
 
 local Builder = {}
 
@@ -29,7 +29,7 @@ function Builder.create(scene)
         height = settings.standingHeight - 2 * settings.radius,
     }, body)
     body:update(0)
-    local model = Models.load('scene://models/character.glb', scene.resources)
+    local model = Models.load('assets/models/characters/player.glb', scene.resources)
     Models.instantiate(scene.world, model, {
         name = 'CharacterVisual',
         position = { 0, -1, 0 },

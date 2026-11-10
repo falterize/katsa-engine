@@ -112,7 +112,7 @@ function Lab.new(scene)
         name = 'ArenaNav',
         areaSize = { Arena.SIZE, Arena.SIZE },
         cellSize = 0.5,
-        agentHeight = 1.8, -- the capsules' height
+        agentHeight = 2, -- the capsules' height
         agentRadius = 0.5, -- one cell of margin around walls and drops for the physical capsules
         castTop = 10,
         castBottom = -2,
@@ -147,7 +147,7 @@ function Lab.new(scene)
     self.agents, self.walkers, self.patrols = {}, {}, {}
     local function walker(name, options, color)
         options.name, options.navMap, options.color = name, self.map, color
-        local made = Walker.new(world, options, self.walkers)
+        local made = Walker.new(scene, options, self.walkers)
         self.walkers[#self.walkers + 1] = made
         self.agents[#self.agents + 1] = made.agent
         return made
@@ -177,9 +177,9 @@ function Lab.new(scene)
         self.patrols[#self.patrols + 1] = Patrol.new(made.agent, points, 1.5)
     end
     -- One physics hook steers every walker before each fixed step.
-    world.physics.beforeStep = function()
+    world.physics.beforeStep = function(_, step)
         for _, made in ipairs(self.walkers) do
-            made:step()
+            made:step(step)
         end
     end
     scene.camera.position = { 14, 64, 0 }
@@ -205,6 +205,9 @@ function Lab:update(dt)
         patrol:update(dt)
     end
     self.scene.physics:update(dt)
+    for _, made in ipairs(self.walkers) do
+        made:update(dt)
+    end
     self.scene.world:updateNodes(dt)
 end
 

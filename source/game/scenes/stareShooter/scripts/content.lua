@@ -3,7 +3,7 @@ local Builder = require('./builders.player')
 local Destare = require('./builders.destare')
 local Orbit = require('./cameras.orbit')
 local Input = require('./controller.input')
-local Animation = require('./animation.controller')
+local Animation = require('source.game.characters.animation')
 
 local Content = {}
 Content.__index = Content

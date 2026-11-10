@@ -202,8 +202,9 @@ only those tiles, so doors and crates cost little. `findPath` keeps using the ce
 Nodes (the scene needs the plugin; both look for the first baked NavMap3D when `navMap` is empty):
 
 - `NavObstacle3D`: `shape` Circle/Box, `radius`, `size`, `height`, `blocking`. It follows the node's transform.
-- `NavAgent3D` (Godot style): plans routes and advises; it never moves anything. Put it at the body's feet and
-  move the body yourself each step: `getNextPathPosition()` (corner to walk to), `getVelocity()` (wanted velocity
+- `NavAgent3D` (Godot style): a technical node (base `Node`, no transform, size or transparency) that plans routes
+  and advises; it never moves anything. Create it as a child of the body and set `feetOffset` (distance from the
+  body origin down to the feet), or use `agent:setPosition({ x, y, z })`. Move the body yourself each step: `getNextPathPosition()` (corner to walk to), `getVelocity()` (wanted velocity
   with neighbours avoided), `getNextAction()` / `getActionTarget()` (link action ahead and where it ends),
   `isNavigationFinished()`, `isTargetReached()`, `getDistanceToTarget()`, `getPath()`. Properties: `speed`,
   `radius`, `height`, `pathDesiredDistance`, `targetDesiredDistance`, `pathMaxDistance`, `avoidance`, `targetNode`,
@@ -239,9 +240,9 @@ the action ('jump', 'climb', 'door' ...), `getNextPathPosition()` is the link st
 end. Your script does the action however it likes (a Character that presses jump, a tween, an animation); the
 agent goes on as soon as the body stands near the far end (`LinkReached` is emitted then). A missed jump simply
 leaves the route and a new one is planned. `navMeshLab` shows the physical version
-(`behaviors/physicalWalker.lua`): walkers are dynamic capsule bodies driven by `Character`. They follow the advised
-velocity; at a jump link they press jump close to the start, so the body leaves with the character's fixed jump
-speed and its running speed, and steer in the air toward the landing like a player (less input when the landing
+(`behaviors/physicalWalker.lua`): walkers use the StareShooter character model, animations and controller
+(`source/game/characters`) on a capsule body. They follow the advised
+velocity; at a jump link they press jump close to the start, so the body leaves with the controller's jump power and its running speed, and steer in the air toward the landing like a player (less input when the landing
 is near); a climb link drives the body up the ladder with gravity off. The jump links themselves are found by
 `behaviors/jumpLinks.lua`. Keep `maxStep` at what the body can climb and `agentHeight` at the body height.
 

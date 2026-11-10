@@ -68,6 +68,12 @@ Names use `:` because the instance is passed as self.
 | `removeTag(tag)` | Remove a tag; return self. |
 | `hasTag(tag)` | Return a boolean. |
 | `getTags()` | Sorted snapshot array of tag strings. |
+| `setAttribute(name, value)` | Store a named value (boolean, number, string, vector, any table or function, or a node reference); `nil` removes it. Emits `AttributeChanged(name, value)` and `AttributeChanged:<name>(value)`. |
+| `getAttribute(name, default)` | Read an attribute; a reference to a destroyed node reads as nil. |
+| `hasAttribute(name)`, `removeAttribute(name)` | Test or remove an attribute. |
+| `getAttributes()`, `getAttributeNames()` | A fresh `{ name = value }` table / the sorted names. |
+| `onAttributeChanged(name, callback)` | Subscribe to one attribute; return a connection. |
+| `setAttributeReference(name, node)` | Keep a node-typed slot that may be empty (the inspector's "None"). |
 | `attachment(properties)` | Create an Attachment3D child through the low-level node constructor. |
 | `setProcess(enabled)` | Enable/disable this world's NodeTree scheduling; requires a live attached node with an update method. |
 | `connect(eventName, callback)` | Subscribe to a named signal; return a connection. |
@@ -77,6 +83,18 @@ Names use `:` because the instance is passed as self.
 | `own(resource)` | Release an exclusively owned resource at destruction; resource must expose release. |
 | `onDestroy(callback)` | Register cleanup; callbacks receive the closing node and run in reverse registration order. |
 | `destroy()` | Detach, emit destroying, destroy descendants, disconnect listeners and run cleanup; safe to repeat. |
+
+Attributes are public data of any node, like Roblox's Instance:SetAttribute. The
+Workspace inspector lists them in an Attributes group, edits numbers, booleans,
+strings, vectors and node references, and its add row takes `name = value`
+(`true`, a number, `1, 2, 3` for a vector, otherwise text), `name: node` for an
+empty node slot and `name =` to remove one. Node:clone copies them (tables are
+copied, node references shared).
+
+Classes list the spatial properties they never read in `omit` (engine table in
+`nodes/core/classPolicy.lua`, or `omit = { 'scale' }` in a plugin node
+definition): those properties get no default, no inspector row and no clone
+entry. Technical nodes without any pose use base `Node`.
 
 Queries exclude self. Most lookup recursion is opt-in; getDescendants always
 recurses. Snapshot arrays can be changed without changing the live hierarchy.

@@ -45,9 +45,8 @@ Everything specific to this game lives in `source/game/scenes/stareShooter`.
 | `systems/simulation.lua` | Fixed-step physics/FSM; animation, nodes and camera updates |
 | `scripts/content.lua` | Scene composition and cleanup |
 | `scripts/builders/` | Level, capsule and imported model construction |
-| `scripts/controller/` | Input, capsule movement and reusable controller math |
-| `scripts/fsm/` | State machine, shared locomotion and six individual states |
-| `scripts/animation/` | Original clip blending, playback speed and jump one-shot |
+| `scripts/controller/` | Keyboard, mouse and touch input |
+| `source/game/characters/` | Shared character: capsule controller, state machine, locomotion, six states and clip blending (also used by the navMeshLab walkers) |
 | `scripts/cameras/` | Spring-arm orbit, camera collision and zoom |
 | `scripts/ui/` | HUD and optional screen effect as engine UI nodes |
 | `assets/` | Converted character, original images, baked environment and shader |

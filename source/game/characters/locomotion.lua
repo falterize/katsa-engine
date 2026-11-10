@@ -1,4 +1,4 @@
-local Math = require('../controller.math')
+local Math = require('./math')
 
 local Locomotion = {}
 

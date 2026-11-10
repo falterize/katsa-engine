@@ -208,7 +208,7 @@ function Tests.run(tester)
     local Models = require('source.engine.import.models')
     local resources = Resources.new(require('source.game.data.manifest'))
     local world = World3D.new(resources, require('source.game.data.settings').create())
-    local asset = Models.load('source/game/scenes/stareShooter/assets/models/character.glb', resources)
+    local asset = Models.load('assets/models/characters/player.glb', resources)
     local _, root = Models.instantiate(world, asset, { name = 'Hero' })
     local node = world:create('AnimationTree', {
         definition = {

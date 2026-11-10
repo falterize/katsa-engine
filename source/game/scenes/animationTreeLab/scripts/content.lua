@@ -7,7 +7,7 @@ local Models = require('source.engine.import.models')
 local Lab = {}
 Lab.__index = Lab
 
-local CHARACTER = 'source/game/scenes/stareShooter/assets/models/character.glb'
+local CHARACTER = 'assets/models/characters/player.glb'
 
 local function definition()
     return {
