@@ -3,10 +3,9 @@ local Node = require('../core.baseNode')
 
 local C = Node.define('World3D', 'Node3D')
 C.propertySchema = {
-    gravity = { min = 0, hint = 'Acceleration magnitude in world units per second squared.' },
+    gravity = { min = 0 },
     gravityDirection = {
         kind = 'vector',
-        hint = 'World-space direction; normalized by the solver. Zero disables gravity.',
     },
 }
 

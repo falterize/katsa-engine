@@ -17,7 +17,6 @@ for key, value in pairs(Source.defaults) do
         for name, setting in pairs(Source.propertySchema[key] or {}) do
             schema[name] = setting
         end
-        schema.hint = 'ParticleEmitter2D ' .. key .. '; see the particle API guide.'
         Class.propertySchema[key] = schema
     end
 end
@@ -35,12 +34,10 @@ end
 Class.defaults.speed, Class.defaults.startSize = { 40, 100 }, { 8, 16 }
 Class.defaults.shapeSize, Class.defaults.maxDistance = { 32, 32 }, 0
 Class.propertySchema.shape.options = { 'Point', 'Box', 'Disc', 'Line' }
-Class.propertySchema.simulationSpace.hint = Source.propertySchema.simulationSpace.hint
 Class.propertySchema.liveCount.readOnly = true
 Class.propertySchema.adornee = {
     kind = 'node',
     nodeClass = 'Node2D',
-    hint = 'Optional emission support in the same World2D; ownership follows Parent.',
 }
 
 function Class.initialize(self)

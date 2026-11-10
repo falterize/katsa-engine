@@ -13,22 +13,17 @@ local Tree = require('../../animation.tree')
 
 local Class = Node.define('AnimationTree', 'Node')
 Class.propertySchema = {
-    active = { hint = 'Drives the Animator when on. Turn off to freeze the blend weights.' },
+    active = {},
     animator = {
         kind = 'node',
         nodeClass = 'Animator',
-        hint = 'The Animator of the model to drive. Empty uses the model this node sits under.',
     },
-    definitionFile = {
-        hint = 'Project path of a Lua file that returns the graph. Used when no definition table '
-            .. 'was given.',
-    },
+    definitionFile = {},
     state = {
         readOnly = true,
         get = function(node)
             return node.tree and node.tree:state() or ''
         end,
-        hint = 'Active state of the root state machine.',
     },
 }
 

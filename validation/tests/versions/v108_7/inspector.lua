@@ -23,6 +23,10 @@ function Module.run(self)
     end
     self:check(ambient and ambient.colorMaximum == nil, 'a numeric ambient row opens no colour editor')
     self:check(color and color.colorMaximum ~= nil, 'a colour row still opens the colour editor')
+    local Hints = require('source.engine.editor.hints')
+    self:check(Hints.get({ _settingsKind = 'Fog' }, 'density'):find('Fog thickness'), 'settings hints come from editor/hints')
+    self:check(Hints.get({ _class = world.root._class }, 'sensitivity'):find('Degrees per'), 'common hints apply to any class')
+    self:check(Hints.get({ _class = world.root._class }, 'noSuchProperty', 'own') == 'own', 'a descriptor hint stays the fallback of a custom node')
     self:check(duplicate == nil, 'the inspector field list has no repeated key ' .. tostring(duplicate or ''))
 end
 

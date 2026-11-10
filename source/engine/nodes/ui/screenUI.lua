@@ -4,10 +4,9 @@ local Node = require('../core.baseNode')
 local C = Node.define('World2D', 'Node')
 C.propertySchema = {
     layerGroup = {},
-    gravity = { min = 0, hint = 'Acceleration magnitude in world units per second squared.' },
+    gravity = { min = 0 },
     gravityDirection = {
         kind = 'vector',
-        hint = 'World-space direction; normalized by the solver. Zero disables gravity.',
     },
     timeScale = { min = 0, max = 100 },
     transparency = { min = 0, max = 1 },

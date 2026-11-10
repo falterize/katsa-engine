@@ -24,14 +24,10 @@ local Class = Node.define('TileMap', 'Frame')
 -- really receives the pointer, so a plain tile background never blocks clicks.
 Class.interactive = true
 Class.propertySchema = {
-    tileSet = {
-        hint = 'Lua file that returns the tileset: image, tile grid, solid tiles and terrains.',
-    },
-    mapFile = {
-        hint = 'Lua file with saved cells (TileMap:toData). Loaded when it changes.',
-    },
-    cellSize = { hint = 'Size of one cell on screen, in UI pixels.' },
-    pixelate = { hint = 'Sharp pixels instead of smoothing; right for pixel art.' },
+    tileSet = {},
+    mapFile = {},
+    cellSize = {},
+    pixelate = {},
 }
 
 local DEFAULT_LAYER = 'Ground'

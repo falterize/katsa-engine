@@ -291,14 +291,12 @@ function Schema.descriptor(target, key)
     if key == 'screenSpaceAA' and target.msaa ~= nil then
         return {
             options = require('source.engine.graphics.post.settings').antialiasing,
-            hint = 'Screen-space anti-aliasing applied to the finished image; works with MSAA.',
         }
     end
     if target._settingsKind == 'Shadows' then
         if key == 'filterSamples' then
             return {
                 visibleWhen = { key = 'mode', equals = 'Standard' },
-                hint = 'Standard PCF taps; Realistic uses fixed 9 blocker + 9 filter taps.',
             }
         end
         if key == 'mode' then
@@ -308,37 +306,32 @@ function Schema.descriptor(target, key)
             return {
                 min = 0,
                 max = 0.25,
-                hint = 'Approximate relative emitter size for contact-hardening shadows.',
                 visibleWhen = { key = 'mode', equals = 'Realistic' },
             }
         end
         if key == 'softnessLimit' then
-            return { min = 1, max = 16, hint = 'Maximum PCF filter radius in atlas pixels.' }
+            return { min = 1, max = 16 }
         end
         if key == 'blockerSearchRadius' then
             return {
                 min = 1,
                 max = 12,
-                hint = 'Blocker-search radius in atlas pixels; 9 fixed taps.',
                 visibleWhen = { key = 'mode', equals = 'Realistic' },
             }
         end
     end
     if target._settingsKind == 'Sky' then
         if key == 'texture' then
-            return {
-                hint = 'Project-relative sky image path or registered image name. Cross requires '
-                    .. 'a 4:3 image.',
-            }
+            return {}
         end
         if key == 'pixelate' then
-            return { hint = 'Nearest sampling for this sky only; false uses linear smoothing.' }
+            return {}
         end
         if key == 'layout' then
             return { options = { 'Cross', 'Panorama' } }
         end
         if key == 'yaw' then
-            return { hint = 'Sky rotation around the world Y axis, in degrees.' }
+            return {}
         end
     end
     local class = target._class
@@ -434,24 +427,14 @@ function Schema.signature(target)
     end
     return text
 end
-local hints = require('./schemaHints')
 
+-- The text of the Inspector's hint popup (see editor/hints).
 function Schema.hint(target, key)
-    if target.isA and target:isA('ScrollFrame') and key == 'canvasSize' then
-        return 'UDim2 canvas dimensions relative to the frame plus logical pixels. '
-            .. 'AutomaticCanvasSize can extend the authored minimum.'
-    end
-    if target._settingsKind == 'PhysicsDebug' and key == 'wireframe' then
-        return 'Draw physics shapes as wire geometry. Does not change the main material renderer.'
-    end
-    if target._inputKind == 'Joystick' then
-        return 'Safe-area logical pixels; authored values persist across resizing and are '
-            .. 'clamped to the viewport.'
-    end
-    if key == 'sensitivity' then
-        return 'Degrees per logical pixel for Free cameras. Follow cameras use followSensitivity.'
-    end
-    return Schema.descriptor(target, key).hint or hints[key]
+    return require('source.engine.editor.hints').get(
+        target,
+        key,
+        Schema.descriptor(target, key).hint
+    )
 end
 
 return Schema

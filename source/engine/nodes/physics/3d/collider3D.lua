@@ -16,15 +16,10 @@ Class.propertySchema = {
     shape = { options = { 'Box', 'Sphere', 'Capsule', 'Cylinder', 'Cone', 'Geometry', 'Points' } },
     geometrySource = {
         kind = 'node',
-        hint = 'Select a Node3D / Mesh3D or enter an OBJ, GLB or glTF model path. File sources '
-            .. 'use Size as local scale.',
         visibleWhen = { key = 'shape', equals = 'Geometry' },
     },
     collisionLevel = {
         options = Level.names,
-        hint = 'Trimesh: exact triangles (static bodies). Single Convex: one hull for the whole source. '
-            .. 'Simplified Convex: one hull with few vertices. Multiple Convex: several hulls that '
-            .. 'follow a concave model (cars, rooms, arches). Bounding Box: one box.',
         visibleWhen = { key = 'shape', oneOf = { 'Geometry', 'Points' } },
     },
     maxTriangles = {
@@ -35,7 +30,6 @@ Class.propertySchema = {
     hullPoints = {
         min = 4,
         max = 128,
-        hint = 'Most vertices of each convex hull.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
             { key = 'collisionLevel', oneOf = { 'Simplified Convex', 'Multiple Convex' } },
@@ -44,7 +38,6 @@ Class.propertySchema = {
     maxHulls = {
         min = 1,
         max = 64,
-        hint = 'Most convex pieces the model is cut into.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
             { key = 'collisionLevel', oneOf = { 'Multiple Convex' } },
@@ -53,8 +46,6 @@ Class.propertySchema = {
     concavity = {
         min = 0,
         max = 1,
-        hint = 'How much of the model volume a piece may leave empty inside its hull before it is '
-            .. 'cut again (0.02 = 2%). Lower values fit tighter and make more pieces.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
             { key = 'collisionLevel', oneOf = { 'Multiple Convex' } },
@@ -63,7 +54,6 @@ Class.propertySchema = {
     resolution = {
         min = 8,
         max = 96,
-        hint = 'Voxels along the longest side used to find concave regions. Higher is slower.',
         visibleWhen = {
             { key = 'shape', oneOf = { 'Geometry', 'Points' } },
             { key = 'collisionLevel', oneOf = { 'Multiple Convex' } },

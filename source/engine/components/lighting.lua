@@ -5,9 +5,6 @@ local V = require('../core.validate')
 
 local Lighting = {}
 
-local hint = '0: unlit, the node shows its own colour and ignores lights, shadows, fog and tone '
-    .. 'mapping. 1: fully lit by the scene. Values in between blend the two.'
-
 -- Accepts the legacy boolean `unlit` that scenes used to author. It is converted once, when the
 -- node is created, and never stored: renderers read lightInfluence only.
 -- `default` is the class default (1 for meshes, 0 for decals, particles and ribbons).
@@ -49,7 +46,6 @@ function Lighting.describe(class)
     class.propertySchema = schema
     schema.lightInfluence = schema.lightInfluence or {}
     schema.lightInfluence.min, schema.lightInfluence.max = 0, 1
-    schema.lightInfluence.hint = hint
 end
 
 return Lighting

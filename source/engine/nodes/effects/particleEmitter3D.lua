@@ -15,16 +15,12 @@ C.propertySchema = {
             return require('source.engine.components.image').pixelate(node, node._world.environment)
         end,
     },
-    adornee = {
-        hint = 'Independent emission support. None uses spatial Parent. Ownership and cleanup '
-            .. 'still follow Parent.',
-    },
+    adornee = {},
     supportStatus = { readOnly = true },
 }
 for key, value in pairs(defaults) do
     C.propertySchema[key] = {
         options = enums[key],
-        hint = 'ParticleEmitter3D ' .. key .. '; see the particle API guide.',
     }
 end
 for _, key in ipairs({
@@ -49,9 +45,6 @@ C.propertySchema.surfaceOnly.visibleWhen =
 C.propertySchema.shapeSize.visibleWhen =
     { key = 'shape', oneOf = { 'Box', 'Sphere', 'Disc', 'Cylinder' } }
 C.propertySchema.gravity.visibleWhen = { key = 'useWorldGravity', equals = false }
-C.propertySchema.useWorldGravity.hint =
-    'Use Physics.gravity when present; otherwise use the emitter gravity vector. Disable to '
-        .. 'author an independent field.'
 require('../../components.image').describe(C)
 require('../../components.lighting').describe(C)
 require('../../components.brightness').describe(C)
@@ -63,39 +56,6 @@ end
 C.propertySchema.liveCount.readOnly = true
 for _, key in ipairs({ 'lifetime', 'speed', 'startSize', 'startRotation', 'angularSpeed' }) do
     C.propertySchema[key].labels = { 'Min', 'Max' }
-end
-local hints = {
-    shadowMaxParticles = 'Most particles that are written into the shadow maps per frame.',
-    rate = 'Births per second, controlled directly by Rate.',
-    lifetime = 'Seconds: randomized Min / Max at birth.',
-    speed = 'Local units per second: Min / Max at birth.',
-    gravityScale = 'Dimensionless multiplier of the world-space gravity vector. 0 disables '
-        .. 'gravity; negative values repel upward.',
-    drag = 'Per-second velocity relaxation toward wind; 0 gives no wind drag.',
-    attractionPoint = 'World-space target position, independent of emitter/parent rotation.',
-    attractionStrength = 'Acceleration at the target in world units/second squared, softened '
-        .. 'with distance.',
-    attractionSoftening = 'Positive world-unit radius: acceleration is strength / (1 + '
-        .. '(distance/radius)^2).',
-    spread = 'Cone half-angle in degrees, 0 to 180.',
-    startSize = 'Full quad width/height in world units at birth, before sizeCurve.',
-    shapeSize = 'Full local X/Y/Z extents; cylinder/disc radii are half X/Z.',
-    simulationSpace = 'Local (LockedOnPart): existing particles follow the emitter/attachment position, rotation and scale. World: existing particles stay in world space. Changes affect new births.',
-    maxParticles = 'Birth cap, further limited by the shared MaxParticles budget. Existing '
-        .. 'particles drain after lowering it.',
-    liveCount = 'Current live particles. Runtime read-only.',
-    disabledBehavior = 'Drain: stop automatic births and let particles finish; Clear: '
-        .. 'immediately remove existing particles.',
-    axisRight = 'Emitter-local plane axis. Both axes must be nonzero and independent.',
-    axisUp = 'Emitter-local plane axis, orthogonalized to axisRight.',
-    collisionEnabled = 'Optional point-segment physics raycasts, sharing a bounded update '
-        .. 'budget. No rigid body per particle.',
-    maxDistance = 'World-unit render cutoff per particle; 0 disables it. OffscreenBehavior '
-        .. 'controls simulation outside the camera view.',
-    offscreenBehavior = 'Pause stops simulation, births and collision queries outside the camera view. Simulate preserves continuous offscreen physics. Existing world-space particles also participate in visibility.',
-}
-for key, hint in pairs(hints) do
-    C.propertySchema[key].hint = hint
 end
 for _, key in ipairs({ 'sizeCurve', 'transparencyCurve', 'startColor', 'midColor', 'endColor' }) do
     C.propertySchema[key] = nil

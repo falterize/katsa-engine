@@ -20,23 +20,18 @@ Class.propertySchema = {
     scrollBarImageColor3 = {},
     scrollBarImageTransparency = { min = 0, max = 1 },
     verticalScrollBarPosition = { options = { 'Left', 'Right' } },
-    dragWithMouse = {
-        hint = 'Swipe-scroll with the mouse (hold and drag the content). Touch always swipes; the mouse only does when this is on. The scrollbar thumb and wheel work either way.',
-    },
+    dragWithMouse = {},
     inertia = {
         min = 0,
         max = 1,
-        hint = 'How far the content keeps gliding after a swipe. 0 stops dead, 1 glides for a long time.',
     },
     overscroll = {
         min = 0,
         max = 1,
-        hint = 'Rubber-band stretch past the ends as a fraction of the window size. 0 hard stops, 0.25 feels like a phone list.',
     },
     bounceSpeed = {
         min = 1,
         max = 40,
-        hint = 'How quickly the stretch springs back after release (per second).',
         visibleWhen = function(target)
             return (target.overscroll or 0) > 0
         end,

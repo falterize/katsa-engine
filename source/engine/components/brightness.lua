@@ -2,9 +2,6 @@
 -- intensity of lights. One definition of the rule: a finite, non-negative number.
 local Brightness = {}
 
-local hint = 'Colour multiplier applied after lighting. 1 keeps the colour, 0 is black, values '
-    .. 'above 1 brighten.'
-
 function Brightness.check(value, name)
     assert(
         type(value) == 'number' and value >= 0 and value < math.huge,
@@ -21,12 +18,11 @@ function Brightness.normalize(node, default, name)
     Brightness.check(node.brightness, name or 'Node')
 end
 
-function Brightness.describe(class, text)
+function Brightness.describe(class)
     local schema = rawget(class, 'propertySchema') or {}
     class.propertySchema = schema
     schema.brightness = schema.brightness or {}
     schema.brightness.min = 0
-    schema.brightness.hint = schema.brightness.hint or text or hint
 end
 
 return Brightness

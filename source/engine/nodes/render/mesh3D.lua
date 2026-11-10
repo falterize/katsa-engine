@@ -7,21 +7,16 @@ Class.propertySchema = {
         min = 1,
         max = 8,
         integer = true,
-        hint = 'Strongest weights retained per vertex (1..8), then normalized. Imported data '
-            .. 'stays intact.',
     },
     bonePaletteLimit = {
         min = 1,
         max = 32,
         integer = true,
-        hint = 'Requested bones per draw (1..32). Triangles keep all required joints; smaller '
-            .. 'palettes may add draws.',
     },
     effectiveBonePaletteLimit = {
         readOnly = true,
-        hint = 'Largest palette used; may exceed the request to preserve an indivisible triangle.',
     },
-    skinDrawCount = { readOnly = true, hint = 'Draw pieces after applying skin limits.' },
+    skinDrawCount = { readOnly = true },
 }
 
 require('../../components.lighting').describe(Class)

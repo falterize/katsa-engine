@@ -2,37 +2,28 @@ local descriptions = {
     Camera3D = {
         projectionMode = {
             options = { 'Perspective', 'Orthographic' },
-            hint = 'Perspective shrinks distant objects; Orthographic keeps a constant scale.',
         },
         fov = {
             min = 1,
             max = 179,
             visibleWhen = { key = 'projectionMode', equals = 'Perspective' },
-            hint = 'Vertical field of view in degrees. Linked to focalLength.',
         },
         orthoSize = {
             min = 0.001,
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Half of the visible height in world units at zoom 1; width follows the '
-                .. 'aspect ratio.',
         },
         zoom = {
             min = 0.01,
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Orthographic magnification; the visible half-height is orthoSize / zoom. '
-                .. 'Mouse wheel zooms the free camera.',
         },
         orthoNear = {
             visibleWhen = { key = 'projectionMode', equals = 'Orthographic' },
-            hint = 'Orthographic clip start along the view direction; empty places it behind the '
-                .. 'camera.',
         },
         near = {
             min = 0.001,
             visibleWhen = { key = 'projectionMode', equals = 'Perspective' },
-            hint = 'Perspective near clip distance; must be below far.',
         },
-        far = { min = 0.002, hint = 'Far clip distance; must be above near.' },
+        far = { min = 0.002 },
     },
     Body3D = {
         mass = {
@@ -40,8 +31,6 @@ local descriptions = {
                 return node.mass or node.body and node.body:getMass()
             end,
             min = 0.00001,
-            hint = 'Mass in kg. Shows density-derived mass until an explicit override is '
-                .. 'authored; effective only for dynamic bodies.',
         },
         density = { min = 0.00001 },
     },

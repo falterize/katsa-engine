@@ -4,8 +4,6 @@ local V = require('../core.validate')
 
 local RenderRange = {}
 
-local hint = 'Render cutoff distance from the camera in world units; 0 disables it.'
-
 function RenderRange.normalize(node, default)
     if node.maxDistance == nil then
         node.maxDistance = default or 0
@@ -18,12 +16,11 @@ function RenderRange.within(limit, distanceSquared, radius)
     return not limit or limit <= 0 or distanceSquared <= (limit + (radius or 0)) ^ 2
 end
 
-function RenderRange.describe(class, text)
+function RenderRange.describe(class)
     local schema = rawget(class, 'propertySchema') or {}
     class.propertySchema = schema
     schema.maxDistance = schema.maxDistance or {}
     schema.maxDistance.min = 0
-    schema.maxDistance.hint = schema.maxDistance.hint or text or hint
 end
 
 return RenderRange

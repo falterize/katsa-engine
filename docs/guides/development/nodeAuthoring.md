@@ -223,6 +223,16 @@ observed fields and cache revisions. `Signals.clear` disconnects an emitter.
 chains initializers. `specialNode.register` implements world-owned registration.
 These are engine helpers; ordinary node definitions use the public API above.
 
+## Property descriptions (hints)
+
+The text the Inspector shows for a property lives in `source/engine/editor/hints/`, not in the
+engine classes: one file per category (`core`, `render`, `physics`, `animation`, `effects`, `ui`,
+`settings`) with `{ ClassName = { property = 'text' } }`, a subclass inheriting its base class
+entries, and `common.lua` for texts shared by every class with that property. Add a line there
+when you add a property to an engine class. A node of your own (a scene node or a plugin) may
+still give a property a `hint` in its descriptor, as below; it is used when no hints file names
+the property.
+
 ## A complete scene-owned node
 
 Create `nodes/spinner.lua` in your scene. This is the same module exercised by

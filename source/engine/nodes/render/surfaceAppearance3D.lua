@@ -8,8 +8,6 @@ C.propertySchema = {
     transparency = {
         min = 0,
         max = 1,
-        hint = 'Material blend weight is 1-Transparency; active weights are normalized. Mesh '
-            .. 'opacity remains separate.',
     },
     colorMap = {},
     normalMap = {},

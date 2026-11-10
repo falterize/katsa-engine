@@ -12,16 +12,6 @@ Shadowing.defaults = {
     shadowAlphaCutoff = 0.1,
 }
 
-local hints = {
-    castShadow = 'Writes this node into the shadow maps as alpha tested geometry.',
-    receiveShadow = 'Shadows from other objects darken this node. It only shows when the node is lit '
-        .. '(see its light settings).',
-    shadowGroup = 'Layer group that decides which lights this node casts into and receives from.',
-    shadowAlphaCutoff = 'Shadow pass only: texels more transparent than this cast no shadow, so a '
-        .. 'soft edge does not produce a hard shadow. Unlike Mesh3D alphaCutoff it never changes how '
-        .. 'the node is drawn.',
-}
-
 -- Fills the class defaults of an object created without them (`defaults` is a table such as
 -- { castShadow = true, receiveShadow = true }) and checks the booleans.
 function Shadowing.normalize(node, defaults)
@@ -41,12 +31,11 @@ function Shadowing.describe(class, options)
     options = options or {}
     local schema = rawget(class, 'propertySchema') or {}
     class.propertySchema = schema
-    for key, hint in pairs(hints) do
+    for key in pairs(Shadowing.defaults) do
         if (key ~= 'receiveShadow' or options.receive ~= false)
             and (key ~= 'shadowAlphaCutoff' or options.cutoff ~= false)
         then
             schema[key] = schema[key] or {}
-            schema[key].hint = hint
         end
     end
     schema.shadowGroup.visibleWhen = function(node)

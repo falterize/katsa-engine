@@ -25,42 +25,31 @@ end
 Ribbon.describe(C, {
     trailMode = {
         options = { 'Single', 'Dual' },
-        hint = 'Single: follow one node, always facing the camera. Dual: two nodes mark the top and '
-            .. 'bottom of the trail (Roblox style).',
     },
     attachment0 = {
         kind = 'node',
         nodeClass = 'Node3D',
-        hint = 'Single: the node the trail follows (empty = this Trail3D). Dual: top edge. Any Node3D '
-            .. 'works, an Attachment3D is not required.',
     },
     attachment1 = {
         kind = 'node',
         nodeClass = 'Node3D',
-        hint = 'Dual mode only: bottom edge of the trail.',
         visibleWhen = { key = 'trailMode', equals = 'Dual' },
     },
-    lifetime = { min = 0.01, hint = 'Seconds a point of the trail lives.' },
+    lifetime = { min = 0.01 },
     minLength = {
         min = 0,
-        hint = 'World units the node must move before a new point is stored. Larger values give '
-            .. 'angular but cheaper trails.',
     },
-    maxLength = { min = 0, hint = 'Longest path kept behind the head in world units; 0 is unlimited.' },
-    maxPoints = { min = 2, max = 1024, hint = 'Hard cap on stored points (memory bound).' },
+    maxLength = { min = 0 },
+    maxPoints = { min = 2, max = 1024 },
     breakDistance = {
         min = 0,
-        hint = 'A jump longer than this (teleport) clears the trail instead of stretching it. 0 disables.',
     },
     width = {
         min = 0,
-        hint = 'Single mode: width of the trail in world units.',
         visibleWhen = { key = 'trailMode', equals = 'Single' },
     },
 })
 C.propertySchema.faceCamera.visibleWhen = { key = 'trailMode', equals = 'Dual' }
-C.propertySchema.faceCamera.hint = 'Dual mode: on turns the width toward the camera, off keeps the '
-    .. 'orientation of the two nodes. Single mode always faces the camera.'
 
 function C.initialize(self)
     Ribbon.initialize(self, 'Trail3D', C.defaults)

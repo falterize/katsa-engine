@@ -42,31 +42,27 @@ Settings.sections = {
             'levels',
         },
         descriptors = {
-            intensity = { min = 0, max = 8, hint = 'Glow amount added to the image.' },
-            strength = { min = 0, max = 2, hint = 'Blur spread: larger values widen the glow.' },
+            intensity = { min = 0, max = 8 },
+            strength = { min = 0, max = 2 },
             mix = {
                 min = 0,
                 max = 1,
-                hint = 'Replacement amount of the Mix blend mode.',
                 visibleWhen = { key = 'blendMode', equals = 'Mix' },
             },
             bloom = {
                 min = 0,
                 max = 1,
-                hint = 'Glow added from every pixel, not only the bright ones.',
             },
-            blendMode = { options = BLEND_MODES, hint = 'How the glow combines with the image.' },
+            blendMode = { options = BLEND_MODES },
             hdrThreshold = {
                 min = 0,
                 max = 4,
-                hint = 'Luminance above which pixels glow. Measured after tone mapping, 0..1.',
             },
             hdrScale = {
                 min = 0,
                 max = 8,
-                hint = 'Glow multiplier applied to the part above the threshold.',
             },
-            levels = { min = 1, max = 7, integer = true, hint = 'Blur levels: more is wider.' },
+            levels = { min = 1, max = 7, integer = true },
         },
     },
     {
@@ -81,10 +77,10 @@ Settings.sections = {
         },
         keys = { 'enabled', 'quality', 'radius', 'intensity', 'power' },
         descriptors = {
-            quality = { options = QUALITIES, hint = 'Samples per pixel: 8, 12 or 20.' },
-            radius = { min = 0.01, max = 50, hint = 'Occlusion search radius in world units.' },
-            intensity = { min = 0, max = 16, hint = 'Darkening strength.' },
-            power = { min = 0.1, max = 8, hint = 'Contrast of the darkening falloff.' },
+            quality = { options = QUALITIES },
+            radius = { min = 0.01, max = 50 },
+            intensity = { min = 0, max = 16 },
+            power = { min = 0.1, max = 8 },
         },
     },
     {
@@ -127,68 +123,55 @@ Settings.sections = {
             'skyAffect',
         },
         descriptors = {
-            density = { min = 0, max = 2, hint = 'Fog thickness per world unit. 0.02 is light haze, 0.2 is thick.' },
-            mode = { options = { 'Exponential', 'Linear' }, hint = 'Distance falloff of the plain fog.' },
-            offset = { min = 0, hint = 'Distance from the camera where the fog starts.' },
+            density = { min = 0, max = 2 },
+            mode = { options = { 'Exponential', 'Linear' } },
+            offset = { min = 0 },
             endDistance = {
                 min = 0,
-                hint = 'Distance where the Linear fog is fully opaque.',
                 visibleWhen = { key = 'mode', equals = 'Linear' },
             },
-            maxOpacity = { min = 0, max = 1, hint = 'Largest share of the fog colour that covers a pixel.' },
-            volumetric = {
-                hint = 'Ray-marched fog that shows light shafts and glowing lights. Replaces the plain fog.',
-            },
+            maxOpacity = { min = 0, max = 1 },
+            volumetric = {},
             quality = {
                 options = QUALITIES,
-                hint = 'Low: half resolution, 16 steps. Medium: half resolution, 32 steps. High: full resolution, 48 steps and shadowed point and spot lights.',
                 visibleWhen = when('volumetric'),
             },
             volumetricDistance = {
                 min = 1,
-                hint = 'The fog is computed up to this distance from the camera.',
                 visibleWhen = when('volumetric'),
             },
             heightFalloff = {
                 min = 0,
                 max = 4,
-                hint = 'How fast the fog thins above baseHeight. 0 = the same density at every height.',
                 visibleWhen = when('volumetric'),
             },
             baseHeight = {
-                hint = 'World height where the fog has full density.',
                 visibleWhen = when('volumetric'),
             },
             anisotropy = {
                 min = -0.95,
                 max = 0.95,
-                hint = 'Light scattering direction: positive brightens fog toward a light (shafts), 0 is even.',
                 visibleWhen = when('volumetric'),
             },
             lightEnergy = {
                 min = 0,
                 max = 16,
-                hint = 'Brightness of the light scattered in the fog.',
                 visibleWhen = when('volumetric'),
             },
             lightClearing = {
-                hint = 'Lights burn the fog away where they shine, by each light\'s own fogClearing. Off: the fog stays as thick under every light.',
                 visibleWhen = when('volumetric'),
             },
             ambient = {
                 min = 0,
                 max = 4,
-                hint = 'Fog light that does not depend on any light source.',
                 visibleWhen = when('volumetric'),
             },
             shadows = {
-                hint = 'Sunlight in the fog respects the shadow map (light shafts).',
                 visibleWhen = when('volumetric'),
             },
             skyAffect = {
                 min = 0,
                 max = 1,
-                hint = 'How much of the fog is also drawn over the sky.',
                 visibleWhen = when('volumetric'),
             },
         },
@@ -219,30 +202,26 @@ Settings.sections = {
             'quality',
         },
         descriptors = {
-            farEnabled = { hint = 'Blur everything farther than farDistance.' },
+            farEnabled = {},
             farDistance = {
                 min = 0,
-                hint = 'Distance in world units where far blur starts.',
                 visibleWhen = when('farEnabled'),
             },
             farTransition = {
                 min = 0.001,
-                hint = 'Distance over which far blur grows to its maximum.',
                 visibleWhen = when('farEnabled'),
             },
-            nearEnabled = { hint = 'Blur everything closer than nearDistance.' },
+            nearEnabled = {},
             nearDistance = {
                 min = 0,
-                hint = 'Distance in world units where near blur starts.',
                 visibleWhen = when('nearEnabled'),
             },
             nearTransition = {
                 min = 0.001,
-                hint = 'Distance over which near blur grows to its maximum.',
                 visibleWhen = when('nearEnabled'),
             },
-            amount = { min = 0, max = 1, hint = 'Largest blur radius, as a share of the view height.' },
-            quality = { options = QUALITIES, hint = 'Samples per pixel: 8, 16 or 32.' },
+            amount = { min = 0, max = 1 },
+            quality = { options = QUALITIES },
         },
     },
     {
@@ -265,17 +244,13 @@ Settings.sections = {
             'colorCorrectionStrength',
         },
         descriptors = {
-            brightness = { min = 0, max = 8, hint = 'Multiplies the image.' },
-            contrast = { min = 0, max = 8, hint = 'Spreads values around middle grey.' },
-            saturation = { min = 0, max = 8, hint = '0 is greyscale, 1 unchanged.' },
-            colorCorrection = {
-                hint = 'Lookup-table image: a strip of N slices, N*N wide and N tall '
-                    .. '(for example 256x16). Empty disables it.',
-            },
+            brightness = { min = 0, max = 8 },
+            contrast = { min = 0, max = 8 },
+            saturation = { min = 0, max = 8 },
+            colorCorrection = {},
             colorCorrectionStrength = {
                 min = 0,
                 max = 1,
-                hint = 'Mix between the original and the corrected colors.',
                 visibleWhen = { key = 'colorCorrection', present = true },
             },
         },

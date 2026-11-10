@@ -28,22 +28,6 @@ Ribbon.defaults = {
     atlasAnimation = '',
 }
 
-local hints = {
-    texture = 'Image path, for example scene://assets/textures/trail.png. Empty or missing files '
-        .. 'render the diagnostic checker. Use pixelate for nearest filtering.',
-    textureMode = 'Stretch: the image covers the whole ribbon. Wrap: it repeats every '
-        .. 'textureLength units and moves with the ribbon. Static: it repeats in world space and '
-        .. 'stays put while the ribbon moves. Tiles, Texture, Atlas and XML image modes always use '
-        .. 'their own mapping.',
-    textureLength = 'World units covered by one image repeat (Wrap and Static).',
-    textureSpeed = 'Scroll speed of the image along the ribbon in repeats per second.',
-    faceCamera = 'On: the ribbon always turns its width toward the camera. Off: a flat strip that '
-        .. 'keeps the orientation of its attachments.',
-    lightEmission = '0 blends normally, 1 adds the colour to the scene (glow). Values between mix both.',
-    zOffset = 'World units added to the sorting depth. Positive values draw the ribbon earlier '
-        .. '(behind other transparent objects).',
-}
-
 for key, value in pairs(Shadowing.defaults) do
     Ribbon.defaults[key] = value
 end
@@ -54,7 +38,6 @@ function Ribbon.describe(class, extra)
     local schema = class.propertySchema
     for key in pairs(Ribbon.defaults) do
         schema[key] = schema[key] or {}
-        schema[key].hint = hints[key]
     end
     schema.textureMode.options = { 'Stretch', 'Wrap', 'Static' }
     schema.textureMode.visibleWhen = { key = 'imageMode', oneOf = { 'Decal' } }

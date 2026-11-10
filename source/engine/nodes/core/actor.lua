@@ -15,21 +15,17 @@ local Pool = require('source.engine.actors.pool')
 
 local Actor = Node.define('Actor', 'Node')
 Actor.propertySchema = {
-    script = {
-        hint = 'Lua file the worker threads run. It registers handlers with Actor.on(topic, fn).',
-    },
+    script = {},
     workers = {
         default = 1,
         min = 1,
         max = 64,
-        hint = 'Worker threads running the script. Requests go to the least busy one.',
     },
-    autoStart = { default = true, hint = 'Start the workers when the node is created.' },
+    autoStart = { default = true },
     messagesPerFrame = {
         default = 64,
         min = 1,
         max = 4096,
-        hint = 'Largest number of results delivered per worker per frame.',
     },
 }
 
