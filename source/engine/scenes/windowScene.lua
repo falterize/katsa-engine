@@ -68,6 +68,7 @@ function WindowScene:receive(name, ...)
     local first, second, third, fourth = ...
     self.window:call(function()
         if name == 'mousepressed' or name == 'mousereleased' then
+            manager:dispatch('mousebutton', third, name == 'mousepressed')
             if third == 1 then
                 local event = name == 'mousepressed' and 'pointerpressed' or 'pointerreleased'
                 manager:dispatch(event, 'mouse', first, second)

@@ -7,6 +7,30 @@ local hasWorldCamera, visualPanelAt = Routing.hasWorldCamera, Routing.visualPane
 local Pointers = {}
 
 function Pointers.install(Input)
+    -- Screen position of a UI node's centre, for press/move/release from code. The point is
+    -- where a finger would touch, so another node on top of it takes the touch as usual.
+    function Input:nodeCenter(node)
+        local ui = self.scene.ui
+        ui:layout()
+        local x, y = ui:position(node)
+        return ui.offsetX + (x + node._width / 2) * ui.scale,
+            ui.offsetY + (y + node._height / 2) * ui.scale
+    end
+
+    -- A tap at a screen point from code: the same path as a finger, so it reaches UI nodes,
+    -- billboard UI and ClickDetector3D meshes under the point (and respects what covers them).
+    function Input:tap(x, y, id)
+        id = id or 'code'
+        self:press(id, x, y)
+        self:release(id, x, y)
+    end
+
+    -- A tap on the centre of a UI node from code.
+    function Input:click(node, id)
+        local x, y = self:nodeCenter(node)
+        self:tap(x, y, id)
+    end
+
     function Input:press(id, x, y)
         self:flushHover()
         local scene = self.scene

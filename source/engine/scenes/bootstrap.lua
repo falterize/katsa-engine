@@ -184,6 +184,9 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.mousepressed(x, y, button, istouch)
+        if not istouch then
+            manager:dispatch('mousebutton', button, true)
+        end
         if not istouch and button == 1 then
             manager:dispatch('pointerpressed', 'mouse', x, y)
         end
@@ -196,6 +199,9 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.mousereleased(x, y, button, istouch)
+        if not istouch then
+            manager:dispatch('mousebutton', button, false)
+        end
         if not istouch and button == 1 then
             manager:dispatch('pointerreleased', 'mouse', x, y)
         end

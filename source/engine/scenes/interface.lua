@@ -18,6 +18,7 @@ local events = {
     'pointerreleased',
     'pointercancelled',
     'wheelmoved',
+    'mousebutton',
     'keypressed',
     'keyreleased',
     'textinput',

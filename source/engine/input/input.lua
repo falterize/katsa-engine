@@ -8,6 +8,8 @@ function Input.new(scene, layout)
         scene = scene,
         layout = layout,
         actions = require('source.engine.input.actions').new(),
+        -- Named actions of the game; the scene's `settings.input` defines the first ones.
+        map = require('source.engine.input.inputMap').new(scene.settings and scene.settings.input),
         captures = {},
         axisX = 0,
         axisY = 0,
@@ -18,6 +20,7 @@ end
 
 function Input:reset()
     self.actions:reset()
+    self.map:reset()
     for id, c in pairs(self.captures) do
         if c.node then
             c.node.ui:pointer(c.node, 'cancel', 0, 0, id)
@@ -43,6 +46,7 @@ function Input:keypressed(key)
     if focused then
         return focused:editKey(key)
     end
+    self.map:setEvent('key:' .. key, 1)
     self.actions:keypressed(key)
     return false
 end
@@ -57,10 +61,29 @@ function Input:textinput(text)
 end
 
 function Input:keyreleased(key)
+    self.map:setEvent('key:' .. key, 0)
     self.actions:keyreleased(key)
 end
 
+-- Mouse buttons and the wheel reach the map from the scene runtime (any button, not only the
+-- pointer's primary one). A wheel notch is a momentary event.
+function Input:mapMouseButton(button, down)
+    self.map:setEvent('mouse:' .. button, down and 1 or 0)
+end
+
+function Input:mapWheel(_, y)
+    if y ~= 0 then
+        self.map:tap(y > 0 and 'wheel:up' or 'wheel:down')
+    end
+end
+
+-- Presses a named action from code: an InputMap action when the map has it, else a built-in one
+-- (Jump, Interact).
 function Input:trigger(action)
+    if self.map:has(action) then
+        self.map:trigger(action)
+        return
+    end
     self.actions:trigger(action)
 end
 

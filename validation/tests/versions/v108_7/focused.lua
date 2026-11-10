@@ -14,6 +14,7 @@ function Tests:draw()
     end
     self.done = true
     require('validation.tests.versions.v108_7.inspector').run(self)
+    require('validation.tests.versions.v108_7.inputMap').run(self)
     require('validation.tests.versions.v108_7.attributes').run(self)
     require('validation.tests.versions.v108_7.lines').run(self)
     require('validation.tests.versions.v108_7.explorerOrder').run(self)

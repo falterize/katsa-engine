@@ -62,8 +62,11 @@ function Class:canActivate()
         <= self.radius ^ 2
 end
 
-function Class:activate(pointerId)
-    if self:canActivate() then
+-- Fires `clicked` from code. `force` skips the distance and visibility checks (a scripted or
+-- on-screen-button press): only an enabled, live detector still answers.
+function Class:activate(pointerId, force)
+    local alive = self.enabled and not self.destroyed and not self._destroying
+    if force and alive or not force and self:canActivate() then
         self:emit('clicked', pointerId, self:getTarget())
         return true
     end

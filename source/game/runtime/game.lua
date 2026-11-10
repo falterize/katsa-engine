@@ -304,7 +304,12 @@ function Game:exit()
     self.manager.time:setScale(1)
 end
 
+function Game:mousebutton(button, down)
+    self.input:mapMouseButton(button, down)
+end
+
 function Game:wheelmoved(x, y)
+    self.input:mapWheel(x, y)
     -- A scene with its own wheel handling (camera zoom) goes first.
     local demo = self.demo
     if demo and demo.wheelmoved and demo:wheelmoved(x, y) then

@@ -18,11 +18,23 @@ end
 
 function Gamepads.install(Input)
     function Input:gamepadpressed(_, button)
+        self.map:setEvent('pad:' .. button, 1)
         self.actions:gamepadpressed(button)
     end
 
     function Input:gamepadreleased(_, button)
+        self.map:setEvent('pad:' .. button, 0)
         self.actions:gamepadreleased(button)
+    end
+
+    -- Feeds the axes some action listens to (`axis:` events) and publishes the map's edges. Runs
+    -- first in Input:update, so gameplay sees this frame's presses and axis values.
+    function Input:updateMap()
+        local map, pad = self.map, katsa.gamepad.first()
+        for axis in pairs(map.axes) do
+            map:setAxis(axis, pad and pad:getAxis(axis) or 0)
+        end
+        map:update()
     end
 
     -- Returns the walk contribution (right, forward) of the left stick and queues right-stick

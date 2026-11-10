@@ -157,7 +157,12 @@ function Host:keyreleased(key)
     self.input:keyreleased(key)
 end
 
+function Host:mousebutton(button, down)
+    self.input:mapMouseButton(button, down)
+end
+
 function Host:wheelmoved(x, y)
+    self.input:mapWheel(x, y)
     self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
