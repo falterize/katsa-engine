@@ -7,7 +7,7 @@ return function(T)
         return T.skip('carsGame: network library unavailable')
     end
     katsa = katsa or require('source.katsa')
-    local GameServer = load('multiplayerCars', 'scene.scripts.game.gameServer')
+    local GameServer = load('multiplayerCars', 'scene.server.scripts.gameServer')
     local GameClient = load('multiplayerCars', 'scene.scripts.game.gameClient')
     local Ads = require('source.plugins.ads')
     Ads.configure({ provider = 'mock', mockDuration = 0.1 })
@@ -95,7 +95,7 @@ return function(T)
 
     -- Two floors: a car on the car park deck is reached by a route over the ramp.
     do
-        local Arena = load('multiplayerCars', 'scene.scripts.game.arena')
+        local Arena = load('multiplayerCars', 'scene.scripts.shared.arena')
         local g = Arena.garage
         local nav = server.bot.nav
         local path = nav:findPath(20, Arena.ground(20, -30), -30, -42, g.deckY, -48)

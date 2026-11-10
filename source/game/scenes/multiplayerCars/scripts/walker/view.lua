@@ -2,7 +2,7 @@
 -- blends and jump counter (the same weighting as the source scene's animation controller).
 local Models = require('source.engine.import.models')
 local Math = require('./math')
-local WalkerEntity = require('../game.walkerEntity')
+local WalkerEntity = require('../shared.walkerEntity')
 local Rider = require('../view.rider')
 
 local WalkerView = {}

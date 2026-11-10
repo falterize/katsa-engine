@@ -4,9 +4,9 @@ local CarModel = require('./carModel')
 local Skid = require('./skid')
 local EngineSound = require('./engineSound')
 
-local orientation = require('../game.orientation')
+local orientation = require('../shared.orientation')
 local CarAxes = require('../game.carAxes')
-local CarNode = require('../game.carNode')
+local CarNode = require('../shared.carNode')
 
 local CarView = {}
 CarView.__index = CarView

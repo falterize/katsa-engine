@@ -7,11 +7,12 @@
 -- server-side verification, and refills are rate limited either way.
 local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
-local CarEntity = require('./carEntity')
-local Arena = require('./arena')
+local CarEntity = require('../../scripts.shared.carEntity')
+local Arena = require('../../scripts.shared.arena')
 local Bot = require('./bot')
-local PhysicsCar = require('./physicsCar')
-local WalkerEntity = require('./walkerEntity')
+local VoiceRelay = require('./voiceRelay')
+local PhysicsCar = require('../../scripts.shared.physicsCar')
+local WalkerEntity = require('../../scripts.shared.walkerEntity')
 
 local GameServer = {}
 GameServer.__index = GameServer
@@ -23,7 +24,9 @@ local SEATS = 4
 
 -- options: port, maxPlayers, name, simulate (link simulation), bot (default true),
 -- adCooldown (seconds between refills per player, default 20), verifyReward(player, token),
--- sightRadius, world (a World3D with physics: cars become Body3D rigid bodies stepped by it).
+-- sightRadius, world (a World3D with physics: cars become Body3D rigid bodies stepped by it),
+-- hostsPlayer (the first client is the host), adminToken (the client presenting it is the host),
+-- closeWithHost + onShutdown() (stop the process when the host leaves or asks for it).
 function GameServer.new(context, options)
     options = options or {}
     local server = Net.Server.new(context, {
@@ -68,6 +71,14 @@ function GameServer.new(context, options)
         self:leaveCar(player)
         self.walkers[player.id] = nil
         self.refills[player.id] = nil
+        if player == self.hostPlayer then
+            self.hostPlayer = nil
+            self:publishHost()
+            if options.closeWithHost and options.onShutdown then
+                self:log('the host left: shutting down')
+                options.onShutdown()
+            end
+        end
     end)
     server.ticked:connect(function(dt)
         self:onTick(dt)
@@ -243,6 +254,13 @@ function GameServer:hostCommand(requester, command)
         return false, 'only the host can do that'
     end
     local who = requester and requester.name or 'console'
+    if command == 'shutdown' then
+        self:log('%s asked the server to shut down', who)
+        if self.options.onShutdown then
+            self.options.onShutdown()
+        end
+        return true
+    end
     if command == 'clearCars' or command == 'clearBots' then
         local onlyBots = command == 'clearBots'
         for _, player in ipairs(self.server:getPlayers()) do
@@ -420,12 +438,17 @@ function GameServer:bindRemotes()
                 { x = x, y = y, z = z, nx = nx, ny = ny, nz = nz, speed = math.min(speed, 40) }
         end
     end)
-    require('scene.scripts.game.voice').bindServer(self)
+    VoiceRelay.bind(self)
     server:remote('chat'):onServer(function(player, text)
         self:chat(player, text)
     end)
     server:remote('kick'):onRequest(function(player, id, reason)
         return self:kickPlayer(player, id, reason)
+    end)
+    -- A hosting player's own server process hands out one secret at start-up (adminToken): the
+    -- client that presents it becomes the host (admin), nobody else can.
+    server:remote('claimHost'):onRequest(function(player, token)
+        return self:claimHost(player, token)
     end)
     server:remote('hostCommand'):onRequest(function(player, command)
         return self:hostCommand(player, command)
@@ -433,6 +456,18 @@ function GameServer:bindRemotes()
     server:remote('nitroAd'):onRequest(function(player, token)
         return self:grantNitro(player, token)
     end)
+end
+
+function GameServer:claimHost(player, token)
+    local secret = self.options.adminToken
+    if not secret or type(token) ~= 'string' or token ~= secret or self.hostPlayer then
+        self:log('%s asked to be the host and was refused', player.name)
+        return false
+    end
+    self.hostPlayer = player
+    self:log('%s is the host', player.name)
+    self:publishHost()
+    return true
 end
 
 -- Tells everyone who the host is, so clients can tag them and show the kick menu to them only.

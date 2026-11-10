@@ -12,14 +12,36 @@ local Thread = require('source.katsa.thread')
 local StdinConsole = {}
 StdinConsole.__index = StdinConsole
 
+-- The worker reads descriptor 0 with the C library's read(), not io.read: a blocked io.read holds
+-- the stdin stream's lock, and exit() then waits for that lock forever, so a server with an open
+-- terminal could never quit.
 local SCRIPT = [[
 Actor.manual = true
+local ffi = require('ffi')
+local read
+if ffi.os == 'Windows' then
+    ffi.cdef('int _read(int fd, void *buffer, unsigned int count);')
+    read = ffi.C._read
+else
+    ffi.cdef('long read(int fd, void *buffer, unsigned long count);')
+    read = ffi.C.read
+end
+local buffer = ffi.new('char[512]')
+local pending = ''
 while not Actor.stopped() do
-    local line = io.read('*l')
-    if not line then
+    local count = tonumber(read(0, buffer, 512))
+    if count <= 0 then
         break
     end
-    Actor.send('line', line)
+    pending = pending .. ffi.string(buffer, count)
+    while true do
+        local line, rest = pending:match('^([^\n]*)\n(.*)$')
+        if not line then
+            break
+        end
+        pending = rest
+        Actor.send('line', line)
+    end
 end
 Actor.send('closed', true)
 ]]

@@ -42,6 +42,26 @@ platform:close()
 A platform object exposes `target`, `getProcAddress(name)` and `close()`. Window backends (GLFW on
 desktop, EGL on Android) implement the same three members plus presentation and input.
 
+## Starting programs
+
+`katsa.process` starts another program and watches it; the engine uses it to run the game again as a
+dedicated server.
+
+```lua
+local child = katsa.process.spawn({
+    command = katsa.process.getLaunchCommand({ '--scene', 'myGame', '--server', '7777' }),
+    console = true, -- Windows: the child gets its own console window
+    log = 'server.log', -- POSIX: file that receives its output
+})
+if child and child:isRunning() then child:kill() end
+```
+
+`getLaunchCommand(extra)` is the command that started this process (executable, dev launcher script,
+game path) plus `extra` arguments. `katsa.process.isSupported()` is false on phones. Windows uses
+`CreateProcessW`, Linux and macOS `posix_spawnp`, both through ffi. `katsa.process.attachConsole()`
+gives a runtime built without a console (`KATSA_GUI`) one. The Windows paths are not tested in the
+Linux sandbox.
+
 ## Shader translation
 
 `source.katsa.graphics.shaderTranslator.translate(source, { target = 'desktop' | 'es', renderTargets = n })`

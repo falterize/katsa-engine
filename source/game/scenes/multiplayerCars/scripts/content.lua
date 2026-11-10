@@ -10,10 +10,10 @@ local Walker = require('./walker.controller')
 local Seats = require('./game.seats')
 local WalkerView = require('./walker.view')
 local WalkerProxy = require('./walker.proxy')
-local GameServer = require('./game.gameServer')
-local ServerHost = require('./game.serverHost')
+local ServerHost = require('../server.scripts.serverHost')
+local ServerProcess = require('./game.serverProcess')
 local GameClient = require('./game.gameClient')
-local PhysicsCar = require('./game.physicsCar')
+local PhysicsCar = require('./shared.physicsCar')
 local CarAxes = require('./game.carAxes')
 local AdsConfig = require('./game.adsConfig')
 local Interface = require('./ui.interface')
@@ -24,9 +24,9 @@ local Voice = require('./game.voice')
 
 local Session = {}
 -- Exposed so tests can build a second, independent client and physics world.
-Session.GameClient, Session.ArenaView = GameClient, ArenaView
+Session.GameClient, Session.ArenaStatics = GameClient, require('./shared.arenaStatics')
 Session.PhysicsCar = PhysicsCar
-Session.ServerHost = ServerHost
+Session.ServerHost, Session.ServerProcess = ServerHost, ServerProcess
 Session.__index = Session
 
 local DEFAULT_PORT = 7777
@@ -80,8 +80,9 @@ function Session.new(scene)
         end
     end
     self.menu = Menu.create(scene, {
-        host = function(name)
-            self:host(name, DEFAULT_PORT)
+        canSeparate = ServerProcess.isSupported(),
+        host = function(name, options)
+            self:host(name, DEFAULT_PORT, options)
         end,
         join = function(address, port, name)
             self:join(address, port, name)
@@ -300,10 +301,11 @@ function Session:buildQueuedView()
     end
 end
 
-function Session:startClient(address, port, name)
+function Session:startClient(address, port, name, adminToken)
     local client = GameClient.new({}, {
         address = address,
         port = port,
+        adminToken = adminToken,
         name = (name and name ~= '') and name or 'Player',
         world = self.scene.world,
         input = function()
@@ -311,7 +313,10 @@ function Session:startClient(address, port, name)
         end,
     })
     -- --sim-latency/--sim-jitter/--sim-loss/--sim-duplicate/--sim-preset degrade this connection.
-    client.client:getConditions():set(Net.Conditions.fromArguments(katsa.launchArguments))
+    -- A server process we started got the same options, so the host's own link stays clean.
+    if not self.serverProcess then
+        client.client:getConditions():set(Net.Conditions.fromArguments(katsa.launchArguments))
+    end
     self.scene.netStats = function()
         return self.client == client and client.client:getStats() or nil
     end
@@ -389,7 +394,46 @@ function Session:startClient(address, port, name)
     client:connect()
 end
 
-function Session:host(name, port)
+-- Starts the game in a server process of its own (own console window, own physics) and joins it
+-- once it listens. Falls back to a server inside this process where that is impossible.
+function Session:host(name, port, options)
+    options = options or {}
+    if options.separate ~= false and ServerProcess.isSupported() then
+        local process, reason = ServerProcess.start({
+            scene = self.scene.package.id,
+            port = port,
+            name = (name or 'Player') .. "'s game",
+            console = options.console,
+            extra = self.simulationArguments(),
+        })
+        if process then
+            self.serverProcess = process
+            self.mode = 'starting'
+            self.pendingHost = { name = name, port = port }
+            self.menu:setStatus('Starting the server ...')
+            return
+        end
+        katsa.log.warn('Server process unavailable (' .. tostring(reason) .. '); hosting in this process', 'multiplayerCars')
+    end
+    self:hostHere(name, port)
+end
+
+-- The --sim-* launch options as arguments for a child server (the host's own connection uses them
+-- too, see startClient).
+function Session.simulationArguments()
+    local list = {}
+    local arguments = katsa.launchArguments or {}
+    for index, argument in ipairs(arguments) do
+        if argument:find('^%-%-sim%-') and arguments[index + 1] then
+            list[#list + 1] = argument
+            list[#list + 1] = arguments[index + 1]
+        end
+    end
+    return list
+end
+
+-- A server inside this process, with a physics world of its own.
+function Session:hostHere(name, port)
     local ok, problem = pcall(function()
         -- The server runs in this process with a physics world of its own; the hosting player
         -- joins it over the loopback like everybody else and is its admin (the first client).
@@ -425,6 +469,17 @@ function Session:leave(message)
     if self.server then
         self.server:stop()
         self.server = nil
+    end
+    local process = self.serverProcess
+    self.serverProcess, self.pendingHost = nil, nil
+    if process then
+        if self.client == nil and self.mode == 'starting' then
+            process:release() -- it never got a host: nobody would stop it
+        else
+            -- It stops itself when its host (this client) leaves; release() ends it if it does not.
+            self.closing = self.closing or {}
+            self.closing[#self.closing + 1] = process
+        end
     end
     self.viewQueue = nil
     for netId, view in pairs(self.views) do
@@ -766,6 +821,18 @@ function Session:update(dt)
         end
         return
     end
+    if self.mode == 'starting' then
+        local ready, reason = self.serverProcess:isReady(dt)
+        if ready then
+            local pending = self.pendingHost
+            self.pendingHost = nil
+            self:startClient('127.0.0.1', pending.port, pending.name, self.serverProcess.token)
+        elseif ready == nil then
+            print('[multiplayerCars] ' .. reason)
+            self:leave(reason)
+        end
+        return
+    end
     if self.mode == 'connecting' then
         self.connectTime = self.connectTime + dt
         if self.client:isConnected() then
@@ -874,6 +941,10 @@ end
 
 function Session:release()
     self:leave()
+    for _, process in ipairs(self.closing or {}) do
+        process:release()
+    end
+    self.closing = nil
     if self.browser then
         self.browser.close()
         self.browser = nil

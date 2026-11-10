@@ -3,7 +3,7 @@
 -- same inputs a human would: { throttle, steer, nitro }.
 local Plugins = require('source.engine.plugins')
 local Pathfinding = Plugins.require('pathfinding')
-local Arena = require('./arena')
+local Arena = require('../../scripts.shared.arena')
 
 local Bot = {}
 Bot.__index = Bot

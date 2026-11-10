@@ -25,7 +25,7 @@ function Tests:draw()
         self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
-        self.session:host('Tester', 47960 + math.floor(os.clock() * 100) % 9)
+        self.session:host('Tester', 47960 + math.floor(os.clock() * 100) % 9, { separate = false })
     end
     local host, session = self.host, self.session
     if not host then

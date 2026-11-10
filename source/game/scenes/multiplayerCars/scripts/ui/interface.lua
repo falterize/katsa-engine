@@ -6,7 +6,7 @@ Menu.__index = Menu
 local PANEL = { 0.035, 0.065, 0.105 }
 local BUTTON = { 0.085, 0.135, 0.19 }
 
--- callbacks: host(name), join(address, port, name)
+-- callbacks: host(name, { separate }), join(address, port, name); canSeparate: a server window is possible
 function Menu.create(scene, callbacks)
     local ui = scene.ui
     local self = setmetatable({ ui = ui, callbacks = callbacks, rows = {} }, Menu)
@@ -18,6 +18,21 @@ function Menu.create(scene, callbacks)
         backgroundColor = PANEL,
     }, ui.content)
     ui:create('UICorner', { radius = { 0, 14 } }, self.panel)
+    -- ON: hosting starts the server in its own process with its own console window.
+    self.separate = callbacks.canSeparate == true
+    if callbacks.canSeparate then
+        self.windowToggle = ui:button({
+            position = { 1, -214, 0, 14 },
+            size = { 0, 194, 0, 30 },
+            text = 'Server window: ON',
+            fontSize = 14,
+            backgroundColor = BUTTON,
+        }, self.panel)
+        self.windowToggle:connect('press', function()
+            self.separate = not self.separate
+            self.windowToggle.text = 'Server window: ' .. (self.separate and 'ON' or 'OFF')
+        end)
+    end
     ui:text({
         position = { 0, 20, 0, 12 },
         size = { 1, -40, 0, 36 },
@@ -50,7 +65,7 @@ function Menu.create(scene, callbacks)
             backgroundColor = { 0.12, 0.35, 0.22 },
         }, self.panel)
         node:connect('press', function()
-            callbacks.host(self.name.text)
+            callbacks.host(self.name.text, { separate = self.separate, console = self.separate })
         end)
     end
     ui:text({

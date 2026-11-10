@@ -34,6 +34,13 @@ FOV with speed (`speedFov`).
 * Host tools (Tab panel, host only, checked on the server): Spawn car / Spawn bot appear six metres in front
   of the host, Clear bots removes every bot, Clear cars removes every car (players are put out first).
   Esc opens the pause menu with `keepTime`, so the hosted game keeps simulating.
+* Hosting: the **Host a game** button starts the game as a server process of its own (own physics, own
+  console window on Windows) and joins it over the loopback. The server prints everything it logs in
+  that console and takes the commands of a dedicated server (`help`, `players`, `kick`, `net poor` ...).
+  The client presents a one-time token (`--admin-token`) and becomes the host; the server stops itself when
+  its host leaves (`--close-with-host`). **Server window: OFF** (or a platform that cannot start programs,
+  such as a phone) hosts inside the game process instead. Output also goes to `server-<port>.log` in the
+  save folder on Linux and macOS. Code: `scripts/game/serverProcess.lua`, `katsa.process`.
 * Kick: only the host (`GameServer.hostPlayer`) may call `remote('kick')`; the target receives
   *Kicked by the host* as the disconnect reason and may join again.
 
@@ -66,12 +73,12 @@ dent centre; creased triangles are flat shaded. Parts a dent cannot reach are sk
 (including late joiners) sees the same shape. The driver's client reports impacts
 (`remote('impact')`); the server validates them and broadcasts the new dent list.
 
-Tuning lives in `scripts/game/physicsCar.lua` (`gravityScale`, `stiffness`, `damping`, grip) and
+Tuning lives in `scripts/shared/physicsCar.lua` (`gravityScale`, `stiffness`, `damping`, grip) and
 `nodes/vehicle/model.lua` (`maxSpeed`, `acceleration`, `brake`, `drag`).
 
 ## The bot and the car park
 
-The bot (`scripts/game/bot.lua`) patrols and chases the nearest reachable human car on a
+The bot (`server/scripts/bot.lua`) patrols and chases the nearest reachable human car on a
 `NavMap3D` baked from the real colliders (see [plugins](plugins.md)); the arena has a two-floor car
 park (deck, curbs, columns and a ramp, tagged `navFloor = 2`). It aims only at waypoints on its
 own floor, slows for sharp turns and on the deck, and re-plans after reversing out of a wall.

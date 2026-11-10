@@ -1,14 +1,14 @@
 -- Client side of the car game: connection, replicated cars, seats, dents and the nitro ad flow.
 local Net = require('source.engine.net')
 local Plugins = require('source.engine.plugins')
-local CarEntity = require('./carEntity')
-local PhysicsCar = require('./physicsCar')
-local WalkerEntity = require('./walkerEntity')
+local CarEntity = require('../shared.carEntity')
+local PhysicsCar = require('../shared.physicsCar')
+local WalkerEntity = require('../shared.walkerEntity')
 
 local GameClient = {}
 GameClient.__index = GameClient
 
--- options: address, port, name, simulate, input = function() -> { throttle, steer, nitro },
+-- options: address, port, name, simulate, adminToken (claims the host role on connecting), input = function() -> { throttle, steer, nitro },
 -- world (a World3D with physics: the client then simulates the cars it owns and keeps
 -- kinematic stand-ins for the others).
 function GameClient.new(context, options)
@@ -117,6 +117,16 @@ function GameClient.new(context, options)
             self.onRoster()
         end
     end)
+    -- The player who started the server process presents its secret and becomes the host.
+    if options.adminToken then
+        client.connected:connect(function()
+            client:remote('claimHost'):request(function(ok)
+                if not ok then
+                    katsa.log.warn('The server refused the host token', 'multiplayerCars')
+                end
+            end, options.adminToken)
+        end)
+    end
     client:remote('refill'):onClient(function(netId)
         local car = self.cars[netId]
         if car then

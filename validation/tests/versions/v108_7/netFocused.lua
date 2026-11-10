@@ -16,6 +16,8 @@ function Tests:draw()
     self.done = true
     require('validation.tests.versions.v108_7.netConditions').run(self)
     require('validation.tests.versions.v108_7.dedicatedServer').run(self)
+    require('validation.tests.versions.v108_7.serverBoundary').run(self)
+    require('validation.tests.versions.v108_7.serverProcess').run(self)
     print('PASSED ' .. self.count .. ' networking checks')
     katsa.event.quit()
 end

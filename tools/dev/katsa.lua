@@ -10,5 +10,5 @@ local Native = require('source.katsa.core.native')
 local target = ({ Windows = 'windows', Linux = 'linux', OSX = 'macos', Android = 'android' })[Native.os()]
 Native.addDirectory('native/build/' .. target)
 local boot = require('source.katsa.host.boot')
-local status = boot.start({ exe = arg[-1] or 'luajit', args = args })
+local status = boot.start({ exe = arg[-1] or 'luajit', prefix = { arg[0] }, args = args })
 os.exit(status)

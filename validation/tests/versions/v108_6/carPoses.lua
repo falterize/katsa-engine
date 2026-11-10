@@ -21,7 +21,7 @@ function Module.run(self)
     host:load()
     local session = host.demo
     self.session, self.port = session, 47940 + math.floor(os.clock() * 100) % 9
-    session:host('Tester', self.port)
+    session:host('Tester', self.port, { separate = false })
     host.world.environment.debug.physics.enabled = true
     local idle = function() end
     -- The hosting player must be connected first: it becomes the host player (id order matters).

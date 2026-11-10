@@ -135,6 +135,19 @@ function Boot.start(host)
         return 1
     end
     installSearcher(FS)
+    -- What it takes to start this game again (a server child process): the executable, the dev
+    -- launcher script and the game path when one was given.
+    local launch = { host.exe }
+    for _, value in ipairs(host.prefix or {}) do
+        launch[#launch + 1] = value
+    end
+    for _, value in ipairs(host.args or {}) do
+        if value ~= '--' and not value:find('^%-%-') then
+            launch[#launch + 1] = source
+            break
+        end
+    end
+    katsa.process.setLaunchBase(launch)
 
     local config = defaultConfig()
     if FS.getInfo('conf.lua', 'file') then

@@ -31,6 +31,10 @@ function Dedicated.parse(arguments)
                 options.bot = false
             elseif argument == '--port' and tonumber(value) then
                 options.port = tonumber(value)
+            elseif argument == '--admin-token' and value then
+                options.adminToken = value
+            elseif argument == '--close-with-host' then
+                options.closeWithHost = true
             end
         end
     end
@@ -43,14 +47,26 @@ function Dedicated.parse(arguments)
     return options
 end
 
+-- A server a hosting player started writes this file into the save directory once it listens, so
+-- the game that started it knows when to connect.
+function Dedicated.getReadyFile(port)
+    return ('server-%d.ready'):format(port)
+end
+
 function Dedicated.new(scene, options)
     local self = setmetatable({ scene = scene, options = options, uptime = 0 }, Dedicated)
+    katsa.process.attachConsole() -- a runtime built without a console gets one (Windows)
     self.host = ServerHost.new(scene.world.resources, {
         port = options.port,
         name = options.name,
         maxPlayers = options.maxPlayers,
         bot = options.bot,
         simulate = options.simulate,
+        adminToken = options.adminToken,
+        closeWithHost = options.closeWithHost,
+        onShutdown = function()
+            katsa.event.quit()
+        end,
         profiler = scene.manager.profiler,
     })
     self.host:start()
@@ -63,6 +79,8 @@ function Dedicated.new(scene, options)
             options.maxPlayers
         )
     )
+    self.readyFile = Dedicated.getReadyFile(options.port)
+    katsa.filesystem.write(self.readyFile, tostring(katsa.process.getId()))
     local console, reason = StdinConsole.new(function(line)
         self:command(line)
     end)
@@ -223,6 +241,9 @@ function Dedicated:update(dt)
 end
 
 function Dedicated:release()
+    if self.readyFile then
+        katsa.filesystem.remove(self.readyFile)
+    end
     if self.console then
         self.console:close()
     end

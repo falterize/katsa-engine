@@ -3,8 +3,8 @@
 -- car. The replicated model (pose, state and animation blends) is refreshed every step.
 local StateMachine = require('source.engine.core.stateMachine')
 local Math = require('./math')
-local WalkerEntity = require('../game.walkerEntity')
-local Arena = require('../game.arena')
+local WalkerEntity = require('../shared.walkerEntity')
+local Arena = require('../shared.arena')
 local StepValue = require('source.engine.animation.stepValue')
 
 local Walker = {}

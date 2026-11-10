@@ -29,7 +29,7 @@ function Module.run(self)
     local host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
     host:load()
     local session = host.demo
-    session:host('Tester', 47930 + math.floor(os.clock() * 100) % 9)
+    session:host('Tester', 47930 + math.floor(os.clock() * 100) % 9, { separate = false })
     for _ = 1, 400 do
         frames(host, 1)
         if session.mode == 'playing' then

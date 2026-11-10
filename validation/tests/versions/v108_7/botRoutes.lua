@@ -2,7 +2,7 @@
 local Module = {}
 
 function Module.run(self)
-    local Bot = require('source.game.scenes.multiplayerCars.scripts.game.bot')
+    local Bot = require('source.game.scenes.multiplayerCars.server.scripts.bot')
     local searches = 0
     local nav = {
         levels = {},

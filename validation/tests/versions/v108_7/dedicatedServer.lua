@@ -7,7 +7,7 @@ function Module.run(self)
     local scene = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
     scene:load()
     local Session = getmetatable(scene.demo).__index
-    local ServerHost, GameClient, ArenaView = Session.ServerHost, Session.GameClient, Session.ArenaView
+    local ServerHost, GameClient, ArenaStatics = Session.ServerHost, Session.GameClient, Session.ArenaStatics
     local World3D = require('source.engine.world.world')
     local resources = scene.world.resources
     local port = 47200 + math.floor(os.clock() * 1000) % 500
@@ -17,7 +17,7 @@ function Module.run(self)
     local world = World3D.new(resources, nil, {
         physics = { unitsPerMeter = 1, gravity = { 0, -9.81, 0 }, backend = 'jolt' },
     })
-    ArenaView.buildPhysics({ world = world })
+    ArenaStatics.build({ world = world })
     local client = GameClient.new({}, {
         address = '127.0.0.1',
         port = port,

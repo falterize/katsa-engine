@@ -38,7 +38,7 @@ function Tests:startRemote()
         physics = { unitsPerMeter = 1, gravity = { 0, -9.81, 0 }, backend = 'jolt' },
     })
     local Session = getmetatable(self.session).__index
-    Session.ArenaView.buildPhysics({ world = world })
+    Session.ArenaStatics.build({ world = world })
     local remote = { world = world, throttle = 0 }
     remote.client = Session.GameClient.new({}, {
         address = '127.0.0.1',
@@ -83,7 +83,7 @@ function Tests:draw()
             'the arena has a physical terrain mesh'
         )
         self.port = 47990 + math.floor(os.clock() * 100) % 9
-        self.session:host('Tester', self.port)
+        self.session:host('Tester', self.port, { separate = false })
     end
     local host, session = self.host, self.session
     if not host then
@@ -411,7 +411,7 @@ function Tests:draw()
         self:startRemote()
     elseif frame == 641 then
         -- Walk (and sprint) up and down the hills: the fall state must never trigger on terrain.
-        local Arena = require('source.game.scenes.multiplayerCars.scripts.game.arena')
+        local Arena = require('source.game.scenes.multiplayerCars.scripts.shared.arena')
         local walker = session.walker
         local keys = host.input.actions.keys
         local runs = { { -48, -10, 90 }, { -30, 10, 180 }, { 10, -35, 90 }, { -5, -40, 90 } }
@@ -469,7 +469,7 @@ function Tests:draw()
         )
         platform:destroy()
         -- The car park: the deck and the ramp are solid, at the heights the navigation assumes.
-        local Arena = require('source.game.scenes.multiplayerCars.scripts.game.arena')
+        local Arena = require('source.game.scenes.multiplayerCars.scripts.shared.arena')
         local g = Arena.garage
         local out = {}
         local deck = session.scene.physics:raycast({ -42, 20, -48 }, { -42, -5, -48 }, nil, out)

@@ -63,7 +63,7 @@ function Tests:startRemote(host)
         physics = { unitsPerMeter = 1, gravity = { 0, -9.81, 0 }, backend = 'jolt' },
     })
     local Session = getmetatable(self.session).__index
-    Session.ArenaView.buildPhysics({ world = world })
+    Session.ArenaStatics.build({ world = world })
     local remote = { world = world, throttle = 0 }
     remote.client = Session.GameClient.new({}, {
         address = '127.0.0.1',
@@ -164,7 +164,7 @@ function Tests:draw()
         self.host:load()
         self.session = self.host.demo
         self.port = 47960 + math.floor(os.clock() * 100) % 9
-        self.session:host('Tester', self.port)
+        self.session:host('Tester', self.port, { separate = false })
         self.host.world.environment.debug.physics.enabled = true
     end
     local host, session = self.host, self.session

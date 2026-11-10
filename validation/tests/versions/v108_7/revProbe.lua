@@ -8,7 +8,7 @@ function Tests:draw()
     if self.frame == 1 then
         self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load(); self.session = self.host.demo
-        self.session:host('Tester', 47950 + math.floor(os.clock() * 100) % 9)
+        self.session:host('Tester', 47950 + math.floor(os.clock() * 100) % 9, { separate = false })
     end
     local ui = self.session.scene.ui
     local r0 = ui.revision

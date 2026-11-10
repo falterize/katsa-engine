@@ -1,16 +1,9 @@
--- Multiplayer cars: LAN server list, authoritative server, bot and nitro refill by rewarded ad.
+-- Multiplayer cars client: LAN server list, driving, chat, voice and nitro refill by rewarded ad.
 -- This file only wires the lifecycle; the game lives in scripts/ and the car in nodes/vehicle/.
+-- The authoritative server is server/ (settings.server): `--server` runs it instead of this file.
 local Scene = {}
 
 function Scene.create(scene, context)
-    -- `--server` runs the scene as a dedicated server: no menu, no views, no input.
-    local Dedicated = context:require('scripts.game.dedicated')
-    local options = Dedicated.parse(katsa.launchArguments)
-    if options then
-        local server = Dedicated.new(scene, options)
-        context.instance = server
-        return server
-    end
     local Session = context:require('scripts.content')
     -- Esc opens the pause menu without stopping time: the host's server must keep simulating.
     require('source.game.runtime.pauseMenu').attach(scene, true)

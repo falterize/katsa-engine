@@ -2,7 +2,7 @@
 -- without this a player would walk straight through everybody else. The proxy is a kinematic
 -- capsule that follows the replicated, interpolated pose; it stops colliding while its player
 -- rides a car (the seated body is not solid, like the local one).
-local WalkerEntity = require('../game.walkerEntity')
+local WalkerEntity = require('../shared.walkerEntity')
 local Walker = require('./controller')
 
 local Proxy = {}

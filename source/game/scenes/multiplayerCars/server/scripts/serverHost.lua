@@ -3,7 +3,7 @@
 -- plays through the network exactly like every other client.
 local World3D = require('source.engine.world.world')
 local Plugins = require('source.engine.plugins')
-local ArenaView = require('../view.arenaView')
+local Statics = require('../../scripts.shared.arenaStatics')
 local GameServer = require('./gameServer')
 
 local ServerHost = {}
@@ -22,7 +22,7 @@ function ServerHost.new(resources, options)
         },
     })
     Plugins.activate(world, { 'pathfinding' })
-    ArenaView.buildPhysics({ world = world })
+    Statics.build({ world = world })
     local settings = {}
     for key, value in pairs(options) do
         settings[key] = value

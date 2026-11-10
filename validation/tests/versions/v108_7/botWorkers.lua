@@ -23,7 +23,7 @@ end
 
 function Module.run(self)
     local Pathfinding = require('source.engine.plugins').require('pathfinding')
-    local Bot = require('source.game.scenes.multiplayerCars.scripts.game.bot')
+    local Bot = require('source.game.scenes.multiplayerCars.server.scripts.bot')
     local nav = map(Pathfinding.Layered)
     local planner = Pathfinding.RemotePlanner.new(nav, { size = 1, name = 'botTest' })
     self:check(planner:isThreaded(), 'The route planner starts a worker thread')

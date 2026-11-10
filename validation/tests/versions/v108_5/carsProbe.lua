@@ -20,7 +20,7 @@ function Tests:draw()
         self.host:load()
         self.session = self.host.demo
         self.manager.profiler:startRecording({ scene = 'multiplayerCars' })
-        self.session:host('Tester', 47980 + math.floor(os.clock() * 100) % 9)
+        self.session:host('Tester', 47980 + math.floor(os.clock() * 100) % 9, { separate = false })
     end
     local host, session = self.host, self.session
     if not host then

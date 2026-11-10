@@ -114,13 +114,19 @@ driver changes.
 A server never shares state with a client by reference. A hosting player runs a server in the
 same process (multiplayerCars: `ServerHost`, a physics-only `World3D` of its own) and joins it
 through the loopback like everybody else, so host and guests see the same thing, ping included.
-The same server runs without a window:
+A networked scene keeps its client at the scene root and its server in a `server/` folder with its
+own `main.lua` and `scripts/`; code both sides need lives in `scripts/shared/`. `settings.lua` names
+the entry (`server = 'server.main'`), and `--server` loads it instead of `main.lua`, headless. Nothing
+in `server/` or `scripts/shared/` may require client code (views, UI, input, `katsa.graphics`); a
+test checks it. The same server runs without a window:
 
 ```
 luajit tools/dev/katsa.lua . --scene multiplayerCars --server 7777 --name "My arena" --max-players 8
 luajit tools/dev/katsa.lua . --scene multiplayerCars --server --sim-preset poor --no-bot
 ```
 
+A hosting player's game starts that same server as a child process (`katsa.process`, with its own
+console window) and joins it with a one-time admin token; see [multiplayerCars](multiplayerCars.md).
 `--server` switches the runtime to headless (`Runtime.headless`): SDL's `offscreen` video driver
 (no X server or display needed), no drawing or presenting, the frame loop paced at the frame rate
 limit (60 by default). The process reads commands from stdin: `help`, `status`, `players`,

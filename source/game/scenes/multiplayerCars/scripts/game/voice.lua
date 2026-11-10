@@ -12,10 +12,8 @@ Voice.__index = Voice
 
 local SAMPLE_RATE = 12000
 local PACKET_SAMPLES = 960 -- 80 ms
-local MAX_PACKET = 2400
 local SPEAKING_HOLD = 0.4 -- how long the indicator stays after the last packet
 
--- Server side: relay. `server` is the GameServer.
 -- Loudness of int16 samples as 0..1 (RMS, lifted so quiet speech is still visible).
 local function loudness(pcm, count, from)
     local sum = 0
@@ -43,27 +41,6 @@ function Voice:setLevel(id, value)
             self.levels[id] = { value = value, time = self.now }
         end
     end
-end
-
-function Voice.bindServer(server)
-    local remote = server.server:remote('voice'):unreliable()
-    local last = {}
-    remote:onServer(function(player, bytes)
-        if type(bytes) ~= 'string' or #bytes == 0 or #bytes > MAX_PACKET then
-            return
-        end
-        -- 80 ms of audio per packet; allow bursts but not floods.
-        local now = server.server.time
-        local gate = last[player.id] or { time = now, tokens = 8 }
-        gate.tokens = math.min(8, gate.tokens + (now - gate.time) * 12.5)
-        gate.time = now
-        last[player.id] = gate
-        if gate.tokens < 1 then
-            return
-        end
-        gate.tokens = gate.tokens - 1
-        remote:fireOthers(player, player.id, bytes)
-    end)
 end
 
 local WARM_UP_AFTER = 1.5 -- seconds of session time before the microphone is opened

@@ -24,6 +24,7 @@ local lazy = {
     physics = 'source.katsa.physics',
     net = 'source.katsa.net',
     thread = 'source.katsa.thread',
+    process = 'source.katsa.process',
 }
 
 setmetatable(katsa, {

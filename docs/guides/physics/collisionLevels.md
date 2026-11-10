@@ -45,4 +45,4 @@ Files: `source/engine/physics/3d/decomposition/` (`hull`, `voxelGrid`, `planner`
 
 ## Cars
 
-multiplayerCars builds its hull with `Multiple Convex` from the Duke 69 body panels (`scripts/game/carHull.lua`). A dent only displaces the hull vertices; the decomposition itself runs once.
+multiplayerCars builds its hull with `Multiple Convex` from the Duke 69 body panels (`scripts/shared/carHull.lua`). A dent only displaces the hull vertices; the decomposition itself runs once.

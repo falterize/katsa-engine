@@ -26,6 +26,10 @@ function Layout.validate(root, settings)
         )
     end
     assert(
+        settings.server == nil or type(settings.server) == 'string',
+        'settings.server must name a module such as server.main'
+    )
+    assert(
         settings.runInBackground == nil or type(settings.runInBackground) == 'boolean',
         'runInBackground must be a boolean'
     )
@@ -40,9 +44,18 @@ function Layout.validate(root, settings)
     -- archivers drop empty folders, so a scene must load without them.
 end
 
+-- The scene's lifecycle module: main.lua, or the `settings.server` module when the process runs
+-- as a headless dedicated server (`--server`).
 function Layout.lifecycle(package)
-    local main = package:require('main')
-    assert(type(main) == 'table', 'Scene main.lua must return a named module')
+    local name = 'main'
+    if require('source.engine.core.runtime').headless then
+        name = assert(
+            package.settings.server,
+            'This scene has no server entry (settings.server) to run with --server'
+        )
+    end
+    local main = package:require(name)
+    assert(type(main) == 'table', 'Scene ' .. name .. ' must return a named module')
     if package.settings.layoutVersion then
         for _, name in ipairs(Layout.hooks) do
             assert(type(main[name]) == 'function', 'Scene lifecycle hook is missing: ' .. name)
