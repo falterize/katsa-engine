@@ -101,7 +101,7 @@ function Inspector.install(Workspace)
             require('source.engine.editor.inspectors.schema').signature(node._editorTarget or node)
         local groups = {}
         for _, field in ipairs(self.fields) do
-            local name = category(field.key)
+            local name = field.attribute and 'Attributes' or category(field.key)
             groups[name] = groups[name] or {}
             groups[name][#groups[name] + 1] = field
         end
@@ -112,6 +112,7 @@ function Inspector.install(Workspace)
             'Appearance',
             'Shadows',
             'Settings',
+            'Attributes',
         }) do
             if groups[name] then
                 self.ui:button({
@@ -265,6 +266,13 @@ function Inspector.install(Workspace)
 
     function Workspace:value(field, component)
         local target = self.selected._editorTarget or self.selected
+        if field.attribute then
+            local attribute = field.container[field.key]
+            if attribute == nil then
+                attribute = field.value
+            end
+            return component and attribute[component] or attribute
+        end
         local getter =
             require('source.engine.editor.inspectors.schema').descriptor(target, field.key).get
         if getter then

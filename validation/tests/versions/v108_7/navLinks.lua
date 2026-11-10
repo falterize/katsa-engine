@@ -73,10 +73,10 @@ function Tests.run(tester)
     local agent = world:create('NavAgent3D', {
         navMap = nav,
         speed = 8,
-        position = { -10, 0, 0 },
         areaCosts = 'water = 50',
         actionCosts = 'jump = 3, climb = off',
     })
+    agent:setPosition({ -10, 0, 0 })
     world:updateNodes(1 / 60)
     tester:check(
         agent._agent.areaCosts.water == 50 and agent._agent.actionCosts.jump == 3 and agent._agent.actionCosts.climb == false,
@@ -91,18 +91,18 @@ function Tests.run(tester)
     end)
     -- The script's side: walk toward the advised corner; at the link start do the action by hand.
     local function walk(dt, jump)
-        local next, at = agent:getNextPathPosition(), agent.position
+        local next, at = agent:getNextPathPosition(), agent:getWorldPosition()
         local dx, dz = next[1] - at[1], next[3] - at[3]
         local length = math.max(1e-6, math.sqrt(dx * dx + dz * dz))
         if agent:getNextAction() == 'jump' and length < 0.3 then
             if jump then
                 local landing = agent:getActionTarget()
-                agent.position = { landing[1], landing[2], landing[3] }
+                agent:setPosition(landing)
             end
             return
         end
         local step = math.min(length, 8 * dt)
-        agent.position = { at[1] + dx / length * step, at[2], at[3] + dz / length * step }
+        agent:setPosition({ at[1] + dx / length * step, at[2], at[3] + dz / length * step })
     end
     agent:setTarget({ 10, 0, 0 })
     local advised, landing
@@ -115,20 +115,20 @@ function Tests.run(tester)
         walk(1 / 20, false)
     end
     tester:check(advised == 'jump' and landing and landing[1] > 0, 'the agent advises the jump before it reaches the link start')
-    local x = agent.position[1]
+    local x = agent:getWorldPosition()[1]
     for _ = 1, 10 do
         world:updateNodes(1 / 20)
         walk(1 / 20, false)
     end
     tester:check(
-        agent:getNextAction() == 'jump' and reached == 0 and agent.position[1] - x < 6,
+        agent:getNextAction() == 'jump' and reached == 0 and agent:getWorldPosition()[1] - x < 6,
         'without the jump the agent keeps advising it and does not cross by itself'
     )
     for _ = 1, 120 do
         world:updateNodes(1 / 20)
         walk(1 / 20, true)
     end
-    tester:check(reached == 1 and arrived and agent.position[1] > 5, 'after the script jumps the agent reports LinkReached and walks on to its goal')
+    tester:check(reached == 1 and arrived and agent:getWorldPosition()[1] > 5, 'after the script jumps the agent reports LinkReached and walks on to its goal')
     tester:check(agent.fits, 'a small agent fits the baked mesh')
     agent.radius = 40
     world:updateNodes(1 / 20)

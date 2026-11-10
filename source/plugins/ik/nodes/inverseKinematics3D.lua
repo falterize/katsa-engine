@@ -44,7 +44,7 @@ local function boneNames(node)
 end
 
 local Definition = {
-    base = 'Node3D',
+    base = 'Node',
     properties = {
         type = {
             default = 'TwoBone',

@@ -86,6 +86,13 @@ local function build(node, overrides, parent)
         copy =
             require('source.engine.nodes.core.baseNode').create(node.className, properties, parent)
     end
+    for _, name in ipairs(node:getAttributeNames()) do
+        if node:isAttributeReference(name) then
+            copy:setAttributeReference(name, node:getAttribute(name))
+        else
+            copy:setAttribute(name, copyValue(node:getAttribute(name)))
+        end
+    end
     return copy
 end
 

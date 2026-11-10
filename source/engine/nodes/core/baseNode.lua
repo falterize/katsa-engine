@@ -6,6 +6,7 @@ local Parenting = require('./parenting')
 local Hierarchy = require('./hierarchy')
 local Signals = require('./signals')
 local Lifecycle = require('./lifecycle')
+local Attributes = require('./attributes')
 
 local Node = {
     classes = {},
@@ -197,6 +198,12 @@ for _, key in ipairs({
     Node[key] = Hierarchy[key]
 end
 
+Node.setAttribute, Node.getAttribute = Attributes.set, Attributes.get
+Node.hasAttribute, Node.removeAttribute = Attributes.has, Attributes.remove
+Node.getAttributes, Node.getAttributeNames = Attributes.all, Attributes.names
+Node.setAttributeReference, Node.onAttributeChanged = Attributes.setReference, Attributes.onChanged
+Node.isAttributeReference, Node.attributeView = Attributes.isReference, Attributes.view
+
 -- Deep copy of this node and its descendants; `properties` overrides the copy's fields
 -- (for example { Name = 'Copy' }) and `parent` defaults to this node's parent.
 function Node:clone(properties, parent)
@@ -229,6 +236,16 @@ for _, key in ipairs({
     'removeTag',
     'hasTag',
     'getTags',
+    'setAttribute',
+    'getAttribute',
+    'hasAttribute',
+    'removeAttribute',
+    'getAttributes',
+    'getAttributeNames',
+    'setAttributeReference',
+    'onAttributeChanged',
+    'isAttributeReference',
+    'attributeView',
 }) do
     BaseNode[key] = Node[key]
 end

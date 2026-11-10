@@ -99,7 +99,8 @@ function PopupValues.install(Popup)
         }
         local world = self.target._world or self.target._sceneWorld or self.workspace.scene.world
         for _, node in ipairs(world.root:getDescendants()) do
-            local valid = require('source.engine.editor.inspectors.nodeReferences').accepts(
+            local valid = self.field.attribute and node ~= self.target and (node._world or node._sceneWorld) == world
+                or require('source.engine.editor.inspectors.nodeReferences').accepts(
                 self.target,
                 self.field.key,
                 node

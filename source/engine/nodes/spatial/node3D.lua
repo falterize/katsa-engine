@@ -6,11 +6,22 @@ local Validate = require('../../core.validate')
 
 local Node3D = Node.define('Node3D', 'Node')
 
+local UNIT, ZERO = { 1, 1, 1 }, { 0, 0, 0 }
+
 function Node3D.initialize(self)
-    self.transparency = self.transparency or 0
-    self.shadowGroup = self.shadowGroup or (self.shadowLayers == 1 and 'SceneCamera' or 'Default')
-    self.position = self.position or { 0, 0, 0 }
-    self.rotation = self.rotation or { 0, 0, 0 }
+    local omitted = require('source.engine.nodes.core.classPolicy').omitted(self._class)
+    if not omitted.transparency then
+        self.transparency = self.transparency or 0
+    end
+    if not omitted.shadowGroup then
+        self.shadowGroup = self.shadowGroup or (self.shadowLayers == 1 and 'SceneCamera' or 'Default')
+    end
+    if not omitted.position then
+        self.position = self.position or { 0, 0, 0 }
+    end
+    if not omitted.rotation then
+        self.rotation = self.rotation or { 0, 0, 0 }
+    end
     self.size = self.size or { 1, 1, 1 }
     if self:isA('BillboardUI') or self:isA('Decal3D') then
         if self.scale then
@@ -21,7 +32,7 @@ function Node3D.initialize(self)
         end
         self.scale = nil
         self._spatialScale = { 1, 1, 1 }
-    else
+    elseif not omitted.scale then
         self.scale = self.scale or { 1, 1, 1 }
     end
 end
@@ -76,9 +87,9 @@ function Node3D:getWorldMatrix()
         body:sync()
     end
     local p, r, s =
-        readValue(self.spatialPosition or self.position),
-        readValue(self.rotation),
-        readValue(self.scale or self._spatialScale)
+        readValue(self.spatialPosition or self.position or ZERO),
+        readValue(self.rotation or ZERO),
+        readValue(self.scale or self._spatialScale or UNIT)
     if self._spatialScale then
         assert(self.scale == nil, 'World3D UI uses Size rather than scale')
     end

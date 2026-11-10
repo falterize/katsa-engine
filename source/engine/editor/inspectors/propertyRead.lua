@@ -8,6 +8,15 @@ local fields = require('./propertyPolicy').fields
 local PropertyRead = {}
 
 function PropertyRead.install(Properties)
+    function Properties.numeric(list)
+        for i = 1, #list do
+            if type(list[i]) ~= 'number' then
+                return false
+            end
+        end
+        return true
+    end
+
     function Properties.parentPath(node)
         local parts = {}
         local parent = node.parent
@@ -218,6 +227,39 @@ function PropertyRead.install(Properties)
                     }
                 end
             end
+        end
+        if target._node and target.getAttributeNames then
+            local view = target:attributeView()
+            for _, name in ipairs(target:getAttributeNames()) do
+                local value = target:getAttribute(name)
+                local row = {
+                    key = name,
+                    attribute = true,
+                    container = view,
+                    hint = 'Attribute: a named value stored on this node (Node:setAttribute).',
+                }
+                if target:isAttributeReference(name) then
+                    row.kind, row.value = 'node', value
+                elseif type(value) == 'boolean' or type(value) == 'number' or type(value) == 'string' then
+                    row.kind, row.value = type(value), value
+                elseif Array.is(value) and #value >= 2 and #value <= 4 and Properties.numeric(value) then
+                    row.kind, row.value = 'vector', value
+                else
+                    row.kind, row.value = 'string', tostring(value)
+                    row.readOnly, row.reason = true, 'Only scripts can change this attribute value.'
+                end
+                result[#result + 1] = row
+            end
+            result[#result + 1] = {
+                key = 'add attribute',
+                kind = 'string',
+                value = '',
+                attribute = true,
+                attributeNew = true,
+                container = view,
+                hint = 'name = value adds or changes an attribute (true, false, a number, "1, 2, 3" for a '
+                    .. 'vector, or text); name: node adds an empty node slot; name = (nothing) removes it.',
+            }
         end
         require('source.engine.editor.inspectors.blendShapeRows').append(target, result)
         return result

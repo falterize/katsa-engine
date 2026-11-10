@@ -63,4 +63,43 @@ local function inheritInitializers(class, instance)
     end
     require('source.engine.nodes.core.extensions').run(class.name, instance)
 end
-return { propertyAliases = propertyAliases, initialize = inheritInitializers }
+-- Spatial properties a class never reads. They do not exist on its nodes: no default value, no
+-- inspector row, no clone entry. A plugin class lists its own in `omit = { 'scale', ... }`.
+local omit = {
+    NavMap3D = { 'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup' },
+    NavLink3D = { 'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup' },
+    NavArea3D = { 'transparency', 'layerGroup', 'shadowGroup' },
+    NavObstacle3D = { 'transparency', 'layerGroup', 'shadowGroup' },
+    Attachment3D = { 'transparency', 'layerGroup', 'shadowGroup' },
+    PointLight3D = { 'transparency', 'scale', 'inheritScale' },
+    DirectionalLight3D = { 'transparency', 'scale', 'inheritScale', 'position' },
+    Camera3D = { 'transparency', 'scale' },
+    Beam3D = { 'position', 'rotation', 'scale', 'inheritScale' },
+    Trail3D = { 'position', 'rotation', 'scale', 'inheritScale' },
+}
+
+local cache = setmetatable({}, { __mode = 'k' })
+
+-- The set of omitted property names of a class (own list, plugin list and ancestors').
+local function omitted(class)
+    local set = class and cache[class]
+    if set then
+        return set
+    end
+    set = {}
+    local node = class
+    while node do
+        for _, list in ipairs({ omit[node.name] or {}, rawget(node, 'omit') or {} }) do
+            for _, key in ipairs(list) do
+                set[key] = true
+            end
+        end
+        node = node.base
+    end
+    if class then
+        cache[class] = set
+    end
+    return set
+end
+
+return { propertyAliases = propertyAliases, initialize = inheritInitializers, omitted = omitted }

@@ -7,7 +7,96 @@ local limits = require('./propertyPolicy').limits
 local PropertyWrite = {}
 
 function PropertyWrite.install(Properties)
+    -- Attribute rows: parse a typed value, or the "name = value" text of the add row.
+    local function parseAttribute(text)
+        text = text:match('^%s*(.-)%s*$')
+        if text == 'true' or text == 'false' then
+            return text == 'true'
+        end
+        local number = tonumber(text)
+        if number then
+            return number
+        end
+        local list = {}
+        for part in text:gmatch('[^,]+') do
+            local n = tonumber(part)
+            if not n then
+                list = nil
+                break
+            end
+            list[#list + 1] = n
+        end
+        if list and #list >= 2 and #list <= 4 then
+            return list
+        end
+        return (text:gsub('^"(.*)"$', '%1'))
+    end
+
+    local function setAttribute(target, field, text, component)
+        if target.destroyed then
+            return false, 'This node was removed'
+        end
+        if field.attributeNew then
+            text = tostring(text or '')
+            local name, kind = text:match('^%s*([^=:]-)%s*:%s*(%a+)%s*$')
+            if name and name ~= '' and kind == 'node' then
+                target:setAttributeReference(name, nil)
+                return true
+            end
+            local key, rest = text:match('^%s*([^=]-)%s*=(.*)$')
+            if not key or key == '' then
+                return false, 'Write name = value, name: node, or name = (nothing) to remove'
+            end
+            if rest:match('^%s*$') then
+                target:setAttribute(key, nil)
+            else
+                target:setAttribute(key, parseAttribute(rest))
+            end
+            return true
+        end
+        if field.kind == 'node' then
+            if text ~= nil then
+                local world = target._world or target._sceneWorld
+                if not (type(text) == 'table' and text._node and not text.destroyed) then
+                    return false, 'Expected a live node'
+                end
+                if world and (text._world or text._sceneWorld) ~= world then
+                    return false, 'The node belongs to another world'
+                end
+            end
+            target:setAttributeReference(field.key, text)
+            return true
+        end
+        if field.readOnly then
+            return false, field.reason or 'Property is read-only'
+        end
+        if field.kind == 'vector' then
+            local current = target:getAttribute(field.key)
+            local number = tonumber(text)
+            if not component or type(current) ~= 'table' or not number then
+                return false, 'Enter a finite number'
+            end
+            local copy = { unpack(current) }
+            copy[component] = number
+            target:setAttribute(field.key, copy)
+        elseif field.kind == 'number' then
+            local number = tonumber(text)
+            if not number or number ~= number or math.abs(number) == math.huge then
+                return false, 'Enter a finite number'
+            end
+            target:setAttribute(field.key, number)
+        elseif field.kind == 'boolean' then
+            target:setAttribute(field.key, text == true)
+        else
+            target:setAttribute(field.key, tostring(text))
+        end
+        return true
+    end
+
     function Properties.set(scene, target, field, text, component)
+        if field.attribute then
+            return setAttribute(target, field, text, component)
+        end
         if text == '<embedded image>' and Objects.isObject(target[field.key]) then
             return true
         end

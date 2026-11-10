@@ -1,7 +1,9 @@
 -- NavAgent3D: plans routes on the NavMesh of a NavMap3D for a body that YOUR script moves, like
 -- Godot's NavigationAgent3D. The node never moves anything. It tells the script where to go next,
 -- which action comes next and how to steer around other agents; it stores the cost weights.
--- The scene needs `plugins = { 'pathfinding' }` and a baked NavMap3D. Put the node at the feet.
+-- The scene needs `plugins = { 'pathfinding' }` and a baked NavMap3D. The node is purely technical
+-- (no transform of its own): create it as a child of the body; the agent stands at that body's
+-- origin lowered by `feetOffset`. Without a spatial parent use `agent:setPosition({ x, y, z })`.
 --
 --   local agent = world:create('NavAgent3D', { navMap = map, speed = 4, radius = 0.5 }, body)
 --   agent:setTarget({ 20, 0, 12 })                 -- or set `targetNode` to chase a node
@@ -31,7 +33,7 @@
 -- `fits` can say whether the baked mesh keeps it clear of walls and ceilings (`fitProblem` tells
 -- what to raise on the map). `radius` also sets the space the agent takes when avoiding others.
 local Definition = {
-    base = 'Node3D',
+    base = 'Node',
     properties = {
         navMap = {
             default = nil,
@@ -47,6 +49,7 @@ local Definition = {
         },
         speed = { default = 4, min = 0, hint = 'Top walking speed the avoidance plans with, units per second.' },
         radius = { default = 0.5, min = 0.05, hint = 'Body radius: space taken when avoiding others, checked against the baked clearance.' },
+        feetOffset = { default = 0, hint = 'How far below the parent node the agent stands (half the body height for a centred body).' },
         height = { default = 1.5, min = 0.1, hint = 'Body height, checked against the NavMap3D agentHeight.' },
         pathDesiredDistance = { default = 0.5, min = 0.05, hint = 'A route corner counts as reached this close.' },
         targetDesiredDistance = { default = 0.3, min = 0, hint = 'The target counts as reached this close.' },
@@ -92,6 +95,25 @@ local function mapOf(self)
         end
     end
     return map
+end
+
+-- Where the agent stands: the point given to setPosition, otherwise the parent's world position
+-- lowered by `feetOffset`.
+function Definition:getWorldPosition()
+    local own = self._position
+    if own then
+        return { own[1], own[2], own[3] }
+    end
+    local parent = self.parent
+    if parent and parent.getWorldPosition and not parent:isA('World3D') then
+        local p = parent:getWorldPosition()
+        return { p[1], p[2] - self.feetOffset, p[3] }
+    end
+    return { 0, 0, 0 }
+end
+
+function Definition:setPosition(point)
+    self._position = { point[1], point[2], point[3] }
 end
 
 -- Joins the crowd of the map as soon as it is baked (the map can be baked after this node).

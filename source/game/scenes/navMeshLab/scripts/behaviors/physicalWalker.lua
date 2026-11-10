@@ -47,8 +47,8 @@ function Walker.new(world, options, others)
     for key, value in pairs(options) do
         agentOptions[key] = value
     end
-    agentOptions.position, agentOptions.color = { 0, -height / 2, 0 }, nil
-    agentOptions.height = height
+    agentOptions.position, agentOptions.color = nil, nil
+    agentOptions.height, agentOptions.feetOffset = height, height / 2
     local agent = world:create('NavAgent3D', agentOptions, body)
     return setmetatable({
         world = world,

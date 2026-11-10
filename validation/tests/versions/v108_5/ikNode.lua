@@ -147,7 +147,7 @@ function Module.run(self)
         tipBone = 'mixamorig:RightHand',
         target = ball,
     }, root)
-    self:check(node:isA('Node3D') and node.type == 'TwoBone' and node.influence == 1, 'node defaults come from the property descriptors')
+    self:check(node:isA('Node') and not node:isA('Node3D') and node.type == 'TwoBone' and node.influence == 1, 'node defaults come from the property descriptors')
     local function visible(target, key)
         return Schema.visible(target, key)
     end

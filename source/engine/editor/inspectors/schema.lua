@@ -135,6 +135,13 @@ function Schema.keys(target, fallback)
             end
         end
     end
+    -- Properties the class omits do not exist on its nodes, so they are not listed either.
+    local omitted = require('source.engine.nodes.core.classPolicy').omitted(target._class)
+    for i = #keys, 1, -1 do
+        if omitted[keys[i]] then
+            table.remove(keys, i)
+        end
+    end
     if target:isA('SurfaceUI') then
         local excluded = {
             offset = true,
@@ -418,7 +425,14 @@ function Schema.visible(target, key)
 end
 
 function Schema.signature(target)
-    return table.concat(Schema.keys(target, {}) or {}, '|')
+    local text = table.concat(Schema.keys(target, {}) or {}, '|')
+    if target._node and target.getAttributeNames then
+        -- Attributes appear, disappear or change type at run time.
+        for _, name in ipairs(target:getAttributeNames()) do
+            text = text .. '|@' .. name .. ':' .. (target:isAttributeReference(name) and 'node' or type(target:getAttribute(name)))
+        end
+    end
+    return text
 end
 local hints = require('./schemaHints')
 

@@ -39,7 +39,8 @@ function Tests.run(tester)
     tester:check(#map:findSmoothPath(from, to).points == 2, 'moving the obstacle opens the way again')
     obstacle:destroy()
 
-    local agent = world:create('NavAgent3D', { navMap = map, speed = 6, position = { -10, 0, 0 } })
+    local agent = world:create('NavAgent3D', { navMap = map, speed = 6 })
+    agent:setPosition({ -10, 0, 0 })
     local arrived = 0
     agent:connect('Arrived', function()
         arrived = arrived + 1
@@ -50,15 +51,15 @@ function Tests.run(tester)
         world:updateNodes(1 / 60)
         -- Like a script would: step toward the advised corner at the agent's speed.
         if not agent:isNavigationFinished() then
-            local next, at = agent:getNextPathPosition(), agent.position
+            local next, at = agent:getNextPathPosition(), agent:getWorldPosition()
             local dx, dz = next[1] - at[1], next[3] - at[3]
             local length = math.max(1e-6, math.sqrt(dx * dx + dz * dz))
             local step = math.min(length, 6 / 60)
-            agent.position = { at[1] + dx / length * step, at[2], at[3] + dz / length * step }
+            agent:setPosition({ at[1] + dx / length * step, at[2], at[3] + dz / length * step })
         end
     end
     tester:check(
-        arrived == 1 and math.abs(agent.position[1] - 10) < 0.6 and agent:isTargetReached(),
+        arrived == 1 and math.abs(agent:getWorldPosition()[1] - 10) < 0.6 and agent:isTargetReached(),
         'a NavAgent3D advises the way and reports Arrived while the script moves the body'
     )
     agent:destroy()
