@@ -18,12 +18,12 @@ end
 
 function Gamepads.install(Input)
     function Input:gamepadpressed(_, button)
-        self.map:setEvent('pad:' .. button, 1)
+        self.map:setEventStrength('pad:' .. button, 1)
         self.actions:gamepadpressed(button)
     end
 
     function Input:gamepadreleased(_, button)
-        self.map:setEvent('pad:' .. button, 0)
+        self.map:setEventStrength('pad:' .. button, 0)
         self.actions:gamepadreleased(button)
     end
 
@@ -32,7 +32,7 @@ function Gamepads.install(Input)
     function Input:updateMap()
         local map, pad = self.map, katsa.gamepad.first()
         for axis in pairs(map.axes) do
-            map:setAxis(axis, pad and pad:getAxis(axis) or 0)
+            map:setAxisValue(axis, pad and pad:getAxis(axis) or 0)
         end
         map:update()
     end
