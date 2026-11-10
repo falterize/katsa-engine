@@ -270,6 +270,25 @@ local path = map:findPath({ -30, 0, -30 }, { 30, 0, 30 })
 ```
 
 
+Every property of a bake, with the values used by the `navMeshLab` scene:
+
+```lua
+world:updateNodes(1 / 60)  -- let physics learn about the bodies before baking
+local map = world:create('NavMap3D', {
+    name = 'ArenaNav',
+    areaSize = { 40, 40 },  -- X and Z size of the baked region, centred on the node
+    cellSize = 0.5,         -- edge of one cell in world units: smaller = more exact, slower bake
+    agentHeight = 2,        -- free height a cell needs above its surface (low ceilings block it)
+    agentRadius = 0.5,      -- blocked cells grow by floor(radius / cellSize) cells around walls
+    castTop = 10,           -- baking rays start this high above the node (must clear the tallest roof)
+    castBottom = -2,        -- and stop this far below it (must reach the lowest floor)
+    maxStep = 0.3,          -- biggest height jump between neighbours that is still walkable
+    -- Not set here, defaults: maxSlope = 35 (steepest walkable surface, degrees),
+    -- floors = 1 (storeys), meshTile = 16 and meshFlatness = 0.3 (NavMesh polygon building).
+})
+local walkable = map:bake()  -- one ray per cell; returns the number of walkable cells
+```
+
 ### Choosing `cellSize`, `agentRadius` and narrow passages
 
 All NavMap3D sizes are world units (they do not depend on `physics.unitsPerMeter`; scale them
