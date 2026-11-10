@@ -112,7 +112,7 @@ function WorkspaceEditing.install(Workspace)
         elseif key == 'return' or key == 'kpenter' then
             self:commit()
         else
-            self._editingNode:editKey(key)
+            self._editingNode:sendKey(key)
             self.buffer = self._editingNode.text
         end
         return true

@@ -44,7 +44,7 @@ require('./gamepads').install(Input)
 function Input:keypressed(key)
     local focused = require('source.engine.ui.widgets.textFocus').current
     if focused then
-        return focused:editKey(key)
+        return focused:sendKey(key)
     end
     self.map:setEventStrength('key:' .. key, 1)
     self.actions:keypressed(key)

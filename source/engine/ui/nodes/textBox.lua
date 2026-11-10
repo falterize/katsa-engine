@@ -93,7 +93,7 @@ function Class:insertText(text)
     self:changedText()
 end
 
-function Class:editKey(key)
+function Class:sendKey(key)
     self:syncText()
     local mods = {
         ctrl = katsa.keyboard.isDown('lctrl', 'rctrl', 'lgui', 'rgui'),
