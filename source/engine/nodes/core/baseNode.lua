@@ -199,7 +199,7 @@ for _, key in ipairs({
 end
 
 Node.setAttribute, Node.getAttribute = Attributes.set, Attributes.get
-Node.hasAttribute, Node.removeAttribute = Attributes.has, Attributes.remove
+Node.hasAttribute = Attributes.has
 Node.getAttributes, Node.getAttributeNames = Attributes.all, Attributes.names
 Node.setAttributeReference, Node.onAttributeChanged = Attributes.setReference, Attributes.onChanged
 Node.isAttributeReference, Node.attributeView = Attributes.isReference, Attributes.view
@@ -239,7 +239,6 @@ for _, key in ipairs({
     'setAttribute',
     'getAttribute',
     'hasAttribute',
-    'removeAttribute',
     'getAttributes',
     'getAttributeNames',
     'setAttributeReference',

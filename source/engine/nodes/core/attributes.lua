@@ -7,7 +7,7 @@ local pairs = require('../../math.array').pairs
 --
 --   node:setAttribute('health', 80)          node:getAttribute('health')        --> 80
 --   node:setAttribute('target', otherNode)   node:getAttribute('target')        --> otherNode
---   node:setAttribute('health', nil)         -- removes it (also node:removeAttribute)
+--   node:setAttribute('health', nil)         -- removes it
 --   node:onAttributeChanged('health', function(value) ... end)
 --   node:connect('AttributeChanged', function(name, value) ... end)
 --
@@ -86,10 +86,6 @@ end
 function Attributes.has(self, name)
     return Attributes.get(self, name) ~= nil
         or (self._attributeSlots ~= nil and self._attributeSlots[name] == true)
-end
-
-function Attributes.remove(self, name)
-    return Attributes.set(self, name, nil)
 end
 
 -- A fresh { name = value } table of the live attributes.
