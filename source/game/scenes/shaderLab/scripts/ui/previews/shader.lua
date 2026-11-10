@@ -13,7 +13,6 @@ function Preview.create(scene, frame, name)
     environment.debug.gizmos.enabled = false
     environment.ambient = { 220, 230, 245 }
     require('scene.scripts.lighting.directional').create(world).enabled = true
-    environment.brightness = 1
     root.currentCamera =
         root:create('Camera3D', { position = { 0, 28, -82 }, rotation = { -7, 0, 0 } })
     local cube = Mesh.create(root, {

@@ -19,7 +19,7 @@ local listNames = { 'objects', 'lights', 'directionalLights', 'shaderNodes' }
 local mapKeys =
     { 'colorMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'occlusionMap', 'emissionMap' }
 local environmentKeys = { 'render', 'sky', 'fog', 'shadows', 'lightSettings', 'systemLayers' }
-local environmentScalars = { 'brightness', 'toneMapping', 'exposure' }
+local environmentScalars = { 'toneMapping', 'exposure' }
 local environmentVectors = { 'ambient' }
 local empty = State.empty
 local scalar = State.scalar

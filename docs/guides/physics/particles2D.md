@@ -32,7 +32,7 @@ Cylinder. Direction, shapeSize, acceleration, gravity, attractionPoint and axes
 are Vector2 for 2D, Vector3 for 3D. Camera/Velocity/Axes orientations are supported.
 2D uses Alpha/Add/Multiply batches, named layer groups and camera/distance culling.
 Unlit/brightness are supported; lit 2D sprites use their World2D Environment ambient
-light and brightness. 3D light sources, shadow casting and shadow reception remain 3D renderer
+light. Brightness is an `Adjustments` setting of the World2D Environment. 3D light sources, shadow casting and shadow reception remain 3D renderer
 features; World2D does not contain a separate 2D lighting/shadow scene graph.
 
 Every world has persistent particle settings at `world.environment.particles`,

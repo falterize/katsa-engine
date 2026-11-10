@@ -4,7 +4,6 @@ function Defaults.create()
     local gizmos = { enabled = true, updateHz = 8, activeOnly = true, maxDistance = 0 }
     return {
         ambient = { 65, 70, 80 },
-        brightness = 1,
         toneMapping = true,
         exposure = 1,
         shadows = {

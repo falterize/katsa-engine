@@ -48,6 +48,12 @@ function Tests:draw()
     if self.frame == 30 and os.getenv('KATSA_DENSITY') and scene and scene.world then
         scene.world.environment.render.renderDensity = tonumber(os.getenv('KATSA_DENSITY'))
     end
+    if self.frame == 30 and os.getenv('KATSA_ADJUST2D') and scene and scene.ui then
+        -- KATSA_ADJUST2D="brightness,contrast,saturation": World2D Adjustments for the capture.
+        local v, adjust = {}, scene.ui.environment.adjustments
+        for n in os.getenv('KATSA_ADJUST2D'):gmatch('[^,]+') do v[#v + 1] = tonumber(n) end
+        adjust.enabled, adjust.brightness, adjust.contrast, adjust.saturation = true, v[1], v[2], v[3]
+    end
     if self.frame == 30 and os.getenv('KATSA_POST') and scene and scene.world then
         -- KATSA_POST="glow,ssao,dof,adjust,vfog,fxaa": switch effects on for the capture.
         local e = scene.world.environment

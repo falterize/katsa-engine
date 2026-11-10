@@ -97,7 +97,9 @@ local function children(node)
             { 'Debug', node.debug, dimension == 2 and 'World2DDebug' or 'Debug' },
             { dimension == 2 and 'Particles2D' or 'Particles3D', node.particles, 'Particles' },
         }
-        if dimension == 3 then
+        if dimension == 2 then
+            entries[#entries + 1] = { 'Adjustments', node.adjustments }
+        else
             for _, entry in ipairs({
                 { 'Shadows', node.shadows, 'Shadows' },
                 { 'Lighting', node.lightSettings },

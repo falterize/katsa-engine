@@ -72,7 +72,6 @@ uniform highp vec4 lightExtra[32];
 uniform int lightCount;
 uniform bool objectLightMaskEnabled;
 uniform vec3 ambient;
-uniform float brightness;
 uniform bool toneMapping;
 uniform bool shadowDebug;
 uniform bool normalDebug;
@@ -239,7 +238,7 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
         if(surfaceEnabled)specular+=sampledLightColor*visibility*lightColor[i].w*cone*falloff*falloff*preparedMaterialSpecular(normal,toward,viewDirection,f0,specularTerms);
         lighting+=sampledLightColor*visibility*(lightColor[i].w*max(0.0,dot(normal,toward))*cone*falloff*falloff);
     }
-    vec3 result=(texel.rgb*lighting*(surfaceEnabled && !unlit ? 1.0-metalness : 1.0)+specular)*(unlit ? 1.0 : max(brightness,0.0))+emission;
+    vec3 result=(texel.rgb*lighting*(surfaceEnabled && !unlit ? 1.0-metalness : 1.0)+specular)+emission;
     if(!unlit && toneMapping && systemToneMappingEnabled) result = result * exposure / (vec3(1.0) + result * exposure);
     // lightInfluence below 1 blends toward the flat (unlit) colour; fog fades out with it as well.
     if(!unlit) result = mix(result, texel.rgb+emission, lightDetach);

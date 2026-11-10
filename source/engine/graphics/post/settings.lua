@@ -265,13 +265,28 @@ for _, section in ipairs(Settings.sections) do
     byKind[section.kind] = section
 end
 
+-- A World2D Environment has the Adjustments too, without the colour-correction table: the UI
+-- compositor applies them to the finished picture of the plane.
+local adjustments3D = byKind.Adjustments
+Settings.sections2D = {
+    {
+        field = 'adjustments',
+        title = 'Adjustments',
+        kind = 'Adjustments2D',
+        defaults = { enabled = false, brightness = 1.0, contrast = 1.0, saturation = 1.0 },
+        keys = { 'enabled', 'brightness', 'contrast', 'saturation' },
+        descriptors = adjustments3D.descriptors,
+    },
+}
+byKind.Adjustments2D = Settings.sections2D[1]
+
 function Settings.definition(kind)
     return byKind[kind]
 end
 
 -- Adds every missing section (and missing key of a section) to an Environment.
-function Settings.install(environment)
-    for _, section in ipairs(Settings.sections) do
+local function installSections(environment, sections)
+    for _, section in ipairs(sections) do
         local values = environment[section.field] or {}
         environment[section.field] = values
         values._settingsKind = section.kind
@@ -282,6 +297,14 @@ function Settings.install(environment)
             end
         end
     end
+end
+
+function Settings.install2D(environment)
+    installSections(environment, Settings.sections2D)
+end
+
+function Settings.install(environment)
+    installSections(environment, Settings.sections)
     if environment.render.screenSpaceAA == nil then
         environment.render.screenSpaceAA = 'Disabled'
     end

@@ -8,7 +8,8 @@ C.propertySchema = { systemLayers = { kind = 'bindings' } }
 function C.initialize(self)
     self.particles = self.particles or ParticleSettings.create(self._dimension or 3)
     if self._dimension == 2 then
-        self.ambient, self.brightness = self.ambient or { 255, 255, 255 }, self.brightness or 1
+        self.ambient = self.ambient or { 255, 255, 255 }
+        require('source.engine.graphics.post.settings').install2D(self)
         self.debug = self.debug or { orientation2D = false }
         self.debug.physics = self.debug.physics or Debug2DSettings.create(false)
         return

@@ -21,7 +21,6 @@ function L.bind(shader, world, camera, emitter)
         'particleLighting',
         enabled and { ambient[1] / 255, ambient[2] / 255, ambient[3] / 255 } or { 1, 1, 1 }
     )
-    send('particleWorldBrightness', world.environment.brightness)
     send('particleFacing', { -camera.forward[1], -camera.forward[2], -camera.forward[3] })
     local renderer = world._activeRenderer
     if renderer then

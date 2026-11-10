@@ -5,7 +5,7 @@
 local joystick = 'Safe-area logical pixels; authored values persist across resizing and are '
     .. 'clamped to the viewport.'
 
-return {
+local hints = {
     Joystick = { x = joystick, y = joystick, radius = joystick },
     Adjustments = {
         brightness = 'Multiplies the image.',
@@ -77,3 +77,12 @@ return {
         yaw = 'Sky rotation around the world Y axis, in degrees.',
     },
 }
+
+-- A World2D Environment has the same Adjustments without the colour-correction table.
+hints.Adjustments2D = {
+    brightness = hints.Adjustments.brightness,
+    contrast = hints.Adjustments.contrast,
+    saturation = hints.Adjustments.saturation,
+}
+
+return hints

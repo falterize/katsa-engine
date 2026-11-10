@@ -10,8 +10,8 @@ Workspace groups settings beneath it:
 - World3D -> Environment -> Debug -> Physics3D / Gizmos: visualizer controls;
   Debug itself contains wireframe, bones and 3D orientation axes.
 - World3D -> Environment -> Particles3D, Lighting, Shadows, Sky, Fog and Rendering.
-  Ambient light, brightness, exposure and tone mapping are on Environment itself.
-  World2D Environment exposes ambient and brightness for lit particles.
+  Ambient light, exposure and tone mapping are on Environment itself; brightness lives in `Adjustments`.
+  World2D Environment exposes ambient for lit particles and its own `Adjustments` (brightness, contrast, saturation) for the whole plane.
 
 These are categorized Settings rows, backed by the same tables used at runtime.
 There is no separate Physics2D Solver Settings row. Solver configuration remains

@@ -28,7 +28,6 @@ uniform float particleDetach;
 uniform bool ribbonPremultiply;
 uniform float ribbonEmission;
 uniform float particleBrightness;
-uniform float particleWorldBrightness;
 uniform vec3 particleFacing;
 uniform int particleLightCount;
 uniform vec4 particleLightPosition[8];
@@ -67,7 +66,6 @@ vec4 effect(vec4 color, Image spriteImage, vec2 uv, vec2 screen_coords) {
             }
             light+=visibility*particleLightColor[i].rgb*particleLightColor[i].a*attenuation*attenuation*cone*abs(dot(particleFacing,direction));
         }
-        light*=particleWorldBrightness;
     }
     vec3 result=texel.rgb*mix(light,vec3(1.0),particleDetach)*particleBrightness;
     // MATERIAL_PIXEL

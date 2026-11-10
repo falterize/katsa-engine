@@ -57,9 +57,7 @@ function Renderer.draw(system)
                         if influence > 0 then
                             local environment = ui.environment
                             local ambient = environment and environment.ambient or { 255, 255, 255 }
-                            local lit = (environment and environment.brightness or 1)
-                                * (ambient[1] + ambient[2] + ambient[3])
-                                / (3 * 255)
+                            local lit = (ambient[1] + ambient[2] + ambient[3]) / (3 * 255)
                             brightness = brightness * (1 + (lit - 1) * influence)
                         end
                         batch:setColor(

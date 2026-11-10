@@ -91,9 +91,6 @@ function RenderBindings.install(Renderer)
         if s:hasUniform('exposure') then
             s:send('exposure', l.exposure or 1)
         end
-        if s:hasUniform('brightness') then
-            s:send('brightness', l.brightness)
-        end
         if s:hasUniform('cameraPosition') then
             s:send('cameraPosition', self.camera.worldPosition or self.camera.position)
         end

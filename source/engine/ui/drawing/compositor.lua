@@ -36,7 +36,7 @@ local function canvas(ui, key, w, h, density)
     if not ui._compositorCleanup then
         ui._compositorCleanup = true
         ui:onDestroy(function()
-            for _, name in ipairs({ '_sceneCanvas', '_postSnapshot' }) do
+            for _, name in ipairs({ '_sceneCanvas', '_postSnapshot', '_adjustShader' }) do
                 if ui[name] then
                     ui.resources:releaseOwned(ui[name])
                     ui[name] = nil
@@ -68,6 +68,26 @@ local function reset()
 end
 local restoreScissor = require('../../graphics.state').reapplyScissor
 
+-- The plane's Adjustments (World2D Environment), or nil while they are off.
+local function adjustments(ui)
+    local values = ui.environment and ui.environment.adjustments
+    return values and values.enabled == true and values or nil
+end
+
+local function adjustShader(ui, values)
+    if not ui._adjustShader then
+        ui._adjustShader = ui.resources:own(
+            katsa.graphics.newShader(
+                require('source.engine.graphics.shaders.shaderSource').read(
+                    'assets/shaders/engine/post/adjust2D.glsl'
+                )
+            )
+        )
+    end
+    ui._adjustShader:send('adjust', { values.brightness, values.contrast, values.saturation })
+    return ui._adjustShader
+end
+
 function Compositor.draw(ui, draw)
     local effects = ui._postEffects or {}
     ui._postEffects = effects
@@ -79,7 +99,8 @@ function Compositor.draw(ui, draw)
     if alpha <= 0 or ui.visible == false then
         return
     end
-    if #effects == 0 and alpha == 1 or ui._compositing then
+    local adjust = adjustments(ui)
+    if #effects == 0 and alpha == 1 and not adjust or ui._compositing then
         return draw(ui)
     end
     local g = katsa.graphics
@@ -111,6 +132,9 @@ function Compositor.draw(ui, draw)
     g.push('all')
     reset()
     g.setColor(alpha, alpha, alpha, alpha)
+    if adjust then
+        g.setShader(adjustShader(ui, adjust))
+    end
     g.draw(scene)
     g.flushBatch()
     g.pop()

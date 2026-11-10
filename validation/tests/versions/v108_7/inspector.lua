@@ -27,6 +27,9 @@ function Module.run(self)
     self:check(Hints.get({ _settingsKind = 'Fog' }, 'density'):find('Fog thickness'), 'settings hints come from editor/hints')
     self:check(Hints.get({ _class = world.root._class }, 'sensitivity'):find('Degrees per'), 'common hints apply to any class')
     self:check(Hints.get({ _class = world.root._class }, 'noSuchProperty', 'own') == 'own', 'a descriptor hint stays the fallback of a custom node')
+    self:check(world.environment.brightness == nil, 'Environment has no brightness; Adjustments owns it')
+    local plane = require('source.engine.ui.spatial.plane')
+    self:check(plane ~= nil and require('source.engine.graphics.post.settings').sections2D ~= nil, 'World2D Environment has Adjustments')
     self:check(duplicate == nil, 'the inspector field list has no repeated key ' .. tostring(duplicate or ''))
 end
 
