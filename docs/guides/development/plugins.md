@@ -270,6 +270,17 @@ local path = map:findPath({ -30, 0, -30 }, { 30, 0, 30 })
 ```
 
 
+### Choosing `cellSize`, `agentRadius` and narrow passages
+
+All NavMap3D sizes are world units (they do not depend on `physics.unitsPerMeter`; scale them
+yourself in scenes built at another scale). `cellSize` accepts 0.05 and up; bake time and memory
+grow roughly as `1 / cellSize^2` (a 40 x 40 area is 6 400 cells at 0.5, 25 600 at 0.25 and 160 000
+at 0.1). Blocked cells grow by `floor(agentRadius / cellSize)` whole cells, and a walker's centre
+stays `(rings + 0.5) * cellSize` away from a wall, so the margin is a multiple of the cell. For a
+1.2 m passage and a 0.4 m capsule use `cellSize = 0.25`, `agentRadius = 0.4` (one ring, 0.375 m
+margin). Keep `agentRadius` close to the real body radius: a larger value closes narrow passages,
+a smaller one lets the body scrape walls.
+
 # Ads plugin
 
 Provider-neutral rewarded video ads (`source/plugins/ads`):

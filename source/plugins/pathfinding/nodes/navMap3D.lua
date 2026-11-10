@@ -27,7 +27,7 @@ local NavMap3D = {
     base = 'Node3D',
     properties = {
         areaSize = { default = { 100, 100 }, hint = 'Width and depth (X, Z) of the baked region, centered on the node.' },
-        cellSize = { default = 2, min = 0.25, hint = 'Edge of one navigation cell, in world units. Smaller is more exact and slower to bake.' },
+        cellSize = { default = 2, min = 0.05, hint = 'Edge of one navigation cell, in world units. Smaller is more exact and slower to bake.' },
         floors = { default = 1, min = 1, hint = 'Number of storeys (car park, bridge). A collider belongs to a floor through its navFloor setting.' },
         castTop = { default = 50, hint = 'Height above the node where baking rays start.' },
         castBottom = { default = -50, hint = 'Height below the node where baking rays stop.' },
