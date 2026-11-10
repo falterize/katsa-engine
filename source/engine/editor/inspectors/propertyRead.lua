@@ -169,7 +169,6 @@ function PropertyRead.install(Properties)
                     readOnly = Schema.reason(target, key) ~= nil,
                     reason = Schema.reason(target, key),
                     options = Schema.options(target, key),
-                    colorMaximum = Schema.colorMaximum(target, key),
                 }
             elseif (key == 'geometry' or key == 'material') and value ~= nil then
                 result[#result + 1] = {
