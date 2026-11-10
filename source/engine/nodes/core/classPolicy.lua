@@ -67,10 +67,14 @@ end
 -- children). They do not exist on its nodes: no default value, no
 -- inspector row, no clone entry. A plugin class lists its own in `omit = { 'scale', ... }`.
 local omit = {
-    NavMap3D = { 'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup' },
-    NavLink3D = { 'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup' },
-    NavArea3D = { 'transparency', 'layerGroup', 'shadowGroup' },
-    NavObstacle3D = { 'transparency', 'layerGroup', 'shadowGroup' },
+    NavMap3D = {
+        'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup', 'visible',
+    },
+    NavLink3D = {
+        'rotation', 'scale', 'inheritScale', 'transparency', 'layerGroup', 'shadowGroup', 'visible',
+    },
+    NavArea3D = { 'transparency', 'layerGroup', 'shadowGroup', 'visible' },
+    NavObstacle3D = { 'transparency', 'layerGroup', 'shadowGroup', 'visible' },
     Attachment3D = { 'transparency', 'layerGroup', 'shadowGroup' },
     PointLight3D = { 'transparency', 'scale', 'inheritScale' },
     DirectionalLight3D = { 'transparency', 'scale', 'inheritScale', 'position' },
@@ -78,6 +82,9 @@ local omit = {
     Beam3D = { 'position', 'rotation', 'scale', 'inheritScale' },
     Trail3D = { 'position', 'rotation', 'scale', 'inheritScale' },
     NavAgent3D = { 'visible' },
+    UIStyler = { 'visible' },
+    Camera2D = { 'transparency', 'visible' },
+    Attachment2D = { 'transparency' },
     InverseKinematics3D = { 'visible' },
 }
 

@@ -13,11 +13,18 @@ Node2D.propertySchema = {
 function Node2D.initialize(self)
     self.position = self.position or { 0, 0 }
     self.rotation = self.rotation or 0
-    self.size = self.size or { 32, 32 }
+    local omitted = require('source.engine.nodes.core.classPolicy').omitted(self._class)
     self.scale = self.scale or { 1, 1 }
-    self.visible = self.visible ~= false
     self.enabled = self.enabled ~= false
-    self.transparency = self.transparency or 0
+    if not omitted.size then
+        self.size = self.size or { 32, 32 }
+    end
+    if not omitted.visible then
+        self.visible = self.visible ~= false
+    end
+    if not omitted.transparency then
+        self.transparency = self.transparency or 0
+    end
 end
 
 function Node2D.mount(context, properties, parent)

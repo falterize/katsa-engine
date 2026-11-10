@@ -96,6 +96,7 @@ function Tests.run(tester)
     )
     tester:check(not keys(agent):find(' position ') and agent.position == nil, 'NavAgent3D is a technical node without any transform')
     tester:check(not keys(agent):find(' visible ') and agent.visible == nil, 'NavAgent3D has no visible property')
+    tester:check(not keys(map):find(' visible ') and not keys(world:create('NavArea3D', {})):find(' visible '), 'navigation nodes have no visible property')
 end
 
 return Tests
