@@ -1,4 +1,5 @@
 # Katsa
+<img width="256" height="256" alt="Logo" src="https://github.com/user-attachments/assets/f4e0a692-4519-484c-9898-bfb491d6d54d" />
 
 A Lua 2D and 3D engine and interactive example collection on its own LuaJIT + OpenGL runtime (earlier versions used LÖVE as a wrapper): scene nodes, materials, lighting, shadows, animation, Box2D/Jolt/Oimo physics, particles, audio and 2D/world-space UI. Workspace provides runtime inspection and editing; scenes are authored in code.
 
