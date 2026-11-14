@@ -218,7 +218,14 @@ function T:draw()
     )
     local custom = require('source.engine.graphics.materials.material').new(
         scene.resources,
-        { fragmentCode = 'result*=vec3(1.0);' }
+        {
+            shaders = {
+                require('source.engine.graphics.shaders.composer').parseText(
+                    'shader_type spatial;\nvoid fragment() { ALBEDO *= vec3(1.0); }\n',
+                    'custom.glsl'
+                ),
+            },
+        }
     )
     self:check(
         not custom.shader:hasUniform('depthPrepassTexture'),
@@ -226,9 +233,9 @@ function T:draw()
     )
     local valid, errors = katsa.graphics.validateShader(
         true,
-        require('source.engine.graphics.shaders.shaderSource').read(
+        require('source.engine.graphics.shaders.composer').build(
             'assets/shaders/engine/depthPrepass.glsl'
-        )
+        ).source
     )
     self:check(valid, 'Depth shader validates for ES: ' .. tostring(errors))
     self:check(#self.manager.journal.entries == 0, 'No runtime journal errors')

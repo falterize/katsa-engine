@@ -18,11 +18,9 @@ local function depthShader(renderer)
     local shader = renderer.prepassShader
     if not shader then
         shader = renderer.resources:own(
-            katsa.graphics.newShader(
-                require('source.engine.graphics.shaders.shaderSource').read(
-                    'assets/shaders/engine/depthPrepass.glsl'
-                )
-            )
+            (require('source.engine.graphics.shaders.programs').compile(
+                'assets/shaders/engine/depthPrepass.glsl'
+            ))
         )
         renderer.prepassShader = shader
     end

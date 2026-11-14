@@ -66,17 +66,23 @@ function T:update()
         not shader:hasUniform('objectLights1'),
         'Direct variant compiles out mask decoding and attributes'
     )
-    local crt = katsa.graphics.newShader('assets/shaders/examples/tvStatic.glsl')
+    local tvStatic = 'source/game/scenes/shaderLab/assets/shaders/tvStatic.glsl'
+    local Programs = require('source.engine.graphics.shaders.programs')
+    local crt = Programs.compile(
+        'assets/shaders/engine/canvas/item.glsl',
+        { shaders = { Programs.parse(tvStatic, 'canvas_item') } }
+    )
     for _, size in ipairs({ { 1920, 1080 }, { 1080, 2400 }, { 2560, 1440 } }) do
         local w, h = unpack(size)
         local canvas = katsa.graphics.newCanvas(w, h)
         local white = scene.resources:image('white')
-        crt:send('resolution', { w, h })
+        crt:send('canvasSize', { w, h })
         crt:send('regionOrigin', { 0, 0 })
         crt:send('regionExtent', { w, h })
-        crt:send('noiseStrength', 0.2)
-        crt:send('scanlineStrength', 0.22)
-        crt:send('distortion', 0.03)
+        crt:send('shaderAmount', 1)
+        crt:send('s1_noiseStrength', 0.2)
+        crt:send('s1_scanlineStrength', 0.22)
+        crt:send('s1_distortion', 0.03)
         for _, time in ipairs({ 0, 23.25, 36000 }) do
             crt:send('time', time)
             katsa.graphics.push('all')
@@ -113,11 +119,8 @@ function T:update()
         position = { 0.1, 0, 0.1, 0 },
         size = { 0.8, 0, 0.8, 0 },
         backgroundColor = { 1, 1, 1 },
-        shaderPath = 'assets/shaders/examples/tvStatic.glsl',
+        shaderPath = tvStatic,
         uniforms = {
-            resolution = { 1, 1 },
-            regionOrigin = { 9999, 9999 },
-            regionExtent = { 1, 1 },
             noiseStrength = 0.2,
             scanlineStrength = 0.22,
             distortion = 0.03,

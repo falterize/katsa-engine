@@ -141,9 +141,11 @@ function RenderFrame.install(Renderer)
             self.batches:draw(self)
         end
         g.setDepthMode('less', false)
+        self.drawingTransparent = true
         for _, o in ipairs(self.transparent) do
             self:drawItem(o)
         end
+        self.drawingTransparent = false
         g.setDepthMode()
         g.setMeshCullMode('none')
         g.setWireframe(false)

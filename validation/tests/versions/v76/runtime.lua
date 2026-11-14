@@ -129,13 +129,17 @@ function T:draw()
         local f = assert(io.open(baseline .. '/assets/shaders/engine/shadowSampling.glsl', 'rb'))
         local oldSampling = f:read('*a')
         f:close()
-        local currentSampling =
-            assert(katsa.filesystem.read('assets/shaders/engine/shadowSampling.glsl'))
-        local source =
-            require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
-        local first, last = assert(source:find(currentSampling, 1, true))
-        local oldShader =
-            katsa.graphics.newShader(source:sub(1, first - 1) .. oldSampling .. source:sub(last + 1))
+        local chunk = 'assets/shaders/engine/chunks/shadowSampling.glsl'
+        local oldShader = katsa.graphics.newShader(
+            require('source.engine.graphics.shaders.composer').build(
+                'assets/shaders/engine/world.glsl',
+                {
+                    read = function(path)
+                        return path == chunk and oldSampling or katsa.filesystem.read(path)
+                    end,
+                }
+            ).source
+        )
         local currentShader = r.shader
         for _, mode in ipairs({ 'Standard', 'Realistic' }) do
             settings.mode = mode

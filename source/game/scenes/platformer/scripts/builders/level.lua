@@ -39,7 +39,7 @@ function L.build(lab)
         local group = world:create('Node3D', { name = 'CrystalGroup' .. i })
         local shader = world:create('Shader3D', {
             name = 'CrystalShader' .. i,
-            shaderPath = 'assets/shaders/examples/tint3D.glsl',
+            shaderPath = 'scene://shaders/tint3D.glsl',
             uniforms = { tintEffect = { 0.7, 1, 1.4 } },
         }, group)
         local gem = Mesh.create(world, {

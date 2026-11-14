@@ -1,34 +1,24 @@
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Material = require('../materials.material')
+local Programs = require('./programs')
 
 local Resolver = {}
-local sections = {
-    vertexDeclarations = true,
-    vertexCode = true,
-    fragmentDeclarations = true,
-    fragmentCode = true,
-}
 
-local function read(path)
-    local source = assert(katsa.filesystem.read(path), 'Missing Shader3D source: ' .. path)
-    local result = {}
-    local current
-    for line in (source .. '\n'):gmatch('(.-)\n') do
-        local marker = line:match('^%s*//%s*@(%w+)%s*$')
-        if marker then
-            assert(sections[marker], 'Unknown Shader3D section: ' .. marker)
-            current = marker
-            result[current] = ''
-        elseif current then
-            result[current] = result[current] .. line .. '\n'
-        end
+-- Parsed user shaders are cached per world: a scene restart (hot reload included) starts empty.
+local function shaderFor(world, node)
+    local path = world.resources:canonical(node.shaderPath)
+    local cache = world._parsedShaders
+    if not cache then
+        cache = {}
+        world._parsedShaders = cache
     end
-    assert(
-        result.vertexCode or result.fragmentCode,
-        'Shader3D needs //@vertexCode or //@fragmentCode sections'
-    )
-    return result
+    local info = cache[path]
+    if not info then
+        info = Programs.parse(path, 'spatial')
+        cache[path] = info
+    end
+    return info
 end
 
 function Resolver.resolve(world, object)
@@ -109,33 +99,32 @@ function Resolver.resolve(world, object)
     if not material then
         local options = {
             kind = 'world',
-            uniforms = {},
+            shaders = {},
             template = particle and 'assets/shaders/particles/sprite.glsl' or nil,
         }
-        local mappings = {}
         for index, node in ipairs(active) do
-            local code = read(world.resources:canonical(node.shaderPath))
-            local names = {}
-            for name, value in pairs(node.uniforms) do
-                local compiled = 'effect' .. index .. '_' .. name
-                names[name] = compiled
-                options.uniforms[compiled] = value
-                mappings[compiled] = { node = node, key = name }
-            end
-            for section in pairs(sections) do
-                local chunk = code[section] or ''
-                for name, compiled in pairs(names) do
-                    chunk = chunk:gsub('%f[%w_]' .. name .. '%f[^%w_]', compiled)
-                end
-                if section:match('Code$') and chunk ~= '' then
-                    chunk = '{\n' .. chunk .. '\n}\n'
-                end
-                options[section] = (options[section] or '') .. chunk
-            end
+            options.shaders[index] = shaderFor(world, node)
             options.animated = options.animated or node.animated
         end
         material = Material.new(world.resources, options)
+        -- Compiled uniform name -> the Shader3D node and key that feed it.
+        local mappings = {}
+        for compiled, meta in pairs(material.program.uniforms) do
+            mappings[compiled] = { node = active[meta.shader], key = meta.name }
+        end
         material.uniformMappings = mappings
+        for index, node in ipairs(active) do
+            for name in pairs(node.uniforms) do
+                assert(
+                    material.program.uniforms['s' .. index .. '_' .. name],
+                    ('Shader3D %s sets uniform "%s" that %s does not declare'):format(
+                        tostring(node.name),
+                        name,
+                        node.shaderPath
+                    )
+                )
+            end
+        end
         world._shaderMaterials[key] = material
     end
     material.animated = false
@@ -153,8 +142,13 @@ function Resolver.resolve(world, object)
             end
         end
     end
+    local defaults = material.program.defaults
     for name, mapping in pairs(material.uniformMappings) do
-        material.uniforms[name] = mapping.node.uniforms[mapping.key]
+        local value = mapping.node.uniforms[mapping.key]
+        if value == nil then
+            value = defaults[name]
+        end
+        material.uniforms[name] = value
     end
     object._shaderBoundsPadding = padding
     object._shaderBoundsUnknown = unknown

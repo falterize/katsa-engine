@@ -86,5 +86,5 @@ Every shaded node (Mesh3D, Decal3D, ParticleEmitter2D/3D, Beam3D, Trail3D) has o
 Meshes default to 1; decals, particles and ribbons default to 0. The boolean `unlit` was removed; scenes that
 still pass `unlit = true/false` when creating a node are converted once by `components/illumination/lighting.lua`.
 Renderers must read the value only through `Lighting.influence(node)` (it also forces 0 for billboards and for
-system layers without lighting). In `world.glsl`, `lightInfluence = 0` compiles the unlit variant, other values
+system layers without lighting). In the world program (`assets/shaders/engine/world.glsl`), `lightInfluence = 0` compiles the unlit variant, other values
 use the `lightDetach` uniform (1 - influence) to blend toward the flat colour.

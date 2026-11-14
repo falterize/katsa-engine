@@ -50,6 +50,8 @@ function Lab:sync()
     self.buttons.Default3D.text = '3D tint: ' .. (self.default.enabled and 'ON' or 'OFF')
     self.buttons.Wave3D.text = '3D wave: ' .. (self.wave.enabled and 'ON' or 'OFF')
     self.buttons.Pixel3D.text = '3D pixel UV: ' .. (self.pixel3D.enabled and 'ON' or 'OFF')
+    self.buttons.Snap3D.text = '3D vertex snap: ' .. (self.snap.enabled and 'ON' or 'OFF')
+    self.buttons.Toon3D.text = '3D toon light: ' .. (self.toon.enabled and 'ON' or 'OFF')
 end
 
 function Lab:update(dt)
@@ -60,14 +62,6 @@ function Lab:update(dt)
     self.views.position = narrow and { 0.42, 8, 0, 8 } or { 0, 254, 0, 8 }
     self.views.size = narrow and { 0.58, -16, 1, -16 } or { 1, -262, 1, -16 }
     self.scene.ui:layout()
-    local width, height = katsa.graphics.getDimensions()
-    local x, y = self.pixel._x * ui.scale + ui.offsetX, self.pixel._y * ui.scale + ui.offsetY
-    local w, h = self.pixel._width * ui.scale, self.pixel._height * ui.scale
-    for _, effect in ipairs({ self.tv, self.pixel }) do
-        effect.uniforms.resolution = { width, height }
-        effect.uniforms.regionOrigin = { x, y }
-        effect.uniforms.regionExtent = { w, h }
-    end
 end
 
 return Lab

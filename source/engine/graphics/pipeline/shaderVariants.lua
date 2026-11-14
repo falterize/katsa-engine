@@ -65,76 +65,51 @@ function Variants.get(renderer, object)
     uses[key] = renderer.frame
     local shader = renderer.shaderVariants[key]
     if not shader then
-        local source =
-            require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
-        if not earlyDepth then
-            source = source:gsub('// EARLY_DEPTH_BEGIN.-// EARLY_DEPTH_END', '')
+        local defines = {
+            KATSA_EARLY_DEPTH = earlyDepth,
+            KATSA_SOLID = solid,
+            KATSA_NO_DIRECTIONAL = noDirections,
+            -- Without the per-object light mask the whole interface is excluded, not just the
+            -- arithmetic, so GLES drivers never see the unused varying and attribute.
+            KATSA_LIGHT_MASK = not direct,
+            KATSA_SHADOW_STANDARD = not noShadows and standardShadows,
+            KATSA_SHADOW_SAMPLES = not noShadows and standardShadows and filterSamples or false,
+        }
+        local constants = {
+            -- The selected light count is fixed for this draw: the GPU compiler sees the real
+            -- loop bound while the slots and equations stay those of the general program.
+            lightCount = lightCount,
+            unlit = unlit,
+            skinExtended = extendedSkin,
+        }
+        if noSkin then
+            constants.skinEnabled = false
+        end
+        if noShadows then
+            constants.receiveShadow = false
         end
         if solid then
-            source = source:gsub('if %(texel.a<=alphaCutoff%) discard;', '')
-            source = source:gsub('uniform bool decalTexture;', 'const bool decalTexture=false;')
-            source = source:gsub('uniform bool canvasTexture;', 'const bool canvasTexture=false;')
-        end
-        if noDirections then
-            source = source:gsub('if%(lightExtra%[i%].y>1.5%)', 'if(false)')
-        end
-        -- The selected light count is fixed for this draw. Keep the same light
-        -- slots/equations while exposing the real loop bound to the GPU compiler.
-        source =
-            source:gsub('uniform int lightCount;', 'const int lightCount=' .. lightCount .. ';')
-        source = source:gsub('i<32;', 'i<' .. lightCount .. ';')
-        source = source:gsub('uniform bool unlit;', 'const bool unlit=' .. tostring(unlit) .. ';')
-        if direct then
-            source = source:gsub(
-                'uniform bool objectLightMaskEnabled;',
-                'const bool objectLightMaskEnabled=false;'
-            )
-            -- Exclude the interface and arithmetic without relying on GLES dead-code removal.
-            source = source
-                :gsub('flat varying highp vec2 relevantLights;', '')
-                :gsub('uniform highp vec2 objectLights1;', '')
-                :gsub('attribute highp vec2 instanceLights1;', '')
-                :gsub('relevantLights=[^\n]*', '')
-                :gsub('uint lightMask=[^\n]*', '')
-                :gsub('if%(objectLightMaskEnabled[^\n]*', '')
-        end
-        if noSkin then
-            source = source:gsub('uniform bool skinEnabled;', 'const bool skinEnabled=false;')
-        end
-        source = source:gsub(
-            'uniform bool skinExtended;',
-            'const bool skinExtended=' .. tostring(extendedSkin) .. ';'
-        )
-        if noShadows then
-            source = source:gsub('uniform bool receiveShadow;', 'const bool receiveShadow=false;')
-        end
-        if not noShadows then
-            -- Specialize only built-in programs. Quality settings select equivalent
-            -- calculations; custom materials retain their authored uniform interface.
-            if standardShadows then
-                source = source:gsub('if%(shadowSoftness.x>0.5%)', 'if(false)')
-                source = source:gsub(
-                    'int samples = int%(shadowParameters.w%);',
-                    'int samples = ' .. tostring(filterSamples) .. ';'
-                )
-            end
+            constants.decalTexture = false
+            constants.canvasTexture = false
         end
         if noMaps then
-            source = source:gsub('uniform bool surfaceEnabled;', 'const bool surfaceEnabled=true;')
+            constants.surfaceEnabled = true
             for _, name in ipairs({
-                'NormalMap',
-                'RoughnessMap',
-                'MetalnessMap',
-                'OcclusionMap',
-                'EmissionMap',
+                'hasNormalMap',
+                'hasRoughnessMap',
+                'hasMetalnessMap',
+                'hasOcclusionMap',
+                'hasEmissionMap',
             }) do
-                source = source:gsub(
-                    'uniform bool has' .. name .. ';',
-                    'const bool has' .. name .. '=false;'
-                )
+                constants[name] = false
             end
         end
-        shader = renderer.resources:own(katsa.graphics.newShader(source))
+        shader = renderer.resources:own(
+            (require('source.engine.graphics.shaders.programs').compile(
+                'assets/shaders/engine/world.glsl',
+                { defines = defines, constants = constants }
+            ))
+        )
         renderer.shaderVariants[key] = shader
         renderer.shaderVariantCount = (renderer.shaderVariantCount or 0) + 1
         if renderer.shaderVariantCount > 64 then

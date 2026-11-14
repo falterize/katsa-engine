@@ -190,7 +190,7 @@ function Methods:buildUI()
         zIndex = 40,
         enabled = false,
         backgroundTransparency = 1,
-        shaderPath = 'assets/shaders/examples/uiPulse.glsl',
+        shaderPath = 'source/game/runtime/game/shaders/uiPulse.glsl',
         uniforms = { accent = { 0.25, 0.85, 1 } },
     }, self.ui.content)
     self.cameraButtons = {}

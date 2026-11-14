@@ -23,6 +23,11 @@ local Builtins = require('./builtins')
 
 local Composer = {}
 
+-- Entry points exist only in their own stage: the vertex stage never sees fragment code.
+local stageOf = { vertex = 'STAGE_VERTEX', fragment = 'STAGE_PIXEL', light = 'STAGE_PIXEL' }
+
+local pbrNames = { ROUGHNESS = true, METALLIC = true, AO = true, EMISSION = true }
+
 local function entryMacro(name)
     return 'KATSA_USER_' .. name:upper()
 end
@@ -198,11 +203,13 @@ local function emitUser(shaders, kind, want, result)
                 local entry = info.entries[block.entry]
                 if want[block.entry] then
                     local params = table_[block.entry]
+                    generated(out, '#ifdef ' .. stageOf[block.entry])
                     local head = ('void %s%s(%s) {'):format(prefix, block.entry, parameterList(params))
                     pending.text, pending.line = head, list[entry.open].line
                     emitTokens(out, list, entry.open + 1, entry.close - 1, rename, origin, pending)
                     pending.text = (pending.text or '') .. '}'
                     flush(out, pending, origin)
+                    generated(out, '#endif')
                     defined[block.entry] = defined[block.entry] or {}
                     table.insert(defined[block.entry], index)
                 end
@@ -223,6 +230,7 @@ local function emitUser(shaders, kind, want, result)
         if users then
             local params = table_[entry]
             local wrapper = 'katsa_user' .. entry:sub(1, 1):upper() .. entry:sub(2)
+            generated(out, '#ifdef ' .. stageOf[entry])
             generated(out, ('void %s(%s) {'):format(wrapper, parameterList(params)))
             for _, index in ipairs(users) do
                 local info = shaders[index]
@@ -241,8 +249,12 @@ local function emitUser(shaders, kind, want, result)
                 if entry == 'fragment' and mentions(info, 'fragment', { ALPHA = true, discard = true }) then
                     flags.KATSA_USER_ALPHA = true
                 end
+                if entry == 'fragment' and mentions(info, 'fragment', pbrNames) then
+                    flags.KATSA_USER_PBR = true
+                end
             end
             generated(out, '}')
+            generated(out, '#endif')
             flags[entryMacro(entry)] = wrapper .. '(' .. argumentList(params) .. ')'
         end
     end
@@ -272,9 +284,9 @@ end
 -- Returns { source, map, uniforms, defaults, modes, flags }.
 function Composer.build(template, options)
     options = options or {}
-    local kind = options.kind or 'spatial'
-    local want = options.entries or { vertex = true, fragment = true, light = true }
     local shaders = options.shaders or {}
+    local kind = options.kind or (shaders[1] and shaders[1].type) or 'spatial'
+    local want = options.entries or { vertex = true, fragment = true, light = true }
     local result = { uniforms = {}, defaults = {}, modes = {}, template = template }
     local lines = {}
     generated(lines, '#pragma language glsl3')

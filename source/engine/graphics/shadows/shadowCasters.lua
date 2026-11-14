@@ -18,6 +18,7 @@ function Casters.collect(world, light, layers, localLight, out)
         if
             object:isVisible()
             and object.castShadow ~= false
+            and not (object._resolvedMaterial and not object._resolvedMaterial.castsShadow)
             and not object.onTop
             and (object._renderOpacity or object:getEffectiveOpacity()) > 0
             and bit.band(object.shadowLayers or object.layers or 1, layers, lightLayers or -1) ~= 0

@@ -53,8 +53,10 @@ function Variants.get(renderer, object)
     uses[key]=renderer.frame
     local shader = renderer.shaderVariants[key]
     if not shader then
-        local source =
-            require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
+        -- Historical baseline: the unspecialised general program (the composer replaced the
+        -- text substitutions below, which now find nothing to replace).
+        local source = require('source.engine.graphics.shaders.composer')
+            .build('assets/shaders/engine/world.glsl').source
         if not earlyDepth then
             source=source:gsub('// EARLY_DEPTH_BEGIN.-// EARLY_DEPTH_END','')
         end

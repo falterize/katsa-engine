@@ -1,87 +1,121 @@
 local readValue = require('../../math.managedValue').read
 local pairs = require('../../math.array').pairs
+local ipairs = require('../../math.array').ipairs
+local Programs = require('../shaders.programs')
 
+-- A material is a template program with user shaders spliced in (see graphics/shaders/composer).
+--   kind = 'world': options.template (default the spatial world program) plus options.shaders,
+--                   a list of parsed shaders; builds the main program and its shadow program.
+--   kind = 'ui':    options.code or options.path, a complete shader in the katsa dialect.
 local Material = {}
 Material.__index = Material
 
-local function insert(source, marker, code)
-    local start, finish = source:find(marker, 1, true)
-    assert(start, 'Missing material hook: ' .. marker)
-    return source:sub(1, start - 1) .. (code or '') .. source:sub(finish + 1)
+local worldTemplate = 'assets/shaders/engine/world.glsl'
+local shadowTemplate = 'assets/shaders/engine/shadow.glsl'
+
+local function vertexModified(shaders)
+    for _, shader in ipairs(shaders) do
+        if shader.entries.vertex then
+            return true
+        end
+    end
+    return false
+end
+
+local function newWorld(resources, options)
+    local shaders = options.shaders or {}
+    local shader, program = Programs.compile(options.template or worldTemplate, {
+        shaders = shaders,
+        defines = options.defines,
+    })
+    resources:own(shader)
+    local shadowShader
+    if not program.modes.shadows_disabled then
+        shadowShader = resources:own((Programs.compile(shadowTemplate, {
+            shaders = shaders,
+            entries = { vertex = true },
+        })))
+    end
+    return shader, program, shadowShader
 end
 
 function Material.new(resources, options)
     options = options or {}
     local kind = options.kind or 'world'
     assert(kind == 'world' or kind == 'ui', 'Material.kind must be world or ui')
-    local code
+    local shader, program, shadowShader
     if kind == 'world' then
-        code = require('source.engine.graphics.shaders.shaderSource').read(
-            options.template or 'assets/shaders/engine/world.glsl'
-        )
-        code = code:gsub('// EARLY_DEPTH_BEGIN.-// EARLY_DEPTH_END', '')
-        code = insert(code, '// MATERIAL_VERTEX_DECLARATIONS', options.vertexDeclarations)
-        code = insert(code, '// MATERIAL_PIXEL_DECLARATIONS', options.fragmentDeclarations)
-        code = insert(code, '// MATERIAL_VERTEX', options.vertexCode)
-        code = insert(code, '// MATERIAL_PIXEL', options.fragmentCode)
+        shader, program, shadowShader = newWorld(resources, options)
     else
-        code = options.code or (options.path and assert(katsa.filesystem.read(options.path)))
+        local code = options.code or (options.path and assert(katsa.filesystem.read(options.path)))
         assert(code, 'UI material requires code or path')
+        local success
+        success, shader = pcall(katsa.graphics.newShader, code)
+        assert(success, 'Material shader failed: ' .. tostring(shader))
+        resources:own(shader)
     end
-    local success, shader = pcall(katsa.graphics.newShader, code)
-    assert(success, 'Material shader failed: ' .. tostring(shader))
-    resources:own(shader)
+    local uniforms = options.uniforms or {}
+    if program then
+        for name, value in pairs(program.defaults) do
+            if uniforms[name] == nil then
+                uniforms[name] = value
+            end
+        end
+    end
+    local modifiesVertex = program ~= nil and vertexModified(options.shaders or {})
+    local modes = program and program.modes or {}
     local self = setmetatable({
-        vertexModified = options.vertexCode ~= nil and options.vertexCode ~= '',
-        vertexAnimated = options.animated == true
-            and options.vertexCode ~= nil
-            and options.vertexCode ~= '',
+        vertexModified = modifiesVertex,
+        vertexAnimated = options.animated == true and modifiesVertex,
         kind = kind,
         shader = shader,
-        uniforms = options.uniforms or {},
+        shadowShader = shadowShader,
+        program = program,
+        uniforms = uniforms,
         animated = options.animated == true,
-        code = code,
+        modes = modes,
+        -- Draw state requested through render_mode (nil = the object's own setting).
+        blend = modes.blend_add and 'add' or modes.blend_mul and 'multiply' or nil,
+        cull = modes.cull_back and 'back' or modes.cull_front and 'front'
+            or modes.cull_disabled and 'none' or nil,
+        depthWrite = not modes.depth_draw_never,
+        castsShadow = not modes.shadows_disabled,
     }, Material)
-    for name in pairs(self.uniforms) do
-        assert(shader:hasUniform(name), 'Unknown or unused material uniform: ' .. name)
-    end
-    if kind == 'world' then
-        local shadowCode = assert(katsa.filesystem.read('assets/shaders/engine/shadow.glsl'))
-        shadowCode =
-            insert(shadowCode, '// MATERIAL_VERTEX_DECLARATIONS', options.vertexDeclarations)
-        shadowCode = insert(shadowCode, '// MATERIAL_VERTEX', options.vertexCode)
-        local ok, shadowShader = pcall(katsa.graphics.newShader, shadowCode)
-        assert(ok, 'Material shadow shader failed: ' .. tostring(shadowShader))
-        self.shadowShader = resources:own(shadowShader)
-    end
     return self
 end
 
-function Material:bindShadow(time)
-    local shader = self.shadowShader
-    if shader:hasUniform('materialTime') then
-        shader:send('materialTime', time or 0)
-    end
-    for name, value in pairs(self.uniforms) do
+-- Sends every material uniform the compiler kept. Uniforms a driver optimised away (declared
+-- but never read by the stage) are skipped instead of reported.
+local function send(shader, uniforms)
+    for name, value in pairs(uniforms) do
         if shader:hasUniform(name) then
             shader:send(name, readValue(value))
         end
     end
 end
 
+function Material:bindShadow()
+    if self.shadowShader then
+        send(self.shadowShader, self.uniforms)
+    end
+end
+
 function Material:set(name, value)
-    assert(self.shader:hasUniform(name), 'Unknown or unused material uniform: ' .. name)
+    assert(
+        self.uniforms[name] ~= nil or self.shader:hasUniform(name),
+        'Unknown or unused material uniform: ' .. name
+    )
     self.uniforms[name] = value
     return self
 end
 
+-- `time` is only for UI materials, which are not drawn by the world renderer that sends the
+-- shared frame uniforms.
 function Material:bind(time)
-    if self.shader:hasUniform('materialTime') then
-        self.shader:send('materialTime', time or 0)
+    if time and self.shader:hasUniform('time') then
+        self.shader:send('time', time)
     end
-    for name, value in pairs(self.uniforms) do
-        self.shader:send(name, readValue(value))
-    end
+    send(self.shader, self.uniforms)
 end
 
 return Material

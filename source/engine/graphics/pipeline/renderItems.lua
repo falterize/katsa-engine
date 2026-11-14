@@ -16,6 +16,40 @@ function RenderItems.install(Renderer)
         end
     end
 
+    -- Cull mode of a draw: a material's render_mode wins over the object's doubleSided.
+    local function cullMode(o)
+        local material = o._resolvedMaterial
+        return material and material.cull or (o.doubleSided == false and 'back' or 'none')
+    end
+
+    -- render_mode blend_add / blend_mul / depth_draw_never apply to one draw and are undone
+    -- right after it, so the next object starts from the pass defaults.
+    local function beginModes(self, o)
+        local material = o._resolvedMaterial
+        if not material then
+            return nil
+        end
+        if material.blend then
+            katsa.graphics.setBlendMode(material.blend)
+        end
+        if not material.depthWrite and not self.drawingTransparent then
+            katsa.graphics.setDepthMode('less', false)
+        end
+        return material
+    end
+
+    local function endModes(self, material)
+        if not material then
+            return
+        end
+        if material.blend then
+            katsa.graphics.setBlendMode('alpha')
+        end
+        if not material.depthWrite and not self.drawingTransparent then
+            katsa.graphics.setDepthMode('less', true)
+        end
+    end
+
     function Renderer:drawItem(o)
         if self.world.debug and self.world.debug.wireframe then
             return require('source.engine.graphics.debug.wireframe').draw(self, o)
@@ -98,11 +132,13 @@ function RenderItems.install(Renderer)
             mesh = require('source.engine.graphics.debug.wireframe').mesh(self, o.geometry)
         end
         mesh:setTexture(billboard and o.canvas or o.textureImage or o.image)
-        g.setMeshCullMode(o.doubleSided == false and 'back' or 'none')
+        g.setMeshCullMode(cullMode(o))
         g.setColor(1, 1, 1, 1)
         self.stats.mainTriangles = self.stats.mainTriangles
             + require('source.engine.graphics.debug.triangles').mesh(mesh)
+        local modes = beginModes(self, o)
         g.draw(mesh)
+        endModes(self, modes)
     end
 
     function Renderer:sendDecal(shader, node)
@@ -172,12 +208,14 @@ function RenderItems.install(Renderer)
         if s:hasUniform('alphaCutoff') then
             s:send('alphaCutoff', o._effectiveCutoff or o.alphaCutoff or 0)
         end
-        g.setMeshCullMode(o.doubleSided == false and 'back' or 'none')
+        g.setMeshCullMode(cullMode(o))
         g.setColor(1, 1, 1, 1)
         mesh:setTexture(o.image)
         self.stats.mainTriangles = self.stats.mainTriangles
             + require('source.engine.graphics.debug.triangles').mesh(mesh) * count
+        local modes = beginModes(self, o)
         g.drawInstanced(mesh, count)
+        endModes(self, modes)
         self.batches:detach(mesh)
     end
 end

@@ -12,7 +12,7 @@ uniform highp vec3 directionalShadowTexelDepth;
 uniform highp float shadowNear;
 uniform highp float shadowFaceResolution;
 uniform highp vec2 shadowTexelSize;
-uniform bool receiveShadow;
+#specialize bool receiveShadow
 uniform highp float shadowDistance;
 uniform highp float shadowFadeDistance;
 highp mat4 shadowMatrix(int face) {
@@ -73,8 +73,13 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
     highp float bias = shadowParameters.x * depthScale + texelDepth * slope;
     highp float depth = ndc.z * 0.5 + 0.5 - bias;
     float visibility = 0.0;
+#ifdef KATSA_SHADOW_SAMPLES
+    int samples = KATSA_SHADOW_SAMPLES;
+#else
     int samples = int(shadowParameters.w);
+#endif
     float radius=1.0;
+#ifndef KATSA_SHADOW_STANDARD
     if(shadowSoftness.x>0.5) {
         float blockers=0.0,blockerDepth=0.0;
         for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++) {
@@ -89,6 +94,7 @@ float shadowVisibility(int face, highp vec4 p, vec3 normal, vec3 towardLight, bo
         radius=clamp((depth-blockerDepth)/max(blockerDepth,.001)*shadowSoftness.y*shadowFaceResolution,.5,shadowSoftness.z);
         samples=9;
     }
+#endif
     if(samples == 1) visibility = step(depth, Texel(shadowAtlas, uv).r);
     else {
         int side = samples == 4 ? 2 : 3;

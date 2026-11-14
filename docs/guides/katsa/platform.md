@@ -67,7 +67,7 @@ Linux sandbox.
 `source.katsa.graphics.shaderTranslator.translate(source, { target = 'desktop' | 'es', renderTargets = n })`
 turns a shader-dialect shader into separate vertex and pixel GLSL:
 
-* One source holds both stages behind `#ifdef VERTEX` / `#ifdef PIXEL`, as in katsa. User code goes to the stage
+* One source holds both stages behind `#ifdef STAGE_VERTEX` / `#ifdef STAGE_PIXEL`, as in katsa. User code goes to the stage
   whose entry point (`vec4 position(...)`, `vec4 effect(...)`) it defines; the other stage uses the default.
 * `varying`, `attribute`, `extern`, `Image`, `ArrayImage`, `CubeImage`, `VolumeImage`, `Texel` and `number`
   are supported. `#pragma language glsl1` additionally maps `texture2D`/`texture3D`/`textureCube`.

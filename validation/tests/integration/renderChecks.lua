@@ -75,7 +75,9 @@ return function(test)
     local r, g, b = sample()
     test:check(r > 0.95 and b < 0.02, 'Depth buffer keeps near object over later far geometry')
     local Material = require('source.engine.graphics.materials.material')
-    near.material = Material.new(resources, { fragmentCode = 'result = vec3(0.0, 1.0, 0.0);' })
+    near.material = Material.new(resources, {
+        shaders = { require('source.engine.graphics.shaders.programs').parse('validation/tests/fixtures/shaders/green.glsl', 'spatial') },
+    })
     r, g, b = sample()
     test:check(
         g > 0.95 and r < 0.02 and b < 0.02,
@@ -89,8 +91,7 @@ return function(test)
     )
     near.transparency = 0
     near.material = Material.new(resources, {
-        vertexDeclarations = 'uniform float shift;',
-        vertexCode = 'localPosition.x += shift;',
+        shaders = { require('source.engine.graphics.shaders.programs').parse('validation/tests/fixtures/shaders/shift.glsl', 'spatial') },
         uniforms = { shift = 2 },
     })
     r, g, b = sample()

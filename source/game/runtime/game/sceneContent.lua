@@ -12,7 +12,7 @@ function Methods:buildMaterials()
     if self.effectTarget then
         self.objectEffect = self.world:create('Shader3D', {
             name = 'Wave3D',
-            shaderPath = 'assets/shaders/examples/wave3D.glsl',
+            shaderPath = 'source/game/runtime/game/shaders/wave3D.glsl',
             enabled = false,
             animated = true,
             uniforms = { waveAmplitude = 0.12, glowColor = { 0.1, 0.7, 1 } },

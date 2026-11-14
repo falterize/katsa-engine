@@ -7,13 +7,13 @@ varying vec2 uv;
 attribute highp vec4 skinJoints;
 attribute vec3 vertexNormal;
 extern number amount;
-#ifdef VERTEX
+#ifdef STAGE_VERTEX
 vec4 position(mat4 transformProjection, vec4 vertexPosition) {
     uv = VertexTexCoord.xy;
     return transformProjection * vertexPosition;
 }
 #endif
-#ifdef PIXEL
+#ifdef STAGE_PIXEL
 vec4 effect(vec4 color, Image tex, vec2 texCoord, vec2 screenCoord) {
     return Texel(tex, texCoord) * color * amount;
 }
@@ -24,8 +24,8 @@ vec4 effect(vec4 color, Image tex, vec2 texCoord, vec2 screenCoord) {
         local version = target == 'es' and '#version 300 es' or '#version 330 core'
         T.check(result.vertex:sub(1, #version) == version, target .. ' vertex version header')
         T.check(result.pixel:sub(1, #version) == version, target .. ' pixel version header')
-        T.check(result.vertex:find('#define VERTEX 1', 1, true), target .. ' vertex stage define')
-        T.check(result.pixel:find('#define PIXEL 1', 1, true), target .. ' pixel stage define')
+        T.check(result.vertex:find('#define STAGE_VERTEX 1', 1, true), target .. ' vertex stage define')
+        T.check(result.pixel:find('#define STAGE_PIXEL 1', 1, true), target .. ' pixel stage define')
         T.check(result.vertex:find('#define varying out', 1, true), target .. ' vertex varying')
         T.check(result.pixel:find('#define varying in', 1, true), target .. ' pixel varying')
         T.check(

@@ -1,3 +1,4 @@
+local Programs = require('../shaders.programs')
 -- Draws one source texture over a whole target with a post shader.
 local Fullscreen = {}
 
@@ -38,11 +39,7 @@ function Fullscreen.shader(post, renderer, name)
     local shader = post.shaders[name]
     if not shader then
         shader = renderer.resources:own(
-            katsa.graphics.newShader(
-                require('source.engine.graphics.shaders.shaderSource').read(
-                    'assets/shaders/engine/post/' .. name .. '.glsl'
-                )
-            )
+            (Programs.compile('assets/shaders/engine/post/' .. name .. '.glsl'))
         )
         post.shaders[name] = shader
     end

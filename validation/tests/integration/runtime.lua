@@ -39,10 +39,8 @@ function Runtime:update()
             'assets/shaders/engine/world.glsl',
             'assets/shaders/engine/sky.glsl',
         }) do
-            local code = katsa.filesystem.read(path)
-            local vertex = path == 'assets/shaders/engine/world.glsl' and code
-                or 'vec4 position(mat4 transformProjection, vec4 vertexPosition) { return transformProjection * vertexPosition; }'
-            local valid, message = katsa.graphics.validateShader(true, code, vertex)
+            local code = require('source.engine.graphics.shaders.composer').build(path).source
+            local valid, message = katsa.graphics.validateShader(true, code, code)
             self:check(
                 valid,
                 'GLES shader validation: ' .. path .. (valid and '' or ': ' .. message)

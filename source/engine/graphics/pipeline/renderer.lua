@@ -1,3 +1,4 @@
+local Programs = require('../shaders.programs')
 local Lights = require('../../world.lights')
 local Gizmos = require('../debug.gizmos')
 local Geometry = require('../geometry.primitives')
@@ -19,9 +20,7 @@ Renderer.__index = function(self, key)
         if rawget(self, '_released') or self.resources.released then
             return nil
         end
-        local source = key == 'shader' and require('source.engine.graphics.shaders.shaderSource').read(path)
-            or path
-        local shader = self.resources:own(katsa.graphics.newShader(source))
+        local shader = self.resources:own((Programs.compile(path)))
         rawset(self, key, shader)
         return shader
     end
@@ -29,7 +28,7 @@ Renderer.__index = function(self, key)
 end
 
 function Renderer.new(resources)
-    local sky = resources:own(katsa.graphics.newShader('assets/shaders/engine/sky.glsl'))
+    local sky = resources:own((Programs.compile('assets/shaders/engine/sky.glsl')))
     local quad = Geometry.quad()
     resources:own(quad.mesh)
     return setmetatable({

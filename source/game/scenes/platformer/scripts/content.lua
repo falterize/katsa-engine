@@ -42,7 +42,7 @@ function Lab.new(scene)
     world:setInteractionSource(self.body)
     self.avatarEffect = world:create('Shader3D', {
         name = 'RunnerEnergyShader',
-        shaderPath = 'assets/shaders/examples/tint3D.glsl',
+        shaderPath = 'scene://shaders/tint3D.glsl',
         uniforms = { tintEffect = { 1, 1, 1 } },
     }, self.body)
     self.rig = require('source.engine.import.models').load(
@@ -135,7 +135,7 @@ function Lab.new(scene)
         zIndex = -100,
         backgroundTransparency = 1,
         shaderTransparency = 1,
-        shaderPath = 'assets/shaders/examples/speedBlur.glsl',
+        shaderPath = 'scene://shaders/speedBlur.glsl',
         shaderLayer = 'Screen',
         uniforms = { strength = 0 },
     }, scene.ui.content)

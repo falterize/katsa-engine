@@ -52,12 +52,9 @@ function Interface.create(self)
         size = { 0.5, -6, 1, -96 },
         zIndex = 10,
         shaderLayer = 'Static',
-        shaderPath = 'assets/shaders/examples/tvStatic.glsl',
+        shaderPath = 'scene://shaders/tvStatic.glsl',
         backgroundTransparency = 1,
         uniforms = {
-            resolution = { 960, 540 },
-            regionOrigin = { 0, 0 },
-            regionExtent = { 1, 1 },
             noiseStrength = self.noise,
             scanlineStrength = self.scanlines,
             distortion = self.distortion,
@@ -74,12 +71,9 @@ function Interface.create(self)
         size = { 0.5, -6, 1, -96 },
         zIndex = 11,
         shaderLayer = 'Pixel',
-        shaderPath = 'assets/shaders/examples/pixelScreen.glsl',
+        shaderPath = 'scene://shaders/pixelScreen.glsl',
         backgroundTransparency = 1,
         uniforms = {
-            resolution = { 960, 540 },
-            regionOrigin = { 0, 0 },
-            regionExtent = { 1, 1 },
             pixelSize = self.pixelSize,
         },
     }, self.views)
@@ -92,14 +86,14 @@ function Interface.create(self)
     world.shaderLayers:setInteracts('Pixel', 'Default3D', false)
     self.default = world:create('Shader3D', {
         name = 'DefaultTint',
-        shaderPath = 'assets/shaders/examples/tint3D.glsl',
+        shaderPath = 'scene://shaders/tint3D.glsl',
         enabled = false,
         uniforms = { tintEffect = { 0.6, 0.8, 1 } },
     })
     self.wave = world:create('Shader3D', {
         name = 'Wave',
         shaderLayer = 'Static',
-        shaderPath = 'assets/shaders/examples/wave3D.glsl',
+        shaderPath = 'scene://shaders/wave3D.glsl',
         enabled = false,
         animated = true,
         uniforms = { waveAmplitude = 0.08, glowColor = { 1, 0.35, 0.08 } },
@@ -107,9 +101,20 @@ function Interface.create(self)
     self.pixel3D = world:create('Shader3D', {
         name = 'PixelUV',
         shaderLayer = 'Pixel',
-        shaderPath = 'assets/shaders/examples/pixel3D.glsl',
+        shaderPath = 'scene://shaders/pixel3D.glsl',
         enabled = false,
         uniforms = { pixelCells = { 8, 8 } },
+    })
+    self.snap = world:create('Shader3D', {
+        name = 'VertexSnap',
+        shaderPath = 'scene://shaders/vertexSnap.glsl',
+        enabled = false,
+        uniforms = { snapScale = 60 },
+    })
+    self.toon = world:create('Shader3D', {
+        name = 'ToonLight',
+        shaderPath = 'scene://shaders/toonLight.glsl',
+        enabled = false,
     })
     ui:text({
         position = { 0, 0, 0, 34 },
@@ -210,6 +215,12 @@ function Interface.create(self)
     end)
     button('Pixel3D', '3D pixel UV: OFF', function()
         self.pixel3D.enabled = not self.pixel3D.enabled
+    end)
+    button('Snap3D', '3D vertex snap: OFF', function()
+        self.snap.enabled = not self.snap.enabled
+    end)
+    button('Toon3D', '3D toon light: OFF', function()
+        self.toon.enabled = not self.toon.enabled
     end)
     button('Layers', 'Shader layer matrix', function()
         scene.workspace.selected = self.pixel

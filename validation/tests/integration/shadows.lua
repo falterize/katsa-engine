@@ -131,8 +131,7 @@ return function(test)
     withoutShadow:release()
     caster.castShadow = true
     caster.material = Material.new(resources, {
-        vertexDeclarations = 'uniform float shift;',
-        vertexCode = 'localPosition.x += shift;',
+        shaders = { require('source.engine.graphics.shaders.programs').parse('validation/tests/fixtures/shaders/shift.glsl', 'spatial') },
         uniforms = { shift = 0 },
     })
     withShadow = image()

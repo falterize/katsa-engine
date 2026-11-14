@@ -45,6 +45,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 - Keep allocations out of hot loops; keep native callback lifetime and JIT safeguards.
 - **Weak tables are not ephemerons in LuaJIT.** A value in a weak-key table is marked strongly, so if the value refers back to its key (directly or through a group/cache entry) the entry never dies. This leaked every removed car in v108.7 (renderer batch `membership`). Caches keyed by nodes must drop entries of destroyed nodes explicitly. To find a leak, `validation/tests/versions/v108_7/heapWalk.lua` (`Walk.find`) prints the shortest reference chain to a reachable destroyed node; `--test-v108.7.botmemory` is the example.
 - Shaders keep **CRLF** line endings where the file has them (`world.glsl`). When editing with Python, open with `newline=''`; a text-mode rewrite turns the whole file into a diff.
+- Shaders: the engine templates and every user shader are composed by `engine/graphics/shaders/composer` (see `docs/guides/rendering/shaders.md`). User shaders are Godot-style (`shader_type spatial|canvas_item`, `vertex/fragment/light`, `uniform` hints, `varying`, `render_mode`, `#include`). Never build shader text with string substitution or `newShader` directly: go through `Programs.compile(template, { shaders, defines, constants, entries })`. New built-ins go in `composer/builtins.lua` with a doc row and a test. Example shaders live in scenes (`assets/shaders/` of the scene), never in shared assets. Stage macros are `STAGE_VERTEX`/`STAGE_PIXEL`; `VERTEX` is a Godot built-in.
 - Tests must be **short** and focused (a handful of checks per feature). Test descriptions are English sentences.
 
 ## 4. Modules and requires
@@ -80,7 +81,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 ## 7. Rendering and GL
 
 - The GL state layer (`source/katsa/graphics/renderState.lua`) caches "applied" state. **A cache that claims state the driver does not have is the worst bug class here.** Example (fixed in v108.4): with culling off the front-face winding was never sent, `gl_FrontFacing` flipped intermittently and double-sided skinned meshes lost lighting. `applyCull()` now sets `glFrontFace` for every cull mode before any early return. When a rendering symptom is intermittent, suspect cached state first.
-- Skinned meshes derive the normal matrix in the vertex shader from the same model matrix as positions (`world.glsl`).
+- Skinned meshes derive the normal matrix in the vertex shader from the same model matrix as positions (`chunks/mesh.glsl`, included by `world.glsl`).
 - Debug views: F4 > *Shadow view* (green lit, red shadowed, blue not evaluated; brightness = cascade) and *Normal view* (normals as colour). Use them before theorising about shadows.
 - Shaders are written in one dialect and translated to GLSL 330 core (desktop) / GLSL ES 300 (mobile). All engine shaders must compile on both targets.
 - Quality profiles `Low/Medium/High` (`Environment:applyQualityProfile`) lower cost without removing features; `renderDensity` is the render-resolution scale; `Environment.rendering.vsync` drives vertical sync.

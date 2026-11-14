@@ -108,6 +108,7 @@ function Cache:scan(objects, assignments, layers, dependencies)
         then
             local active = object:isVisible()
                 and object.castShadow ~= false
+                and not (object._resolvedMaterial and not object._resolvedMaterial.castsShadow)
                 and not object.onTop
                 and (object._renderOpacity or object:getEffectiveOpacity()) > 0
                 and (object.color[4] or 1) > 0

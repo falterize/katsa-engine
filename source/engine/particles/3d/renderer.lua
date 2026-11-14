@@ -3,6 +3,9 @@ local Layering = require('../../components.rendering.layering')
 local ipairs = require('../../math.array').ipairs
 local M = require('../../math.math3d')
 
+local CameraUniforms = require('../../graphics.shaders.cameraUniforms')
+local Programs = require('../../graphics.shaders.programs')
+
 local R = {}
 local format = {
     { 'VertexPosition', 'float', 3 },
@@ -36,16 +39,11 @@ function R.draw(system, camera, emitter)
     end
     if not system.shader then
         system.shader = system.world.resources:own(
-            g.newShader(
-                require('source.engine.graphics.shaders.shaderSource').read(
-                    'assets/shaders/particles/sprite.glsl'
-                )
-            )
+            (Programs.compile('assets/shaders/particles/sprite.glsl'))
         )
     end
     g.push('all')
     g.setShader(system.shader)
-    system.shader:send('viewProjection', 'row', camera.viewProjection)
     g.setDepthMode('less', false)
     g.setMeshCullMode('none')
     g.setColor(1, 1, 1, 1)
@@ -60,9 +58,12 @@ function R.draw(system, camera, emitter)
         local shader = material and material.shader or system.shader
         g.setShader(shader)
         require('source.engine.particles.lighting').bind(shader, world, camera, emitter)
-        shader:send('viewProjection', 'row', camera.viewProjection)
+        CameraUniforms.send(shader, camera, camera.width or 0, camera.height or 0)
+        if shader:hasUniform('time') then
+            shader:send('time', world.simulationTime or 0)
+        end
         if material then
-            material:bind(world.simulationTime or 0)
+            material:bind()
         end
         local matrix = emitter:getRenderWorldMatrix()
         local order = emitter._renderOrder or {}

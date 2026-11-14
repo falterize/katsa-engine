@@ -44,13 +44,12 @@ function ShadowDepthPass.install(Shadows)
             object._world and object._world._activeRenderer
         )
         if opaque and not self.opaqueShader then
-            local source = katsa.filesystem.read('assets/shaders/engine/shadow.glsl')
-            source = source:gsub(
-                '#ifdef PIXEL.-#endif',
-                '#ifdef PIXEL\nvec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) { '
-                    .. 'return vec4(1.0); }\n#endif'
+            self.opaqueShader = self.resources:own(
+                (require('source.engine.graphics.shaders.programs').compile(
+                    'assets/shaders/engine/shadow.glsl',
+                    { defines = { KATSA_SHADOW_OPAQUE = true } }
+                ))
             )
-            self.opaqueShader = self.resources:own(katsa.graphics.newShader(source))
         end
         local shader = object._resolvedMaterial and object._resolvedMaterial.shadowShader
             or opaque and self.opaqueShader

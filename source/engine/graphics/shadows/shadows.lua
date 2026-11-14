@@ -15,8 +15,11 @@ Shadows.__index = function(self, key)
         if rawget(self, '_released') or self.resources.released then
             return nil
         end
-        local shader =
-            self.resources:own(katsa.graphics.newShader('assets/shaders/engine/shadow.glsl'))
+        local shader = self.resources:own(
+            (require('source.engine.graphics.shaders.programs').compile(
+                'assets/shaders/engine/shadow.glsl'
+            ))
+        )
         rawset(self, key, shader)
         return shader
     end

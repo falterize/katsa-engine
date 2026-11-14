@@ -1,4 +1,4 @@
--- Shader2D touches interface pixels only unless affects3D is set; Shader3D belongs to World3D space.
+-- Shader2D touches interface pixels only unless its shader layer interacts with Default3D; Shader3D belongs to World3D space.
 local Application = require('source.game.runtime.application')
 
 local Module = {}
@@ -32,7 +32,7 @@ function Module.run(self)
         size = { 1, 0, 1, 0 },
         zIndex = 500,
         backgroundTransparency = 1,
-        shaderPath = 'assets/shaders/examples/invert.glsl',
+        shaderPath = 'validation/tests/fixtures/shaders/invert.glsl',
     }, ui.content)
     for _, list in ipairs({ ui.children, ui.content.children }) do
         for _, child in ipairs(list) do
@@ -41,21 +41,23 @@ function Module.run(self)
             end
         end
     end
-    self:check(effect.affects3D == false, 'Shader2D ignores the 3D render by default')
+    local layers = scene.world.shaderLayers
+    self:check(not layers:affects3D(effect.shaderLayer), 'Shader2D ignores the 3D render by default')
     local r, g, b = render(scene, effect)
     self:check(
         math.abs(r - 0.2) < 0.02 and math.abs(g - 0.4) < 0.02 and math.abs(b - 0.6) < 0.02,
         ('Shader2D leaves the 3D render untouched by default (%.2f %.2f %.2f)'):format(r, g, b)
     )
-    effect.affects3D = true
+    layers:add('Screen', 10)
+    effect.shaderLayer = 'Screen'
     r, g, b = render(scene, effect)
     self:check(
         math.abs(r - 0.8) < 0.02 and math.abs(g - 0.6) < 0.02 and math.abs(b - 0.4) < 0.02,
-        ('Shader2D with affects3D processes the 3D render (%.2f %.2f %.2f)'):format(r, g, b)
+        ('Shader2D on a layer interacting with Default3D processes the 3D render (%.2f %.2f %.2f)'):format(r, g, b)
     )
-    effect.affects3D = false
+    effect.shaderLayer = 'Default2D'
     r, g, b = render(scene, effect)
-    self:check(math.abs(r - 0.2) < 0.02, 'affects3D can be switched off again')
+    self:check(math.abs(r - 0.2) < 0.02, 'Moving back to Default2D leaves the 3D render untouched')
 
     -- Shader3D is rejected inside interface hierarchies and accepted inside World3D hierarchies.
     local world = scene.world

@@ -1,3 +1,4 @@
+local Programs = require('../shaders.programs')
 local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
@@ -139,7 +140,7 @@ function B.resolve(world, object, nodes)
     local g = katsa.graphics
     cache.shader = cache.shader
         or world.resources:cached('shader', 'surfaceBlend', function(owner)
-            return owner:own(g.newShader('assets/shaders/engine/surfaceBlend.glsl'))
+            return owner:own((Programs.compile('assets/shaders/engine/surfaceBlend.glsl')))
         end)
     local size = math.min(
         512,

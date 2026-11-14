@@ -4,7 +4,7 @@
 --   'desktop' -> #version 330 core
 --   'es'      -> #version 300 es
 --
--- One source holds both stages behind `#ifdef VERTEX` / `#ifdef PIXEL`, exactly like a katsa
+-- One source holds both stages behind `#ifdef STAGE_VERTEX` / `#ifdef STAGE_PIXEL`, exactly like a katsa
 -- shader. The translator adds the stage entry point, built-in uniforms and varyings, rewrites
 -- `varying` / `attribute` / `extern`, and assigns explicit attribute locations so the native
 -- vertex layout is known without querying the driver.
@@ -116,6 +116,9 @@ local vertexBuiltins = table.concat({
     '#define katsa_VertexID gl_VertexID',
     '#define katsa_InstanceID gl_InstanceID',
     '#define varying out',
+    -- Declared before user code so position() can rewrite what the pixel stage receives.
+    'out vec4 VaryingTexCoord;',
+    'out vec4 VaryingColor;',
 }, '\n')
 
 local pixelBuiltins = table.concat({
@@ -137,8 +140,6 @@ local effectCall = 'effect(VaryingColor, MainTex, VaryingTexCoord.st, '
     .. 'katsa_PixelCoord(gl_FragCoord.xy));'
 
 local vertexMain = table.concat({
-    'out vec4 VaryingTexCoord;',
-    'out vec4 VaryingColor;',
     'void main() {',
     '    VaryingTexCoord = VertexTexCoord;',
     '    VaryingColor = VertexColor * ConstantColor;',
@@ -228,8 +229,8 @@ function Translator.translate(source, options)
     end
     local vertexUser = userVertex and rewritten or nil
     local pixelUser = userPixel and (bare .. '\n') or nil
-    result.vertex = assemble(vertexBuiltins, 'VERTEX', vertexUser, vertexTail)
-    result.pixel = assemble(pixelBuiltins, 'PIXEL', pixelUser, pixelTail)
+    result.vertex = assemble(vertexBuiltins, 'STAGE_VERTEX', vertexUser, vertexTail)
+    result.pixel = assemble(pixelBuiltins, 'STAGE_PIXEL', pixelUser, pixelTail)
     result.renderTargets = renderTargets
     return result
 end

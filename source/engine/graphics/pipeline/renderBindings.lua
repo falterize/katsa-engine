@@ -66,11 +66,14 @@ function RenderBindings.install(Renderer)
         if s:hasUniform('objectLightMaskEnabled') then
             s:send('objectLightMaskEnabled', self.lightLoop == 'Masked')
         end
-        if s:hasUniform('viewProjection') then
-            s:send('viewProjection', 'row', self.camera.viewProjection)
-        end
+        local camera = self.camera
+        require('source.engine.graphics.shaders.cameraUniforms').send(
+            s,
+            camera,
+            self.width * self.density,
+            self.height * self.density
+        )
         if s == rawget(self, 'wireShader') then
-            s:send('viewportSize', { self.width * self.density, self.height * self.density })
             return
         end
         local l, f = self.world.lighting, self.world.lighting.fog
@@ -90,9 +93,6 @@ function RenderBindings.install(Renderer)
         end
         if s:hasUniform('exposure') then
             s:send('exposure', l.exposure or 1)
-        end
-        if s:hasUniform('cameraPosition') then
-            s:send('cameraPosition', self.camera.worldPosition or self.camera.position)
         end
         if s:hasUniform('fogColor') then
             s:send('fogColor', self.fogColor)
@@ -138,7 +138,7 @@ function RenderBindings.install(Renderer)
             end
         end
         if material then
-            material:bind(self.time)
+            material:bind()
         end
         return shader
     end

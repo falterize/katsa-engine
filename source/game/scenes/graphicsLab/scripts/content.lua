@@ -146,7 +146,7 @@ function Lab.new(scene)
     self.dust:emit(40)
     self.material = w:create('Shader3D', {
         name = 'GalleryTint',
-        shaderPath = 'assets/shaders/examples/tint3D.glsl',
+        shaderPath = 'scene://shaders/tint3D.glsl',
         zIndex = 1,
         uniforms = { tintEffect = { 1, 1, 1 } },
     }, w.root)

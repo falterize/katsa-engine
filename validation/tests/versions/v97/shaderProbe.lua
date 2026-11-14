@@ -35,12 +35,20 @@ function T:draw()
         return
     end
     self.done = true
-    local source =
-        require('source.engine.graphics.shaders.shaderSource').read('assets/shaders/engine/world.glsl')
-    local rejection =
-        '// Both diffuse and GGX contributions are zero on the unlit hemisphere.\n            if(dot(normal,toward)<=0.0) continue;\n'
-    local first, last = assert(source:find(rejection, 1, true))
-    local reference = source:sub(1, first - 1) .. source:sub(last + 1)
+    local Composer = require('source.engine.graphics.shaders.composer')
+    -- The reference shader never rejects lights that face away from the surface.
+    local lighting = 'assets/shaders/engine/chunks/lighting.glsl'
+    local reference = Composer.build('assets/shaders/engine/world.glsl', {
+        read = function(path)
+            local text = katsa.filesystem.read(path)
+            if path == lighting then
+                text = assert(
+                    text:gsub('return dot%(surfaceNormal, toward%) > 0%.0;', 'return true;')
+                )
+            end
+            return text
+        end,
+    }).source
     print('PROBE GPU', katsa.graphics.getRendererInfo())
     print('case,reference mean/p50/p95,new mean/p50/p95,pixels equal')
     for _, zone in ipairs({ 'combined', 'shadows', 'animationPhysicsLab' }) do

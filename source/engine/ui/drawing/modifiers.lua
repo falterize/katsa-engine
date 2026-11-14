@@ -1,3 +1,4 @@
+local Programs = require('../../graphics.shaders.programs')
 local readValue = require('../../math.managedValue').read
 local Array = require('../../math.array')
 local unpack = require('../../math.array').unpack
@@ -22,7 +23,7 @@ function Modifiers.bindGradient(ui, node, target, override)
     assert(not node.material, 'UIGradient and custom material cannot target the same element')
     local g = katsa.graphics
     ui.gradientShader = ui.gradientShader
-        or ui.resources:own(g.newShader('assets/shaders/engine/uiGradient.glsl'))
+        or ui.resources:own((Programs.compile('assets/shaders/engine/uiGradient.glsl')))
     local shader = ui.gradientShader
     local stops = gradient:gradientStops()
     assert(Array.is(stops) and #stops >= 2 and #stops <= 16, 'UIGradient requires 2..16 colorStops')
@@ -145,7 +146,7 @@ function Modifiers.textStrokes(node, draw)
     local g = katsa.graphics
     if not ui.outlineMaskShader then
         ui.outlineMaskShader =
-            ui.resources:own(g.newShader('assets/shaders/engine/uiOutlineMask.glsl'))
+            ui.resources:own((Programs.compile('assets/shaders/engine/uiOutlineMask.glsl')))
     end
     local comparison, value = g.getStencilTest()
     local level = ui._stencilLevel or 0

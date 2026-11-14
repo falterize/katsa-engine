@@ -141,7 +141,7 @@ function Tests.run(tester)
     local effect = menu.ui:create('Shader2D', {
         name = 'IdleAnimationProbe',
         size = { 1, 0, 1, 0 },
-        shaderPath = 'assets/shaders/examples/uiPulse.glsl',
+        shaderPath = 'source/game/runtime/game/shaders/uiPulse.glsl',
     }, menu.ui.content)
     menu.ui:layout()
     menu.state._paintRevision = menu.ui.revision

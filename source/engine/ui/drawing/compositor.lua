@@ -1,6 +1,7 @@
 local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
+local Programs = require('../../graphics.shaders.programs')
 -- Screen-space post effects operate on a snapshot, never read their draw target.
 local Compositor = {}
 
@@ -77,11 +78,7 @@ end
 local function adjustShader(ui, values)
     if not ui._adjustShader then
         ui._adjustShader = ui.resources:own(
-            katsa.graphics.newShader(
-                require('source.engine.graphics.shaders.shaderSource').read(
-                    'assets/shaders/engine/post/adjust2D.glsl'
-                )
-            )
+            (Programs.compile('assets/shaders/engine/post/adjust2D.glsl'))
         )
     end
     ui._adjustShader:send('adjust', { values.brightness, values.contrast, values.saturation })
@@ -141,32 +138,37 @@ function Compositor.draw(ui, draw)
     restoreScissor()
 end
 
+local itemTemplate = 'assets/shaders/engine/canvas/item.glsl'
+
+local function release(ui, node)
+    if node._postShader then
+        ui.resources:releaseOwned(node._postShader)
+        node._postShader, node._postProgram = nil, nil
+    end
+end
+
+-- Compiles the node's canvas_item shader when its path changes and uploads its uniforms:
+-- the engine's frame values, then the node's `uniforms` over the defaults the file declares.
 local function shader(ui, node)
     if node._shaderPath ~= node.shaderPath then
-        if node._postShader then
-            ui.resources:releaseOwned(node._postShader)
+        release(ui, node)
+        local parsed = Programs.parse(ui.resources:canonical(node.shaderPath), 'canvas_item')
+        local compiled, program = Programs.compile(itemTemplate, { shaders = { parsed } })
+        for name in pairs(node.uniforms) do
+            assert(
+                program.uniforms['s1_' .. name],
+                ('Shader2D %s sets uniform "%s" that %s does not declare'):format(
+                    tostring(node.name),
+                    name,
+                    node.shaderPath
+                )
+            )
         end
-        local source = assert(
-            katsa.filesystem.read(ui.resources:canonical(node.shaderPath)),
-            'Missing Shader2D: ' .. node.shaderPath
-        )
-        source = source:gsub('vec4%s+effect%s*%(', 'vec4 userEffect(', 1)
-        source = source
-            .. [[
-#ifdef PIXEL
-uniform float shaderAmount;
-vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
-    return mix(color * Texel(image,uv), userEffect(color,image,uv,screen), shaderAmount);
-}
-#endif
-]]
-        node._postShader = ui.resources:own(katsa.graphics.newShader(source))
+        node._postShader = ui.resources:own(compiled)
+        node._postProgram = program
         node._shaderPath = node.shaderPath
         node:onDestroy(function()
-            if node._postShader then
-                ui.resources:releaseOwned(node._postShader)
-                node._postShader = nil
-            end
+            release(ui, node)
         end)
     end
     local s = node._postShader
@@ -176,12 +178,14 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     if s:hasUniform('time') then
         s:send('time', ui.time)
     end
-    if s:hasUniform('materialTime') then
-        s:send('materialTime', ui.time)
-    end
-    for key, value in pairs(node.uniforms) do
-        if s:hasUniform(key) then
-            s:send(key, value)
+    local program = node._postProgram
+    for compiled, meta in pairs(program.uniforms) do
+        local value = node.uniforms[meta.name]
+        if value == nil then
+            value = program.defaults[compiled]
+        end
+        if value ~= nil and s:hasUniform(compiled) then
+            s:send(compiled, value)
         end
     end
     return s
@@ -222,8 +226,8 @@ function Compositor.apply(ui, node)
     node._effectQuad:setViewport(x, y, x2 - x, y2 - y, w, h)
     local effect = shader(ui, node)
     -- Built-in region uniforms describe this actual canvas/draw, including resize and nesting.
-    if effect:hasUniform('resolution') then
-        effect:send('resolution', { w, h })
+    if effect:hasUniform('canvasSize') then
+        effect:send('canvasSize', { w, h })
     end
     if effect:hasUniform('regionOrigin') then
         effect:send('regionOrigin', { x, y })

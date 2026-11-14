@@ -167,7 +167,7 @@ function Test:update()
             size = { 0, 90, 0, 50 },
             zIndex = 71,
             backgroundTransparency = 1,
-            shaderPath = 'assets/shaders/examples/invert.glsl',
+            shaderPath = 'validation/tests/fixtures/shaders/invert.glsl',
         }, ui.content)
         self.upperEffect = ui:create('Shader2D', {
             _viewportAuthored = true,
@@ -176,7 +176,7 @@ function Test:update()
             zIndex = 72,
             shaderLayer = 'Pixel',
             backgroundTransparency = 1,
-            shaderPath = 'assets/shaders/examples/identity.glsl',
+            shaderPath = 'validation/tests/fixtures/shaders/identity.glsl',
         }, ui.content)
         self:check(
             not pcall(

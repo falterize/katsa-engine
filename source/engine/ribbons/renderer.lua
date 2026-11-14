@@ -4,6 +4,9 @@ local Geometry = require('./geometry')
 local Image = require('../components.media.image')
 local Resolver = require('../graphics.shaders.materialResolver')
 
+local CameraUniforms = require('../graphics.shaders.cameraUniforms')
+local Programs = require('../graphics.shaders.programs')
+
 local R = {}
 
 local format = {
@@ -73,11 +76,7 @@ function R.draw(system, camera, node)
     local time = world.simulationTime or 0
     if not system.shader then
         system.shader = world.resources:own(
-            g.newShader(
-                require('source.engine.graphics.shaders.shaderSource').read(
-                    'assets/shaders/particles/sprite.glsl'
-                )
-            )
+            (Programs.compile('assets/shaders/particles/sprite.glsl'))
         )
     end
     local image = Image.resolve(world.resources, node, node.texture, world.environment)
@@ -112,9 +111,12 @@ function R.draw(system, camera, node)
     local shader = material and material.shader or system.shader
     g.setShader(shader)
     require('source.engine.particles.3d.lighting').bind(shader, world, camera, node)
-    shader:send('viewProjection', 'row', camera.viewProjection)
+    CameraUniforms.send(shader, camera, camera.width or 0, camera.height or 0)
+    if shader:hasUniform('time') then
+        shader:send('time', world.simulationTime or 0)
+    end
     if material then
-        material:bind(world.simulationTime or 0)
+        material:bind()
     end
     if shader:hasUniform('ribbonPremultiply') then
         shader:send('ribbonPremultiply', true)
