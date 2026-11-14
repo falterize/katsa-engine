@@ -83,6 +83,8 @@ executables behave the same. Useful flags: `--scene <id>` starts a scene directl
 
 ## Windows
 
+<details><summary>Windows: tools, libraries, running from source, building katsa.exe</summary><br>
+
 The commands are for **PowerShell** in the repository folder. PowerShell runs programs from the
 current folder only with a `.\` prefix: `.\dist\katsa.exe`, not `dist\katsa.exe`.
 
@@ -157,7 +159,11 @@ The host links LuaJIT statically, so it needs a Windows `libluajit` built with t
 Folder names may contain any characters (for example Cyrillic or Japanese): the host hands paths to
 Lua as UTF-8 and DLLs are loaded through the Unicode Windows API.
 
+</details>
+
 ## Linux
+
+<details><summary>Linux: packages, libraries, building the host</summary><br>
 
 1. Packages: `sudo apt install build-essential clang python3 git libsdl2-2.0-0 libopenal1`
    (Fedora: `sudo dnf install clang SDL2 openal-soft`). Add `xvfb` for headless test runs.
@@ -177,7 +183,11 @@ Lua as UTF-8 and DLLs are loaded through the Unicode Windows API.
 6. Tests: `tools/dev/runTests.sh --test-v108.7`, or `xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.7`
    without a display. After changing `native/src/threads`, also run `sh validation/native/threadsStress.sh`.
 
+</details>
+
 ## macOS
+
+<details><summary>macOS: tools, libraries, signing</summary><br>
 
 Build on a Mac (Apple `clang`). Libraries are **universal** (x86_64 + arm64); the host is built for the
 architecture of the Mac that builds it.
@@ -199,7 +209,11 @@ architecture of the Mac that builds it.
 The macOS build is compiled and unit-tested by the `native.yml` workflow but has not been run on real
 hardware by the maintainers.
 
+</details>
+
 ## Android
+
+<details><summary>Android: SDK/NDK, prepare.py, Gradle, release</summary><br>
 
 The project template is the folder `android/` (Gradle + SDL2). `libmain.so` is the host
 (`native/src/host`); at start it copies `assets/game.katsa` to internal storage (only when it
@@ -236,6 +250,8 @@ sharper but slower on mid-range GPUs). The UI is laid out in about 540 units of 
 `KATSA_UI_SCALE=2 luajit tools/dev/katsa.lua .` previews a scale on desktop. Jolt ships arm64 and arm
 binaries only, so an x86_64 emulator uses the Oimo backend for 3D physics.
 
+</details>
+
 ## Packaging a game
 
 All platforms use one packager, `tools/build/packageKatsa.py`:
@@ -252,6 +268,8 @@ Ship the executable together with the native libraries of its platform, next to 
 `validation/`, `docs/`, `tools/` and `native/` are never packed.
 
 ## build.py reference
+
+<details><summary>build.py arguments and environment variables</summary><br>
 
 ```
 python tools/native/build.py <target> [library ...]
@@ -280,7 +298,11 @@ Source layout: `native/src/` has one folder per library (`native/`, `box2d/`, `n
 `host/`) and `common/export.h`. Each folder starts with a header or file comment that lists its files
 and its conventions (units, ownership, threads). Third-party code stays in `vendor/`.
 
+</details>
+
 ## Troubleshooting
+
+<details><summary>Messages and fixes</summary><br>
 
 | Message or symptom | Cause and fix |
 | --- | --- |
@@ -293,6 +315,8 @@ and its conventions (units, ownership, threads). Third-party code stays in `vend
 | `make: command not found` while building LuaJIT on Windows | see [Windows step 5](#5-optional-build-katsaexe): use WSL or install a `make` |
 | Audio is silent but everything else works | OpenAL Soft is missing; the engine falls back to silence instead of failing |
 | Crash reports | the error screen saves `last-error.txt` and a crash history in the save folder (`%APPDATA%\Katsa\katsa-engine` on Windows); see [console and logs](../development/console.md) |
+
+</details>
 
 ## Status
 

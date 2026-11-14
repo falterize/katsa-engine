@@ -143,6 +143,8 @@ supported transform/body API rather than editing cached matrices.
 
 ## Methods specific to built-in types
 
+<details><summary>Per-type method list</summary><br>
+
 The common initialize/mount roles above apply to built-in implementations too.
 Most methods labeled service-managed below are called by their owning service;
 calling them again from gameplay can double-update the same work.
@@ -214,7 +216,11 @@ methods from their owning services. See [UI layout](../ui/uiLayout.md),
 [animation](../animation/playback.md), [physics](../physics/backends.md),
 [audio](../audio/audioNodes.md) and [particles](../particles/api.md) for those APIs.
 
+</details>
+
 ## Internal modules
+
+<details><summary>Internal modules</summary><br>
 
 `NodeTree.new/setProcess/update/release` manage the world's scheduled records.
 `Hierarchy.bind` maintains world/tree ownership after parenting. `Parenting.validate`
@@ -223,6 +229,8 @@ observed fields and cache revisions. `Signals.clear` disconnects an emitter.
 `ClassDefinition.install` adds the class factory, and `ClassPolicy.initialize`
 chains initializers. `specialNode.register` implements world-owned registration.
 These are engine helpers; ordinary node definitions use the public API above.
+
+</details>
 
 ## Property descriptions (hints)
 

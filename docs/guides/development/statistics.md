@@ -1,6 +1,6 @@
 # Statistics and history
 
-Open Stats with its toolbar button or F3. The header reports the scene, actual
+Open Stats with its toolbar button or F3. With the [imgui plugin](imgui.md) loaded it is an ImGui window (movable, with a filter and a history graph under the table); without it the panel below is used. The header reports the scene, actual
 physics backend, requested backend, fallback status, runtime/JIT and light loop.
 Scenes without a physics world report `none`. Explicit backend requests fail if
 unavailable; only `auto` may fall back.

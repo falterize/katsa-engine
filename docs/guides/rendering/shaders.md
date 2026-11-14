@@ -398,6 +398,8 @@ Cached stacks are released with their world resource scope.
 
 ## Errors
 
+<details><summary>Error messages and how they are reported</summary><br>
+
 A shader that fails to parse or compile raises an error that names the file and line you wrote:
 
 ```
@@ -407,7 +409,11 @@ scene://shaders/wave.glsl:7: 'ALBEDOO' : undeclared identifier
 Unknown `shader_type`, unsupported `render_mode`, entry functions the type does not have, and
 uniforms set by a node but not declared by the file are errors as well.
 
+</details>
+
 ## How the engine builds programs
+
+<details><summary>Program building, caching and the include system</summary><br>
 
 This section is for engine work; shader authors can stop here.
 
@@ -446,3 +452,5 @@ assets/shaders/engine/
   document it above, and add a case to `validation/tests/versions/v108_8/shaderPrograms.lua`.
 * `validation/tests/katsa/shaderCompile.lua` compiles every engine shader in several variants, and every
   user shader found under `source/game` and the test fixtures with each template of its type, on desktop and ES.
+
+</details>

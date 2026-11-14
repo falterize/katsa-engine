@@ -70,6 +70,9 @@ More workers are not always faster; test a representative scene on target hardwa
 
 ## Build and verify
 
+<details><summary>Building and verifying the Jolt bridge</summary><br>
+
+
 Upstream headers and joltc binaries are unchanged in `vendor/joltPhysics`. Project
 code is `source/engine/physics/3d/backends/jolt/native/bridge.c`; adjacent `jobs.lua`
 contains FFI declarations and policy. Own binaries stay beside the bridge under
@@ -88,3 +91,5 @@ single-precision joltc C header. Linux targets glibc 2.17 and pthreads. The buil
 manifest records compiler version, flags, source/header hashes and binary hashes.
 Rebuild every distributed target after changing the bridge or header. Zig and
 formatters are development tools and are not bundled with the game.
+
+</details>

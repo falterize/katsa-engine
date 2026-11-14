@@ -51,6 +51,17 @@ function Lab:sync()
     self.buttons.Wave3D.text = '3D wave: ' .. (self.wave.enabled and 'ON' or 'OFF')
     self.buttons.Pixel3D.text = '3D pixel UV: ' .. (self.pixel3D.enabled and 'ON' or 'OFF')
     self.buttons.Snap3D.text = '3D vertex snap: ' .. (self.snap.enabled and 'ON' or 'OFF')
+    -- A sky shader needs the sky pass; a fog shader needs the volumetric fog pass.
+    local environment = self.preview._world.environment
+    environment.sky.enabled = self.sky.enabled
+    environment.fog.enabled, environment.fog.volumetric =
+        self.fogShader.enabled, self.fogShader.enabled
+    if self.fogShader.enabled then
+        environment.fog.density, environment.fog.volumetricDistance = 0.02, 300
+    end
+    self.buttons.Sky3D.text = '3D sky shader: ' .. (self.sky.enabled and 'ON' or 'OFF')
+    self.buttons.Fog3D.text = '3D fog shader: ' .. (self.fogShader.enabled and 'ON' or 'OFF')
+    self.buttons.Screen3D.text = '3D screen texture: ' .. (self.screenSwap.enabled and 'ON' or 'OFF')
     self.buttons.Toon3D.text = '3D toon light: ' .. (self.toon.enabled and 'ON' or 'OFF')
 end
 

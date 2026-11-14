@@ -31,6 +31,7 @@ project: they are packed into `.katsa` archives and fused executables with every
 | `pathfinding` | A* on grids, graphs and multi-floor maps, a baked NavMesh with obstacles and crowds, the `NavMap3D`, `NavAgent3D` and `NavObstacle3D` nodes, a debug view |
 | `uiStyler` | UI style sheets and `assets/styles` files, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
 | `ik` | `InverseKinematics3D` node with TwoBone, CCD, FABRIK, Jacobian, Spline, LookAt and FK types (`docs/guides/animation/ik.md`) |
+| `imgui` | Dear ImGui through the LuaJIT FFI: the `ImGuiLayer` node and the engine's Stats and Scene tools windows; a template for binding native libraries (`docs/guides/development/imgui.md`) |
 
 ## Enabling a plugin in a scene
 
@@ -220,6 +221,8 @@ Tests: `v108_7/navMesh.lua` (core) and `v108_7/navNodes.lua` (real bake, obstacl
 
 ### Areas, action links and per-agent weights
 
+<details><summary>Areas, action links and per-agent weights</summary><br>
+
 Weights live in the **agent**, never in the map or the link, so one NavMap3D serves agents that choose
 differently. Anything not set uses a default (every area costs 1, `jump` 2, other actions 1).
 
@@ -251,7 +254,11 @@ actions, grey while disabled; hand-made links show their action's name) and agen
 
 Tests: `v108_7/navLinks.lua`, and the lab checks in `v108_7/labScenes.lua`.
 
+</details>
+
 ### Pathfinding debug view
+
+<details><summary>Debug view options</summary><br>
 
 Turn on *Pathfinding debug* in the debug menu, or `world.environment.debug.pathfinding.enabled = true`.
 It draws the walkable cells of every baked NavMap3D (one colour per floor), white lines for floor
@@ -289,7 +296,11 @@ local map = world:create('NavMap3D', {
 local walkable = map:bake()  -- one ray per cell; returns the number of walkable cells
 ```
 
+</details>
+
 ### Choosing `cellSize`, `agentRadius` and narrow passages
+
+<details><summary>Tuning cell size, agent radius and narrow passages</summary><br>
 
 All NavMap3D sizes are world units (they do not depend on `physics.unitsPerMeter`; scale them
 yourself in scenes built at another scale). `cellSize` accepts 0.05 and up; bake time and memory
@@ -299,6 +310,8 @@ stays `(rings + 0.5) * cellSize` away from a wall, so the margin is a multiple o
 1.2 m passage and a 0.4 m capsule use `cellSize = 0.25`, `agentRadius = 0.4` (one ring, 0.375 m
 margin). Keep `agentRadius` close to the real body radius: a larger value closes narrow passages,
 a smaller one lets the body scrape walls.
+
+</details>
 
 # Ads plugin
 

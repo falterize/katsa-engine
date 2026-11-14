@@ -116,6 +116,25 @@ function Interface.create(self)
         shaderPath = 'scene://shaders/toonLight.glsl',
         enabled = false,
     })
+    -- Environment shaders: a sky file replaces the background, a fog file reshapes the volumetric
+    -- haze (it needs Environment.fog.volumetric), a screen-texture material reads the scene.
+    self.sky = world:create('Shader3D', {
+        name = 'SunsetSky',
+        shaderPath = 'scene://shaders/sunsetSky.glsl',
+        enabled = false,
+        animated = true,
+    })
+    self.fogShader = world:create('Shader3D', {
+        name = 'GlowFog',
+        shaderPath = 'scene://shaders/glowFog.glsl',
+        enabled = false,
+        animated = true,
+    })
+    self.screenSwap = world:create('Shader3D', {
+        name = 'ScreenSwap',
+        shaderPath = 'scene://shaders/screenSwap.glsl',
+        enabled = false,
+    })
     ui:text({
         position = { 0, 0, 0, 34 },
         size = { 0.5, -6, 0, 26 },
@@ -221,6 +240,15 @@ function Interface.create(self)
     end)
     button('Toon3D', '3D toon light: OFF', function()
         self.toon.enabled = not self.toon.enabled
+    end)
+    button('Sky3D', '3D sky shader: OFF', function()
+        self.sky.enabled = not self.sky.enabled
+    end)
+    button('Fog3D', '3D fog shader: OFF', function()
+        self.fogShader.enabled = not self.fogShader.enabled
+    end)
+    button('Screen3D', '3D screen texture: OFF', function()
+        self.screenSwap.enabled = not self.screenSwap.enabled
     end)
     button('Layers', 'Shader layer matrix', function()
         scene.workspace.selected = self.pixel

@@ -156,6 +156,7 @@ function Game:preparePresentation()
     end
     self:buildMaterials()
     self:buildUI()
+    self:attachImGui()
 end
 
 function Game:enter()
@@ -201,6 +202,9 @@ function Game:resize(w, h)
 end
 
 function Game:pointerpressed(id, x, y)
+    if self.imgui and self.imgui:pointerpressed(id, x, y) then
+        return
+    end
     local demo = self.demo
     if demo and demo.pointerpressed then
         demo:pointerpressed(id, x, y)
@@ -209,6 +213,9 @@ function Game:pointerpressed(id, x, y)
 end
 
 function Game:pointermoved(id, x, y, dx, dy)
+    if self.imgui and self.imgui:pointermoved(id, x, y) then
+        return
+    end
     local demo = self.demo
     if demo and demo.pointermoved then
         demo:pointermoved(id, x, y, dx, dy)
@@ -217,6 +224,9 @@ function Game:pointermoved(id, x, y, dx, dy)
 end
 
 function Game:pointerreleased(id, x, y)
+    if self.imgui then
+        self.imgui:pointerreleased(id, x, y)
+    end
     local demo = self.demo
     if demo and demo.pointerreleased then
         demo:pointerreleased(id, x, y)
@@ -225,6 +235,9 @@ function Game:pointerreleased(id, x, y)
 end
 
 function Game:keypressed(key)
+    if self.imgui and self.imgui:keypressed(key) then
+        return
+    end
     if
         self.input.menuKey
         and key == self.input.menuKey
@@ -259,6 +272,9 @@ function Game:keypressed(key)
 end
 
 function Game:keyreleased(key)
+    if self.imgui then
+        self.imgui:keyreleased(key)
+    end
     self.input:keyreleased(key)
 end
 
@@ -279,6 +295,9 @@ function Game:pointercancelled(id)
 end
 
 function Game:textinput(text)
+    if self.imgui and self.imgui:textinput(text) then
+        return
+    end
     if self.workspace.editing then
         self.workspace:textinput(text)
     else
@@ -305,10 +324,16 @@ function Game:exit()
 end
 
 function Game:mousebutton(button, down)
+    if self.imgui then
+        self.imgui:mousebutton(button, down)
+    end
     self.input:mapMouseButton(button, down)
 end
 
 function Game:wheelmoved(x, y)
+    if self.imgui and self.imgui:wheelmoved(x, y) then
+        return
+    end
     self.input:mapWheel(x, y)
     -- A scene with its own wheel handling (camera zoom) goes first.
     local demo = self.demo
@@ -330,6 +355,7 @@ function Game:wheelmoved(x, y)
 end
 
 function Game:release()
+    self:releaseImGui()
     if self.console then
         self.console:release()
         self.console = nil
@@ -377,7 +403,7 @@ function Game:release()
     })
 end
 
-for _, path in ipairs({ 'sceneContent', 'sceneUI', 'sceneSimulation', 'sceneRendering' }) do
+for _, path in ipairs({ 'sceneContent', 'sceneUI', 'sceneSimulation', 'sceneRendering', 'sceneImGui' }) do
     for name, method in pairs(require('source.game.runtime.game.' .. path)) do
         Game[name] = method
     end

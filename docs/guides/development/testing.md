@@ -144,6 +144,8 @@ a matched backend benchmark, see [repeatable validation](validation.md).
 
 ## Collider model sources
 
+<details><summary>Collider model sources</summary><br>
+
 Run `katsa . --test-v107.2-authoring` for focused editor/physics authoring coverage,
 including OBJ/GLB/glTF path loading on Oimo/Jolt, independent point extraction,
 invalid-source recovery and the Collision Models Workspace path picker.
@@ -153,7 +155,11 @@ interpolated pose at 144 Hz and in slow motion, Camera3D fov/focalLength linkage
 orthographic projection against the GPU matrix, pointer rays, frustum culling, picking and a rendered
 orthographic frame. Set `KATSA_TEST_OUTPUT` to a directory to keep the rendered PNGs.
 
+</details>
+
 ## katsa layer (v108.1)
+
+<details><summary>katsa layer suite (v108.1)</summary><br>
 
 `luajit validation/tests/katsa/run.lua` (from the repository root) tests the shader translator and compiles every
 project shader on desktop GL 3.3 core and GLES 3.0 through a headless EGL context. It needs LuaJIT and
@@ -168,3 +174,5 @@ backends, including SliderConstraint3D.
 
 `--test-v108.4.shadow` is a diagnostic, not a test: it captures 16 consecutive frames of a scene
 (`KATSA_SHOT=<dir>`, `KATSA_SCENE=<id>`, default `animationPhysicsLab`) so shadow stability can be compared frame to frame.
+
+</details>

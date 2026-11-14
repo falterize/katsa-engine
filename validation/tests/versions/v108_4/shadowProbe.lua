@@ -45,6 +45,14 @@ function Tests:draw()
         scene.camera.position = { c[1], c[2], c[3] }
         if c[4] then scene.camera.rotation = { c[4], c[5], 0 } end
     end
+    if self.frame == 32 and os.getenv('KATSA_KEYS') and scene then
+        -- KATSA_KEYS="f3,f9": press scene hotkeys (tool windows) before the capture.
+        for key in os.getenv('KATSA_KEYS'):gmatch('[^,]+') do scene:keypressed(key) end
+    end
+    if self.frame == 33 and os.getenv('KATSA_EXEC') and scene then
+        -- KATSA_EXEC="lua code": runs with `scene` in scope (state of a scene: scene.package.instance).
+        assert(loadstring('local scene = ...; ' .. os.getenv('KATSA_EXEC')))(scene)
+    end
     if self.frame == 30 and os.getenv('KATSA_DENSITY') and scene and scene.world then
         scene.world.environment.render.renderDensity = tonumber(os.getenv('KATSA_DENSITY'))
     end
