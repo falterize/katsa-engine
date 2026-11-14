@@ -293,6 +293,8 @@ local entries = {
     },
     ['--test-v48'] = { module = 'validation.tests.versions.v48.runtime', mode = 'default' },
     ['--test-v47'] = { module = 'validation.tests.versions.v47.runtime', mode = 'default' },
+    ['--test-perf'] = { module = 'validation.tests.performance.perf', mode = 'default' },
+    ['--perf-record'] = { module = 'validation.tests.performance.perfRecord', mode = 'default' },
     ['--benchmark'] = { module = 'validation.tests.performance.benchmark', mode = 'default' },
     ['--test-shadows'] = { module = 'validation.tests.integration.runtime', mode = 'extended' },
     ['--test'] = { module = 'validation.tests.versions.v107_1.runtime', mode = 'default' },
