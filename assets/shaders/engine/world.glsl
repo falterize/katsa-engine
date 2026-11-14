@@ -168,6 +168,8 @@ vec4 effect(vec4 color, Image textureImage, vec2 uv, vec2 screenPosition) {
     {
         highp vec4 FRAGCOORD = gl_FragCoord;
         vec2 UV = uv;
+        vec2 UV_SCALE = imageUVScale;
+        vec2 UV_OFFSET = imageUVOffset;
         vec4 COLOR = color;
         highp vec3 WORLD_POSITION = worldPosition;
         highp vec3 VIEW = viewDirection;

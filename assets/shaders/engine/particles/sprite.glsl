@@ -132,6 +132,8 @@ vec4 effect(vec4 color, Image spriteImage, vec2 uv, vec2 screenPosition) {
     {
         highp vec4 FRAGCOORD = gl_FragCoord;
         vec2 UV = uv;
+        vec2 UV_SCALE = vec2(1.0);
+        vec2 UV_OFFSET = vec2(0.0);
         vec4 COLOR = color;
         highp vec3 WORLD_POSITION = particleWorldPosition;
         highp vec3 VIEW = normalize(cameraPosition - particleWorldPosition);

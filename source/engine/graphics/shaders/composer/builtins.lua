@@ -31,6 +31,8 @@ Builtins.types = {
         fragment = {
             p('in', 'highp vec4', 'FRAGCOORD'),
             p('in', 'vec2', 'UV'),
+            p('in', 'vec2', 'UV_SCALE'),
+            p('in', 'vec2', 'UV_OFFSET'),
             p('in', 'vec4', 'COLOR'),
             p('in', 'highp vec3', 'WORLD_POSITION'),
             p('in', 'highp vec3', 'VIEW'),

@@ -136,6 +136,7 @@ Runs after texturing, tint, alpha test and the surface maps, before lighting.
 | --- | --- | --- | --- |
 | `FRAGCOORD` | `vec4` | in | `gl_FragCoord` |
 | `UV` | `vec2` | in | texture coordinate after the image/decal transform |
+| `UV_SCALE`, `UV_OFFSET` | `vec2` | in | the image UV transform: fragment `UV` is the vertex-stage (raw) UV times `UV_SCALE` plus `UV_OFFSET`. Use it when you interpolate UVs yourself in `vertex()` (a tiled floor otherwise loses its tiling) |
 | `COLOR` | `vec4` | in | interpolated vertex colour |
 | `WORLD_POSITION` | `vec3` | in | world position |
 | `VIEW` | `vec3` | in | unit vector from the surface to the camera |

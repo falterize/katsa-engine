@@ -9,9 +9,10 @@ uniform float snapScale : hint_range(10.0, 400.0) = 75.0;
 uniform float affine : hint_range(0.0, 1.0) = 1.0;
 
 // uv * w and w interpolate perspective-correctly; their quotient in fragment() is the
-// screen-linear (affine) interpolation of uv.
+// screen-linear (affine) interpolation of uv. trueUV is the ordinary perspective-correct one.
 varying vec2 affineUV;
 varying float affineW;
+varying vec2 trueUV;
 
 void vertex() {
     vec4 clip = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
@@ -24,9 +25,12 @@ void vertex() {
     POSITION = clip;
     affineUV = UV * clip.w;
     affineW = clip.w;
+    trueUV = UV;
 }
 
 void fragment() {
     vec2 screenUV = affineUV / max(affineW, 0.0001);
-    ALBEDO = texture(TEXTURE, mix(UV, screenUV, affine)).rgb * MODULATE.rgb * COLOR.rgb;
+    // The vertex stage sees the raw mesh UV; the image UV transform (tiling, offset) is applied here.
+    vec2 uv = mix(trueUV, screenUV, affine) * UV_SCALE + UV_OFFSET;
+    ALBEDO = texture(TEXTURE, uv).rgb * MODULATE.rgb * COLOR.rgb;
 }

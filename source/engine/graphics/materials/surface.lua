@@ -4,6 +4,15 @@ local Image = require('../../components.media.image')
 local Bounds = require('../geometry.objectBounds')
 
 local Surface = {}
+
+-- A user fragment() that overwrites ALBEDO leaves some surface uniforms unused, and the driver
+-- drops them from the linked program; sending those is then skipped instead of an error.
+local function put(shader, name, value)
+    if shader:hasUniform(name) then
+        shader:send(name, value)
+    end
+end
+
 local scalarKeys = {
     'transparency',
     'colorMap',
@@ -158,7 +167,7 @@ function Surface.bind(shader, world, object)
     if shader:hasUniform('surfaceEnabled') then
         shader:send('surfaceEnabled', node ~= nil)
     end
-    shader:send('surfaceMissing', false)
+    put(shader, 'surfaceMissing', false)
     if not node then
         return
     end
@@ -193,7 +202,7 @@ function Surface.bind(shader, world, object)
         node.normalScale >= 0 and node.emissionStrength >= 0,
         'Surface intensity must be nonnegative'
     )
-    shader:send('surfaceMissing', missing == true)
+    put(shader, 'surfaceMissing', missing == true)
     if missing and shader:hasUniform('surfaceDiagnosticBounds') then
         local bounds = Bounds.localBounds(object.geometry)
         local extent = math.max(bounds[4] - bounds[1], bounds[5] - bounds[2], bounds[6] - bounds[3])
@@ -213,7 +222,7 @@ function Surface.bind(shader, world, object)
     for i = #color, #node.color + 1, -1 do
         color[i] = nil
     end
-    shader:send('surfaceColor', color)
+    put(shader, 'surfaceColor', color)
     local factors = node._uniformFactors or {}
     local emission = node._uniformEmission or {}
     node._uniformFactors, node._uniformEmission = factors, emission
@@ -221,12 +230,12 @@ function Surface.bind(shader, world, object)
         node.roughness, node.metalness, node.normalScale, node.occlusionStrength
     emission[1], emission[2], emission[3], emission[4] =
         node.emissionColor[1], node.emissionColor[2], node.emissionColor[3], node.emissionStrength
-    shader:send('surfaceFactors', factors)
-    shader:send('surfaceEmission', emission)
+    put(shader, 'surfaceFactors', factors)
+    put(shader, 'surfaceEmission', emission)
     if shader:hasUniform('surfacePackedMR') then
         shader:send('surfacePackedMR', node._packedMR == true)
     end
-    shader:send('surfaceOpaque', node.alphaMode == 'Opaque')
+    put(shader, 'surfaceOpaque', node.alphaMode == 'Opaque')
 end
 
 return Surface

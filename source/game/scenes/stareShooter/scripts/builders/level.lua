@@ -45,12 +45,13 @@ function Level.create(scene)
         restitution = 0,
     })
     -- PlayStation vertex snap with affine textures. Off by default: enable the node in the
-    -- Workspace to see it.
+    -- Workspace to see it. affine = 0 keeps the floor's four huge vertices readable; raise it
+    -- toward 1 for the full affine smear (best on subdivided surfaces).
     world:create('Shader3D', {
         name = 'VertexSnap',
         shaderPath = 'scene://shaders/vertexSnap.glsl',
         enabled = false,
-        uniforms = { snapScale = 75 },
+        uniforms = { snapScale = 75, affine = 0 },
     })
     world:create('DirectionalLight3D', {
         name = 'Sun',
