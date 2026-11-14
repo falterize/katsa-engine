@@ -6,6 +6,7 @@ local Roster = require('./roster')
 local Rounds = require('./rounds')
 local Bots = require('./bots')
 local Chat = require('./chat')
+local Maps = require('./maps')
 
 -- The game server: its own headless world, the replicated nodes (Round, Players, Coins, Platform),
 -- the player avatars and the chat. It never touches the client's world.
@@ -28,13 +29,14 @@ function GameServer.new(resources, options)
         return player.name
     end)
     self.teleportRemote = server:remote('Teleport')
+    self.maps = Maps.new(world, server.replication.serverStorage)
     self.rounds = Rounds.new(world, self.roster, function(avatar, position)
         self:teleport(avatar, position)
     end, function(text)
         self.chat:say(text)
-    end)
+    end, self.maps)
     self:buildPlatform()
-    self.bots = Bots.new(server, self.roster, options.bots or 0)
+    self.bots = Bots.new(server, self.roster, options.bots or 0, self.maps)
     server.playerAdded:connect(function(player)
         self:addPlayer(player)
     end)
@@ -50,12 +52,15 @@ end
 function GameServer:buildPlatform()
     self.platform = self.world:create('Mesh3D', {
         name = 'Platform',
-        position = { 0, 0.15, 14 },
-        size = { 5, 0.3, 5 },
+        position = { 0, 0.2, 14 },
+        size = { 6, 0.4, 6 },
         color = { 0.27, 0.63, 0.86, 1 },
         replicated = true,
         replicatedProperties = { 'position', 'size', 'color' },
     })
+    -- Clients give it physics and carry whoever stands on it (scripts/game/solids.lua).
+    self.platform:setAttribute('Solid', true)
+    self.platform:setAttribute('Moving', true)
 end
 
 function GameServer:addPlayer(player)
@@ -83,7 +88,7 @@ end
 
 function GameServer:update(dt)
     self.time = self.time + dt
-    self.platform.position = { math.sin(self.time * 0.6) * 8, 0.15, 14 }
+    self.platform.position = { math.sin(self.time * 0.6) * 8, 0.2, 14 }
     for _, avatar in pairs(self.avatars) do
         avatar.allowJump = math.max(0, avatar.allowJump - dt)
     end

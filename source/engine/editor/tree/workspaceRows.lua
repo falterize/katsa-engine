@@ -40,7 +40,7 @@ local FAMILIES = {
         },
         { 0.45, 0.85, 0.5 },
     },
-    { { 'Settings', 'Folder', 'Environment', 'Shader' }, { 0.6, 0.65, 0.72 } },
+    { { 'Settings', 'Folder', 'StorageFolder', 'Environment', 'Shader' }, { 0.6, 0.65, 0.72 } },
 }
 local DEFAULT_CHIP = { 0.4, 0.62, 0.95 }
 

@@ -227,6 +227,18 @@ function PropertyRead.install(Properties)
                 end
             end
         end
+        -- The properties a replicated node mirrors: a comma list. The server (or the editor) sets
+        -- it; on a client copy it is only shown, since the server's values overwrite local edits.
+        if target._node and (rawget(target, 'replicated') == true or rawget(target, 'replica')) then
+            result[#result + 1] = {
+                key = 'replicatedProperties',
+                kind = 'string',
+                value = table.concat(rawget(target, 'replicatedProperties') or {}, ', '),
+                hint = 'Properties the server sends to every client, for example: position, size, color.',
+                readOnly = rawget(target, 'replica') == true,
+                reason = 'Controlled by the server; a client copy cannot change what is replicated.',
+            }
+        end
         if target._node and target.getAttributeNames then
             local view = target:attributeView()
             for _, name in ipairs(target:getAttributeNames()) do

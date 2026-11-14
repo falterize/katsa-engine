@@ -66,6 +66,22 @@ function Methods:syncButtons()
     self.buttons.effects.text = self.effectsEnabled and 'Shaders: ON' or 'Shaders: OFF'
 end
 
+-- Spreads the visible primary header buttons evenly over the left 80 % of the bar (the right
+-- 20 % belongs to the Workspace tab), so hiding one (Tools with ImGui) leaves no gap.
+function Methods:layoutNavigation()
+    local list = {}
+    for _, node in ipairs({ self.buttons.menu, self.buttons.pause, self.buttons.stats, self.toolsButton }) do
+        if node and node.visible then
+            list[#list + 1] = node
+        end
+    end
+    local width = 0.8 / math.max(#list, 1)
+    for i, node in ipairs(list) do
+        node.position = { (i - 1) * width, 8, 0, 6 }
+        node.size = { width, -12, 0, 42 }
+    end
+end
+
 function Methods:buildUI()
     self.buttons = {}
     local ui = self.ui

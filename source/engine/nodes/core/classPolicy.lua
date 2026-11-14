@@ -87,6 +87,7 @@ local omit = {
     Camera2D = { 'transparency', 'visible' },
     Attachment2D = { 'transparency' },
     InverseKinematics3D = { 'visible' },
+    StorageFolder = { 'replicated' },
 }
 
 local cache = setmetatable({}, { __mode = 'k' })

@@ -40,6 +40,7 @@ function AvatarView.new(scene, object)
     local tree = world:create('AnimationTree', { name = 'Tree' }, root)
     HeroTree.build(world, tree)
     tree:set('speed', 0)
+    tree:set('stride', 1)
     tree:set('stance', 'Stand')
     tree:set('squat', 0)
     tree:set('grounded', true)
@@ -53,6 +54,7 @@ function AvatarView:update()
     root.position = { object.x, object.y - 1, object.z }
     root.rotation = { 0, object.heading, 0 }
     self.tree:set('speed', math.min(1, object.speed / WALK_SPEED))
+    self.tree:set('stride', math.max(1, object.speed / WALK_SPEED))
     self.tree:set('grounded', not object.air)
 end
 

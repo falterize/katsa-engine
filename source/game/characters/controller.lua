@@ -19,6 +19,8 @@ function Player.new(body, collider, camera, settings)
         rayStart = {},
         rayEnd = {},
         rayHit = {},
+        -- Velocity of the moving ground (a platform) the character stands on, added to its own.
+        carried = { 0, 0 },
         visualYaw = math.pi,
         cameraYaw = 0,
         grounded = true,
@@ -84,6 +86,8 @@ function Player:step(dt)
     self.body:sync()
     local p = self.body.node.position
     self.body:getVelocity(self.velocity)
+    -- The solver velocity includes last step's ride on the ground; keep only the character's own.
+    self.velocity[1], self.velocity[3] = self.velocity[1] - self.carried[1], self.velocity[3] - self.carried[2]
     local foot = p[2] - self.settings.standingHeight / 2
     self.rayStart[1], self.rayStart[2], self.rayStart[3] = p[1], foot + self.settings.radius, p[3]
     self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = p[1], foot - 0.025, p[3]
@@ -91,6 +95,10 @@ function Player:step(dt)
     self.grounded = self.velocity[2] <= 0.05
         and hit ~= nil
         and hit.normal[2] >= math.cos(math.rad(45))
+    local carriedX, carriedZ = 0, 0
+    if self.grounded and self.carrier then
+        carriedX, carriedZ = self.carrier(hit.node)
+    end
     local yaw = self.cameraYaw
     local x, z = self.input.x, self.input.z
     local length = math.max(1, math.sqrt(x * x + z * z))
@@ -113,7 +121,10 @@ function Player:step(dt)
     smooth.yaw:capture(self.visualYaw)
     smooth.walk:capture(self.walkBlend)
     smooth.crouch:capture(self.crouchBlend)
+    self.carried[1], self.carried[2] = carriedX or 0, carriedZ or 0
+    self.velocity[1], self.velocity[3] = self.velocity[1] + self.carried[1], self.velocity[3] + self.carried[2]
     self.body:setVelocity(self.velocity)
+    self.velocity[1], self.velocity[3] = self.velocity[1] - self.carried[1], self.velocity[3] - self.carried[2]
 end
 
 return Player

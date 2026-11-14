@@ -13,6 +13,7 @@ function Methods:attachImGui()
     -- The old Tools panel is replaced by the Scene tools window (F8, F10 menu bar).
     self.toolsPanel.visible = false
     self.toolsButton.visible = false
+    self:layoutNavigation()
     return true
 end
 

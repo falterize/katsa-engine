@@ -6,6 +6,7 @@ local HeroTree = require('source.game.characters.heroTree')
 local GameServer = require('../server.scripts.gameServer')
 local Session = require('./game.session')
 local AvatarView = require('./game.avatarView')
+local Solids = require('./game.solids')
 
 -- Scene composition: the local character, an in-process game server, and the client session that
 -- joins it. The server and the client share nothing but the network.
@@ -19,6 +20,7 @@ local function buildTree(scene, player)
     local tree = scene.world:create('AnimationTree', { name = 'HeroTree' }, player.model.root)
     HeroTree.build(scene.world, tree)
     tree:set('speed', 0)
+    tree:set('stride', 1)
     tree:set('stance', 'Stand')
     tree:set('squat', 0)
     tree:set('grounded', true)
@@ -38,8 +40,10 @@ function Content.new(scene)
     scene.character = player
     scene.input = Input.new(scene, player, orbit)
     scene.input.keyHandler = function(key)
-        if key == 'return' and scene.demo and scene.demo.chat then
-            scene.demo.chat:open()
+        -- Enter opens the chat box; once it is open the key must reach the box to send the line.
+        local chat = scene.demo and scene.demo.chat
+        if key == 'return' and chat and not chat.typing then
+            chat:open()
             return true
         end
     end
@@ -79,6 +83,10 @@ function Content.new(scene)
             end
         end,
     })
+    self.solids = Solids.new(scene, self.session)
+    player.carrier = function(node)
+        return self.solids:carry(node)
+    end
     self.session:connect()
     return self
 end
@@ -96,6 +104,7 @@ function Content:updateNetwork(dt)
     local matrix = player.body.node:getRenderWorldMatrix()
     local speed = math.sqrt(player.velocity[1] ^ 2 + player.velocity[3] ^ 2)
     self.tree:set('speed', math.min(1, speed / WALK_SPEED))
+    self.tree:set('stride', math.max(1, speed / WALK_SPEED))
     self.tree:set('stance', player.input.crouch and 'Crouch' or 'Stand')
     self.tree:set('grounded', player.grounded)
     player.model.root.rotation[2] = math.deg(player.smooth.yaw:sampleFor(player.body.space))
@@ -109,6 +118,7 @@ function Content:updateNetwork(dt)
     )
     self.host:update(dt)
     self.session:update(dt)
+    self.solids:update(dt)
     for _, view in pairs(self.views) do
         view:update()
     end
@@ -120,6 +130,7 @@ end
 function Content:release()
     self.scene.physics.beforeStep = nil
     katsa.mouse.setRelativeMode(false)
+    self.solids:release()
     self.session:release()
     self.host:stop()
 end

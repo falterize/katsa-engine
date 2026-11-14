@@ -41,6 +41,11 @@ function Module.run(self)
     local red = shot()
     local r, g, b = red:getPixel(WIDTH / 2, 40)
     self:check(r > 0.3 and r > g * 2 and r > b * 2, 'A sky shader paints the background')
+    sky.shaderPath = fixtures .. 'skyPlain.glsl'
+    local green = shot()
+    local _, gg = green:getPixel(WIDTH / 2, 40)
+    self:check(gg > 0.5, 'A sky shader that ignores SKY_COLOR still renders')
+    sky.shaderPath = fixtures .. 'sky.glsl'
     sky.enabled = false
     local plain = shot()
     local pr, pg, pb = plain:getPixel(WIDTH / 2, 40)

@@ -1,10 +1,10 @@
--- Places both sides agree on. The lobby is where players wait; the arena is where a round is played.
+-- Places both sides agree on. The lobby is where players wait; the arena is the spot where the
+-- server puts the map of a round (see server/scripts/maps.lua).
 local Arena = {
     lobby = { 0, 1, 0 },
     lobbyRadius = 10,
     arena = { 60, 1, 0 },
     arenaRadius = 14,
-    coinCount = 10,
     limit = 120, -- no player may be farther than this from the origin
     maxSpeed = 14, -- fastest legal on-foot speed, units per second (the server's check)
 }

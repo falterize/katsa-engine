@@ -45,30 +45,37 @@ function RenderBindings.install(Renderer)
             shader, program = EnvironmentShaders.program(world, custom, 'sky')
         end
         g.setShader(shader)
+        -- A user sky that never reads SKY_COLOR has no use for the image uniforms: the driver drops
+        -- them, so every send is checked.
+        local function send(target, name, value)
+            if target:hasUniform(name) then
+                target:send(name, value)
+            end
+        end
         local yaw = math.rad(s.yaw)
         local c, t = math.cos(yaw), math.sin(yaw)
-        shader:send('right', rotate(camera.right, c, t, self.skyRight))
-        shader:send('up', rotate(camera.up, c, t, self.skyUp))
-        shader:send('forward', rotate(camera.forward, c, t, self.skyForward))
+        send(shader, 'right', rotate(camera.right, c, t, self.skyRight))
+        send(shader, 'up', rotate(camera.up, c, t, self.skyUp))
+        send(shader, 'forward', rotate(camera.forward, c, t, self.skyForward))
         self.skySize[1], self.skySize[2] = self.width, self.height
-        shader:send('viewSize', self.skySize)
+        send(shader, 'viewSize', self.skySize)
         -- The sky is infinitely far, so orthographic cameras still show it with their fov lens.
-        shader:send('focal', camera.focal)
-        shader:send('panorama', s.layout == 'Panorama' or world.resources:isMissingImage(s.texture))
+        send(shader, 'focal', camera.focal)
+        send(shader, 'panorama', s.layout == 'Panorama' or world.resources:isMissingImage(s.texture))
         self.skyInset[1] = (s.layout == 'Panorama' and 0.5 or 2) / image:getWidth()
         self.skyInset[2] = (s.layout == 'Panorama' and 0.5 or 1.5) / image:getHeight()
-        shader:send('edgeInset', self.skyInset)
+        send(shader, 'edgeInset', self.skyInset)
         for i = 1, 3 do
             self.skyTint[i] = s.color[i] / 255
         end
         self.skyTint[4] = s.brightness
-        shader:send('tint', self.skyTint)
+        send(shader, 'tint', self.skyTint)
         if program then
             if shader:hasUniform('time') then
-                shader:send('time', self.time or 0)
+                send(shader, 'time', self.time or 0)
             end
             if shader:hasUniform('cameraPosition') then
-                shader:send('cameraPosition', camera.worldPosition or camera.position)
+                send(shader, 'cameraPosition', camera.worldPosition or camera.position)
             end
             EnvironmentShaders.send(shader, program, custom)
         end

@@ -95,6 +95,20 @@ function PropertyWrite.install(Properties)
     end
 
     function Properties.set(scene, target, field, text, component)
+        if field.key == 'replicatedProperties' and not field.attribute then
+            if field.readOnly then
+                return false, field.reason
+            end
+            local list = {}
+            for name in tostring(text):gmatch('[^,%s]+') do
+                if not Schema.hasProperty(target, name) then
+                    return false, (target.className or 'This node') .. ' has no property ' .. name
+                end
+                list[#list + 1] = name
+            end
+            target.replicatedProperties = #list > 0 and list or nil
+            return true
+        end
         if field.attribute then
             return setAttribute(target, field, text, component)
         end

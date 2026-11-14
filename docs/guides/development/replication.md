@@ -19,7 +19,7 @@ client.nodeCreated:connect(function(node) end)
 ```
 
 - `replicated` is a flag on every node (Node group in the inspector, off by default).
-- `replicatedProperties` lists the properties that follow the server. It is stored on the node
+- `replicatedProperties` lists the properties that follow the server (the inspector shows it as a comma list: editable on the server and in the editor, read only on client copies). It is stored on the node
   and is set from code.
 - `ReplicatedStorage` and `ServerStorage` are top-level nodes beside the World3D root (not inside
   it), shown as their own roots in the Explorer. They are invisible: meshes, lights and particles

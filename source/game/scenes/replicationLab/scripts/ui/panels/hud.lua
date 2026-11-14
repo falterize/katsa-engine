@@ -60,10 +60,11 @@ function Hud:update()
     local round, players = self.session:node('Round'), self.session:node('Players')
     if round then
         local state = round:getAttribute('State') or ''
+        local map = round:getAttribute('Map') or ''
         self.banner.text = ('%s  %ds\n%s'):format(
             state,
             round:getAttribute('Timer') or 0,
-            round:getAttribute('Message') or ''
+            (round:getAttribute('Message') or '') .. (map ~= '' and ('  -  ' .. map) or '')
         )
         self.banner.textColor = STATE_COLORS[state] or { 1, 1, 1 }
     end

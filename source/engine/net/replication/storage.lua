@@ -14,7 +14,7 @@ local function ensure(world, name)
     if found and not found.destroyed then
         return found
     end
-    local container = Node.create('Folder', { name = name, visible = false, storageContainer = true }, nil, world)
+    local container = Node.create('StorageFolder', { name = name, visible = false, storageContainer = true }, nil, world)
     container._world, container._sceneWorld = world, world
     world.storage[name] = container
     return container

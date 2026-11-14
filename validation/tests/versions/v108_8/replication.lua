@@ -42,6 +42,34 @@ function Module.run(self)
             and serverWorld.storage.ServerStorage.parent == nil,
         'Storage containers live outside the world root and are hidden'
     )
+    local Properties = require('source.engine.editor.inspectors.properties')
+    local function rowOf(node, key)
+        for _, row in ipairs(Properties.list(node)) do
+            if row.key == key then
+                return row
+            end
+        end
+    end
+    self:check(
+        storage.className == 'StorageFolder' and rowOf(storage, 'replicated') == nil,
+        'The storage containers have no replicated switch in the inspector'
+    )
+    local watched = serverWorld:create('Mesh3D', {
+        name = 'Watched',
+        replicated = true,
+        replicatedProperties = { 'position', 'color' },
+    })
+    local listed = rowOf(watched, 'replicatedProperties')
+    self:check(
+        listed and listed.value == 'position, color' and not listed.readOnly,
+        'replicatedProperties shows as an editable list on the server'
+    )
+    self:check(
+        Properties.set(nil, watched, listed, 'position, size') and watched.replicatedProperties[2] == 'size'
+            and not Properties.set(nil, watched, listed, 'nonsense'),
+        'The list is parsed and unknown property names are rejected'
+    )
+    watched:destroy()
     local template = serverWorld:create('Mesh3D', { name = 'Template' }, storage)
     local copy = template:clone({ name = 'TemplateCopy' }, serverWorld.root)
     self:check(
