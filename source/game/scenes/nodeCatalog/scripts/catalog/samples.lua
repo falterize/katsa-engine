@@ -39,6 +39,8 @@ local routes = {
     TileMap = 'tileMapLab',
     Actor = 'actorLab',
     AnimationTree = 'animationTreeLab',
+    AnimationGraphNode = 'animationTreeLab',
+    AnimationTransition = 'animationTreeLab',
     AudioSource = 'audioNodes',
     AudioListener = 'audioNodes',
     ParticleEmitter2D = 'physics2D',
@@ -55,6 +57,8 @@ local descriptions = {
     NavLink3D = 'Names an action (jump, climb ...) between two places; agents price the action themselves.',
     NavArea3D = 'Names a region (water, mud); each agent prices it with areaCosts.',
     InverseKinematics3D = 'Pick the solver type and bones; targets and poles are node references.',
+    AnimationGraphNode = 'Pick the node type; children are its inputs. Edit Param, Fade or Filter and press Rebuild.',
+    AnimationTransition = 'Edit from, to, the condition and switch of a state machine transition.',
     UIStyler = 'Edit the theme and style folder; the showcase restyles live.',
     SurfaceAppearance3D = 'Toggle normal, roughness, metalness and emission maps on the imported '
         .. 'cube.',

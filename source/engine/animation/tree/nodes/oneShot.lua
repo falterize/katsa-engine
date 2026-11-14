@@ -55,7 +55,7 @@ function OneShot:length()
         local leaves, longest = {}, 0
         self.children[2]:collect(leaves)
         for _, leaf in ipairs(leaves) do
-            longest = math.max(longest, leaf:duration() / math.max(leaf.speed, 1e-6))
+            longest = math.max(longest, leaf:duration() / math.max(math.abs(leaf.speed), 1e-6))
         end
         self.shotLength = longest > 0 and longest or nil
     end

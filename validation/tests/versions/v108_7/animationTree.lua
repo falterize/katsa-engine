@@ -22,6 +22,9 @@ local function fakeAnimator(durations)
             timePosition = 0,
             state = 'Stopped',
         }
+        function track:range()
+            return self.startTime or 0, math.min(self.endTime or self.clip.duration, self.clip.duration)
+        end
         function track:play(_, speed, weight)
             self.speed, self.weight, self.state = speed or self.speed, weight or self.weight, 'Playing'
         end

@@ -15,8 +15,7 @@ function Phase.get(node)
     if not best then
         return 0
     end
-    local duration = best:duration()
-    return (best.track.timePosition % duration) / duration
+    return best:phase()
 end
 
 -- Seconds until the dominant clip reaches its end (0 when it has finished).
@@ -33,9 +32,7 @@ function Phase.remaining(node)
     if not best then
         return 0
     end
-    local duration, track = best:duration(), best.track
-    local position = best.loop and track.timePosition % duration or math.min(track.timePosition, duration)
-    return (duration - position) / math.max(math.abs(track.speed), 1e-6)
+    return best:remaining()
 end
 
 function Phase.set(node, phase)
@@ -43,7 +40,7 @@ function Phase.set(node, phase)
     node:collect(leaves)
     for _, leaf in ipairs(leaves) do
         if leaf.track and leaf:duration() > 0 then
-            leaf.track.timePosition = phase * leaf:duration()
+            leaf:setPhase(phase)
         end
     end
 end

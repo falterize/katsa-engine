@@ -37,13 +37,14 @@ current `state`.
 
 | Type | Does |
 | --- | --- |
-| `Animation` (`{ clip = 'Walk' }`, or just the clip name) | plays one clip; `loop`, `speed`, `order`, `mask` |
+| `Animation` (`{ clip = 'Walk' }`, or just the clip name) | plays one clip; `loop`, `speed`, `order`, `mask`, `playMode`, `loopMode`, `startTime`, `endTime`, `stretch` |
 | `Blend` | mixes `a` and `b` by `amount` (0..1); with `filter`, only those bones mix |
 | `Blend3` | `a`, `b`, `c` on `amount` from -1 to 1 |
 | `Blend1D` | clips on one parameter axis (`points = { { value, clip } ... }`), neighbours are mixed |
 | `Blend2D` | clips in a plane (`x`, `y`, `points = { { x, y, clip } ... }`), Delaunay triangulation |
 | `Add2` | `base` plus the additive `add` clip scaled by `amount` (0..1) |
 | `Add3` | `base` plus additive `plus` (amount > 0) or `minus` (amount < 0) |
+| `Sub2` | `base` minus the difference of `sub` to its reference pose, scaled by `amount` |
 | `OneShot` | plays `shot` once over `input` when `request` is triggered |
 | `Transition` | one of several `inputs`, chosen by a parameter, with a crossfade |
 | `TimeScale` | multiplies the speed of its input |
@@ -52,6 +53,13 @@ current `state`.
 
 `Blend1D` and `Blend2D` keep their clips in step (one shared phase, clip speeds scaled by length)
 so a walk and a run do not drift apart. Pass `sync = false` to turn that off.
+
+### Animation node
+
+`playMode = 'Backward'` plays from the end; `loopMode` is `'None'`, `'Linear'` or `'PingPong'`
+(it replaces `loop`); `startTime` / `endTime` play only that part of the clip (seconds);
+`stretch` multiplies the speed of the part. The same settings are properties of an
+`AnimationTrack` (`startTime`, `endTime`, `loopMode`).
 
 ### Blend spaces
 
@@ -98,7 +106,9 @@ keeps the chosen input where it was. A change during a fade continues from the r
 
 ### StateMachine
 
-Transitions are tried by `priority` (lower first, then as listed). Per transition: `fade`,
+Transitions are tried by `priority` (lower first, then as listed). Conditions: `when` (a parameter or
+trigger name, or a function), `expression` (text over the parameters, for example
+`'speed > 0.5 and not grounded'`; `math` functions work) or `onFinish`. Per transition: `fade`,
 `curve`, `switch` (`'Immediate'`, `'Sync'` carries the phase, `'AtEnd'` waits until the clip is about
 to end), `advance` (`'Auto'`, or `'Disabled'` for use by `travel` only), `reset`. A state may be
 another `StateMachine`; going to the state `'End'` finishes the machine, so a parent's `onFinish`
@@ -110,7 +120,28 @@ transition fires. `tree:travel('Target')` walks the shortest chain of transition
 tree:set('rewind', 0)   -- seeks to second 0, then the parameter clears itself
 ```
 
-Demo: the `animationTreeLab` scene (Transition stance, Add2 squat, OneShot wave on the arms).
+### Graphs as nodes
+
+The same graph can be nodes in the Workspace. Put `AnimationGraphNode` children under an
+`AnimationTree` (the first is the root); the children of a graph node are its inputs, in order
+(Blend: a, b; Add2: base, add; OneShot: input, shot ...). `type` picks the kind and the inspector
+shows only that kind's properties (the clip property lists the clips of the model). Names matter
+for Transition inputs and StateMachine states; `pointX`/`pointY` place an input in a blend space;
+`AnimationTransition` children describe the transitions of a StateMachine node. Numbers that
+a table graph would give as a parameter name are `param` (name) or `value` (fixed).
+
+```lua
+local tree = world:create('AnimationTree', {}, modelRoot)
+local mix = world:create('AnimationGraphNode', { type = 'Blend1D', param = 'speed' }, tree)
+world:create('AnimationGraphNode', { type = 'Animation', clip = 'Idle', pointX = 0 }, mix)
+world:create('AnimationGraphNode', { type = 'Animation', clip = 'Walk', pointX = 1 }, mix)
+```
+
+With `liveEdit` (default) the tree notices edits of the nodes and rebuilds itself, keeping the
+parameters; `tree:rebuild()` does it on demand. A `definition` or `definitionFile` wins over nodes.
+
+Demo: the `animationTreeLab` scene builds its graph from nodes (`scripts/builders/graph.lua`): Transition
+stance, Add2 squat, OneShot wave on the arms, an AtEnd landing.
 
 ## Retargeting
 

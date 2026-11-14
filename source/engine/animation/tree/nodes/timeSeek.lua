@@ -31,8 +31,7 @@ function TimeSeek:evaluate(weight, scale, context)
         self.child:collect(leaves)
         for _, leaf in ipairs(leaves) do
             if leaf.track then
-                local duration = leaf:duration()
-                leaf.track.timePosition = duration > 0 and (leaf.loop and time % duration or math.min(time, duration)) or 0
+                leaf:seek(time)
             end
         end
     end

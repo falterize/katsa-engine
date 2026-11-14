@@ -205,7 +205,7 @@ end
 -- Additive tracks (`track.additive`) add the difference between their pose and a reference on
 -- top of the mixed pose: the clip's first frame (default) or the rest pose
 -- (`additiveReference = 'rest'`). Rotations compose (`out * reference^-1 * pose`, scaled by the
--- weight), translations and scales add.
+-- weight), translations and scales add. A `subtract` track removes the difference instead.
 local function addDelta(track, node, path, out, rest, weight)
     local lookup = track.clip._lookup[node]
     local channel = lookup and lookup[path]
@@ -223,9 +223,10 @@ local function addDelta(track, node, path, out, rest, weight)
             track._references[channel] = reference
         end
     end
+    local sign = track.subtract and -1 or 1
     if path ~= 'rotation' then
         for i = 1, #out do
-            out[i] = out[i] + (value[i] - reference[i]) * weight
+            out[i] = out[i] + (value[i] - reference[i]) * weight * sign
         end
         return
     end
@@ -239,6 +240,7 @@ local function addDelta(track, node, path, out, rest, weight)
     if dw < 0 then
         dx, dy, dz, dw = -dx, -dy, -dz, -dw
     end
+    dx, dy, dz = dx * sign, dy * sign, dz * sign -- the inverse rotation removes the difference
     -- nlerp from the identity towards delta
     dx, dy, dz, dw = dx * weight, dy * weight, dz * weight, 1 - weight + dw * weight
     local length = math.sqrt(dx * dx + dy * dy + dz * dz + dw * dw)

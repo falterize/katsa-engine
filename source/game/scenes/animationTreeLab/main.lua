@@ -7,7 +7,7 @@ local systemSettings = {
 
 function Scene.create(scene, context)
     local Content = context:require('scripts.content')
-    local state = Content.new(scene)
+    local state = Content.new(scene, context)
     state.scene = scene
     context.instance = state
     scene:preparePresentation()

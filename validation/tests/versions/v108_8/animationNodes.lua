@@ -16,6 +16,9 @@ local function fakeAnimator()
         for key, value in pairs(settings) do
             track[key] = value
         end
+        function track:range()
+            return self.startTime or 0, math.min(self.endTime or self.clip.duration, self.clip.duration)
+        end
         function track:play(_, speed, weight)
             self.speed, self.weight, self.state = speed or self.speed, weight or self.weight, 'Playing'
         end
@@ -69,6 +72,26 @@ function Tests.run(tester)
         tracks.Breathe.additive and tracks.Breathe.additiveReference == 'rest' and near(tracks.Breathe.weight, 0.5),
         'Add2 scales an additive clip by its amount'
     )
+
+    tree, tracks = build({ type = 'Sub2', amount = 0.5, base = 'Walk', sub = 'Breathe' })
+    tree:update(0.1)
+    tester:check(
+        tracks.Breathe.additive and tracks.Breathe.subtract and near(tracks.Breathe.weight, 0.5),
+        'Sub2 removes the difference of its clip, scaled by the amount'
+    )
+
+    tree, tracks = build({
+        type = 'StateMachine',
+        states = { A = 'XA', B = 'XB' },
+        transitions = { { from = 'A', to = 'B', expression = 'speed > 0.5 and not blocked' } },
+    })
+    tree:set('speed', 1)
+    tree:set('blocked', true)
+    tree:update(0.1)
+    tester:check(tree:state() == 'A', 'A transition expression reads the parameters')
+    tree:set('blocked', false)
+    tree:update(0.1)
+    tester:check(tree:state() == 'B', 'A transition expression fires when it holds')
 
     tree, tracks = build({
         type = 'OneShot',

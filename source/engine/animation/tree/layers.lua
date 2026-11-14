@@ -1,6 +1,7 @@
 -- Layer attributes a graph node hands down to the clips beneath it. The tree turns them into
 -- AnimationTrack settings, so the Animator does the mixing: `boost` raises the layer order (the
--- clips play over everything below), `filter` limits the bones, `additive` adds the clips on top.
+-- clips play over everything below), `filter` limits the bones, `additive` adds the clips on top
+-- (`subtract` removes their difference instead).
 local Layers = {}
 
 -- A filter is a list of bone names (weight 1) or a map of bone name to weight.
@@ -16,7 +17,7 @@ local function normalize(filter)
     return map
 end
 
--- Everything under `node` goes through `options`: { boost = n, filter = {...}, additive = true,
+-- Everything under `node` goes through `options`: { boost = n, filter = {...}, additive = true, subtract = true,
 -- reference = 'firstFrame' | 'rest', children = true }.
 function Layers.apply(node, options)
     local leaves = {}
@@ -27,6 +28,7 @@ function Layers.apply(node, options)
         end
         if options.additive then
             leaf.additive = true
+            leaf.subtract = options.subtract == true
             leaf.additiveReference = options.reference or leaf.additiveReference
         end
         if options.filter then

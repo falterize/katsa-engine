@@ -57,9 +57,13 @@ function Tree.new(animator, definition)
             boneMask = Layers.mask(leaf, animator.model),
             retarget = leaf.definition.retarget,
             speed = leaf.speed,
+            startTime = leaf.definition.startTime,
+            endTime = leaf.definition.endTime,
+            loopMode = leaf.loopMode,
         }
         leaf.track = animator:load(leaf.definition.clip, settings)
         leaf.track.additive = leaf.additive
+        leaf.track.subtract = leaf.subtract
         leaf.track.additiveReference = leaf.additiveReference
         leaf.track:play(0, leaf.speed, 0)
     end

@@ -1,64 +1,15 @@
 local Mesh = require('source.engine.composition.mesh')
 local Models = require('source.engine.import.models')
 
--- One AnimationTree on the shooter character, built from the node types of the tree:
---   OneShot      `wave`: the jump clip plays once on the arms only (filter) over everything below
---   StateMachine Ground <-> Air (the landing waits for the end of the clip: switch = 'AtEnd')
---   Transition   `stance` crossfades between standing and the crouch clip (smooth curve)
---   Add2         `squat` adds the crouch pose on top of the walk, from nothing to fully
---   Blend1D      idle -> walk over `speed`
--- The buttons only set parameters; the graph decides weights, fades and transitions.
+-- One AnimationTree on the shooter character. Its graph is a set of AnimationGraphNode nodes
+-- (`scripts.builders.graph.lua`); the buttons only set parameters, the graph decides weights, fades and
+-- transitions. The same graph as a plain table is shown in docs/guides/animation/animationTree.md.
 local Lab = {}
 Lab.__index = Lab
 
 local CHARACTER = 'assets/models/characters/player.glb'
 
-local function definition()
-    return {
-        type = 'OneShot',
-        request = 'wave',
-        fadeIn = 0.15,
-        fadeOut = 0.25,
-        filter = { 'Upper_Arm_L', 'Upper_Arm_R' },
-        filterChildren = true,
-        shot = { clip = 'Player_Jump' },
-        input = {
-            type = 'StateMachine',
-            start = 'Ground',
-            states = {
-                Ground = {
-                    type = 'Transition',
-                    param = 'stance',
-                    fade = 0.25,
-                    curve = 'smooth',
-                    inputs = {
-                        {
-                            'Stand',
-                            {
-                                type = 'Add2',
-                                amount = 'squat',
-                                add = { clip = 'Player_Crouch' },
-                                base = {
-                                    type = 'Blend1D',
-                                    param = 'speed',
-                                    points = { { 0, 'Player_Idle' }, { 1, 'Player_Walk' } },
-                                },
-                            },
-                        },
-                        { 'Crouch', { clip = 'Player_Crouch' } },
-                    },
-                },
-                Air = { clip = 'Player_Jump', loop = false },
-            },
-            transitions = {
-                { from = 'Ground', to = 'Air', when = function(p) return not p.grounded end, fade = 0.1 },
-                { from = 'Air', to = 'Ground', when = 'grounded', fade = 0.15, switch = 'AtEnd' },
-            },
-        },
-    }
-end
-
-function Lab.new(scene)
+function Lab.new(scene, context)
     local self = setmetatable({ scene = scene, airTime = 0 }, Lab)
     local world = scene.world
     world.environment.debug.gizmos.enabled = false
@@ -85,7 +36,8 @@ function Lab.new(scene)
         end
     end
     assert(self.jumpLength, 'Player_Jump is missing from the character')
-    self.tree = world:create('AnimationTree', { name = 'HeroTree', definition = definition() }, root)
+    self.tree = world:create('AnimationTree', { name = 'HeroTree' }, root)
+    context:require('scripts.builders.graph').build(world, self.tree)
     self.tree:set('speed', 0)
     self.tree:set('stance', 'Stand')
     self.tree:set('squat', 0)

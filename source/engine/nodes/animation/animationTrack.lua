@@ -12,7 +12,11 @@ Track.propertySchema = {
     fadeIn = { min = 0 },
     fadeOut = { min = 0 },
     boneMask = { kind = 'bindings' },
+    startTime = { min = 0 },
+    endTime = { min = 0 },
+    loopMode = { options = { 'Linear', 'PingPong' } },
     additive = {},
+    subtract = {},
     additiveReference = { options = { 'firstFrame', 'rest' } },
 }
 
@@ -48,6 +52,14 @@ function Track:fade(weight, duration)
     end
 end
 
+-- The part of the clip that plays: `startTime` .. `endTime` (the whole clip by default).
+function Track:range()
+    local duration = self.clip.duration
+    local from = math.max(0, math.min(self.startTime or 0, duration))
+    local to = math.max(from, math.min(self.endTime or duration, duration))
+    return from, to
+end
+
 function Track:play(fade, speed, weight)
     if speed ~= nil then
         self.speed = speed
@@ -57,8 +69,8 @@ function Track:play(fade, speed, weight)
     end
     fade = fade == nil and self.fadeIn or fade
     assert(not self.destroyed, 'AnimationTrack was destroyed')
-    self.timePosition, self._loops, self.state =
-        self.speed < 0 and self.clip.duration or 0, 0, 'Playing'
+    local from, to = self:range()
+    self.timePosition, self._loops, self.state = self.speed < 0 and to or from, 0, 'Playing'
     rawset(self, '_playing', true)
     self._animator._rootTrack = nil
     self:fade(self.weight, fade or 0)
@@ -119,19 +131,35 @@ function Track:advance(dt)
             and math.abs(self.speed) < math.huge,
         'Animation speed must be finite'
     )
-    local duration = self.clip.duration
+    local from, to = self:range()
+    local duration = to - from
     local old = self.timePosition
     local total = old + dt * self.speed
-    local loops = self.looped and duration > 0 and math.floor(total / duration) or 0
-    local time = duration > 0
-            and (self.looped and total % duration or math.max(0, math.min(total, duration)))
-        or 0
+    local pingPong = self.loopMode == 'PingPong'
+    local loops = self.looped and duration > 0 and math.floor((total - from) / duration) or 0
+    local time
+    if duration <= 0 then
+        time = from
+    elseif not self.looped then
+        time = math.max(from, math.min(total, to))
+    elseif pingPong then
+        -- The unfolded position runs on; the visible time goes forward on even cycles and backward
+        -- on odd ones. A seek (timePosition changed from outside) restarts the unfolding.
+        local unfolded = self._lastTime == old and self._unfolded or old - from
+        unfolded = unfolded + dt * self.speed
+        self._unfolded = unfolded
+        local phase = unfolded % (2 * duration)
+        time = from + (phase < duration and phase or 2 * duration - phase)
+        loops = math.floor(unfolded / (2 * duration)) - math.floor((unfolded - dt * self.speed) / (2 * duration))
+    else
+        time = from + (total - from) % duration
+    end
     for _, marker in ipairs(self.clip.markers) do
         local hits = 0
-        if self.looped and duration > 0 then
+        if self.looped and duration > 0 and marker.time >= from and marker.time <= to then
             hits = math.floor((total - marker.time) / duration)
                 - math.floor((old - marker.time) / duration)
-        elseif marker.time > old and marker.time <= time then
+        elseif not self.looped and marker.time > old and marker.time <= time then
             hits = 1
         end
         for _ = 1, math.min(64, math.abs(hits)) do
@@ -141,8 +169,9 @@ function Track:advance(dt)
     end
     self._loops = (self._loops or 0) + loops
     self.timePosition = time
+    self._lastTime = time
     if
-        not self.looped and (self.speed >= 0 and total >= duration or self.speed < 0 and total <= 0)
+        not self.looped and (self.speed >= 0 and total >= to or self.speed < 0 and total <= from)
     then
         self.state = 'Paused'
         rawset(self, '_playing', false)

@@ -12,6 +12,8 @@
 -- Transitions are tried in order of `priority` (lower first, then as listed) each update; the first
 -- whose condition holds and whose `to` differs from the current state fires. Per transition:
 --   fade, curve   crossfade seconds and shape (machine defaults: `fade`, `curve`)
+--   expression    a condition as text over the parameters, e.g. 'speed > 0.1 and not grounded'
+--                 (`math` functions are available); instead of `when`
 --   switch        'Immediate' (default), 'Sync' (the new state continues at the old state's phase)
 --                 or 'AtEnd' (waits until the current clip is about to end, so the fade finishes
 --                 with it)
@@ -47,6 +49,21 @@ local function normalize(transition, index)
     assert(advance == 'Auto' or advance == 'Disabled', 'Transition advance must be Auto or Disabled')
     copy.advance = advance
     copy.curveFunction = copy.curve ~= nil and Curves.get(copy.curve) or nil
+    if copy.expression then
+        local chunk, message = loadstring('return (' .. copy.expression .. ')', 'transition')
+        assert(chunk, 'Bad transition expression: ' .. tostring(message))
+        local scope = { params = {} }
+        setfenv(chunk, setmetatable({}, {
+            __index = function(_, key)
+                local value = scope.params[key]
+                if value == nil then
+                    return math[key]
+                end
+                return value
+            end,
+        }))
+        copy.compiled, copy.scope = chunk, scope
+    end
     return copy
 end
 
@@ -193,6 +210,11 @@ function StateMachine:link(from, to)
 end
 
 local function holds(transition, machine, tree)
+    if transition.compiled then
+        transition.scope.params = tree.params
+        local ok, value = pcall(transition.compiled)
+        return ok and value and value ~= 0 and true or false
+    end
     local condition = transition.when
     if condition ~= nil then
         local kind = type(condition)

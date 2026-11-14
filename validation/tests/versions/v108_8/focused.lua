@@ -15,6 +15,9 @@ function Tests:draw()
     self.done = true
     require('validation.tests.versions.v108_8.animationNodes').run(self)
     require('validation.tests.versions.v108_8.additivePose').run(self)
+    require('validation.tests.versions.v108_8.clipPlayback').run(self)
+    require('validation.tests.versions.v108_8.graphNodes').run(self)
+    require('validation.tests.versions.v108_8.realClips').run(self)
     print('PASSED ' .. self.count .. ' v108.8 focused checks')
     katsa.event.quit()
 end

@@ -7,13 +7,18 @@
 --   tree:set('speed', 0.5)                    -- parameters; tree:trigger('jump'); tree:travel('Air')
 --
 -- `definition` is a graph table (see engine/animation/tree); `definitionFile` names a Lua file
--- that returns one. The inspector shows `active`, the Animator it drives and the current state.
+-- that returns one. Without either, the graph is read from the AnimationGraphNode children of
+-- this node (the first one is the root), so it can be built and edited as nodes in the
+-- Workspace; `rebuild()` reads them again after an edit. The inspector shows `active`, the
+-- Animator it drives and the current state.
 local Node = require('../core.baseNode')
 local Tree = require('../../animation.tree')
+local FromNodes = require('../../animation.tree.fromNodes')
 
 local Class = Node.define('AnimationTree', 'Node')
 Class.propertySchema = {
     active = {},
+    liveEdit = {},
     animator = {
         kind = 'node',
         nodeClass = 'Animator',
@@ -29,6 +34,7 @@ Class.propertySchema = {
 
 function Class.initialize(self)
     self.active = self.active ~= false
+    self.liveEdit = self.liveEdit ~= false
 end
 
 local function animatorOf(node)
@@ -68,7 +74,17 @@ function Class:connect()
         )
         definition = chunk()
     end
-    assert(definition, 'AnimationTree needs a definition or a definitionFile')
+    self._fromNodes = false
+    if not definition then
+        local root = FromNodes.root(self)
+        definition = root and FromNodes.build(root)
+        self._fromNodes = root ~= nil
+        self._signature = root and FromNodes.signature(root)
+    end
+    assert(
+        definition,
+        'AnimationTree needs a definition, a definitionFile or an AnimationGraphNode child'
+    )
     self.animator = animator
     self.tree = Tree.new(animator, definition)
     self.tree.active = self.active
@@ -87,9 +103,37 @@ function Class:connect()
     return true
 end
 
-function Class:update()
-    if self:connect() then
-        self.tree.active = self.active
+-- Reads the graph again (after the nodes below were edited). Parameters keep their values.
+function Class:rebuild()
+    local params = self.tree and self.tree.params
+    if self.tree then
+        self.tree:destroy()
+        self.tree = nil
+    end
+    if self:connect() and params then
+        for name, value in pairs(params) do
+            self.tree:set(name, value)
+        end
+    end
+end
+
+-- Graphs built from nodes are checked for edits a few times a second (`liveEdit`).
+local WATCH_INTERVAL = 0.25
+
+function Class:update(dt)
+    if not self:connect() then
+        return
+    end
+    self.tree.active = self.active
+    if self.liveEdit and self._fromNodes then
+        self._watch = (self._watch or 0) + (dt or 0)
+        if self._watch >= WATCH_INTERVAL then
+            self._watch = 0
+            local root = FromNodes.root(self)
+            if root and FromNodes.signature(root) ~= self._signature then
+                self:rebuild()
+            end
+        end
     end
 end
 
