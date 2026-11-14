@@ -27,6 +27,7 @@ local routes = {
     Node = 'nodes',
     Node3D = 'nodes',
     Folder = 'nodes',
+    StorageFolder = 'nodes',
     World3D = 'viewports',
     World2D = 'viewports',
     ViewportFrame = 'viewports',
@@ -222,7 +223,7 @@ function Catalog.prepare(scene, name)
             if name == 'Constraint3D' then
                 node.kind = 'Spherical'
             end
-        elseif name == 'Node' or name == 'Node3D' or name == 'Folder' then
+        elseif name == 'Node' or name == 'Node3D' or name == 'Folder' or name == 'StorageFolder' then
             node = scene.world:create(name, { name = 'Catalog' .. name })
         elseif name == 'Node2D' then
             node = scene.ui:create('Node2D', { name = 'CatalogNode2D', position = { 640, -300 } })
