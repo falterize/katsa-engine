@@ -73,8 +73,10 @@ parameters: the built-in variables below are in scope.
 
 * Defaults are literals or constructors of literals: `1.0`, `true`, `vec3(0.2, 0.4, 0.6)`.
   They are applied when the node does not set the uniform, so a shader works without any Lua.
-* Hints (`hint_range(min, max[, step])`, `source_color`) are metadata for tools; they never
-  reach the GPU compiler.
+* Hints are metadata; they never reach the GPU compiler. The Inspector's uniform editor uses them:
+  `hint_range(min, max[, step])` limits numbers, `source_color` marks a colour (channels 0..1 with a
+  swatch), `hint_enum("A", "B")` offers an int by name. `hint_screen_texture` and
+  `hint_depth_texture` are described under spatial.
 * A `Shader3D`/`Shader2D` node sets values through `uniforms = { name = value }`. A name the file
   does not declare is an error, not a silent no-op. A value may be a number, boolean, a vector table
   or a managed value (animated values are read every frame).
@@ -135,6 +137,7 @@ Runs after texturing, tint, alpha test and the surface maps, before lighting.
 | Built-in | Type | Access | Meaning |
 | --- | --- | --- | --- |
 | `FRAGCOORD` | `vec4` | in | `gl_FragCoord` |
+| `SCREEN_UV` | `vec2` | in | fragment position over the viewport (0..1) |
 | `UV` | `vec2` | in | texture coordinate after the image/decal transform |
 | `UV_SCALE`, `UV_OFFSET` | `vec2` | in | the image UV transform: fragment `UV` is the vertex-stage (raw) UV times `UV_SCALE` plus `UV_OFFSET`. Use it when you interpolate UVs yourself in `vertex()` (a tiled floor otherwise loses its tiling) |
 | `COLOR` | `vec4` | in | interpolated vertex colour |
@@ -222,6 +225,59 @@ Several Shader3D nodes may apply to one object (shader layers decide which); the
 `fragment()` and `light()` functions run in order. Set `animated = true` for time-dependent shaders.
 A vertex shader changes the object's extent: choose `boundsMode = 'Padding'` with a world-unit
 `shadowBoundsPadding` to keep tight culling, or the default `Conservative`.
+
+### Scene textures
+
+```glsl
+uniform sampler2D screen_tex : hint_screen_texture;  // the opaque scene colour
+uniform sampler2D depth_tex  : hint_depth_texture;   // the opaque scene depth
+void fragment() { ALBEDO = texture(screen_tex, SCREEN_UV).rgb; }
+```
+
+`SCREEN_UV` is the fragment position over the viewport (0..1, top left origin). A material that
+declares one of these samplers is drawn in the transparent pass, after the opaque scene, and the
+engine binds the textures itself (the copy is made on first use each frame, so scenes without such
+a shader pay nothing). The sampler never appears in `uniforms`.
+
+## sky
+
+`shader_type sky;` has only `fragment()` and replaces the world background. Put the file on a
+`Shader3D` node of the world: the first enabled sky shader draws instead of the sky image (which
+stays available as `SKY_COLOR`).
+
+| Built-in | Type | Access | Meaning |
+| --- | --- | --- | --- |
+| `EYEDIR` | `vec3` | in | unit direction of the pixel's view ray |
+| `SCREEN_UV` | `vec2` | in | position over the viewport |
+| `TIME` | `float` | in | seconds |
+| `POSITION` | `vec3` | in | camera position |
+| `SKY_COLOR` | `vec3` | in | the configured sky image and tint |
+| `COLOR` | `vec3` | inout | the pixel colour |
+
+```glsl
+shader_type sky;
+uniform vec3 horizon : source_color = vec3(1.0, 0.5, 0.25);
+void fragment() {
+    COLOR = mix(horizon, SKY_COLOR, smoothstep(0.0, 0.4, clamp(EYEDIR.y, 0.0, 1.0)));
+}
+```
+
+## fog
+
+`shader_type fog;` has only `fragment()` and runs for every sample of the volumetric fog ray march
+(enable `Environment.fog.volumetric`). The first enabled fog shader on a `Shader3D` node is used.
+
+| Built-in | Type | Access | Meaning |
+| --- | --- | --- | --- |
+| `WORLD_POSITION` | `vec3` | in | the sample position |
+| `CAMERA_POSITION`, `EYEDIR` | `vec3` | in | the ray origin and direction |
+| `DISTANCE` | `float` | in | distance along the ray |
+| `TIME` | `float` | in | seconds |
+| `DENSITY` | `float` | inout | fog density at the sample (starts at the Environment value) |
+| `ALBEDO` | `vec3` | inout | fog colour |
+| `EMISSION` | `vec3` | inout | light the fog gives off |
+
+Mesh pipelines ignore sky and fog files; a sky file cannot be used as a mesh shader.
 
 ## canvas_item
 

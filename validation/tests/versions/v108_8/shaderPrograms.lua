@@ -40,6 +40,31 @@ function Module.run(self)
     })
     self:check(sprite:hasUniform('s1_glow'), 'The particle program runs the user fragment()')
 
+    local sky = Programs.parse(fixtures .. 'sky.glsl', 'sky')
+    local fog = Programs.parse(fixtures .. 'fog.glsl', 'fog')
+    local skyProgram = Programs.compile('assets/shaders/engine/skyShader.glsl', {
+        kind = 'sky',
+        shaders = { sky },
+        entries = { fragment = true },
+    })
+    self:check(
+        skyProgram:hasUniform('s1_horizon') and skyProgram:hasUniform('right'),
+        'A sky shader compiles into the sky template with the shared ray uniforms'
+    )
+    local fogProgram = Programs.compile('assets/shaders/engine/post/volumetricFog.glsl', {
+        kind = 'fog',
+        shaders = { fog },
+        entries = { fragment = true },
+    })
+    self:check(
+        fogProgram:hasUniform('s1_strength') and fogProgram:hasUniform('stepCount'),
+        'A fog shader compiles into the volumetric fog pass'
+    )
+    self:check(
+        not pcall(Programs.parse, fixtures .. 'sky.glsl', 'spatial'),
+        'A sky shader cannot be used as a mesh shader'
+    )
+
     local resources = self.manager.resources:scope()
     local material = Material.new(resources, { shaders = { modes } })
     self:check(

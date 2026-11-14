@@ -131,6 +131,7 @@ vec4 effect(vec4 color, Image spriteImage, vec2 uv, vec2 screenPosition) {
 #ifdef KATSA_USER_FRAGMENT
     {
         highp vec4 FRAGCOORD = gl_FragCoord;
+        vec2 SCREEN_UV = gl_FragCoord.xy / viewportSize;
         vec2 UV = uv;
         vec2 UV_SCALE = vec2(1.0);
         vec2 UV_OFFSET = vec2(0.0);

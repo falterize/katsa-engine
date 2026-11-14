@@ -1,4 +1,6 @@
 local M = require('../../math.math3d')
+local EnvironmentShaders = require('../shaders.environmentShaders')
+local SceneTextures = require('./sceneTextures')
 
 local function rotate(v, c, t, out)
     out[1], out[2], out[3] = v[1] * c + v[3] * t, v[2], v[3] * c - v[1] * t
@@ -9,7 +11,8 @@ local RenderBindings = {}
 function RenderBindings.install(Renderer)
     function Renderer:drawSky(world, camera)
         local s = world.lighting.sky
-        if not s.enabled then
+        local custom = EnvironmentShaders.find(world, 'sky')
+        if not s.enabled and not custom then
             return
         end
         local g = katsa.graphics
@@ -37,7 +40,10 @@ function RenderBindings.install(Renderer)
             image:setMipmapFilter()
             self._skyUnmipped = image
         end
-        local shader = self.sky
+        local shader, program = self.sky, nil
+        if custom then
+            shader, program = EnvironmentShaders.program(world, custom, 'sky')
+        end
         g.setShader(shader)
         local yaw = math.rad(s.yaw)
         local c, t = math.cos(yaw), math.sin(yaw)
@@ -57,6 +63,15 @@ function RenderBindings.install(Renderer)
         end
         self.skyTint[4] = s.brightness
         shader:send('tint', self.skyTint)
+        if program then
+            if shader:hasUniform('time') then
+                shader:send('time', self.time or 0)
+            end
+            if shader:hasUniform('cameraPosition') then
+                shader:send('cameraPosition', camera.worldPosition or camera.position)
+            end
+            EnvironmentShaders.send(shader, program, custom)
+        end
         g.setColor(1, 1, 1, 1)
         g.draw(image, 0, 0, 0, self.width / image:getWidth(), self.height / image:getHeight())
         g.setShader()
@@ -139,6 +154,9 @@ function RenderBindings.install(Renderer)
         end
         if material then
             material:bind()
+            if material.needsScene then
+                SceneTextures.bind(self, material, shader)
+            end
         end
         return shader
     end

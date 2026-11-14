@@ -2,6 +2,7 @@ local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Material = require('../materials.material')
 local Programs = require('./programs')
+local EnvironmentShaders = require('./environmentShaders')
 
 local Resolver = {}
 
@@ -40,7 +41,11 @@ function Resolver.resolve(world, object)
         nodes[i] = nil
     end
     for _, shader in ipairs(available or {}) do
-        if shader.enabled ~= false and shader.shaderPath ~= '' then
+        if
+            shader.enabled ~= false
+            and shader.shaderPath ~= ''
+            and EnvironmentShaders.kind(world, shader) == 'spatial'
+        then
             local ancestor = object
             while ancestor do
                 if

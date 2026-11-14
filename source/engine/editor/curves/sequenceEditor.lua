@@ -309,6 +309,9 @@ function Editor.bindings(popup)
     if popup.target:isA('Ramp') then
         return require('source.engine.editor.curves.goalEditor').open(popup)
     end
+    if popup.field.key == 'uniforms' and popup.target.shaderPath then
+        return require('source.engine.editor.inspectors.uniformEditor').open(popup)
+    end
     local row = 0
     for key, value in pairs(popup.target[popup.field.key]) do
         local name = key

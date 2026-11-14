@@ -5,6 +5,7 @@
 -- Medium; point and spot lights respect their shadow maps on High only.
 local Targets = require('../targets')
 local Fullscreen = require('../fullscreen')
+local EnvironmentShaders = require('../../shaders.environmentShaders')
 
 local VolumetricFog = {}
 
@@ -32,7 +33,14 @@ function VolumetricFog.run(ctx, input, destination)
     local post, renderer, settings = ctx.post, ctx.renderer, ctx.environment.fog
     local quality = QUALITY[settings.quality] or QUALITY.Medium
     local target = Targets.get(post.targets, renderer, 'volumetricFog', quality.divisor)
-    local shader = Fullscreen.shader(post, renderer, 'volumetricFog')
+    local world = renderer.world
+    local custom = EnvironmentShaders.find(world, 'fog')
+    local shader, program
+    if custom then
+        shader, program = EnvironmentShaders.program(world, custom, 'fog')
+    else
+        shader = Fullscreen.shader(post, renderer, 'volumetricFog')
+    end
     local camera = ctx.camera
     ctx:sendCamera(shader)
     local depth = ctx:depth()
@@ -68,6 +76,10 @@ function VolumetricFog.run(ctx, input, destination)
     end
     if shadowed then
         renderer.shadows:send(shader, renderer.world.lighting)
+    end
+    if program then
+        Fullscreen.send(shader, 'time', renderer.time or 0)
+        EnvironmentShaders.send(shader, program, custom)
     end
     Fullscreen.draw(input, shader, target)
 

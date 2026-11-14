@@ -1,68 +1,10 @@
 #pragma language glsl3
-// Sky background drawn as a full-screen quad before the world.
-//
-// Two layouts: a 4x3 cube cross (one cell per face) and an equirectangular panorama. The ray of
-// each pixel comes from the camera basis (right/up/forward, already rotated by the sky yaw).
-// Texture coordinates are inset by half a texel so filtering never reads across face borders.
+// Sky background drawn as a full-screen quad before the world. The ray maths is shared with the
+// user sky shader (skyShader.glsl) through chunks/skyCoords.glsl.
 #ifdef STAGE_PIXEL
-uniform highp vec3 right;
-uniform highp vec3 up;
-uniform highp vec3 forward;
-uniform highp vec2 viewSize;
-uniform highp float focal;
-uniform highp vec2 edgeInset;
-uniform bool panorama;
-uniform highp vec4 tint;
-
-highp vec2 panoramaUV(highp vec3 ray) {
-    highp vec3 d = normalize(ray);
-    highp vec2 uv = vec2(
-        fract(.5 + atan(d.x, d.z) / 6.28318530718),
-        .5 - asin(clamp(d.y, -1., 1.)) / 3.14159265359
-    );
-    return clamp(uv, edgeInset, vec2(1.) - edgeInset);
-}
-
-// The cross layout is four cells wide and three tall:      [+Y]
-// the cell is the face the ray exits through and p is the  [-X][+Z][+X][-Z]
-// position on that face in -1..1.                           [-Y]
-highp vec2 crossUV(highp vec3 ray) {
-    highp vec3 a = abs(ray);
-    highp vec2 cell;
-    highp vec2 p;
-    if (a.x >= a.y && a.x >= a.z) {
-        if (ray.x > 0.) {
-            cell = vec2(2., 1.);
-            p = vec2(-ray.z, -ray.y) / a.x;
-        } else {
-            cell = vec2(0., 1.);
-            p = vec2(ray.z, -ray.y) / a.x;
-        }
-    } else if (a.y >= a.z) {
-        if (ray.y > 0.) {
-            cell = vec2(1., 0.);
-            p = vec2(ray.x, ray.z) / a.y;
-        } else {
-            cell = vec2(1., 2.);
-            p = vec2(ray.x, -ray.z) / a.y;
-        }
-    } else {
-        if (ray.z > 0.) {
-            cell = vec2(1., 1.);
-            p = vec2(ray.x, -ray.y) / a.z;
-        } else {
-            cell = vec2(3., 1.);
-            p = vec2(-ray.x, -ray.y) / a.z;
-        }
-    }
-    p = clamp(p * .5 + .5, edgeInset, vec2(1.) - edgeInset);
-    return (cell + p) / vec2(4., 3.);
-}
+#include "./chunks/skyCoords.glsl"
 
 vec4 effect(vec4 color, Image image, vec2 uv, vec2 screenPosition) {
-    highp vec3 ray = right * ((uv.x - .5) * viewSize.x / focal)
-        + up * ((.5 - uv.y) * viewSize.y / focal) + forward;
-    highp vec2 sampleUV = panorama ? panoramaUV(ray) : crossUV(ray);
-    return vec4(Texel(image, sampleUV).rgb * tint.rgb * tint.a, 1.);
+    return vec4(skyColor(image, skyRay(uv)), 1.);
 }
 #endif

@@ -31,6 +31,9 @@ uniform highp vec4 lightDirection[32]; // xyz spot axis, w outer cone cosine
 uniform highp vec4 lightColor[32];
 uniform highp vec4 lightExtra[32];     // x inner cone / falloff start, y type (0 spot, 1 point, 2 sun)
 uniform int lightCount;
+uniform highp float time;
+
+#user_code
 
 // The shadow lookups read the position being marched.
 highp vec3 worldPosition;
@@ -119,13 +122,32 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screenPosition) {
         worldPosition = origin + direction * t;
         highp float dens = density
             * (heightFalloff > 0.0 ? exp(-heightFalloff * max(0.0, worldPosition.y - baseHeight)) : 1.0);
-        highp vec3 light = fogColor * ambientEnergy;
+        highp vec3 tint = fogColor;
+        highp vec3 glow = vec3(0.0);
+#ifdef KATSA_USER_FRAGMENT
+        {
+            // `shader_type fog`: the user code reshapes the density, colour and glow per sample.
+            highp vec3 WORLD_POSITION = worldPosition;
+            highp vec3 CAMERA_POSITION = cameraPosition;
+            highp vec3 EYEDIR = direction;
+            highp float DISTANCE = t;
+            highp float TIME = time;
+            vec3 ALBEDO = fogColor;
+            highp float DENSITY = dens;
+            vec3 EMISSION = vec3(0.0);
+            KATSA_USER_FRAGMENT;
+            dens = max(DENSITY, 0.0);
+            tint = ALBEDO;
+            glow = EMISSION;
+        }
+#endif
+        highp vec3 light = tint * ambientEnergy + glow;
         if (sunEnabled) {
             highp float visibility = 1.0;
             if (sunIndex >= 0) {
                 visibility = directionalVisibility(sunIndex, vec3(0.0, 1.0, 0.0), sunToward);
             }
-            light += fogColor * sunRadiance * visibility * phase;
+            light += tint * sunRadiance * visibility * phase;
         }
         highp float cleared = 0.0;
         for (int i = 0; i < 32; i++) {
@@ -136,7 +158,7 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screenPosition) {
                 continue;
             }
             highp float reach;
-            light += fogColor * localLight(i, direction, reach);
+            light += tint * localLight(i, direction, reach);
             cleared = max(cleared, reach * lightExtra[i].w); // w: the light's own fogClearing
         }
         // Lights burn the fog away where they shine, like fog lamps: the beam stays readable.

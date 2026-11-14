@@ -49,6 +49,17 @@ local worldVariants = {
 }
 
 local function templates(kind, shaders)
+    if kind == 'sky' then
+        return { { 'assets/shaders/engine/skyShader.glsl', { entries = { fragment = true } } } }
+    end
+    if kind == 'fog' then
+        return {
+            {
+                'assets/shaders/engine/post/volumetricFog.glsl',
+                { entries = { fragment = true } },
+            },
+        }
+    end
     if kind == 'canvas_item' then
         return { { 'assets/shaders/engine/canvas/item.glsl', {} } }
     end

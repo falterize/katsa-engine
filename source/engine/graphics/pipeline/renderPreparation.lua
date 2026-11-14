@@ -145,7 +145,8 @@ function RenderPreparation.install(Renderer)
                     o._renderOpacity < 1
                     or o.blend
                     or o._surfaceBlend
-                    or o._resolvedMaterial and o._resolvedMaterial.blend
+                    or o._resolvedMaterial
+                        and (o._resolvedMaterial.blend or o._resolvedMaterial.needsScene)
                     or (readValue(o.color)[4] or 1) < 1
                 )
                         and self.transparent

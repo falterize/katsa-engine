@@ -81,6 +81,17 @@ function Material.new(resources, options)
         depthWrite = not modes.depth_draw_never,
         castsShadow = not modes.shadows_disabled,
     }, Material)
+    -- Samplers the renderer feeds: `uniform sampler2D t : hint_screen_texture;` is the opaque
+    -- scene colour, `hint_depth_texture` its depth. Such a material draws in the transparent pass.
+    for compiled, meta in pairs(program and program.uniforms or {}) do
+        local hints = meta.info.hints
+        if hints.hint_screen_texture then
+            self.screenUniform = compiled
+        elseif hints.hint_depth_texture then
+            self.depthUniform = compiled
+        end
+    end
+    self.needsScene = self.screenUniform ~= nil or self.depthUniform ~= nil
     return self
 end
 

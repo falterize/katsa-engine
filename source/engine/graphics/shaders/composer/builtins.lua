@@ -30,6 +30,7 @@ Builtins.types = {
         },
         fragment = {
             p('in', 'highp vec4', 'FRAGCOORD'),
+            p('in', 'vec2', 'SCREEN_UV'),
             p('in', 'vec2', 'UV'),
             p('in', 'vec2', 'UV_SCALE'),
             p('in', 'vec2', 'UV_OFFSET'),
@@ -60,6 +61,30 @@ Builtins.types = {
             p('in', 'highp float', 'TIME'),
             p('inout', 'vec3', 'DIFFUSE_LIGHT'),
             p('inout', 'vec3', 'SPECULAR_LIGHT'),
+        },
+    },
+    -- Background shader of a world: runs for every pixel the sky covers (Godot's `sky`).
+    sky = {
+        fragment = {
+            p('in', 'highp vec3', 'EYEDIR'),
+            p('in', 'vec2', 'SCREEN_UV'),
+            p('in', 'highp float', 'TIME'),
+            p('in', 'highp vec3', 'POSITION'),
+            p('in', 'vec3', 'SKY_COLOR'),
+            p('inout', 'vec3', 'COLOR'),
+        },
+    },
+    -- Density of the volumetric fog at one sample of the view ray (Godot's `fog`).
+    fog = {
+        fragment = {
+            p('in', 'highp vec3', 'WORLD_POSITION'),
+            p('in', 'highp vec3', 'CAMERA_POSITION'),
+            p('in', 'highp vec3', 'EYEDIR'),
+            p('in', 'highp float', 'DISTANCE'),
+            p('in', 'highp float', 'TIME'),
+            p('inout', 'vec3', 'ALBEDO'),
+            p('inout', 'highp float', 'DENSITY'),
+            p('inout', 'vec3', 'EMISSION'),
         },
     },
     canvas_item = {
@@ -99,6 +124,8 @@ Builtins.modes = {
         depth_draw_never = true,
         shadows_disabled = true,
     },
+    sky = {},
+    fog = {},
     canvas_item = {
         blend_mix = true,
         blend_add = true,

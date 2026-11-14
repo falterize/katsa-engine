@@ -4,6 +4,10 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- `shader_type sky` and `shader_type fog` (Godot 4 style) on `Shader3D` nodes: a custom background and a per-sample volumetric fog density, colour and glow.
+- Spatial shaders: `SCREEN_UV`, `hint_screen_texture`, `hint_depth_texture`; the Inspector's uniform editor follows `hint_range`, `source_color`, `hint_enum`.
+- `ReplicatedStorage` / `ServerStorage` are top-level hidden containers beside the World3D root; stored nodes are templates.
+
 - Node replication (`source/engine/net/replication`): `server:replicate(world)`, `client:replicate(world)`, the `replicated` node flag, `replicatedProperties`, attributes, `ReplicatedStorage`/`ServerStorage`; guide `docs/guides/development/replication.md`.
 - New `replicationLab` scene: rounds, teleporting, nicknames, chat, AnimationTree avatars.
 - Character controller shared by scenes moved to `source/game/characters` (orbit, input, body, hero tree).

@@ -81,7 +81,9 @@ local function hints(tokens)
                 local close = Tokens.matching(tokens, i + 1)
                 local values = {}
                 for part in Tokens.join(tokens, i + 2, close - 1):gmatch('[^,]+') do
+                    -- Numbers for hint_range; quoted names for hint_enum("A", "B").
                     values[#values + 1] = tonumber(part)
+                        or part:gsub('^%s+', ''):gsub('%s+$', ''):gsub('^"(.*)"$', '%1')
                 end
                 result[name] = values
                 i = close
