@@ -70,6 +70,16 @@ function Module.run(self)
         'The list is parsed and unknown property names are rejected'
     )
     watched:destroy()
+    -- Tags are plain strings: the planned engine tags look like `#shader-<group>`.
+    local tagged = serverWorld:create('Folder', { name = 'Tagged' })
+    tagged:addTag('#shader-fx')
+    self:check(
+        tagged:hasTag('#shader-fx') and serverWorld.root:findByTag('#shader-fx', true) == tagged,
+        'A tag may start with # (engine-interpreted tags such as #shader-fx)'
+    )
+    tagged:removeTag('#shader-fx')
+    self:check(not tagged:hasTag('#shader-fx'), 'Removing the tag unbinds it')
+    tagged:destroy()
     local template = serverWorld:create('Mesh3D', { name = 'Template' }, storage)
     local copy = template:clone({ name = 'TemplateCopy' }, serverWorld.root)
     self:check(
