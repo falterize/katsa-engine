@@ -1,4 +1,5 @@
 local Objects = require('../../core.objects')
+local bodyOf = require('../../physics.bodyOf')
 local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 -- Install one cohesive responsibility on the public class.
@@ -280,7 +281,7 @@ function PropertyWrite.install(Properties)
         then
             return false, 'Use Decal, Texture or Tiles'
         end
-        if target.body and (key == 'size' or key == 'scale') then
+        if bodyOf(target) and (key == 'size' or key == 'scale') then
             return false, 'Collider3D size requires rebuilding the rigid body'
         end
         if key == 'resolution' and value > katsa.graphics.getSystemLimits().texturesize then
@@ -401,7 +402,7 @@ function PropertyWrite.install(Properties)
             return false, 'Support dimensions must be positive'
         end
         if target._body then
-            if target._body.object.destroyed then
+            if target._body.node.destroyed then
                 return false, 'Body3D owner was removed'
             end
             local ok, err = pcall(target._body.set, target._body, { [key] = value })
@@ -436,8 +437,8 @@ function PropertyWrite.install(Properties)
                 return false, tostring(err)
             end
         end
-        if target.body and (key == 'position' or key == 'rotation') then
-            target.body:teleportLocal(target.position, target.rotation)
+        if bodyOf(target) and (key == 'position' or key == 'rotation') then
+            bodyOf(target):teleportLocal(target.position, target.rotation)
         end
         if target.ui and target.ui.invalidate then
             target.ui:invalidate()

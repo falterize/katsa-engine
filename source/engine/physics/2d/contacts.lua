@@ -10,8 +10,8 @@ local function queue(physics, phase, a, b, contact, impulse)
         if
             not x.collisionHit
             and not y.collisionHit
-            and not (x.object._signals and x.object._signals.collisionHit)
-            and not (y.object._signals and y.object._signals.collisionHit)
+            and not (x.node._signals and x.node._signals.collisionHit)
+            and not (y.node._signals and y.node._signals.collisionHit)
         then
             return
         end
@@ -21,8 +21,10 @@ local function queue(physics, phase, a, b, contact, impulse)
     local f = physics.factor
     physics.events[#physics.events + 1] = {
         phase = phase,
-        body0 = da.body,
-        body1 = db.body,
+        physics0 = da.body,
+        node0 = da.body.node,
+        physics1 = db.body,
+        node1 = db.body.node,
         collider0 = da.collider,
         collider1 = db.collider,
         sensor = a:isSensor() or b:isSensor(),
@@ -38,20 +40,20 @@ function Contacts.install(physics)
         if not x or not y then
             return false
         end
-        local triggerX = x.descriptor.isTrigger == true or x.body.object.isTrigger == true
-        local triggerY = y.descriptor.isTrigger == true or y.body.object.isTrigger == true
+        local triggerX = x.descriptor.isTrigger == true or x.body.node.isTrigger == true
+        local triggerY = y.descriptor.isTrigger == true or y.body.node.isTrigger == true
         x, y = x.body, y.body
         if
-            x.object.canCollide == false and not triggerX
-            or y.object.canCollide == false and not triggerY
+            x.node.canCollide == false and not triggerX
+            or y.node.canCollide == false and not triggerY
         then
             return false
         end
         return not x.destroyed
             and not y.destroyed
             and physics:groupsCollide(
-                x.object.collisionGroup or 'Default',
-                y.object.collisionGroup or 'Default'
+                x.node.collisionGroup or 'Default',
+                y.node.collisionGroup or 'Default'
             )
     end)
     physics.world:setCallbacks(
@@ -69,11 +71,11 @@ function Contacts.install(physics)
 end
 
 local function emit(body, name, other, event)
-    if body.destroyed or body._pendingDestroy or body.object.destroyed then
+    if body.destroyed or body._pendingDestroy or body.node.destroyed then
         return
     end
-    if body.object.emit then
-        body.object:emit(name, other.object, event)
+    if body.node.emit then
+        body.node:emit(name, other.node, event)
         local alias = ({
             triggerEnter = 'triggerEntered',
             triggerExit = 'triggerExited',
@@ -81,7 +83,7 @@ local function emit(body, name, other, event)
             collisionExit = 'collisionExited',
         })[name]
         if alias then
-            body.object:emit(alias, other, event)
+            body.node:emit(alias, other, event)
         end
     end
     local callback = body[name]
@@ -101,7 +103,7 @@ function Contacts.dispatch(physics)
     physics._dispatching = true
     local ok, message = pcall(function()
         for _, event in ipairs(events) do
-            local a, b = event.body0, event.body1
+            local a, b = event.physics0, event.physics1
             if event.phase == 'begin' or event.phase == 'end' then
                 -- Fixture pairs are counted so compound bodies emit one enter/exit.
                 local setA = event.sensor and a.triggerOverlaps or a.collisionOverlaps

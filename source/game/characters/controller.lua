@@ -82,12 +82,12 @@ end
 
 function Player:step(dt)
     self.body:sync()
-    local p = self.body.object.position
+    local p = self.body.node.position
     self.body:getVelocity(self.velocity)
     local foot = p[2] - self.settings.standingHeight / 2
     self.rayStart[1], self.rayStart[2], self.rayStart[3] = p[1], foot + self.settings.radius, p[3]
     self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = p[1], foot - 0.025, p[3]
-    local hit = self.body.physics:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
+    local hit = self.body.space:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
     self.grounded = self.velocity[2] <= 0.05
         and hit ~= nil
         and hit.normal[2] >= math.cos(math.rad(45))
@@ -107,7 +107,7 @@ function Player:step(dt)
         self.collider.height = math.max(0.001, cylinder)
         -- Keep the capsule's feet fixed while its top and camera pivot lower.
         self.collider.position[2] = (height - self.settings.standingHeight) / 2
-        self.body.object:update(0)
+        self.body.node:update(0)
     end
     local smooth = self.smooth
     smooth.yaw:capture(self.visualYaw)

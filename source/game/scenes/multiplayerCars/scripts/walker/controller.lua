@@ -62,7 +62,7 @@ function Walker.new(world, model, settings)
         model = model,
         node = body,
         collider = collider,
-        body = body.body,
+        body = body.physics,
         settings = settings,
         height = settings.standingHeight,
         targetHeight = settings.standingHeight,
@@ -122,7 +122,7 @@ function Walker:gravityAcceleration()
     if settings.gravity then
         return settings.gravity
     end
-    local physics = self.body.physics
+    local physics = self.body.space
     local _, y = physics:getGravity()
     return math.abs(y) * settings.gravityMultiplier
 end
@@ -234,7 +234,7 @@ function Walker:step(dt)
         self.rayStart[1], self.rayStart[2], self.rayStart[3] = p[1], foot + settings.radius, p[3]
         self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = p[1], foot - reach, p[3]
         local hit =
-            self.body.physics:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
+            self.body.space:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
         -- Climbing a slope the physics lifts the body (positive vertical speed), so rising is no
         -- proof of leaving the ground: only the moments right after a jump are excluded.
         self.jumpTimer = math.max(0, self.jumpTimer - dt)
@@ -255,8 +255,9 @@ function Walker:step(dt)
         -- is kept relative to that ground while the states run, then the ground's is added back.
         local platform, carry = self.platform, self.carry
         platform[1], platform[2], platform[3] = 0, 0, 0
-        if onGround and hit.body and hit.body ~= self.body and hit.body.type ~= 'Static' then
-            hit.body:getPointVelocity(hit.position, platform)
+        local ridden = onGround and hit.physics
+        if ridden and ridden ~= self.body and ridden.type ~= 'Static' then
+            ridden:getPointVelocity(hit.position, platform)
         end
         if self.grounded then
             self.velocity[1], self.velocity[3] = self.velocity[1] - carry[1], self.velocity[3] - carry[3]
@@ -311,7 +312,7 @@ end
 -- The pose that is drawn: the body's interpolated render matrix and the sampled step values.
 -- Returns feet x, y, z, heading (degrees), walk and crouch blends.
 function Walker:renderPose()
-    local physics = self.body.physics
+    local physics = self.body.space
     local m = self.node:getRenderWorldMatrix()
     local smooth = self.smooth
     return m[4],

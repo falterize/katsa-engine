@@ -16,16 +16,16 @@ function Joints.install(Physics, Body3D)
             Generic = 'GenericConstraint3D',
         }
         settings = settings or {}
-        local world = a.object._world
+        local world = a.node._world
         local attachment0 = world:create(
             'Attachment3D',
             { name = 'JointAttachment0', position = settings.anchor1 or { 0, 0, 0 } },
-            a.object
+            a.node
         )
         local attachment1 = world:create(
             'Attachment3D',
             { name = 'JointAttachment1', position = settings.anchor2 or { 0, 0, 0 } },
-            b.object
+            b.node
         )
         return world:create(
             assert(classes[kind], 'Unknown joint kind'),

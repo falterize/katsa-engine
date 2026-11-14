@@ -62,7 +62,7 @@ function Tests:motion()
     end
     self:check(near(ball.position[2], 280, 1), 'Dynamic circle rests on a static floor')
     self:check(
-        enters == 1 and #ball.body:getContacts() == 1,
+        enters == 1 and #ball.physics:getContacts() == 1,
         'Contact enter and persistent contact list agree'
     )
     self:check(
@@ -81,36 +81,36 @@ function Tests:motion()
         'Paused physics does not advance'
     )
     physics.paused = false
-    ball.body:teleport({ 200, 20 }, 30)
+    ball.physics:teleport({ 200, 20 }, 30)
     self:check(
         near(ball.rotation, 30),
         'Vector teleport synchronizes position and clockwise degree rotation'
     )
-    ball.body:setVelocity({ 100, 0 })
+    ball.physics:setVelocity({ 100, 0 })
     self:check(
-        near(ball.body:getVelocity()[1], 100),
+        near(ball.physics:getVelocity()[1], 100),
         'Velocity API accepts the same vector convention as 3D'
     )
-    ball.body:setMass(2)
-    ball.body:applyImpulse({ 20, 0 })
-    self:check(near(ball.body:getVelocity()[1], 110), 'Impulse respects an explicit mass override')
-    ball.body:setAngularVelocity(90)
+    ball.physics:setMass(2)
+    ball.physics:applyImpulse({ 20, 0 })
+    self:check(near(ball.physics:getVelocity()[1], 110), 'Impulse respects an explicit mass override')
+    ball.physics:setAngularVelocity(90)
     self:check(
-        near(ball.body:getAngularVelocity(), 90),
+        near(ball.physics:getAngularVelocity(), 90),
         '2D angular velocity uses degrees per second'
     )
     physics:setGravity(0, 0)
     local gx, gy = physics:getGravity()
     self:check(gx == 0 and gy == 0, 'Gravity access uses authored world units')
-    ball.body:set({ type = 'Kinematic' })
+    ball.physics:set({ type = 'Kinematic' })
     local y = ball.position[2]
-    ball.body:setLinearVelocity(0, 60)
+    ball.physics:setLinearVelocity(0, 60)
     physics:update(1 / 60)
     self:check(near(ball.position[2], y + 1), 'Kinematic bodies move at their authored velocity')
     ball.position[1] = 400
     physics:update(0)
     self:check(
-        near(ball.body:getPosition(), 400),
+        near(ball.physics:getPosition(), 400),
         'In-place authored position changes teleport the solver body'
     )
     physics:update(2)
@@ -137,24 +137,24 @@ function Tests:collidersAndQueries()
     local box = body(50, 50, 'Static')
     local ball = body(100, 50, 'Dynamic', { shape = 'Circle', radius = 10 })
     physics:update(0)
-    local firstFixture = box.body.fixtures[1]
+    local firstFixture = box.physics.fixtures[1]
     for _ = 1, 5 do
         physics:update(1 / 60)
     end
     self:check(
-        box.body.fixtures[1] == firstFixture,
+        box.physics.fixtures[1] == firstFixture,
         'Unchanged colliders retain their native fixtures'
     )
     local hit = physics:raycast({ 0, 50 }, { 150, 50 })
     self:check(
-        hit and hit.body == box.body and near(hit.position[1], 40),
+        hit and hit.physics == box.physics and near(hit.position[1], 40),
         'Raycast returns the nearest world-space hit'
     )
     local all = physics:raycastAll({ 0, 50 }, { 150, 50 })
     self:check(#all == 2 and all[1].fraction < all[2].fraction, 'Raycast-all sorts unclipped hits')
     box.canQuery = false
     self:check(
-        physics:raycast({ 0, 50 }, { 150, 50 }).body == ball.body,
+        physics:raycast({ 0, 50 }, { 150, 50 }).physics == ball.physics,
         'canQuery hides a body from raycasts'
     )
     box.canQuery = true
@@ -172,32 +172,32 @@ function Tests:collidersAndQueries()
         'Circle query rejects an AABB-only false positive'
     )
     self:check(#physics:overlapBox({ 50, 50 }, { 10, 10 }, function(b)
-        return b == ball.body
+        return b == ball.physics
     end) == 0, 'Overlap filters receive body wrappers')
     local node = ui:create('Collider2D', { shape = 'Circle', radius = 12 }, ball)
     physics:update(0)
     self:check(
-        #ball.body.fixtures == 1 and ball.body.fixtures[1]:getShape():getType() == 'circle',
+        #ball.physics.fixtures == 1 and ball.physics.fixtures[1]:getShape():getType() == 'circle',
         'Explicit Collider2D replaces the default collider'
     )
-    local previous = ball.body.fixtures[1]
+    local previous = ball.physics.fixtures[1]
     node.radius = 15
     physics:update(0)
     self:check(
-        previous:isDestroyed() and not ball.body.fixtures[1]:isDestroyed(),
+        previous:isDestroyed() and not ball.physics.fixtures[1]:isDestroyed(),
         'Changed collider properties rebuild safely'
     )
     local second = ui:create('Collider2D', { position = { 30, 0 }, size = { 10, 10 } }, ball)
     physics:update(0)
-    self:check(#ball.body.fixtures == 2, 'Multiple Collider2D children form a compound body')
+    self:check(#ball.physics.fixtures == 2, 'Multiple Collider2D children form a compound body')
     node.enabled, second.enabled = false, false
     physics:update(0)
-    self:check(#ball.body.fixtures == 0, 'Disabling every explicit collider removes all fixtures')
+    self:check(#ball.physics.fixtures == 0, 'Disabling every explicit collider removes all fixtures')
     node:destroy()
     second:destroy()
     physics:update(0)
     self:check(
-        #ball.body.fixtures == 1,
+        #ball.physics.fixtures == 1,
         'Removing explicit colliders restores the authored fallback shape'
     )
     for _, shape in ipairs({
@@ -213,18 +213,18 @@ function Tests:collidersAndQueries()
         },
     }) do
         local item = body(300, 300, 'Static', shape)
-        self:check(#item.body.fixtures > 0, shape.shape .. ' collider builds native fixtures')
+        self:check(#item.physics.fixtures > 0, shape.shape .. ' collider builds native fixtures')
     end
-    local original = box.body.fixtures[1]
+    local original = box.physics.fixtures[1]
     self:check(
-        not pcall(box.body.setCollider, box.body, { shape = 'Invalid' }),
+        not pcall(box.physics.setCollider, box.physics, { shape = 'Invalid' }),
         'Invalid collider input is rejected'
     )
     self:check(
         not original:isDestroyed(),
         'A failed collider replacement preserves the current fixture'
     )
-    box.body:setCollider({ shape = 'Box', size = { 20, 20 } })
+    box.physics:setCollider({ shape = 'Box', size = { 20, 20 } })
     physics.debug.enabled = true
     physics:drawDebug()
     release()
@@ -247,12 +247,12 @@ function Tests:triggersAndLifetime()
         enters == 1 and near(item.position[1], 0),
         'Sensors emit enter without a collision response'
     )
-    item.body:teleport(200, 0)
+    item.physics:teleport(200, 0)
     physics:update(1 / 60)
     self:check(exits == 1, 'Leaving a trigger emits exit')
     physics:setGroupsCollidable('Sensor', 'Actor', false)
     sensor.collisionGroup, item.collisionGroup = 'Sensor', 'Actor'
-    item.body:teleport(0, 0)
+    item.physics:teleport(0, 0)
     physics:update(1 / 60)
     self:check(enters == 1, 'Collision groups filter trigger contacts')
     physics:setGroupsCollidable('Sensor', 'Actor', true)
@@ -266,7 +266,7 @@ function Tests:triggersAndLifetime()
     local doomed = body(0, 0)
     physics:update(1 / 60)
     self:check(
-        doomed.destroyed and doomed.body == nil,
+        doomed.destroyed and doomed.physics == nil,
         'Nodes can be destroyed safely from contact events'
     )
     local blocked = body(400, 0)
@@ -324,7 +324,7 @@ function Tests:constraints()
             kind .. 'Constraint2D builds a live Box2D joint'
         )
         local native = joint.joint
-        b.body:setLinearVelocity(30, 10)
+        b.physics:setLinearVelocity(30, 10)
         for _ = 1, 10 do
             physics:update(1 / 60)
         end
@@ -414,9 +414,9 @@ function Tests:cameraAndMixed()
     )
     local parent = ui:create('Node2D', { position = { 100, 100 }, rotation = 90 })
     local nested = ui:create('Body2D', { position = { 20, 0 }, bodyType = 'Kinematic' }, parent)
-    local px, py = nested.body:getPosition()
+    local px, py = nested.physics:getPosition()
     self:check(near(px, 100) and near(py, 120), 'Body2D inherits rigid parent transforms')
-    nested.body:teleport(200, 200, 45)
+    nested.physics:teleport(200, 200, 45)
     px, py = nested:getWorldPose()
     self:check(
         near(px, 200) and near(py, 200),
@@ -424,8 +424,8 @@ function Tests:cameraAndMixed()
     )
     world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local spatial = world:create('Body3D', { position = { 0, 10, 0 }, size = { 1, 1, 1 } })
-    spatial.body:setVelocity({ 1, 0, 0 })
-    target.body:setVelocity({ 10, 0 })
+    spatial.physics:setVelocity({ 1, 0, 0 })
+    target.physics:setVelocity({ 10, 0 })
     for _ = 1, 60 do
         world.physics:update(1 / 60)
         physics:update(1 / 60)

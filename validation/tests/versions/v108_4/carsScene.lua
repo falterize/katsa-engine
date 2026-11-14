@@ -79,7 +79,7 @@ function Tests:draw()
             end
         end
         self:check(
-            self.host.world.physics ~= nil and ground ~= nil and ground.body ~= nil,
+            self.host.world.physics ~= nil and ground ~= nil and ground.physics ~= nil,
             'the arena has a physical terrain mesh'
         )
         self.port = 47990 + math.floor(os.clock() * 100) % 9
@@ -236,7 +236,7 @@ function Tests:draw()
         local netId = session.client:getCar()
         local body = session.client.bodies[netId]
         self:check(
-            body and body.node.bodyType == 'Dynamic' and body.node.body:getMass() > 500,
+            body and body.node.bodyType == 'Dynamic' and body.node.physics:getMass() > 500,
             'the player car is a dynamic Body3D with real mass'
         )
         body:respawn(40, 0, 90)
@@ -266,7 +266,7 @@ function Tests:draw()
         local drawn = session.client.cars[self.wall]
         local gap = math.huge
         for _, entry in ipairs(physics:debugPoses() or {}) do
-            if entry.raw == body.node.body.raw then
+            if entry.raw == body.node.physics.raw then
                 gap = math.sqrt((drawn.rx - entry.x) ^ 2 + (drawn.rz - entry.z) ^ 2)
             end
         end
@@ -458,7 +458,7 @@ function Tests:draw()
         walker:place(0, 40.25, 0)
         local startX = 0 -- where the walker was placed
         for _ = 1, 150 do
-            platform.body:setVelocity({ 3, 0, 0 })
+            platform.physics:setVelocity({ 3, 0, 0 })
             session:update(1 / 60)
         end
         local carried = walker.model.x - startX
@@ -624,7 +624,7 @@ function Tests:draw()
     elseif frame == 920 then
         -- A car driven by another client is a kinematic stand-in: it still carries riders.
         local body = session.server.game.bodies[self.remoteId]
-        local v = body.node.body:getVelocity({})
+        local v = body.node.physics:getVelocity({})
         self:check(
             body.mode == 'follow' and math.sqrt(v[1] ^ 2 + v[3] ^ 2) > 3,
             'a followed car reports its velocity so riders move with it (' .. ('%.1f'):format(math.sqrt(v[1] ^ 2 + v[3] ^ 2)) .. ' m/s)'

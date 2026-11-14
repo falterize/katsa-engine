@@ -46,7 +46,7 @@ function Colliders:makeShape(body)
             local collider, shape = entry.collider
             local kind = collider.shape or 'Box'
             if kind == 'Box' then
-                vector(self.v1, collider.size or body.object.size, scale * 0.5)
+                vector(self.v1, collider.size or body.node.size, scale * 0.5)
                 shape = C.JPH_BoxShape_Create(
                     self.v1,
                     math.min(0.02, self.v1.x * 0.1, self.v1.y * 0.1, self.v1.z * 0.1)

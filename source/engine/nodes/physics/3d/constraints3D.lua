@@ -2,6 +2,7 @@ local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs
 -- Attachment-owned constraint endpoints; backend joints never own scene lifetime.
 local Node = require('../../core.baseNode')
+local bodyOf = require('source.engine.physics.bodyOf')
 local M = require('source.engine.math.math3d')
 local A = require('source.engine.math.affine')
 local Inputs = require('source.engine.physics.3d.constraints.inputs')
@@ -108,10 +109,10 @@ local function endpoint(attachment, cache)
         return
     end
     local owner = attachment.parent
-    while owner and not owner.body do
+    while owner and not bodyOf(owner) do
         owner = owner.parent
     end
-    if not owner or owner.body.destroyed then
+    if not owner or bodyOf(owner).destroyed then
         return
     end
     local world = attachment:getWorldMatrix()
@@ -125,7 +126,7 @@ local function endpoint(attachment, cache)
     p[1], p[2], p[3] = localFrame[4], localFrame[8], localFrame[12]
     axis[1], axis[2], axis[3] = x, y, z
     up[1], up[2], up[3] = ux, uy, uz
-    return owner.body, p, axis, up, world
+    return bodyOf(owner), p, axis, up, world
 end
 
 function C:step(dt)
@@ -147,7 +148,7 @@ function C:step(dt)
         return
     end
     assert(
-        a.physics == self._world.physics and b.physics == a.physics,
+        a.space == self._world.physics and b.space == a.space,
         'Attachments must belong to this physics world'
     )
     if self.kind == 'Rope' or self.kind == 'Spring' then

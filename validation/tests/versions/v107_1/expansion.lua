@@ -133,7 +133,7 @@ function Tests.run(tester)
     local math3d = require('source.engine.math.math3d')
     local beforeX, beforeY = math3d.transform(locked:getWorldMatrix(), lp.x, lp.y, 0)
     local freeX, freeY = fp.x, fp.y
-    platformScene.demo.motorArm.body:teleport(1080, -440, 90)
+    platformScene.demo.motorArm.physics:teleport(1080, -440, 90)
     local afterX, afterY = math3d.transform(locked:getWorldMatrix(), lp.x, lp.y, 0)
     tester:check(
         lp.space == 'Local' and (beforeX - afterX) ^ 2 + (beforeY - afterY) ^ 2 > 100,

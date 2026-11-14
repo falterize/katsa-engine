@@ -85,7 +85,7 @@ return function(test)
         { name = 'Static', bodyType = 'Static', collisionGroup = 'Ghost', isTrigger = true }
     )
     check(
-        body.body.group == 'Ghost' and not physics.collisionGroups:interacts('Ghost', 'Default'),
+        body.physics.group == 'Ghost' and not physics.collisionGroups:interacts('Ghost', 'Default'),
         'Collision matrix is independent from visibility matrix'
     )
     local properties = require('source.engine.editor.inspectors.properties')
@@ -104,7 +104,7 @@ return function(test)
             and not field(body, 'gravityScale'),
         'Static inspector keeps surface response and hides dynamic-only settings'
     )
-    body.body:set({ type = 'Dynamic' })
+    body.physics:set({ type = 'Dynamic' })
     check(
         field(body, 'gravityScale') ~= nil,
         'Changing body mode updates conditional inspector fields'

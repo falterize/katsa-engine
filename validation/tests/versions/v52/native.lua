@@ -30,33 +30,33 @@ return function(test)
     local collider = world:create('Collider3D', { shape = 'Sphere', radius = 4 }, body)
     world:updateNodes(0.01)
     check(
-        #body.body.shapes == 1 and body.body.shapes[1].collider.shape == 'sphere',
+        #body.physics.shapes == 1 and body.physics.shapes[1].collider.shape == 'sphere',
         'Independent Body3D/Collider3D work without any visual Mesh3D'
     )
-    local raw = body.body.raw
+    local raw = body.physics.raw
     collider.shape = 'Box'
     collider.size = { 10, 6, 8 }
     world:updateNodes(0.01)
     check(
-        body.body.raw == raw and body.body.shapes[1].collider.size[1] == 10,
+        body.physics.raw == raw and body.physics.shapes[1].collider.size[1] == 10,
         'Collider3D resizing preserves native body identity and joints'
     )
-    local old = body.body.shapes[1].raw
+    local old = body.physics.shapes[1].raw
     check(
-        not pcall(body.body.setCollider, body.body, { shape = 'Sphere', radius = -1 })
-            and body.body.shapes[1].raw == old,
+        not pcall(body.physics.setCollider, body.physics, { shape = 'Sphere', radius = -1 })
+            and body.physics.shapes[1].raw == old,
         'Invalid collider rebuild preserves the old shape'
     )
     collider.enabled = false
     world:updateNodes(0.01)
     check(
-        body.body.colliderEnabled == false and body.body.shapes[1].raw:getCollisionMask() == 0,
+        body.physics.colliderEnabled == false and body.physics.shapes[1].raw:getCollisionMask() == 0,
         'Disabling the only Collider3D removes collisions and queries'
     )
     collider.enabled = true
     world:updateNodes(0.01)
     check(
-        body.body.canCollide and body.body.canQuery,
+        body.physics.canCollide and body.physics.canQuery,
         'Collider3D re-enable restores authored body filters'
     )
     local rows = Tree.rows({ world.root }, {}, nil, '')
@@ -92,7 +92,7 @@ return function(test)
         close(p[1], 20) and close(p[2], 2),
         'Physics creation converts local pose to world under a rigid parent'
     )
-    nested.body:teleport({ 30, 4, 60 })
+    nested.physics:teleport({ 30, 4, 60 })
     p = nested:getWorldPosition()
     check(
         close(p[1], 30) and close(p[2], 4) and close(nested.position[1], 4),
@@ -122,12 +122,12 @@ return function(test)
     })
     local entered, exited = 0, 0
     sensor:connect('triggerEntered', function(other)
-        if other == body.body then
+        if other == body.physics then
             entered = entered + 1
         end
     end)
     sensor:connect('triggerExited', function(other)
-        if other == body.body then
+        if other == body.physics then
             exited = exited + 1
         end
     end)
@@ -137,10 +137,10 @@ return function(test)
         entered == 1 and close(body:getWorldPosition()[3], 60),
         'Exact trigger emits once without physical displacement'
     )
-    body.body:teleport({ 0, 0, 110 })
+    body.physics:teleport({ 0, 0, 110 })
     world.physics:update(1 / 60)
     check(exited == 1, 'Trigger exit detects separation')
-    body.body:teleport({ 0, 0, 60 })
+    body.physics:teleport({ 0, 0, 60 })
     world.physics:update(1 / 60)
     check(entered == 2, 'Trigger can re-enter after separation')
     collider.enabled = false
@@ -152,17 +152,17 @@ return function(test)
     world.physics:update(1 / 60)
     check(entered == 3, 'Re-enabled colliders may enter trigger volumes again')
     sensor:connect('triggerEntered', function(other)
-        if other == nested.body then
+        if other == nested.physics then
             other:set({ type = 'Kinematic' })
             other:setCollider({ shape = 'Sphere', radius = 1 })
             other:teleport({ 30, 0, 80 })
         end
     end)
-    nested.body:teleport({ 0, 0, 60 })
+    nested.physics:teleport({ 0, 0, 60 })
     world.physics:update(1 / 60)
     check(
-        nested.body.type == 'kinematic'
-            and nested.body.shapes[1].collider.shape == 'sphere'
+        nested.physics.type == 'kinematic'
+            and nested.physics.shapes[1].collider.shape == 'sphere'
             and close(nested:getWorldPosition()[3], 80),
         'Contact-time mode/shape/teleport changes are deferred safely'
     )
@@ -196,21 +196,21 @@ return function(test)
     for i = 1, 3 do
         world.physics:update(1 / 60)
     end
-    local sets = compound.body._contactSets and compound.body._contactSets[floor.body]
+    local sets = compound.physics._contactSets and compound.physics._contactSets[floor.physics]
     local pairsCount = 0
     for _ in pairs(sets or {}) do
         pairsCount = pairsCount + 1
     end
     check(
-        pairsCount == 2 and #compound.body:getContacts() == 1,
+        pairsCount == 2 and #compound.physics:getContacts() == 1,
         'Compound collider reports a unique body while retaining both native shape contacts'
     )
-    compound.body:teleport({ 310, 1.5, 60 })
+    compound.physics:teleport({ 310, 1.5, 60 })
     for i = 1, 3 do
         world.physics:update(1 / 60)
     end
     check(
-        #compound.body:getContacts() == 1,
+        #compound.physics:getContacts() == 1,
         'Ending one compound shape contact preserves the remaining body contact'
     )
     floor:destroy()

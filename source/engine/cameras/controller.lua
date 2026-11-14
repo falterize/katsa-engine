@@ -1,5 +1,6 @@
 local unpack = require('../math.array').unpack
 local ipairs = require('../math.array').ipairs
+local bodyOf = require('../physics.bodyOf')
 -- Optional first/third-person follow rig; gameplay and debug cameras remain independent.
 local Controller = {}
 Controller.__index = Controller
@@ -94,7 +95,7 @@ function Controller:update(dt, snap)
     if self:updateTransition(dt) then
         return
     end
-    assert(not camera.body, 'Follow cameras cannot own a rigid body')
+    assert(not bodyOf(camera), 'Follow cameras cannot own a rigid body')
     local rotation = snap and 1 or factor(self.rotationSmooth, dt)
     local current = { position = camera:getWorldPosition(), rotation = camera:getLookRotation() }
     local worldRotation = {
@@ -145,7 +146,7 @@ function Controller:constrain(position, origin)
             end
             local node = self.target
             while node do
-                if node.body == body then
+                if bodyOf(node) == body then
                     return false
                 end
                 node = node.parent

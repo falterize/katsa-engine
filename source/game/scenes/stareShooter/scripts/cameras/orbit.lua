@@ -36,7 +36,7 @@ function Orbit:update()
         return
     end
     local player, camera = self.player, self.scene.camera
-    local matrix = player.body.object:getRenderWorldMatrix()
+    local matrix = player.body.node:getRenderWorldMatrix()
     local pivotY = matrix[8] + (player.height - player.settings.standingHeight) / 2 + 0.5
     local pitch, yaw = math.rad(self.pitch), math.rad(self.yaw)
     local x, y, z =

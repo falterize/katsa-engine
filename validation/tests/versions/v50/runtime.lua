@@ -118,7 +118,7 @@ function Runtime:update(dt)
                             'Body3D property editor accepts finite nonnegative damping'
                         )
                         self:check(
-                            math.abs(mesh.body.raw:getLinearDamping() - 0.25) < 1e-8,
+                            math.abs(mesh.physics.raw:getLinearDamping() - 0.25) < 1e-8,
                             'Inspector Body3D edit updates the native backend immediately'
                         )
                         require('source.engine.editor.inspectors.properties').set(

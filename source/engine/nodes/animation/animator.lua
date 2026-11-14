@@ -3,6 +3,7 @@ local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Node = require('../core.baseNode')
+local bodyOf = require('../../physics.bodyOf')
 local Pose = require('../../animation.skeleton.pose')
 
 local Animator = Node.define('Animator', 'Node')
@@ -461,7 +462,7 @@ function Animator:applyRootMotion(track)
             local root = self.model.root
             local parent = root
             while parent do
-                assert(not parent.body, 'Root motion with physics requires rootMotionHandler')
+                assert(not bodyOf(parent), 'Root motion with physics requires rootMotionHandler')
                 parent = parent.parent
             end
             local matrix =

@@ -19,14 +19,14 @@ function Tests.run(tester)
     }, custom)
     physics:update(0)
     tester:check(
-        #custom.body.fixtures > 1,
+        #custom.physics.fixtures > 1,
         'A concave manual polygon decomposes into convex fixtures'
     )
     tester:check(
         #physics:overlapPoint({ 5, 30 }) == 1 and #physics:overlapPoint({ 30, 30 }) == 0,
         'Manual polygon decomposition retains concave empty regions'
     )
-    local first = custom.body.fixtures[1]
+    local first = custom.physics.fixtures[1]
     collider.points[2][1], collider.points[3][1] = 60, 60
     physics:update(0)
     tester:check(
@@ -44,25 +44,25 @@ function Tests.run(tester)
     }, image)
     physics:update(0)
     tester:check(
-        #image.body.fixtures > 1 and #physics:overlapPoint({ 0, 0 }) == 0,
+        #image.physics.fixtures > 1 and #physics:overlapPoint({ 0, 0 }) == 0,
         'Detailed image collision preserves transparent holes'
     )
     tester:check(
         #physics:overlapPoint({ -11, 0 }) == 1,
         'Opaque image pixels create collision regions'
     )
-    local native = image.body.fixtures[1]
+    local native = image.physics.fixtures[1]
     for _ = 1, 5 do
         physics:update(0)
     end
     tester:check(
-        image.body.fixtures[1] == native,
+        image.physics.fixtures[1] == native,
         'Image geometry is not rebuilt when inputs are unchanged'
     )
     imageCollider.collisionLevel = 'Simple'
     physics:update(0)
     tester:check(
-        #image.body.fixtures == 1 and #physics:overlapPoint({ 0, 0 }) == 1,
+        #image.physics.fixtures == 1 and #physics:overlapPoint({ 0, 0 }) == 1,
         'Simple image collision uses the opaque bounding box'
     )
     imageCollider.collisionLevel = 'Convex'
@@ -81,7 +81,7 @@ function Tests.run(tester)
     imageCollider.imageResolution = 4
     physics:update(0)
     tester:check(
-        #image.body.fixtures > 0,
+        #image.physics.fixtures > 0,
         'Image collision supports an explicit sampling resolution'
     )
     local chain = body(200, 0, 'Static', { shape = 'Chain', vertices = { -20, 0, 0, 30, 40, 30 } })
@@ -126,7 +126,7 @@ function Tests.run(tester)
         'Pointer conversions remain correct after changing FOV'
     )
     local timed = body(400, 400)
-    timed.body:setVelocity({ 60, 0 })
+    timed.physics:setVelocity({ 60, 0 })
     ui:update(1, 0)
     tester:check(timed.position[1] == 400, 'UI wall time cannot advance paused 2D simulation')
     ui:update(1 / 60, 1 / 60)
@@ -167,7 +167,7 @@ function Tests.run(tester)
         collider3D:setPoints(points, indices)
         world:updateNodes(1 / 60)
         tester:check(
-            collider3D.status == 'Ready' and #owner.body.shapes > 0,
+            collider3D.status == 'Ready' and #owner.physics.shapes > 0,
             backend .. ': an edited point cloud creates a convex 3D collider'
         )
         local key = collider3D._descriptorKey
@@ -180,13 +180,13 @@ function Tests.run(tester)
         collider3D.collisionLevel = 'Trimesh'
         world:updateNodes(1 / 60)
         tester:check(
-            collider3D.status == 'Ready' and #owner.body.shapes == 12,
+            collider3D.status == 'Ready' and #owner.physics.shapes == 12,
             backend .. ': indexed manual points build static triangle collision'
         )
         collider3D.collisionLevel = 'Bounding Box'
         world:updateNodes(1 / 60)
         tester:check(
-            collider3D.status == 'Ready' and #owner.body.shapes == 1,
+            collider3D.status == 'Ready' and #owner.physics.shapes == 1,
             backend .. ': manual points support Bounding Box collision quality'
         )
         local meshPoints, meshIndices = mesh:getCollisionPoints(owner)

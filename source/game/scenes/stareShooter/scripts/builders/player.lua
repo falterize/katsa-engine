@@ -37,7 +37,7 @@ function Builder.create(scene)
         scale = { 0.65, 0.65, 0.65 },
         parent = body,
     })
-    local controller = Player.new(body.body, collider, scene.camera, settings)
+    local controller = Player.new(body.physics, collider, scene.camera, settings)
     controller.model = model
     return controller
 end

@@ -61,16 +61,16 @@ function T:update()
         )
         body:update(0)
         self:check(
-            #body.body.shapes == 1,
+            #body.physics.shapes == 1,
             'Bounding Box geometry collision is one box around both transformed model parts'
         )
         collider.collisionLevel = 'Single Convex'
         body:update(0)
-        self:check(#body.body.shapes == 1, 'Single Convex geometry collision is one hull for the whole source')
+        self:check(#body.physics.shapes == 1, 'Single Convex geometry collision is one hull for the whole source')
         collider.collisionLevel = 'Trimesh'
         body:update(0)
         self:check(
-            #body.body.shapes == 24,
+            #body.physics.shapes == 24,
             'Trimesh geometry collision includes all source triangles'
         )
         local before = body._colliderSignature

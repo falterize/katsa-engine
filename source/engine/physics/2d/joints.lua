@@ -1,3 +1,4 @@
+local bodyOf = require('../bodyOf')
 local Builders = require('./constraints')
 local Joints = {}
 local settings = {
@@ -28,20 +29,21 @@ local function endpoint(attachment, physics)
     end
     assert(attachment:isA('Attachment2D'), 'Constraint2D endpoints require Attachment2D')
     local owner = attachment.parent
-    while owner and not owner.body do
+    while owner and not bodyOf(owner) do
         owner = owner.parent
     end
-    if not owner or owner.body.destroyed then
+    local body = bodyOf(owner)
+    if not owner or body.destroyed then
         return
     end
-    assert(owner.body.physics == physics, 'Constraint2D cannot join different physics worlds')
+    assert(body.space == physics, 'Constraint2D cannot join different physics worlds')
     local x, y, angle = attachment:getWorldPose()
     local ox, oy, oa = owner:getWorldPose()
     local c, s = math.cos(math.rad(-oa)), math.sin(math.rad(-oa))
     local dx, dy, f = x - ox, y - oy, physics.factor
     local lx, ly = (dx * c - dy * s) * f, (dx * s + dy * c) * f
-    x, y = owner.body.raw:getWorldPoint(lx, ly)
-    return owner.body, x / f, y / f, angle - oa + math.deg(owner.body.raw:getAngle())
+    x, y = body.raw:getWorldPoint(lx, ly)
+    return body, x / f, y / f, angle - oa + math.deg(body.raw:getAngle())
 end
 
 local function create(self, a, b, x0, y0, x1, y1, angle)

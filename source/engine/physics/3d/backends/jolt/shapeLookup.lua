@@ -12,7 +12,7 @@ function ShapeLookup.resolve(raw, sub)
     local index = C.JPH_CompoundShape_GetSubShapeIndexFromID(
         cast('CompoundShape', raw._joltShape),
         sub,
-        body.physics.adapter.subshapeRemainder
+        body.space.adapter.subshapeRemainder
     )
     return body.shapes[tonumber(index) + 1] and body.shapes[tonumber(index) + 1].raw
         or body.shapes[1].raw

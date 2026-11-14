@@ -7,13 +7,13 @@ local BodyProperties = {}
 
 function BodyProperties.install(Physics, Body3D)
     function Body3D:set(values)
-        if self.physics._stepping or self.physics._flushing or self.physics._querying then
+        if self.space._stepping or self.space._flushing or self.space._querying then
             local copy = {}
             for key, value in pairs(values) do
                 copy[key] = value
             end
-            self.physics.pendingSettings = self.physics.pendingSettings or {}
-            table.insert(self.physics.pendingSettings, { body = self, values = copy })
+            self.space.pendingSettings = self.space.pendingSettings or {}
+            table.insert(self.space.pendingSettings, { body = self, values = copy })
             return
         end
         if values.type then
@@ -22,7 +22,7 @@ function BodyProperties.install(Physics, Body3D)
         if values.isTrigger ~= nil then
             self.isTrigger = values.isTrigger == true
             -- Keep disabled sensors until their pending exit events have been processed.
-            self.physics.triggerBodies[self] = true
+            self.space.triggerBodies[self] = true
         end
         for key, value in pairs(values) do
             if key == 'density' or key == 'mass' then
@@ -40,7 +40,7 @@ function BodyProperties.install(Physics, Body3D)
             self.settings[key] = value
         end
         if values.collisionGroup then
-            self.group = self.physics.collisionGroups:canonical(values.collisionGroup)
+            self.group = self.space.collisionGroups:canonical(values.collisionGroup)
         end
         if values.canCollide ~= nil then
             self.canCollide = values.canCollide
@@ -83,17 +83,17 @@ function BodyProperties.install(Physics, Body3D)
         if self.settings.mass and self.type == 'Dynamic' then
             self:setMass(self.settings.mass)
         end
-        self.physics.adapter:applySettings(self, values)
+        self.space.adapter:applySettings(self, values)
         self.raw:wakeUp()
         if values.type and self._renderPose then
             self:resetRenderPose()
         end
-        if self.object._independentBody then
+        if self.node._independentBody then
             for key, value in pairs(values) do
                 if key == 'type' then
-                    self.object.bodyType = value
+                    self.node.bodyType = value
                 else
-                    self.object[key] = value
+                    self.node[key] = value
                 end
             end
         end
@@ -101,7 +101,7 @@ function BodyProperties.install(Physics, Body3D)
 
     function Body3D:setMass(value)
         valid(value, 'Body3D.mass', 0.00001)
-        if self.physics._stepping or self.physics._flushing or self.physics._querying then
+        if self.space._stepping or self.space._flushing or self.space._querying then
             return self:set({ mass = value })
         end
         assert(self.type == 'Dynamic', 'Custom mass requires a dynamic body')

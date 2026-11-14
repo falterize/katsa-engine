@@ -34,11 +34,11 @@ return function(test)
     local ok = pcall(folder.setParent, folder, b)
     check(not ok and folder.parent == nil, 'Detached subtrees retain resource ownership')
     folder.parent = a
-    mesh.body = {}
+    mesh.physics = { node = mesh }
     local pivot = Node.new('Node3D', {}, a)
     reject(folder, pivot, 'Folder transfers preserve nested body World3D-space constraints')
     reject(mesh, pivot, 'Body3D parenting rejects spatial ancestors')
-    mesh.body = nil
+    mesh.physics = nil
     local ui = Node.new('ScreenUI', {})
     reject(folder, ui, 'Folder transfers cannot smuggle spatial descendants into ScreenUI')
     reject(a, b, 'World3D nodes remain roots')

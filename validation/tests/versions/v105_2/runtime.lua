@@ -92,7 +92,7 @@ function Tests:physics()
     local world = World.new(resources)
     world.physics = Physics.new({ backend = 'jolt', gravity = { 0, 0, 0 }, workerThreads = 0 })
     local node = world:create('Body3D', { position = { 0, 50, 0 }, size = { 20, 20, 20 } })
-    local body, driver = node.body, world.physics.adapter
+    local body, driver = node.physics, world.physics.adapter
     body:setVelocity({ 40, 0, 0 })
     world.physics:update(1 / 60)
     self:check(

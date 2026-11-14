@@ -87,7 +87,7 @@ function Tests:measure(host, session)
         local body = client.bodies[netId] or (session.server and session.server.game.bodies[netId])
         if view and body then
             local chassis = chassisOfView(view, car.config.rideHeight)
-            local entry = entryFor(poses, body.node.body.raw)
+            local entry = entryFor(poses, body.node.physics.raw)
             self:note('speed', math.abs(car.speed or 0) / 100)
             if entry then
                 local kind = body.mode == 'follow' and 'followCar' or 'ownCar'
@@ -102,7 +102,7 @@ function Tests:measure(host, session)
         for netId, car in pairs(remote.client.cars) do
             local body = remote.client.bodies[netId]
             if body and body.mode == 'follow' then
-                local entry = entryFor(remotePoses, body.node.body.raw)
+                local entry = entryFor(remotePoses, body.node.physics.raw)
                 if entry then
                     self:note('standIn', distance({ car.x, car.y, car.z }, entry))
                 end
@@ -120,7 +120,7 @@ function Tests:measure(host, session)
             carBody = client.bodies[netId] or (session.server and session.server.game.bodies[netId])
         end
         if entry and car and carBody and carBody.mode == 'dynamic' then
-            local m = carBody.node.body:getRenderMatrix()
+            local m = carBody.node.physics:getRenderMatrix()
             local lift = walker.SEAT_LIFT -- the capsule sits this far above its seat
             -- The seat on the drawn car, lifted along the chassis up axis.
             local view = session.views[netId]

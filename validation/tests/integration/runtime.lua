@@ -201,8 +201,8 @@ function Runtime:update()
         self:check(
             s.physics
                 and #s.physics.bodies == 23
-                and s.demo.independentBody.body
-                and s.demo.triggerBody.body.isTrigger,
+                and s.demo.independentBody.physics
+                and s.demo.triggerBody.physics.isTrigger,
             'Physics Lab retains legacy bodies and adds independent body/trigger'
         )
         s.physics.debugEnabled = true
@@ -212,7 +212,7 @@ function Runtime:update()
         m:switch(require('source.game.runtime.game').new, 'collisionModels')
     elseif self.frame == 92 then
         self:check(
-            s.world.byName['Pyramid.detailed'].body.type == 'static',
+            s.world.byName['Pyramid.detailed'].physics.type == 'static',
             'Trimesh model collider is static'
         )
         local glb = s.world.byName['PhysicalGLB.1']
@@ -274,7 +274,7 @@ function Runtime:update()
         s.character:jump()
         s:update(1 / 60, 1 / 60)
         self:check(
-            s.demo.player.body:getVelocity()[2] > 50,
+            s.demo.player.physics:getVelocity()[2] > 50,
             'Grounded capsule player jumps with gravity'
         )
         self.screenshot = 'night-player'
@@ -295,7 +295,7 @@ function Runtime:update()
             not s.world.lighting.sun.enabled and s.demo.dayHour == 0,
             'time-of-day slider changes actual lighting'
         )
-        local body = s.demo.player.body
+        local body = s.demo.player.physics
         body:teleport({ -55, 45, 60 })
         body:setVelocity({ 0, -5, 0 })
         s.character:setMove(0, 0)

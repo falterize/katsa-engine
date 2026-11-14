@@ -12,15 +12,15 @@ local BodyMotion = {}
 function BodyMotion.install(Physics, Body3D)
     function Body3D:applyForceAt(value, position)
         self.raw:applyForce(
-            vec(value, 1 / self.physics.units),
-            vec(position, 1 / self.physics.units)
+            vec(value, 1 / self.space.units),
+            vec(position, 1 / self.space.units)
         )
     end
 
     function Body3D:applyImpulseAt(value, position)
         self.raw:applyImpulse(
-            vec(value, 1 / self.physics.units),
-            vec(position, 1 / self.physics.units)
+            vec(value, 1 / self.space.units),
+            vec(position, 1 / self.space.units)
         )
     end
 
@@ -29,11 +29,11 @@ function BodyMotion.install(Physics, Body3D)
     end
 
     function Body3D:applyTorque(value)
-        self.raw:applyTorque(vec(value, 1 / (self.physics.units * self.physics.units)))
+        self.raw:applyTorque(vec(value, 1 / (self.space.units * self.space.units)))
     end
 
     function Body3D:applyAngularImpulse(value)
-        self.raw:applyAngularImpulse(vec(value, 1 / (self.physics.units * self.physics.units)))
+        self.raw:applyAngularImpulse(vec(value, 1 / (self.space.units * self.space.units)))
     end
 
     function Body3D:getMass()
@@ -41,30 +41,30 @@ function BodyMotion.install(Physics, Body3D)
     end
 
     function Body3D:setVelocity(value)
-        local u = self.physics.units
-        self.physics.scratch:init(value[1] / u, value[2] / u, value[3] / u)
-        self.raw:setLinearVelocity(self.physics.scratch)
+        local u = self.space.units
+        self.space.scratch:init(value[1] / u, value[2] / u, value[3] / u)
+        self.raw:setLinearVelocity(self.space.scratch)
     end
 
     function Body3D:getVelocity(out)
         out = out or {}
-        self.raw:getLinearVelocityTo(self.physics.scratch)
-        local v, u = self.physics.scratch, self.physics.units
+        self.raw:getLinearVelocityTo(self.space.scratch)
+        local v, u = self.space.scratch, self.space.units
         out[1], out[2], out[3] = v.x * u, v.y * u, v.z * u
         return out
     end
 
     function Body3D:teleport(position, rotation)
-        if self.physics._stepping or self.physics._flushing or self.physics._querying then
-            self.physics.pendingPoses = self.physics.pendingPoses or {}
-            table.insert(self.physics.pendingPoses, {
+        if self.space._stepping or self.space._flushing or self.space._querying then
+            self.space.pendingPoses = self.space.pendingPoses or {}
+            table.insert(self.space.pendingPoses, {
                 body = self,
                 position = { unpack(position) },
                 rotation = rotation and { unpack(rotation) },
             })
             return
         end
-        self.raw:setPosition(vec(position, 1 / self.physics.units))
+        self.raw:setPosition(vec(position, 1 / self.space.units))
         if rotation then
             local m = Math.compose({ 0, 0, 0 }, rotation, { 1, 1, 1 })
             self.raw:setRotation(O.Mat3.new(m[1], m[2], m[3], m[5], m[6], m[7], m[9], m[10], m[11]))
@@ -78,21 +78,21 @@ function BodyMotion.install(Physics, Body3D)
     end
 
     function Body3D:applyImpulse(value)
-        self.raw:applyLinearImpulse(vec(value, 1 / self.physics.units))
+        self.raw:applyLinearImpulse(vec(value, 1 / self.space.units))
     end
 
     function Body3D:applyForce(value)
-        self.raw:applyForceToCenter(vec(value, 1 / self.physics.units))
+        self.raw:applyForceToCenter(vec(value, 1 / self.space.units))
     end
 
     function Body3D:sync()
         if self._applyingPose then
             return
         end
-        local o = self.object
+        local o = self.node
         local position, authoredRotation = readValue(o.position), readValue(o.rotation)
         local authored = self._poseSnapshot
-        if self.object._independentBody and authored then
+        if self.node._independentBody and authored then
             local changed = false
             for i = 1, 3 do
                 if position[i] ~= authored[i] or authoredRotation[i] ~= authored[i + 3] then
@@ -102,18 +102,18 @@ function BodyMotion.install(Physics, Body3D)
             if changed then
                 self._applyingPose = true
                 local ok, err =
-                    pcall(self.teleportLocal, self, self.object.position, self.object.rotation)
+                    pcall(self.teleportLocal, self, self.node.position, self.node.rotation)
                 self._applyingPose = false
                 if not ok then
                     error(err, 0)
                 end
             end
         end
-        local o, u = self.object, self.physics.units
-        self.raw:getPositionTo(self.physics.scratch)
-        local p = self.physics.scratch
-        self.raw:getRotationTo(self.physics.rotation)
-        local rotation = self.physics.rotation
+        local o, u = self.node, self.space.units
+        self.raw:getPositionTo(self.space.scratch)
+        local p = self.space.scratch
+        self.raw:getRotationTo(self.space.rotation)
+        local rotation = self.space.rotation
         self._worldPhysicsMatrix = self._worldPhysicsMatrix or Math.identity()
         local m, s, size = self._worldPhysicsMatrix, readValue(o.scale), readValue(o.size)
         for i = 1, 3 do

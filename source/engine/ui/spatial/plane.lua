@@ -6,9 +6,9 @@ function Plane.transform(node)
     local a, b, c, d, x, y = node:getWorldTransform()
     local owner = node
     while owner and not owner:isA('World2D') do
-        local body = owner:isA('Body2D') and owner.body
-        if body and body.physics.interpolate and body.type ~= 'Static' then
-            local alpha = body.physics.interpolationAlpha
+        local body = owner:isA('Body2D') and owner.physics
+        if body and body.space.interpolate and body.type ~= 'Static' then
+            local alpha = body.space.interpolationAlpha
             local bx = body.previousX + (body.currentX - body.previousX) * alpha
             local by = body.previousY + (body.currentY - body.previousY) * alpha
             local delta = (body.currentAngle - body.previousAngle + math.pi) % (math.pi * 2)

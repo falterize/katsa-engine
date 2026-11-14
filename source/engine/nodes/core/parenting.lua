@@ -1,4 +1,5 @@
 local ipairs = require('../../math.array').ipairs
+local bodyOf = require('../../physics.bodyOf')
 -- Validate the proposed tree before unlinking anything. Traversal occurs only
 -- during parenting, never in the render or simulation frame loop.
 local Parenting = {}
@@ -142,7 +143,7 @@ local function validateSubtree(node, parent, world, screenHierarchy, uiAnchor)
         end
         assert(owner, 'Shader3D must be a descendant of a World3D')
     end
-    if node.body and not node._independentBody then
+    if bodyOf(node) and not node._independentBody then
         local owner = parent
         while owner and owner:isA('Folder') do
             owner = owner.parent
@@ -186,7 +187,7 @@ function Parenting.validate(node, parent)
     -- A body's Folder ancestors are evaluated against the proposed chain.
     -- Check them without mutating the live parent pointers.
     local function checkBodies(item, foldersOnly)
-        if item.body and not item._independentBody and foldersOnly then
+        if bodyOf(item) and not item._independentBody and foldersOnly then
             local ancestor = parent
             while ancestor and ancestor:isA('Folder') do
                 ancestor = ancestor.parent

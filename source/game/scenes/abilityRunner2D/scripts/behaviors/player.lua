@@ -24,7 +24,7 @@ function Player.new(state)
         end)
     end
     self.filter = function(body)
-        return body.object ~= state.player and body.object.isTrigger ~= true
+        return body.node ~= state.player and body.node.isTrigger ~= true
     end
     self.rayStart, self.rayEnd, self.rayHit = {}, {}, {}
     return self
@@ -50,8 +50,8 @@ end
 function Player:respawn()
     local state = self.state
     state.deaths = state.deaths + 1
-    state.player.body:teleport(state.spawn, 0)
-    state.player.body:setVelocity({ 0, 0 })
+    state.player.physics:teleport(state.spawn, 0)
+    state.player.physics:setVelocity({ 0, 0 })
     state.player.gravityScale = 1
     self.jumps, self.dashTime, self.slideTime = 0, 0, 0
     state.trail.rate = 0
@@ -63,7 +63,7 @@ function Player:update(dt)
         return
     end
     local state, object = self.state, self.state.player
-    local body = object.body
+    local body = object.physics
     -- Minimal hosts do not dispatch action listeners; consume the same named
     -- actions here as well, without polling OS keys or changing mobile controls.
     local actions = state.scene.input.actions

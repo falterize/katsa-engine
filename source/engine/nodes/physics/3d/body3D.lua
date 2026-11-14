@@ -4,6 +4,52 @@ local Snapshot = require('source.engine.core.valueSnapshot')
 
 local Class = Node.define('Body3D', 'Node3D')
 
+-- Live solver state, read and written through `node.physics` (docs/guides/physics/nodeAccess.md).
+-- Before the body exists a written value is kept and handed to the body when it is created.
+Class.computed = {
+    velocity = {
+        get = function(self)
+            local body = rawget(self, 'physics')
+            return body and body:getVelocity() or rawget(self, '_initialVelocity') or { 0, 0, 0 }
+        end,
+        set = function(self, value)
+            local body = rawget(self, 'physics')
+            if body then
+                body:setVelocity(value)
+            else
+                rawset(self, '_initialVelocity', value)
+            end
+        end,
+    },
+    angularVelocity = {
+        get = function(self)
+            local body = rawget(self, 'physics')
+            return body and body:getAngularVelocity()
+                or rawget(self, '_initialAngularVelocity')
+                or { 0, 0, 0 }
+        end,
+        set = function(self, value)
+            local body = rawget(self, 'physics')
+            if body then
+                body:setAngularVelocity(value)
+            else
+                rawset(self, '_initialAngularVelocity', value)
+            end
+        end,
+    },
+    isSleeping = {
+        get = function(self)
+            local body = rawget(self, 'physics')
+            return body ~= nil and body:isSleeping()
+        end,
+    },
+}
+Class.propertySchema = {
+    velocity = { readOnly = true, get = Class.computed.velocity.get },
+    angularVelocity = { readOnly = true, get = Class.computed.angularVelocity.get },
+    isSleeping = { readOnly = true, get = Class.computed.isSleeping.get },
+}
+
 function Class.initialize(self)
     self._independentBody = true
     self.bodyType = self.bodyType or 'Dynamic'
@@ -45,6 +91,8 @@ function Class.mount(world, properties, parent)
     }) do
         settings[key] = node[key]
     end
+    settings.velocity = rawget(node, '_initialVelocity')
+    settings.angularVelocity = rawget(node, '_initialAngularVelocity')
     world.physics:addBody(node, settings)
     node:setProcess(true)
     return node
@@ -65,7 +113,7 @@ local settingsKeys = {
 }
 
 function Class:update(dt)
-    if not self.body or self.body.destroyed then
+    if not self.physics or self.physics.destroyed then
         return
     end
     local inputs = self._settingsInputs or {}
@@ -73,7 +121,7 @@ function Class:update(dt)
     if
         Snapshot.fields(inputs, self, settingsKeys)
         or self._settingsPending
-        or self.body.type ~= self.bodyType
+        or self.physics.type ~= self.bodyType
     then
         self._settingsPending = true
         local changes = self._settingsDelta or {}
@@ -89,11 +137,11 @@ function Class:update(dt)
                 changes[key] = value
             end
         end
-        if self.body.type ~= self.bodyType then
+        if self.physics.type ~= self.bodyType then
             changes.type = self.bodyType
         end
         if next(changes) then
-            self.body:set(changes)
+            self.physics:set(changes)
             for key, value in pairs(changes) do
                 snapshot[key] = value
             end
@@ -144,12 +192,12 @@ function Class:update(dt)
             for i = 1, descriptorCount do
                 children[i] = descriptors[i]
             end
-            self.body:setCollider({ shape = 'Compound', children = children })
-            self.body.colliderEnabled = true
-            self.body:refreshFilters()
+            self.physics:setCollider({ shape = 'Compound', children = children })
+            self.physics.colliderEnabled = true
+            self.physics:refreshFilters()
         elseif explicit or self._hadExplicitColliders then
-            self.body.colliderEnabled = false
-            self.body:refreshFilters()
+            self.physics.colliderEnabled = false
+            self.physics:refreshFilters()
         end
         self._hadExplicitColliders = self._hadExplicitColliders or explicit
         self._colliderSignature = key

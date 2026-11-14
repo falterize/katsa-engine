@@ -22,7 +22,7 @@ return function(test)
             'Contact destruction marks the body closed and queues solver removal'
         )
         test:check(
-            not replacement.body._inWorld and #physics.pendingAdds == 1,
+            not replacement.physics._inWorld and #physics.pendingAdds == 1,
             'Contact creation queues solver insertion'
         )
     end)
@@ -31,7 +31,7 @@ return function(test)
     end
     test:check(contacted and moving.destroyed, 'Real Oimo contact permits node destruction')
     test:check(
-        replacement and replacement.body._inWorld and not movingBody._inWorld,
+        replacement and replacement.physics._inWorld and not movingBody._inWorld,
         'Solver membership changes commit after the step'
     )
     test:check(

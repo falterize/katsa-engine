@@ -6,7 +6,7 @@ end
 
 function SceneButton:bindPhysics(physics, player, manager, factory, zone)
     self:connect('contactBegin', function(other)
-        if not self.activated and other and other.object == player then
+        if not self.activated and other and other.node == player then
             self.activated = true
             manager:requestSwitch(factory, zone)
         end

@@ -42,7 +42,7 @@ end
 -- A body owns one exact output snapshot. No frame stamps: raw solver edits,
 -- authored local edits, parent changes and mutable output matrices remain observable.
 function Space.matches(body, world, position, rotation)
-    local cache, object = body._syncCache, body.object
+    local cache, object = body._syncCache, body.node
     if
         not cache
         or cache.independent ~= object._independentBody
@@ -77,8 +77,8 @@ function Space.capture(body, world, position, rotation)
         cache = { world = {}, pose = {}, output = {} }
         body._syncCache = cache
     end
-    cache.independent, cache.parentRevision = body.object._independentBody, body._parentPoseRevision
-    cache.matrix = body.object.physicsMatrix
+    cache.independent, cache.parentRevision = body.node._independentBody, body._parentPoseRevision
+    cache.matrix = body.node.physicsMatrix
     for i = 1, 12 do
         cache.world[i] = world[i]
     end

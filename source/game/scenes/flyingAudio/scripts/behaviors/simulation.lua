@@ -18,7 +18,7 @@ function Methods:beforeStep(fixedDelta)
     local x1, y1, z1 = Methods.orbit(self.orbitTime)
     local v = self.velocity
     v[1], v[2], v[3] = (x1 - x0) / fixedDelta, (y1 - y0) / fixedDelta, (z1 - z0) / fixedDelta
-    self.flying.body:setVelocity(v)
+    self.flying.physics:setVelocity(v)
 end
 
 function Methods:update(dt)
@@ -37,7 +37,7 @@ function Methods:update(dt)
         local x, y, z = Methods.orbit(self.orbitTime)
         self.flying.position = { x, y, z }
         self.velocity[1], self.velocity[2], self.velocity[3] = 0, 0, 0
-        self.flying.body:setVelocity(self.velocity)
+        self.flying.physics:setVelocity(self.velocity)
     end
     scene.physics:update(dt)
     scene.world:updateNodes(dt)

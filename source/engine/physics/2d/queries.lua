@@ -6,7 +6,7 @@ local function accepts(fixture, filter)
         not data
         or data.body.destroyed
         or data.body._pendingDestroy
-        or data.body.object.canQuery == false
+        or data.body.node.canQuery == false
     then
         return false
     end
@@ -31,7 +31,8 @@ function Queries.raycast(self, a, b, filter, out)
             end
             local data = fixture:getUserData()
             hit = out or hit or {}
-            hit.body, hit.collider, hit.fraction = data.body, data.collider, fraction
+            hit.physics, hit.collider, hit.fraction = data.body, data.collider, fraction
+            hit.node = data.body.node
             hit.position, hit.normal = hit.position or {}, hit.normal or {}
             hit.position[1], hit.position[2] = x / f, y / f
             hit.normal[1], hit.normal[2] = nx, ny
@@ -64,7 +65,8 @@ function Queries.raycastAll(self, a, b, filter)
             if accepts(fixture, filter) then
                 local data = fixture:getUserData()
                 hits[#hits + 1] = {
-                    body = data.body,
+                    physics = data.body,
+                    node = data.body.node,
                     collider = data.collider,
                     fraction = fraction,
                     position = { x / f, y / f },

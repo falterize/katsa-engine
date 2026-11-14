@@ -39,13 +39,13 @@ function Tests.run(tester)
             )
             world:updateNodes(1 / 60)
             tester:check(
-                collider.status == 'Ready' and #body.body.shapes > 0,
+                collider.status == 'Ready' and #body.physics.shapes > 0,
                 backend .. ': ' .. filename .. ' creates native file collision'
             )
             collider.collisionLevel = 'Trimesh'
             world:updateNodes(1 / 60)
             tester:check(
-                collider.status == 'Ready' and #body.body.shapes == #indices / 3,
+                collider.status == 'Ready' and #body.physics.shapes == #indices / 3,
                 backend .. ': ' .. filename .. ' supports direct Trimesh file collision'
             )
             collider.collisionLevel = 'Bounding Box'

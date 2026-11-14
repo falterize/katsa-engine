@@ -196,7 +196,7 @@ function CarView:shedWheel(index)
         world:create('Mesh3D', { name = 'LostRim' .. label, geometry = rim, color = { 0.78, 0.8, 0.84 } }, debris)
     end
     local side = offset[1] < 0 and -1 or 1
-    debris.body:setVelocity({
+    debris.physics:setVelocity({
         fx * (car.speed or 0) + rx * (car.slide or 0) + rx * side * 4,
         3.5,
         fz * (car.speed or 0) + rz * (car.slide or 0) + rz * side * 4,

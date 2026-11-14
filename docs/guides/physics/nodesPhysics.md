@@ -27,8 +27,11 @@ local zone = world:create('Body3D', {
     bodyType = 'Static', isTrigger = true, position = { 0, 1, 0 }, size = { 6, 2, 6 },
 })
 zone:connect('triggerEntered', function(other) print('entered', other) end)
-ball.body:teleport({ 0, 20, 0 })   -- moves the solver body and the visual together
+ball.physics:teleport({ 0, 20, 0 })   -- moves the solver body and the visual together
+ball.velocity = { 3, 0, 0 }           -- live solver state as a node property
 ```
+See `nodeAccess.md` for `node.physics`, `.space`, `.raw`, `.node`, the method list and raycast hits.
+
 ## v44 lifecycle
 
 All World3D-owned nodes retain scene identity across detach. `docs/nodeLifecycle.md` specifies queries, tags, processing and destruction ordering. Body insertion/removal inside contact callbacks is queued until the solver step completes; hierarchy destruction is immediate. Other physical edits still use the documented API restrictions.

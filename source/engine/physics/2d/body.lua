@@ -36,8 +36,8 @@ function Body.new(physics, object, settings)
         end
     end
     local self = setmetatable({
-        physics = physics,
-        object = object,
+        space = physics,
+        node = object,
         fixtures = {},
         overlaps = {},
         triggerOverlaps = {},
@@ -61,7 +61,7 @@ function Body.new(physics, object, settings)
     }, Body)
     self.raw:setAngle(math.rad(rotation))
     self.raw:setUserData(self)
-    object.body = self
+    object.physics = self
     physics._creationOrder = (physics._creationOrder or 0) + 1
     self._creationOrder = physics._creationOrder
     physics.bodies[#physics.bodies + 1] = self
@@ -83,7 +83,7 @@ function Body:descriptors()
     local result = self._descriptors or {}
     self._descriptors = result
     local count, explicit = 0, false
-    for _, node in ipairs(self.object.children or {}) do
+    for _, node in ipairs(self.node.children or {}) do
         if node:isA('Collider2D') then
             explicit = true
             if node.enabled ~= false then
@@ -111,7 +111,7 @@ function Body:descriptors()
 end
 
 function Body:rebuildFixtures(descriptors)
-    local candidates, p, object = {}, self.physics, self.object
+    local candidates, p, object = {}, self.space, self.node
     local ok, message = pcall(function()
         for _, descriptor in ipairs(descriptors) do
             local shapes = Shapes.createAll(descriptor, p.factor, p.resources)
@@ -148,7 +148,7 @@ function Body:applyProperties(force)
     if self.destroyed or self._pendingDestroy then
         return
     end
-    local o, r = self.object, self.raw
+    local o, r = self.node, self.raw
     local values, changed = self._properties or {}, force == true
     local channelChanged = self._properties
         and (
@@ -169,7 +169,7 @@ function Body:applyProperties(force)
         changed = true
     end
     if changed then
-        self.physics.collisionGroups:add(o.collisionGroup or 'Default')
+        self.space.collisionGroups:add(o.collisionGroup or 'Default')
         self.type = o.bodyType or 'Dynamic'
         r:setType(self.type:lower())
         r:setGravityScale(o.gravityScale or 1)
@@ -205,12 +205,12 @@ function Body:refreshFilters()
 end
 
 function Body:set(settings)
-    self.physics:defer(function()
+    self.space:defer(function()
         if self.destroyed then
             return
         end
         for key, value in pairs(settings) do
-            self.object[key == 'type' and 'bodyType' or key] = value
+            self.node[key == 'type' and 'bodyType' or key] = value
         end
         self:applyProperties()
     end)
@@ -218,7 +218,7 @@ function Body:set(settings)
 end
 
 function Body:setCollider(descriptor)
-    self.physics:defer(function()
+    self.space:defer(function()
         if self.destroyed then
             return
         end
@@ -237,12 +237,12 @@ function Body:teleport(x, y, rotation)
     if type(x) ~= 'number' then
         x, y, rotation = x[1], x[2], y
     end
-    self.physics:defer(function()
+    self.space:defer(function()
         if self.destroyed then
             return
         end
         local angle = rotation and math.rad(rotation) or self.raw:getAngle()
-        self.raw:setPosition(x * self.physics.factor, y * self.physics.factor)
+        self.raw:setPosition(x * self.space.factor, y * self.space.factor)
         self.raw:setAngle(angle)
         self.raw:setAwake(true)
         self.previousX, self.previousY, self.previousAngle = x, y, angle
@@ -252,7 +252,7 @@ function Body:teleport(x, y, rotation)
 end
 
 function Body:sync()
-    local f, o = self.physics.factor, self.object
+    local f, o = self.space.factor, self.node
     local x, y = self.raw:getPosition()
     x, y = x / f, y / f
     local angle = math.deg(self.raw:getAngle())
@@ -266,16 +266,16 @@ end
 
 function Body:getPosition()
     local x, y = self.raw:getPosition()
-    return x / self.physics.factor, y / self.physics.factor
+    return x / self.space.factor, y / self.space.factor
 end
 
 function Body:getLinearVelocity()
     local x, y = self.raw:getLinearVelocity()
-    return x / self.physics.factor, y / self.physics.factor
+    return x / self.space.factor, y / self.space.factor
 end
 
 function Body:setLinearVelocity(x, y)
-    local f = self.physics.factor
+    local f = self.space.factor
     self.raw:setLinearVelocity(x * f, y * f)
     self.raw:setAwake(true)
 end
@@ -308,7 +308,7 @@ function Body:applyForce(x, y, px, py)
     if type(x) ~= 'number' then
         x, y = x[1], x[2]
     end
-    local f = self.physics.factor
+    local f = self.space.factor
     if px then
         self.raw:applyForce(x * f, y * f, px * f, py * f)
     else
@@ -320,7 +320,7 @@ function Body:applyImpulse(x, y, px, py)
     if type(x) ~= 'number' then
         x, y = x[1], x[2]
     end
-    local f = self.physics.factor
+    local f = self.space.factor
     if px then
         self.raw:applyLinearImpulse(x * f, y * f, px * f, py * f)
     else
@@ -329,11 +329,11 @@ function Body:applyImpulse(x, y, px, py)
 end
 
 function Body:applyTorque(value)
-    self.raw:applyTorque(value * self.physics.factor ^ 2)
+    self.raw:applyTorque(value * self.space.factor ^ 2)
 end
 
 function Body:applyAngularImpulse(value)
-    self.raw:applyAngularImpulse(value * self.physics.factor ^ 2)
+    self.raw:applyAngularImpulse(value * self.space.factor ^ 2)
 end
 
 function Body:destroy()
@@ -341,24 +341,24 @@ function Body:destroy()
         return
     end
     self._pendingDestroy = true
-    self.physics:defer(function()
+    self.space:defer(function()
         if self.destroyed then
             return
         end
-        for _, constraint in ipairs(self.physics.constraints) do
+        for _, constraint in ipairs(self.space.constraints) do
             if constraint._body0 == self or constraint._body1 == self then
                 constraint:releaseJoint()
             end
         end
         self.raw:destroy()
         self.destroyed = true
-        if self.object.body == self then
-            self.object.body = nil
+        if self.node.physics == self then
+            self.node.physics = nil
         end
-        for i, body in ipairs(self.physics.bodies) do
+        for i, body in ipairs(self.space.bodies) do
             if body == self then
-                table.remove(self.physics.bodies, i)
-                self.physics._bodyEpoch = (self.physics._bodyEpoch or 0) + 1
+                table.remove(self.space.bodies, i)
+                self.space._bodyEpoch = (self.space._bodyEpoch or 0) + 1
                 break
             end
         end
@@ -399,9 +399,9 @@ function Body:getContacts()
 end
 
 function Body:teleportLocal(position, rotation)
-    self.object.position = position
-    self.object.rotation = rotation or self.object.rotation
-    self:teleport(self.object:getWorldPose())
+    self.node.position = position
+    self.node.rotation = rotation or self.node.rotation
+    self:teleport(self.node:getWorldPose())
 end
 
 return Body

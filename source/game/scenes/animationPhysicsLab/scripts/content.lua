@@ -51,7 +51,7 @@ function Lab.new(scene)
     end
     self.practiceFloor = body('PracticeFloor', { 0, -6, 210 }, { 500, 12, 500 }, 'Static')
     self.ramp = body('RollingRamp', { 130, 40, 150 }, { 90, 8, 200 }, 'Static', { 0.6, 0.45, 0.2 })
-    self.ramp.body:teleport({ 130, 40, 150 }, { 20, 0, 0 })
+    self.ramp.physics:teleport({ 130, 40, 150 }, { 20, 0, 0 })
     self.constraints = {}
     local names = {
         'BallSocketConstraint3D',

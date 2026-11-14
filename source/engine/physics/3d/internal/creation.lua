@@ -2,6 +2,7 @@ local unpack = require('source.engine.math.array').unpack
 local ipairs = require('source.engine.math.array').ipairs
 local O = require('../valueTypes')
 local Affine = require('source.engine.math.affine')
+local bodyOf = require('source.engine.physics.bodyOf')
 local Policy = require('./bodyPolicy')
 local QueryPolicy = require('./queryPolicy')
 local vec, valid = Policy.vec, Policy.valid
@@ -82,8 +83,8 @@ function Creation.install(Physics, Body3D)
                     body.group = 'Default'
                 end
                 body.settings.collisionGroup = body.group
-                if body.object._independentBody then
-                    body.object.collisionGroup = body.group
+                if body.node._independentBody then
+                    body.node.collisionGroup = body.group
                 end
                 body:refreshFilters()
             end
@@ -114,13 +115,23 @@ function Creation.install(Physics, Body3D)
         self.collisionGroups:set(a, b, enabled)
     end
 
+    -- Backend-native body -> physics object / node; nil when the body is not one of ours.
+    function Physics:physicsOf(raw)
+        return self._rawBodies and self._rawBodies[raw]
+    end
+
+    function Physics:nodeOf(raw)
+        local body = self:physicsOf(raw)
+        return body and body.node
+    end
+
     function Physics:addBody(object, settings)
         assert(
             not self.released and not self._releasePending,
             'Cannot add bodies to a released Physics world'
         )
         settings = settings or {}
-        assert(not object.body, 'Object already has a rigid body')
+        assert(not bodyOf(object), 'Object already has a rigid body')
         local owner = object.parent
         while owner and owner:isA('Folder') do
             owner = owner.parent
@@ -158,10 +169,10 @@ function Creation.install(Physics, Body3D)
             end
         end
         local body = setmetatable({
-            physics = self,
+            space = self,
             initialScale = scale,
             initialSize = { unpack(object.size) },
-            object = object,
+            node = object,
             settings = settings,
             type = settings.type or 'Dynamic',
             shapes = {},
@@ -201,7 +212,9 @@ function Creation.install(Physics, Body3D)
         if body.isTrigger then
             self.triggerBodies[body] = true
         end
-        object.body = body
+        self._rawBodies = self._rawBodies or setmetatable({}, { __mode = 'k' })
+        self._rawBodies[body.raw] = body
+        object.physics = body
         object:onDestroy(function()
             body:destroy()
         end)

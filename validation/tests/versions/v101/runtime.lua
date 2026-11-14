@@ -234,13 +234,13 @@ local function physics(test)
     local a =
         w:create('Collider3D', { size = require('source.engine.math.vector3').new(3, 4, 5) }, node)
     node:update(0)
-    local collider = node.body.settings.collider
+    local collider = node.physics.settings.collider
     local keys, descriptors = node._colliderKeys, node._colliderDescriptors
     for i = 1, 12 do
         node:update(0)
     end
     test:check(
-        node.body.settings.collider == collider
+        node.physics.settings.collider == collider
             and node._colliderKeys == keys
             and node._colliderDescriptors == descriptors,
         'Unchanged bodies reuse collider scratch and preserve persistent descriptors'
@@ -248,17 +248,17 @@ local function physics(test)
     a.size.X = 9
     node:update(0)
     test:check(
-        node.body.settings.collider ~= collider
+        node.physics.settings.collider ~= collider
             and collider.children[1].size[1] == 3
-            and node.body.settings.collider.children[1].size[1] == 9,
+            and node.physics.settings.collider.children[1].size[1] == 9,
         'Named collider writes rebuild without mutating previous descriptors'
     )
-    local valid = node.body.settings.collider
+    local valid = node.physics.settings.collider
     a.size.X = -1
     local first = pcall(node.update, node, 0)
     local second = pcall(node.update, node, 0)
     test:check(
-        not first and not second and node.body.settings.collider == valid,
+        not first and not second and node.physics.settings.collider == valid,
         'Invalid collider changes preserve live shapes and are retried until corrected'
     )
     a.size.X = 9
@@ -307,7 +307,7 @@ local function physics(test)
         table.concat(order, ',') == '1,2,3',
         'Deferred setting callbacks retain next-flush ordering'
     )
-    local raw = node.body.raw
+    local raw = node.physics.raw
     raw:getTransformTo(p.transform)
     p.transform:getRotationTo(p.rotation)
     local expected = {

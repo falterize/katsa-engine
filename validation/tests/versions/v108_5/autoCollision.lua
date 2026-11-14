@@ -47,7 +47,7 @@ function Module.run(self)
             backend .. ': hidden meshes do not own bodies')
         for _, body in ipairs(bodies) do
             local collider = body.children[1]
-            self:check(collider.status == 'Ready' and #body.body.shapes > 0,
+            self:check(collider.status == 'Ready' and #body.physics.shapes > 0,
                 backend .. ': ' .. body.name .. ' builds native shapes (' .. tostring(collider.status) .. ')')
         end
 

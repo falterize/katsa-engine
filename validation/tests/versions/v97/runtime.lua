@@ -58,7 +58,7 @@ local function extra(test)
     local w = scene.world
     local parent = w:create('Node3D', { position = { 15, 0, 0 } })
     local node = w:create('Body3D', { bodyType = 'Kinematic', position = { 2, 35, 0 } }, parent)
-    local body = node.body
+    local body = node.physics
     body:sync()
     local A = require('source.engine.math.affine')
     local euler, calls = A.euler, 0

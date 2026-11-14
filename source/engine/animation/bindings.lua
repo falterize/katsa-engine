@@ -1,5 +1,6 @@
 local Array = require('../math.array')
 local pairs = require('../math.array').pairs
+local bodyOf = require('../physics.bodyOf')
 
 local Bindings = {}
 
@@ -19,14 +20,14 @@ end
 
 function Bindings.set(target, key, value)
     assert(not target.destroyed, 'Animation target was destroyed')
-    if target.body and (key == 'position' or key == 'rotation') then
+    if bodyOf(target) and (key == 'position' or key == 'rotation') then
         assert(
-            target.body.type ~= 'Dynamic',
+            bodyOf(target).type ~= 'Dynamic',
             'Tween of a dynamic body pose is unsupported; use forces or a kinematic body'
         )
         local position = key == 'position' and value or target.position
         local rotation = key == 'rotation' and value or target.rotation
-        target.body:teleportLocal(position, rotation)
+        bodyOf(target):teleportLocal(position, rotation)
     else
         local current = target[key]
         if Array.is(value) and Array.is(current) and #current == #value then

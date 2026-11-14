@@ -21,6 +21,44 @@ Body2D.propertySchema = {
     enabled = {},
 }
 
+-- Live solver state, read and written through `node.physics` (docs/guides/physics/nodeAccess.md).
+Body2D.computed = {
+    velocity = {
+        get = function(self)
+            local body = rawget(self, 'physics')
+            return body and body:getVelocity() or { 0, 0 }
+        end,
+        set = function(self, value)
+            local body = rawget(self, 'physics')
+            if body then
+                body:setVelocity(value)
+            end
+        end,
+    },
+    angularVelocity = {
+        get = function(self)
+            local body = rawget(self, 'physics')
+            return body and body:getAngularVelocity() or 0
+        end,
+        set = function(self, value)
+            local body = rawget(self, 'physics')
+            if body then
+                body:setAngularVelocity(value)
+            end
+        end,
+    },
+    isSleeping = {
+        get = function(self)
+            local body = rawget(self, 'physics')
+            return body ~= nil and body:isSleeping()
+        end,
+    },
+}
+Body2D.propertySchema.velocity = { readOnly = true, get = Body2D.computed.velocity.get }
+Body2D.propertySchema.angularVelocity =
+    { readOnly = true, get = Body2D.computed.angularVelocity.get }
+Body2D.propertySchema.isSleeping = { readOnly = true, get = Body2D.computed.isSleeping.get }
+
 function Body2D.initialize(self)
     self._independentBody = true
     self.bodyType = self.bodyType or 'Dynamic'

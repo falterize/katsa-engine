@@ -51,10 +51,10 @@ function Tests.run(tester)
         collisionLevel = 'Multiple Convex',
     }, body)
     world:updateNodes(1 / 60)
-    tester:check(collider.status == 'Ready' and #body.body.shapes >= 1, 'Multiple Convex builds from a file')
+    tester:check(collider.status == 'Ready' and #body.physics.shapes >= 1, 'Multiple Convex builds from a file')
     collider.collisionLevel = 'Simplified Convex'
     world:updateNodes(1 / 60)
-    tester:check(collider.status == 'Ready' and #body.body.shapes >= 1, 'Simplified Convex builds from a file')
+    tester:check(collider.status == 'Ready' and #body.physics.shapes >= 1, 'Simplified Convex builds from a file')
     tester:check(ModelCollider ~= nil, 'model collider module loads')
 end
 

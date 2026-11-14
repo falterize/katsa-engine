@@ -19,11 +19,11 @@ function Tests.run(tester)
     other:createPhysics({ gravity = { 0, 0 } })
     local a = body(100, 100)
     local b = other:create('Body2D', { position = { 100, 100 }, linearDamping = 0 })
-    a.body:setVelocity({ 60, 0 })
-    b.body:setVelocity({ 60, 0 })
+    a.physics:setVelocity({ 60, 0 })
+    b.physics:setVelocity({ 60, 0 })
     world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local spatial = world:create('Body3D', { position = { 0, 0, 0 }, linearDamping = 0 })
-    spatial.body:setVelocity({ 1, 0, 0 })
+    spatial.physics:setVelocity({ 1, 0, 0 })
     world:registerNodeType('ClockScript2D', {
         base = 'Node2D',
         update = function(node, dt)
@@ -99,7 +99,7 @@ function Tests.run(tester)
     )
     tester:check(
         Properties.set({ world = world }, a, field, '175', 1)
-            and math.abs(a.body:getPosition() - 175) < 0.01,
+            and math.abs(a.physics:getPosition() - 175) < 0.01,
         'Editing a Body2D position synchronizes its native pose'
     )
     local camera = ui:create('Camera2D', {})
@@ -151,8 +151,8 @@ function Tests.run(tester)
         scene.world.root.timeScale = 0
         scene.ui.timeScale = 1
         local ball = scene.demo.ball
-        ball.body:teleport(700, 400)
-        ball.body:setVelocity({ 60, 0 })
+        ball.physics:teleport(700, 400)
+        ball.physics:setVelocity({ 60, 0 })
         for _ = 1, 10 do
             scene:update(1 / 60, 1 / 60)
         end
@@ -161,11 +161,11 @@ function Tests.run(tester)
             name .. ': the runtime does not apply the 3D clock to 2D physics'
         )
         scene.ui.timeScale = 0
-        local x, y = ball.body:getPosition()
+        local x, y = ball.physics:getPosition()
         for _ = 1, 5 do
             scene:update(1 / 60, 1 / 60)
         end
-        local px, py = ball.body:getPosition()
+        local px, py = ball.physics:getPosition()
         tester:check(
             x == px and y == py,
             name .. ': the runtime respects the World2D pause independently'

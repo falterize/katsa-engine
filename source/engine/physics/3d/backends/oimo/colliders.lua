@@ -9,7 +9,7 @@ local Colliders = {}
 
 function Colliders.add(body, collider)
     local self = body
-    local p, u = self.physics, self.physics.units
+    local p, u = self.space, self.space.units
     local scale = self.initialScale
     if collider.shape == 'Compound' then
         assert(collider.children and #collider.children > 0, 'Compound collider needs children')
@@ -26,7 +26,7 @@ function Colliders.add(body, collider)
     valid(sc.friction, 'Collider3D.friction', 0)
     valid(sc.restitution, 'Collider3D.restitution', 0)
     local shape = collider.shape or 'Box'
-    local size = collider.size or self.object.size
+    local size = collider.size or self.node.size
     if shape == 'Box' then
         for i = 1, 3 do
             valid(size[i], 'Collider3D.size', 0.001)
@@ -108,7 +108,7 @@ function Colliders.add(body, collider)
 end
 
 function Colliders.refreshFilters(body)
-    local physics = body.physics
+    local physics = body.space
     for _, shape in ipairs(body.shapes) do
         shape.raw:setCollisionGroup(physics.groups[body.group])
         shape.raw:setCollisionMask(

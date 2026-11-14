@@ -103,7 +103,7 @@ function Walker.new(scene, options, others)
     local agent = world:create('NavAgent3D', agentOptions, body)
     -- Crouching never happens here, so the controller's collider handle is a stub.
     local controller =
-        Controller.new(body.body, { position = { 0, 0, 0 } }, nil, settingsFor(speed))
+        Controller.new(body.physics, { position = { 0, 0, 0 } }, nil, settingsFor(speed))
     controller.model = asset
     return setmetatable({
         world = world,
@@ -194,7 +194,7 @@ function Walker:step(dt)
         local start = agent:getNextPathPosition()
         if flat(feet, start) < 0.5 and controller.grounded then
             self.climbing = { target = agent:getActionTarget(), phase = 0 }
-            self.body.body:setVelocity({ 0, 0, 0 })
+            self.body.physics:setVelocity({ 0, 0, 0 })
         end
     end
     controller:setMove(moveX, moveZ)
@@ -254,7 +254,7 @@ function Walker:climb(feet)
     controller.smooth.walk:capture(1)
     controller.smooth.crouch:capture(0)
     velocity[1], velocity[2], velocity[3] = vx, vy, vz
-    self.body.body:setVelocity({ vx, vy, vz })
+    self.body.physics:setVelocity({ vx, vy, vz })
 end
 
 return Walker

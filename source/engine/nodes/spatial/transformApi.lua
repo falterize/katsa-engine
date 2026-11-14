@@ -4,6 +4,7 @@ local ipairs = require('../../math.array').ipairs
 local Math = require('../../math.math3d')
 local Affine = require('../../math.affine')
 local Validate = require('../../core.validate')
+local bodyOf = require('../../physics.bodyOf')
 local Parenting = require('../core.parenting')
 local Base = require('../core.baseNode')
 
@@ -27,9 +28,9 @@ local function compatible(node, transform)
             )
         end
         assert(transform.scale[i] > 1e-6, 'Scale must be positive and nonzero')
-        if node.body then
+        if bodyOf(node) then
             assert(
-                math.abs(transform.scale[i] - node.body.initialScale) < 1e-6,
+                math.abs(transform.scale[i] - bodyOf(node).initialScale) < 1e-6,
                 'Body3D scale changes require rebuilding the body'
             )
         end
@@ -70,8 +71,8 @@ function TransformApi.install(Node3D)
         else
             self.scale = { unpack(target.scale) }
         end
-        if self.body then
-            self.body:teleportLocal(self.position, self.rotation)
+        if bodyOf(self) then
+            bodyOf(self):teleportLocal(self.position, self.rotation)
         end
         return self
     end
@@ -83,7 +84,7 @@ function TransformApi.install(Node3D)
     function Node3D:setWorldMatrix(matrix)
         local parent = Affine.parentMatrix(self, self.parent)
         local localMatrix = matrix
-        if parent and (not self.body or self._independentBody) then
+        if parent and (not bodyOf(self) or self._independentBody) then
             localMatrix = Math.multiply(Affine.inverse(parent), matrix)
         end
         return self:setLocalMatrix(localMatrix)
@@ -154,7 +155,7 @@ function TransformApi.install(Node3D)
         local world = Affine.copy(self:getWorldMatrix())
         local parentMatrix = Affine.parentMatrix(self, parent)
         local localMatrix = parentMatrix
-                and (not self.body or self._independentBody)
+                and (not bodyOf(self) or self._independentBody)
                 and Math.multiply(Affine.inverse(parentMatrix), world)
             or world
         local target = pose(self, localMatrix)

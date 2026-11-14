@@ -1,4 +1,5 @@
 local ipairs = require('../../math.array').ipairs
+local bodyOf = require('../../physics.bodyOf')
 
 local Tree = {}
 local materials = setmetatable({}, { __mode = 'kv' })
@@ -52,10 +53,10 @@ local function children(node)
         end
         result[#result + 1] = child
     end
-    if node._node and node.body and not node:isA('Body3D') and not node:isA('Body2D') then
+    if node._node and bodyOf(node) and not node:isA('Body3D') and not node:isA('Body2D') then
         local child = bodies[node]
-        if not child or child.body ~= node.body then
-            local body = node.body
+        if not child or child.body ~= bodyOf(node) then
+            local body = bodyOf(node)
             local defaults = {
                 density = 1,
                 friction = 0.5,

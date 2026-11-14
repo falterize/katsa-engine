@@ -250,15 +250,15 @@ independent speeds and pauses.
 
 ## Body operations and queries
 
-`node.body` exposes:
+`node.physics` exposes (see `nodeAccess.md`):
 
 ```lua
-ball.body:setVelocity({ 120, -80 })
-ball.body:applyImpulse({ 0, -40 })
-ball.body:applyForceAt({ 50, 0 }, { 400, 100 })
-ball.body:teleport({ 400, 100 }, 45)
-local velocity = ball.body:getVelocity()
-local mass = ball.body:getMass()
+ball.physics:setVelocity({ 120, -80 })
+ball.physics:applyImpulse({ 0, -40 })
+ball.physics:applyForceAt({ 50, 0 }, { 400, 100 })
+ball.physics:teleport({ 400, 100 }, 45)
+local velocity = ball.physics:getVelocity()
+local mass = ball.physics:getMass()
 ```
 
 Scalar conveniences include `setLinearVelocity(x, y)`, `getLinearVelocity()`,
@@ -275,7 +275,7 @@ local boxBodies = physics:overlapBox({ 400, 100 }, { 100, 80 })
 local circleBodies = physics:overlapCircle({ 400, 100 }, 50)
 ```
 
-Rays return body, collider, fraction, position and normal. raycastAll sorts hits;
+Rays return physics, node, collider, fraction, position and normal. raycastAll sorts hits;
 compound bodies can contribute multiple fixture hits. Overlaps return unique body
 wrappers and perform exact fixture tests after AABB traversal, including every
 chain segment. Optional filters receive `(bodyWrapper, colliderNode)`; overlaps
@@ -297,8 +297,8 @@ ball.collisionGroup = 'Player'
 ```
 
 Events: collisionEnter, collisionExit, collisionHit, triggerEnter and triggerExit.
-The event contains body0/body1, collider0/collider1, sensor, position (if available)
-and normal directed from body0 to body1. collisionHit includes normal impulse.
+The event contains physics0/physics1, node0/node1, collider0/collider1, sensor, position (if available)
+and normal directed from physics0 to physics1. collisionHit includes normal impulse.
 Fixture contacts are counted separately for trigger and solid channels, emitting
 one enter/exit per body pair/channel. User callbacks run after native stepping
 unlocks; destruction and queued changes are then flushed safely.

@@ -56,7 +56,7 @@ function Abilities:slide()
     self.slideCooldown = 1.1
     self.lab.collider.height = 8
     self.lab.scene.character.height = 16
-    local body = self.lab.body.body
+    local body = self.lab.body.physics
     local p = self.lab.body.position
     body:teleport({ p[1], p[2] - 8, p[3] })
     self.lab.rig.root.position[2] = -8
@@ -84,7 +84,7 @@ function Abilities:step(dt)
         self.slideTime = math.max(0, self.slideTime - dt)
         if self.slideTime == 0 then
             local p = self.lab.body.position
-            local hit = c.body.physics:raycast(
+            local hit = c.body.space:raycast(
                 { p[1], p[2] + 8, p[3] },
                 { p[1], p[2] + 24, p[3] },
                 c.rayFilter

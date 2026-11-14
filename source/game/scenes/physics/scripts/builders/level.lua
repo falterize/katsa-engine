@@ -61,8 +61,8 @@ function PhysicsExample.build(self, scene)
     )
     scene.physics:createJoint(
         'Spherical',
-        anchor.body,
-        weight.body,
+        anchor.physics,
+        weight.physics,
         { anchor1 = { 0, 0, 0 }, anchor2 = { 0, 55, 0 } }
     )
     local world = scene.world
@@ -103,12 +103,12 @@ function PhysicsExample.build(self, scene)
         castShadow = false,
     }, trigger)
     trigger:connect('triggerEntered', function(other)
-        if other == self.independentBody.body then
+        if other == self.independentBody.physics then
             indicator.color = { 0.2, 1, 0.25, 1 }
         end
     end)
     trigger:connect('triggerExited', function(other)
-        if other == self.independentBody.body then
+        if other == self.independentBody.physics then
             indicator.color = { 0.2, 0.65, 0.9, 1 }
         end
     end)

@@ -17,7 +17,7 @@ local function anchorMotion(body, localPosition, old, dt, direction)
         return 0
     end
     local x, y, z = M.transform(
-        body.object:getWorldMatrix(),
+        body.node:getWorldMatrix(),
         (localPosition[1] - old[1]) / dt,
         (localPosition[2] - old[2]) / dt,
         (localPosition[3] - old[3]) / dt,

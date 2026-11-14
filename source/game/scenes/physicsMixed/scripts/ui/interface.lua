@@ -48,7 +48,7 @@ function Interface.create(state)
         n.text = physics.paused and 'Resume 2D' or 'Pause 2D'
     end)
     button('Impulse', function()
-        state.ball.body:applyImpulse(0, 1200)
+        state.ball.physics:applyImpulse(0, 1200)
     end)
     for _, name in ipairs({ 'enabled', 'shapes', 'joints', 'centers', 'contacts', 'velocities' }) do
         button('Debug: ' .. name, function()

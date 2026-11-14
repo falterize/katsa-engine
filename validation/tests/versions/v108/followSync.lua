@@ -10,9 +10,9 @@ function Tests.cameraFollowsRenderedPose(tester, frameDelta, label)
     scene:load()
     local state, ui = scene.demo, scene.ui
     local camera = ui.currentCamera
-    local physics = state.player.body.physics
+    local physics = state.player.physics.space
     local worst, checked = 0, 0
-    state.player.body:setLinearVelocity(160, 0)
+    state.player.physics:setLinearVelocity(160, 0)
     for _ = 1, 90 do
         scene:update(frameDelta, frameDelta)
         local rx, ry = Plane.pose(state.player)

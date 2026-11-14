@@ -255,7 +255,7 @@ function Debug.new(scene)
                     label:match('^Body3D ')
                     and function()
                         return debugSelected
-                                and (debugSelected.settings[label:sub(8)] or debugSelected.object[label:sub(
+                                and (debugSelected.settings[label:sub(8)] or debugSelected.node[label:sub(
                                     8
                                 )])
                             or control.value
@@ -402,9 +402,9 @@ function Debug.new(scene)
             local p, f = (scene.camera.worldPosition or scene.camera.position), scene.camera.forward
             local hit =
                 physics:raycast(p, { p[1] + f[1] * 1000, p[2] + f[2] * 1000, p[3] + f[3] * 1000 })
-            selected = hit and hit.body
+            selected = hit and hit.physics
             debugSelected = selected
-            n.text = selected and ('Selected: ' .. selected.object.name)
+            n.text = selected and ('Selected: ' .. selected.node.name)
                 or 'No body at screen center'
         end)
         for _, field in ipairs({
@@ -422,8 +422,8 @@ function Debug.new(scene)
                 (field == 'density' or field == 'mass') and 10 or field == 'gravityScale' and 3 or 1,
                 function(value)
                     if selected and (field ~= 'mass' or selected.type == 'Dynamic') then
-                        if selected.object:isA('Body3D') then
-                            selected.object[field] = value
+                        if selected.node:isA('Body3D') then
+                            selected.node[field] = value
                         end
                         selected:set({
                             [field] = (field == 'density' or field == 'mass')

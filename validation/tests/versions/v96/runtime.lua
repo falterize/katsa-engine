@@ -43,7 +43,7 @@ local function extra(test)
     local parent = w:create('Node3D', { position = { 20, 0, 0 } })
     local body = w:create('Body3D', { position = { 2, 30, 0 }, bodyType = 'Kinematic' }, parent)
     body:update(0)
-    local b = body.body
+    local b = body.physics
     b:sync()
     local revision = body._propertyRevision
     b:sync()

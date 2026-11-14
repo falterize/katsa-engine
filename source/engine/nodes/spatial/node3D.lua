@@ -3,6 +3,7 @@ local Node = require('../core.baseNode')
 local Math = require('../../math.math3d')
 local Affine = require('../../math.affine')
 local Validate = require('../../core.validate')
+local bodyOf = require('../../physics.bodyOf')
 
 local Node3D = Node.define('Node3D', 'Node')
 
@@ -82,7 +83,7 @@ function Node3D:isVisible()
 end
 
 function Node3D:getWorldMatrix()
-    local body = rawget(self, 'body')
+    local body = bodyOf(self)
     if body and self._independentBody then
         body:sync()
     end
@@ -217,7 +218,11 @@ function Node3D:getRenderWorldMatrix()
     local owner = self
     while
         owner
-        and not (owner.body and owner.body.physics.interpolate and owner.body.type ~= 'Static')
+        and not (
+            bodyOf(owner)
+            and bodyOf(owner).space.interpolate
+            and bodyOf(owner).type ~= 'Static'
+        )
     do
         owner = owner.parent
     end
@@ -232,8 +237,8 @@ function Node3D:getRenderWorldMatrix()
     local wasInterpolated = self._renderWasInterpolated
     self._renderWasInterpolated = true
     local matrix
-    if self.body then
-        matrix = self.body:getRenderMatrix()
+    if bodyOf(self) then
+        matrix = bodyOf(self):getRenderMatrix()
     elseif self.physicsMatrix then
         matrix = exact
     else

@@ -29,7 +29,7 @@ return function(test)
         body
     )
     local socket = world:create('Attachment3D', { position = { 3, 0, 0 } }, body)
-    body.body:setVelocity({ 120, 0, 0 })
+    body.physics:setVelocity({ 120, 0, 0 })
     physics:update(1.5 / 60)
     check(
         near(body:getWorldPosition()[1], 2) and near(body:getRenderWorldPosition()[1], 1),
@@ -65,7 +65,7 @@ return function(test)
     check(near(mesh.matrix[4], 4), 'Mesh3D render matrix uses interpolated body pose')
     local hit = physics:raycast({ 2, 0, 70 }, { 2, 0, 90 })
     check(
-        hit and hit.body == body.body and near(body:getWorldPosition()[1], 2),
+        hit and hit.physics == body.physics and near(body:getWorldPosition()[1], 2),
         'Physical raycast uses the exact solver pose independently of rendered geometry'
     )
     world:updateObject(mesh)
@@ -100,19 +100,19 @@ return function(test)
         'Rendering shadows cannot write the displayed pose back into physics'
     )
     local oldMatrix = body:getRenderWorldMatrix()
-    local oldPose = body.body._renderPose
+    local oldPose = body.physics._renderPose
     body:getRenderWorldMatrix()
     check(
-        body.body._renderPose == oldPose and body:getRenderWorldMatrix() == oldMatrix,
+        body.physics._renderPose == oldPose and body:getRenderWorldMatrix() == oldMatrix,
         'Render pose buffers are reused between draws'
     )
-    body.body:teleport({ 40, 0, 80 }, { 0, 0, 179 })
+    body.physics:teleport({ 40, 0, 80 }, { 0, 0, 179 })
     check(
         near(body:getRenderWorldPosition()[1], 40),
         'Teleport resets interpolation history without a visible sweep'
     )
-    body.body:setVelocity({ 0, 0, 0 })
-    body.body.raw:setAngularVelocity(Physics.backend.Vec3.new(0, 0, math.rad(120)))
+    body.physics:setVelocity({ 0, 0, 0 })
+    body.physics.raw:setAngularVelocity(Physics.backend.Vec3.new(0, 0, math.rad(120)))
     physics:update(1 / 60)
     local m = body:getRenderWorldMatrix()
     check(
@@ -138,7 +138,7 @@ return function(test)
     physics:setInterpolation(false)
     check(
         near(body:getRenderWorldPosition()[1], body:getWorldPosition()[1])
-            and not body.body._renderPose,
+            and not body.physics._renderPose,
         'Disabling interpolation releases history and immediately uses exact poses'
     )
     world:updateObject(mesh, true)
@@ -173,7 +173,7 @@ return function(test)
         )
     end
     local entered, exited = 0, 0
-    local nearbyBody = nearby.body
+    local nearbyBody = nearby.physics
     sensor:connect('triggerEntered', function(other)
         if other == nearbyBody then
             entered = entered + 1
@@ -195,13 +195,13 @@ return function(test)
             and physics.stats.triggerMilliseconds >= 0,
         'Profiler exposes solver time and exact trigger work separately'
     )
-    sensor.body:set({ isTrigger = false })
+    sensor.physics:set({ isTrigger = false })
     physics:update(1 / 60)
     check(
-        exited == 1 and not physics.triggerBodies[sensor.body],
+        exited == 1 and not physics.triggerBodies[sensor.physics],
         'Disabling trigger mode emits exit and unregisters the sensor'
     )
-    sensor.body:set({ isTrigger = true })
+    sensor.physics:set({ isTrigger = true })
     physics:update(1 / 60)
     check(entered == 2, 'Re-enabled trigger queries current overlaps')
     nearby:destroy()

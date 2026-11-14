@@ -22,7 +22,7 @@ function Module.run(self)
     -- One and a half fixed steps leave the interpolation halfway between two solver poses.
     world.physics:update(1.5 / 60)
     local physics = world.physics
-    local body = ball.body
+    local body = ball.physics
     self:check(physics.interpolate, 'interpolation is on for this test')
     local draw = O.DebugDraw.new()
     draw.line, draw.triangle = function() end, function() end

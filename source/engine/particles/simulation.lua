@@ -53,7 +53,7 @@ function Sim.step(system, e, dt)
         e._collisionFilter = function(body, collider)
             local groups = system:physics().collisionGroups
             if system.dimension == 2 then
-                local object = body.object
+                local object = body.node
                 local trigger = collider and collider.isTrigger
                 if trigger == nil then
                     trigger = object.isTrigger

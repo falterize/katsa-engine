@@ -113,8 +113,8 @@ function T:draw()
                     local start = katsa.timer.getTime()
                     s:update(1 / 60)
                     pose(mode, i)
-                    if cube.body then
-                        cube.body:teleport(cube.position, cube.rotation)
+                    if cube.physics then
+                        cube.physics:teleport(cube.position, cube.rotation)
                     end
                     local updated = katsa.timer.getTime()
                     shadowComparisons, shadowRows = 0, 0

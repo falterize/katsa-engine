@@ -62,41 +62,41 @@ function T:backend(name)
         endCount = endCount + 1
     end)
     step(w, 180)
-    print('SETTLED', name, cube.position[2], cube.body:getVelocity()[2], beginCount)
+    print('SETTLED', name, cube.position[2], cube.physics:getVelocity()[2], beginCount)
     self:check(math.abs(cube.position[2] - 10) < 1, name .. ': falling body settles on floor')
     self:check(beginCount > 0, name .. ': native contactBegin reaches scene events')
     local hit = p:raycast({ 0, 100, 0 }, { 0, -40, 0 })
     self:check(
-        hit and hit.body == cube.body and hit.normal[2] > 0.9,
+        hit and hit.physics == cube.physics and hit.normal[2] > 0.9,
         name .. ': closest ray hit and normal'
     )
     hit = p:raycast({ 0, 100, 0 }, { 0, -40, 0 }, function(b)
-        return b ~= cube.body
+        return b ~= cube.physics
     end)
     self:check(
-        hit and hit.body == floor.body,
+        hit and hit.physics == floor.physics,
         name .. ': filtered ray sees body behind rejected hit'
     )
-    cube.body:teleport({ 0, 80, 0 }, { 0, 0, 0 })
+    cube.physics:teleport({ 0, 80, 0 }, { 0, 0, 0 })
     step(w, 2)
     self:check(endCount > 0, name .. ': contactEnd after teleport')
-    cube.body:set({ gravityScale = 0, mass = 3 })
-    self:check(math.abs(cube.body:getMass() - 3) < 0.001, name .. ': mass update')
-    cube.body:setVelocity({ 10, 0, 0 })
+    cube.physics:set({ gravityScale = 0, mass = 3 })
+    self:check(math.abs(cube.physics:getMass() - 3) < 0.001, name .. ': mass update')
+    cube.physics:setVelocity({ 10, 0, 0 })
     step(w, 6)
-    self:check(cube.body:getVelocity()[1] > 9, name .. ': velocity uses scene units')
-    cube.body:applyImpulse({ 30, 0, 0 })
-    self:check(cube.body:getVelocity()[1] > 18, name .. ': impulse changes velocity immediately')
-    cube.body:teleport({ 0, 50, 0 }, { 0, 0, 0 })
-    cube.body:setVelocity({ 0, 0, 0 })
-    cube.body:setCollider({ shape = 'Sphere', radius = 15 })
+    self:check(cube.physics:getVelocity()[1] > 9, name .. ': velocity uses scene units')
+    cube.physics:applyImpulse({ 30, 0, 0 })
+    self:check(cube.physics:getVelocity()[1] > 18, name .. ': impulse changes velocity immediately')
+    cube.physics:teleport({ 0, 50, 0 }, { 0, 0, 0 })
+    cube.physics:setVelocity({ 0, 0, 0 })
+    cube.physics:setCollider({ shape = 'Sphere', radius = 15 })
     hit = p:raycast({ 0, 100, 0 }, { 0, 0, 0 })
     self:check(
-        hit and hit.body == cube.body and math.abs(hit.position[2] - 65) < 0.2,
+        hit and hit.physics == cube.physics and math.abs(hit.position[2] - 65) < 0.2,
         name .. ': rebuilt collider is visible to ray immediately'
     )
     local sensor = body(w, 'Sensor', { 70, 30, 0 }, 'Static')
-    sensor.body:set({ isTrigger = true })
+    sensor.physics:set({ isTrigger = true })
     local target = body(w, 'Target', { 70, 30, 0 }, 'Static')
     local enters, exits = 0, 0
     sensor:connect('triggerEntered', function()
@@ -107,45 +107,45 @@ function T:backend(name)
     end)
     step(w, 1)
     self:check(enters > 0, name .. ': exact trigger enter')
-    target.body:teleport({ 120, 30, 0 })
+    target.physics:teleport({ 120, 30, 0 })
     step(w, 1)
     self:check(exits > 0, name .. ': exact trigger exit')
-    local old = target.body
+    local old = target.physics
     target:destroy()
     step(w, 1)
     self:check(old.destroyed and not old._inWorld, name .. ': destruction detaches body')
     local locked = body(w, 'Locked', { -60, 50, 0 })
-    locked.body:set({ gravityScale = 0, rotationFactor = { 0, 0, 0 } })
-    locked.body:applyAngularImpulse({ 1000, 0, 0 })
+    locked.physics:set({ gravityScale = 0, rotationFactor = { 0, 0, 0 } })
+    locked.physics:applyAngularImpulse({ 1000, 0, 0 })
     step(w, 3)
     self:check(math.abs(locked.rotation[1]) < 0.01, name .. ': rotation axis locks')
-    locked.body.raw:sleep()
-    self:check(locked.body.raw:isSleeping(), name .. ': explicit sleep')
-    locked.body.raw:wakeUp()
-    self:check(not locked.body.raw:isSleeping(), name .. ': explicit wake')
+    locked.physics.raw:sleep()
+    self:check(locked.physics.raw:isSleeping(), name .. ': explicit sleep')
+    locked.physics.raw:wakeUp()
+    self:check(not locked.physics.raw:isSleeping(), name .. ': explicit wake')
     local ghost = body(w, 'Ghost', { 120, 80, 0 })
     p:setGroupsCollidable('Ghosts', 'Default', false)
-    ghost.body:set({ collisionGroup = 'Ghosts' })
+    ghost.physics:set({ collisionGroup = 'Ghosts' })
     step(w, 100)
     self:check(
         ghost.position[2] < -20,
         name .. ': collision matrix changes disable existing broadphase pairs'
     )
-    ghost.body:teleport({ 120, 80, 0 })
-    ghost.body:setVelocity({ 0, 0, 0 })
+    ghost.physics:teleport({ 120, 80, 0 })
+    ghost.physics:setVelocity({ 0, 0, 0 })
     p:setGroupsCollidable('Ghosts', 'Default', true)
     step(w, 180)
     self:check(math.abs(ghost.position[2] - 10) < 1, name .. ': re-enabled groups collide again')
     ghost:destroy()
     if name == 'jolt' then
-        local before = cube.body.settings.collider
+        local before = cube.physics.settings.collider
         local ok = pcall(
-            cube.body.setCollider,
-            cube.body,
+            cube.physics.setCollider,
+            cube.physics,
             { shape = 'Convex', vertices = { { 0, 0, 0 }, { 1, 0, 0 }, { 2, 0, 0 }, { 3, 0, 0 } } }
         )
         self:check(
-            not ok and cube.body.settings.collider == before,
+            not ok and cube.physics.settings.collider == before,
             name .. ': invalid native shape preserves the live collider'
         )
         self:check(
@@ -194,11 +194,11 @@ function T:backend(name)
             or class == 'UniversalConstraint3D'
             or class == 'RagdollConstraint3D'
         then
-            b.body:set({ gravityScale = 0 })
+            b.physics:set({ gravityScale = 0 })
             joint.motorSpeed, joint.motorForce = 30, 100
             step(w, 12)
             local linear = class == 'PrismaticConstraint3D' or class == 'SliderConstraint3D'
-            local v = linear and b.body:getVelocity() or b.body.raw:getAngularVelocity()
+            local v = linear and b.physics:getVelocity() or b.physics.raw:getAngularVelocity()
             local magnitude = linear and math.abs(v[1]) + math.abs(v[2]) + math.abs(v[3])
                 or math.abs(v.x) + math.abs(v.y) + math.abs(v.z)
             self:check(magnitude > 0.01, name .. ': ' .. class .. ' motor drives motion')
@@ -273,7 +273,7 @@ function T:draw()
     ra:release()
     step(wb, 2)
     self:check(
-        b.body and b.position[2] == 80,
+        b.physics and b.position[2] == 80,
         'Releasing one Jolt world does not invalidate another'
     )
     wb:release()

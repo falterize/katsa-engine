@@ -12,11 +12,11 @@ function Tests.run(tester)
         'Existing zero-gravity 2D solver options populate World2D properties'
     )
     local item = body(100, 100)
-    item.body:sleep()
+    item.physics:sleep()
     ui.Gravity, ui.GravityDirection = 120, { 2, 0 }
     ui:update(1 / 60)
     local x, y = physics:getGravity()
-    local vx = item.body:getLinearVelocity()
+    local vx = item.physics:getLinearVelocity()
     tester:check(
         near(x, 120) and near(y, 0) and near(vx, 2),
         'World2D magnitude and normalized direction wake and accelerate sleeping bodies'
@@ -56,11 +56,11 @@ function Tests.run(tester)
             backend .. ': World3D preserves existing vector gravity settings'
         )
         local object = world:create('Body3D', { position = { 0, 10, 0 }, linearDamping = 0 })
-        object.body.raw:sleep()
+        object.physics.raw:sleep()
         world.root.Gravity, world.root.GravityDirection = 120, { 2, 0, 0 }
         solver:update(1 / 60)
         x, y = solver:getGravity()
-        local velocity = object.body:getVelocity()
+        local velocity = object.physics:getVelocity()
         tester:check(
             near(x, 120) and near(y, 0) and near(velocity[1], 2),
             backend .. ': World3D gravity edits reach the native solver and wake bodies'

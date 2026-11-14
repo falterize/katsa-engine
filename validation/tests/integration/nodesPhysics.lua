@@ -136,7 +136,7 @@ return function(test)
         'Runtime friction restitution and damping setters'
     )
     local hit = physics:raycast({ 0, 100, 0 }, { 0, -20, 0 })
-    test:check(hit and hit.body == body, '3D raycast returns body and surface position')
+    test:check(hit and hit.physics == body, '3D raycast returns body and surface position')
     physics:addGroup('ghost')
     physics:setGroupsCollidable('ghost', 'default', false)
     body:set({ collisionGroup = 'ghost' })
@@ -150,7 +150,7 @@ return function(test)
     body:teleport({ 0, 60, 0 })
     hit = physics:raycast({ 0, 100, 0 }, { 0, -20, 0 })
     test:check(
-        hit and hit.body.object == floor,
+        hit and hit.physics.node == floor,
         'canQuery excludes a body independently from rendering'
     )
     local sphere = Node.new('Mesh3D', { position = { 40, 80, 0 }, size = { 20, 20, 20 } }, world)

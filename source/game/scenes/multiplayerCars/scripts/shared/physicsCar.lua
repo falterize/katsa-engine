@@ -102,7 +102,7 @@ function PhysicsCar.new(world, model, netId, options)
         node:update(0)
     end
     self.filter = function(other)
-        return other ~= node.body and other.canCollide
+        return other ~= node.physics and other.canCollide
     end
     return self
 end
@@ -129,7 +129,7 @@ function PhysicsCar:setMode(mode)
         self.node.bodyType = 'Dynamic'
         self.node:update(0)
         local fx, fz = math.sin(math.rad(model.heading)), math.cos(math.rad(model.heading))
-        self.node.body:setVelocity({ fx * model.speed, 0, fz * model.speed })
+        self.node.physics:setVelocity({ fx * model.speed, 0, fz * model.speed })
         self.hasPrevious = false
         for i = 1, 4 do
             self.compression[i] = 0
@@ -153,14 +153,14 @@ function PhysicsCar:follow(dt, source)
         self.followVelocity = velocity
         velocity[1], velocity[2], velocity[3] =
             (model.x - last[1]) / dt, (model.y - last[2]) / dt, (model.z - last[3]) / dt
-        self.node.body:setVelocity(velocity)
+        self.node.physics:setVelocity(velocity)
     end
     self.lastFollow = last or {}
     self.lastFollow[1], self.lastFollow[2], self.lastFollow[3] = model.x, model.y, model.z
     local angles = orientation(model.heading, model.pitch or 0, model.roll or 0, self.angles)
     self.node.position = { model.x, model.y, model.z }
     self.node.rotation = { angles[1], angles[2], angles[3] }
-    self.node.body:sync()
+    self.node.physics:sync()
 end
 
 -- The collision hull is the body mesh as a few convex pieces (game/carHull.lua), each a
@@ -214,7 +214,7 @@ end
 
 -- Reads the chassis pose into the axes table and returns the position.
 function PhysicsCar:pose()
-    local body = self.node.body
+    local body = self.node.physics
     body:sync()
     local m = body._worldPhysicsMatrix
     local a = self.axes
@@ -240,7 +240,7 @@ function PhysicsCar:step(dt)
         return
     end
     local t, model, config = self.tuning, self.model, self.config
-    local body = self.node.body
+    local body = self.node.physics
     local px, py, pz = self:pose()
     local a = self.axes
     local up, forward, right = a.up, a.forward, a.right
@@ -277,7 +277,7 @@ function PhysicsCar:step(dt)
         ra[1], ra[2], ra[3] = mx, my, mz
         rb[1], rb[2], rb[3] = mx - up[1] * rayLength, my - up[2] * rayLength, mz - up[3] * rayLength
         local gone = math.floor((model.detached or 0) / 2 ^ (i - 1)) % 2 == 1
-        local hit = not gone and body.physics:raycast(ra, rb, self.filter, self.hit) or nil
+        local hit = not gone and body.space:raycast(ra, rb, self.filter, self.hit) or nil
         if hit then
             -- A wall is not ground. A wheel pushed into one by a dented-in hull would otherwise
             -- find the wall face under its ray and the spring would lift the car up the wall.
@@ -409,7 +409,7 @@ end
 function PhysicsCar:autoFlip(dt, up, forward, grounded)
     local t = self.tuning
     local tilted = up[2] < 0.35
-    local resting = math.abs(self.model.speed) < 6 and (grounded > 0 or next(self.node.body:getContacts()) ~= nil)
+    local resting = math.abs(self.model.speed) < 6 and (grounded > 0 or next(self.node.physics:getContacts()) ~= nil)
     if tilted and resting then
         self.flippedFor = (self.flippedFor or 0) + dt
     elseif up[2] > 0.8 then
@@ -426,7 +426,7 @@ function PhysicsCar:autoFlip(dt, up, forward, grounded)
     sign = math.abs(sign) < 0.05 and 1 or (sign > 0 and 1 or -1)
     local mass = t.mass
     local inertia = mass * (t.size[1] ^ 2 + t.size[2] ^ 2) / 12 * 2.5
-    local body = self.node.body
+    local body = self.node.physics
     local w = self.angular
     local along = w.x * forward[1] + w.y * forward[2] + w.z * forward[3]
     local k = (sign * t.flipTorque - along * t.flipDamping) * inertia
@@ -443,7 +443,7 @@ function PhysicsCar:readState()
     local px, py, pz = self:pose()
     local a = self.axes
     local forward, right, up = a.forward, a.right, a.up
-    local v = self.node.body:getVelocity(self.velocity)
+    local v = self.node.physics:getVelocity(self.velocity)
     model.x, model.y, model.z = px, py, pz
     model.heading = (math.deg(math.atan2(forward[1], forward[3]))) % 360
     -- Pitch (nose up positive) and roll (right side up positive) in the car's own frame.
@@ -456,7 +456,7 @@ function PhysicsCar:readState()
     -- A collision shows up as a sudden velocity change that gravity and the springs cannot make.
     local prev = self.previous
     local dvx, dvy, dvz = v[1] - prev[1], v[2] - prev[2], v[3] - prev[3]
-    if self.hasPrevious and next(self.node.body:getContacts()) then
+    if self.hasPrevious and next(self.node.physics:getContacts()) then
         local dv = math.sqrt(dvx * dvx + dvy * dvy + dvz * dvz)
         if dv > self.tuning.impactSpeed then
             -- The push direction (into the body) in car space: x right, y up, z forward. The
@@ -490,7 +490,7 @@ function PhysicsCar:renderPose(model)
     if self.mode == 'follow' then
         return false
     end
-    local body = self.node.body
+    local body = self.node.physics
     local m = body:getRenderMatrix()
     local right, forward = self.renderRight, self.renderForward
     if not right then
@@ -524,7 +524,7 @@ function PhysicsCar:needsReset(dt)
 end
 
 function PhysicsCar:respawn(x, z, heading)
-    local body = self.node.body
+    local body = self.node.physics
     local ground = self.model.ground(x, z)
     -- Moving the node is how a Body3D is repositioned; sync() carries the pose to the body.
     self.node.position = { x, ground + 1.2, z }

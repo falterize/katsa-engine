@@ -53,8 +53,8 @@ function Interface.create(self)
             n.text = scene.physics.interpolate and 'Interpolation: ON' or 'Interpolation: OFF'
         end)
         button('Reset independent body', 0, function()
-            self.independentBody.body:teleport({ -130, 75, 80 })
-            self.independentBody.body:setVelocity({ 0, 0, 0 })
+            self.independentBody.physics:teleport({ -130, 75, 80 })
+            self.independentBody.physics:setVelocity({ 0, 0, 0 })
         end)
     end
     self.toolbar.automaticLength = true

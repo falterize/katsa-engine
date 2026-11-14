@@ -24,7 +24,7 @@ function R:update()
         ws:update(0.3)
         local object
         for _, o in ipairs(scene.world.objects) do
-            if o.body then
+            if o.physics then
                 object = o
                 break
             end
@@ -85,11 +85,11 @@ function R:update()
             end
         end
         assert(toggle)
-        local old = bodyRow.body.settings.isTrigger or false
+        local old = bodyRow.physics.settings.isTrigger or false
         toggle.button:press()
         ws:update(0.016)
         self:check(
-            bodyRow.body.settings.isTrigger == not old and not toggle.button.destroyed,
+            bodyRow.physics.settings.isTrigger == not old and not toggle.button.destroyed,
             'Body3D trigger editing survives the next inspector update'
         )
         local Properties = require('source.engine.editor.inspectors.properties')

@@ -16,7 +16,7 @@ end
 
 function BouncePad:bindPhysics(physics, player)
     self:connect('contactBegin', function(other)
-        if self.enabled and other and other.object == player then
+        if self.enabled and other and other.node == player then
             self.pendingLaunch = other
         end
     end)

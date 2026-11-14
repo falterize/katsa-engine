@@ -70,7 +70,7 @@ function Module.run(self)
     local px, _, pz = body:pose()
     node.position = { px, node.position[2] + 1.5, pz }
     node.rotation = { 0, 0, 180 }
-    node.body:sync()
+    node.physics:sync()
     local ok = true
     frames(host, 60 * 8, function()
         ok = ok and not body:needsReset(1 / 60)

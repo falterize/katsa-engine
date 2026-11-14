@@ -95,6 +95,12 @@ function ClassDefinition.install(Node)
                 if key == 'parent' then
                     return rawget(instance, '_parent')
                 end
+                -- Live runtime state such as Body velocity: `class.computed[key] = {get, set}`.
+                local computed = class.computed
+                local entry = computed and computed[key]
+                if entry then
+                    return entry.get(instance)
+                end
                 return class[key]
             end,
             __newindex = function(instance, key, value)
@@ -107,6 +113,13 @@ function ClassDefinition.install(Node)
                     key = 'order'
                 end
                 key = propertyAliases[key] or key
+                local computed = class.computed
+                local entry = computed and computed[key]
+                if entry then
+                    assert(entry.set, 'Property is read-only: ' .. tostring(key))
+                    entry.set(instance, value)
+                    return
+                end
                 if key == 'debug' and class.name == 'World2D' and instance.environment then
                     instance.environment.debug = value
                     return

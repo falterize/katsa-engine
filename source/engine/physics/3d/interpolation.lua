@@ -31,7 +31,7 @@ function Interpolation.install(Body3D, O, Physics)
             }
             self._renderPose = state
         end
-        state.paused = self.physics.paused
+        state.paused = self.space.paused
         self.raw:getPositionTo(state.position)
         self.raw:getOrientationTo(state.rotation)
         state.previousPosition:copyFrom(state.position)
@@ -56,18 +56,18 @@ function Interpolation.install(Body3D, O, Physics)
     end
 
     function Body3D:getRenderMatrix()
-        if not self.physics.interpolate or self.type == 'Static' then
-            return self.object:getWorldMatrix()
+        if not self.space.interpolate or self.type == 'Static' then
+            return self.node:getWorldMatrix()
         end
         if not self._renderPose then
             self:resetRenderPose()
         end
-        if self._renderPose.paused ~= self.physics.paused then
+        if self._renderPose.paused ~= self.space.paused then
             self:resetRenderPose()
         end
         local s = self._renderPose
-        local t = self.physics.paused and 1
-            or math.max(0, math.min(1, self.physics.interpolationAlpha or 0))
+        local t = self.space.paused and 1
+            or math.max(0, math.min(1, self.space.interpolationAlpha or 0))
         local a, b = s.previousRotation, s.rotation
         local dot = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
         local sign = dot < 0 and -1 or 1
@@ -90,7 +90,7 @@ function Interpolation.install(Body3D, O, Physics)
         local r = s.matrix:fromQuat(q)
         local m = s.world
         local scale = self.initialScale
-        local u = self.physics.units
+        local u = self.space.units
         m[1], m[2], m[3] = r.e00 * scale, r.e01 * scale, r.e02 * scale
         m[5], m[6], m[7] = r.e10 * scale, r.e11 * scale, r.e12 * scale
         m[9], m[10], m[11] = r.e20 * scale, r.e21 * scale, r.e22 * scale

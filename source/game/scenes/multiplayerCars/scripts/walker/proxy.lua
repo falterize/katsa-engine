@@ -33,7 +33,7 @@ function Proxy:update()
         (model.ry or model.y) + self.half,
         model.rz or model.z,
     }
-    self.node.body:sync()
+    self.node.physics:sync()
 end
 
 function Proxy:destroy()

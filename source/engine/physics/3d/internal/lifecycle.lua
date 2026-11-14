@@ -7,20 +7,20 @@ function Lifecycle.install(Physics, Body3D)
             return
         end
         self.destroyed = true
-        if self.physics._stepping or self.physics._flushing or self.physics._querying then
-            self.physics.pendingRemoves[#self.physics.pendingRemoves + 1] = self
+        if self.space._stepping or self.space._flushing or self.space._querying then
+            self.space.pendingRemoves[#self.space.pendingRemoves + 1] = self
         elseif self._inWorld then
-            self.physics.world:removeRigidBody(self.raw)
+            self.space.world:removeRigidBody(self.raw)
             self._inWorld = false
         end
-        self.physics.triggerBodies[self] = nil
+        self.space.triggerBodies[self] = nil
         self._renderPose = nil
         self.contacts, self._contactSets, self.overlaps, self._overlapScratch = {}, nil, nil, nil
-        self.object.body = nil
-        self.object.physicsMatrix = nil
-        for i, b in ipairs(self.physics.bodies) do
+        self.node.physics = nil
+        self.node.physicsMatrix = nil
+        for i, b in ipairs(self.space.bodies) do
             if b == self then
-                table.remove(self.physics.bodies, i)
+                table.remove(self.space.bodies, i)
                 break
             end
         end

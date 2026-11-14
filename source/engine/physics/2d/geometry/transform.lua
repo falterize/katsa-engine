@@ -7,7 +7,7 @@ local function rounded(value)
 end
 
 function Transform.descriptors(body, descriptors)
-    local object = body.object
+    local object = body.node
     if not object.getWorldTransform then
         return descriptors
     end

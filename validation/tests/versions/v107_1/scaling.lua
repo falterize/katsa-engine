@@ -40,13 +40,13 @@ function Tests.run(tester)
         '2D and 3D transform scales retain dimension-correct managed vectors'
     )
     ui:update(0)
-    local x, y = item.body:getPosition()
+    local x, y = item.physics:getPosition()
     tester:check(
         near(x, 128 + 40 * math.cos(math.rad(25))) and near(y, 128 + 40 * math.sin(math.rad(25))),
         'Group scale and rotation transform native body positions'
     )
     local a, b, c, d, px, py = collider:getWorldTransform()
-    local fixture = item.body.fixtures[1]
+    local fixture = item.physics.fixtures[1]
     local insideX, insideY = px + 9 * a + 5 * c, py + 9 * b + 5 * d
     tester:check(
         fixture:testPoint(insideX * physics.factor, insideY * physics.factor)
@@ -73,16 +73,16 @@ function Tests.run(tester)
         'World pose writes invert parent scale and rotation'
     )
     ui:update(0)
-    fixture = item.body.fixtures[1]
+    fixture = item.physics.fixtures[1]
     ui:update(0)
     tester:check(
-        item.body.fixtures[1] == fixture,
+        item.physics.fixtures[1] == fixture,
         'Unchanged affine transforms retain native fixtures'
     )
     group.scale[1] = 3
     ui:update(0)
     tester:check(
-        item.body.fixtures[1] ~= fixture and fixture:isDestroyed(),
+        item.physics.fixtures[1] ~= fixture and fixture:isDestroyed(),
         'Editing ancestor scale rebuilds native geometry transactionally'
     )
     local ball =
@@ -92,25 +92,25 @@ function Tests.run(tester)
     local inside = physics:overlapPoint({ 618, 600 })
     local outside = physics:overlapPoint({ 600, 611 })
     tester:check(
-        #ball.body.fixtures > 1 and #inside == 1 and #outside == 0,
+        #ball.physics.fixtures > 1 and #inside == 1 and #outside == 0,
         'Nonuniformly scaled circles become ellipses with matching point queries'
     )
     ball.scale = { 2, 2 }
     ui:update(0)
     tester:check(
-        #ball.body.fixtures == 1 and ball.body.fixtures[1]:getShape():getType() == 'circle',
+        #ball.physics.fixtures == 1 and ball.physics.fixtures[1]:getShape():getType() == 'circle',
         'Uniform circle scale retains the native analytic circle'
     )
-    local current = ball.body.fixtures[1]
-    ball.body:setVelocity({ 60, 0 })
+    local current = ball.physics.fixtures[1]
+    ball.physics:setVelocity({ 60, 0 })
     for _ = 1, 5 do
         ui:update(1 / 60)
     end
     tester:check(
-        ball.body.fixtures[1] == current,
+        ball.physics.fixtures[1] == current,
         'Rigid movement does not rebuild scaled fixtures'
     )
-    x, y = ball.body:getPosition()
+    x, y = ball.physics:getPosition()
     tester:check(
         near(x, 605) and near(y, 600),
         'Scaled dynamic bodies still use world-unit velocity'

@@ -1,4 +1,5 @@
 local Objects = require('../../core.objects')
+local bodyOf = require('../../physics.bodyOf')
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 -- Property revisions skip stable nodes; mutable geometry/matrices retain conservative checks.
@@ -196,7 +197,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
             and sameKind
             and not r.new
             and not resetMeshes
-            and not rawget(n, 'body')
+            and not bodyOf(n)
             and not rawget(n, 'skin')
             and Properties.unchanged(r, n, c)
         then
@@ -227,7 +228,7 @@ function Cache.inspect(renderer, world, camera, time, offscreen)
                 return r.changed
             end
         end
-        local body = rawget(n, 'body')
+        local body = bodyOf(n)
         if body and body.type == 'Static' then
             body:sync()
         end

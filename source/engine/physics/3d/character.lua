@@ -55,9 +55,9 @@ function Character:jump()
 end
 
 function Character:step()
-    local body, dt = self.body, self.body.physics.fixedDelta
+    local body, dt = self.body, self.body.space.fixedDelta
     body:sync()
-    local p, v = body.object.position, body:getVelocity(self.velocity)
+    local p, v = body.node.position, body:getVelocity(self.velocity)
     local foot = p[2] - self.height / 2
     self.grounded = false
     if v[2] < 10 then
@@ -67,7 +67,7 @@ function Character:step()
             self.rayStart[1], self.rayStart[2], self.rayStart[3] = x, foot + self.radius, z
             self.rayEnd[1], self.rayEnd[2], self.rayEnd[3] = x, foot - self.groundTolerance, z
             local hit =
-                body.physics:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
+                body.space:raycast(self.rayStart, self.rayEnd, self.rayFilter, self.rayHit)
             if hit and hit.normal[2] >= minNormal then
                 self.grounded = true
                 for i = 1, 3 do

@@ -5,6 +5,30 @@ local Affine = require('../../math.affine')
 local BodyExtensions = {}
 
 function BodyExtensions.install(Body3D, Physics, O)
+    -- Angular velocity in radians per second (the same unit setAngularVelocity takes).
+    function Body3D:getAngularVelocity(out)
+        out = out or {}
+        self._angularScratch = self._angularScratch or O.Vec3.new()
+        local angular = self._angularScratch
+        self.raw:getAngularVelocityTo(angular)
+        out[1], out[2], out[3] = angular.x, angular.y, angular.z
+        return out
+    end
+
+    function Body3D:isSleeping()
+        return self.raw:isSleeping()
+    end
+
+    function Body3D:wake()
+        self.raw:wakeUp()
+        return self
+    end
+
+    function Body3D:sleep()
+        self.raw:sleep()
+        return self
+    end
+
     -- Velocity of the material point of this body at a world position (linear + angular x r),
     -- in world units per second. Something standing on a moving body is carried by this.
     function Body3D:getPointVelocity(position, out)
@@ -15,7 +39,7 @@ function BodyExtensions.install(Body3D, Physics, O)
         local p, angular = self._pointPosition, self._pointAngular
         self.raw:getPositionTo(p)
         self.raw:getAngularVelocityTo(angular)
-        local v, units = self:getVelocity(self._pointVelocity), self.physics.units
+        local v, units = self:getVelocity(self._pointVelocity), self.space.units
         local rx, ry, rz =
             position[1] - p.x * units, position[2] - p.y * units, position[3] - p.z * units
         out[1] = v[1] + (angular.y * rz - angular.z * ry)
@@ -33,9 +57,9 @@ function BodyExtensions.install(Body3D, Physics, O)
         self.raw:getAngularVelocityTo(angular)
         local v = self:getVelocity(self._pointVelocity)
         local rx, ry, rz =
-            position[1] - p.x * self.physics.units,
-            position[2] - p.y * self.physics.units,
-            position[3] - p.z * self.physics.units
+            position[1] - p.x * self.space.units,
+            position[2] - p.y * self.space.units,
+            position[3] - p.z * self.space.units
         local speed = (v[1] + angular.y * rz - angular.z * ry) * axis[1]
             + (v[2] + angular.z * rx - angular.x * rz) * axis[2]
             + (v[3] + angular.x * ry - angular.y * rx) * axis[3]
@@ -43,10 +67,10 @@ function BodyExtensions.install(Body3D, Physics, O)
             return speed, 0
         end
         local x, y, z =
-            (ry * axis[3] - rz * axis[2]) / self.physics.units,
-            (rz * axis[1] - rx * axis[3]) / self.physics.units,
-            (rx * axis[2] - ry * axis[1]) / self.physics.units
-        return speed, self.physics.adapter:pointInverseMass(self, x, y, z)
+            (ry * axis[3] - rz * axis[2]) / self.space.units,
+            (rz * axis[1] - rx * axis[3]) / self.space.units,
+            (rx * axis[2] - ry * axis[1]) / self.space.units
+        return speed, self.space.adapter:pointInverseMass(self, x, y, z)
     end
 
     function Body3D:_recordContact(other, contact, begin)
@@ -70,12 +94,12 @@ function BodyExtensions.install(Body3D, Physics, O)
     end
 
     function Body3D:teleportLocal(position, rotation)
-        if not self.object._independentBody then
+        if not self.node._independentBody then
             return self:teleport(position, rotation)
         end
         local localMatrix =
-            Math.compose(position, rotation or self.object.rotation, self.object.scale)
-        local parent = Affine.parentMatrix(self.object, self.object.parent)
+            Math.compose(position, rotation or self.node.rotation, self.node.scale)
+        local parent = Affine.parentMatrix(self.node, self.node.parent)
         local p, r = Affine.decompose(parent and Math.multiply(parent, localMatrix) or localMatrix)
         return self:teleport(p, r)
     end
@@ -94,25 +118,25 @@ function BodyExtensions.install(Body3D, Physics, O)
         assert(not self.destroyed, 'Cannot rebuild a destroyed body')
         -- Build every shape first so validation failure preserves the live collider.
         local candidate = setmetatable({
-            physics = self.physics,
+            space = self.space,
             initialScale = self.initialScale,
-            object = self.object,
+            node = self.node,
             settings = self.settings,
             type = self.type,
             group = self.group,
             canCollide = self.canCollide,
             isTrigger = self.isTrigger,
-            raw = self.physics.adapter:createColliderCandidate(),
+            raw = self.space.adapter:createColliderCandidate(),
             shapes = {},
             contacts = {},
         }, Body3D)
         candidate:addCollider(collider)
         candidate.collider = collider
-        self.physics.adapter:prepareCollider(candidate)
-        if self.physics._stepping or self.physics._flushing or self.physics._querying then
-            self.physics.pendingColliderChanges = self.physics.pendingColliderChanges or {}
+        self.space.adapter:prepareCollider(candidate)
+        if self.space._stepping or self.space._flushing or self.space._querying then
+            self.space.pendingColliderChanges = self.space.pendingColliderChanges or {}
             table.insert(
-                self.physics.pendingColliderChanges,
+                self.space.pendingColliderChanges,
                 { body = self, candidate = candidate }
             )
         else
@@ -122,7 +146,7 @@ function BodyExtensions.install(Body3D, Physics, O)
     end
 
     function Body3D:_applyCollider(candidate)
-        local physics = self.physics
+        local physics = self.space
         local before = physics._flushing
         physics._flushing = true
         local ok, err = pcall(function()

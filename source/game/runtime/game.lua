@@ -152,7 +152,7 @@ end
 -- Called explicitly by main.create between content construction and private UI.
 function Game:preparePresentation()
     if self.character then
-        self.world:setInteractionSource(self.character.body.object)
+        self.world:setInteractionSource(self.character.body.node)
     end
     self:buildMaterials()
     self:buildUI()

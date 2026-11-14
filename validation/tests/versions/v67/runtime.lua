@@ -73,7 +73,7 @@ function T:update()
         self:check(scene.character.grounded, 'Runner settles above the start platform')
         demo.abilities:jump()
         scene.physics:update(1 / 60)
-        self:check(demo.body.body:getVelocity()[2] > 0, 'First jump changes physics velocity')
+        self:check(demo.body.physics:getVelocity()[2] > 0, 'First jump changes physics velocity')
         scene.character.grounded = false
         scene.character.sinceGrounded = 1
         demo.abilities.jumps = 1

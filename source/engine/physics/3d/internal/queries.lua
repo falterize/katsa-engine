@@ -25,7 +25,8 @@ function Queries.install(Physics, Body3D)
         out = out or {}
         out.position = out.position or {}
         out.normal = out.normal or {}
-        out.body, out.fraction = self.ray.shape.userData, self.ray.fraction
+        out.physics, out.fraction = self.ray.shape.userData, self.ray.fraction
+        out.node = out.physics and out.physics.node
         out.position[1], out.position[2], out.position[3] =
             self.ray.position.x * u, self.ray.position.y * u, self.ray.position.z * u
         out.normal[1], out.normal[2], out.normal[3] =

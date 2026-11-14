@@ -42,19 +42,19 @@ function Tests:adapter(name)
     advance(world)
     self:check(constraint.joint == original, name .. ': unchanged inputs keep the joint')
 
-    weight.body:setCollider({ shape = 'Sphere', radius = 10, position = { 0, 5, 0 } })
+    weight.physics:setCollider({ shape = 'Sphere', radius = 10, position = { 0, 5, 0 } })
     advance(world)
     self:check(constraint.joint ~= original, name .. ': changed collider invalidates joint frame')
     local replacement = constraint.joint
     advance(world)
     self:check(constraint.joint == replacement, name .. ': new collider frame is cached')
 
-    local before = weight.body.shapes[1].raw
+    local before = weight.physics.shapes[1].raw
     local ok = pcall(function()
-        weight.body:setCollider({ shape = 'Sphere', radius = -1 })
+        weight.physics:setCollider({ shape = 'Sphere', radius = -1 })
     end)
     self:check(
-        not ok and weight.body.shapes[1].raw == before,
+        not ok and weight.physics.shapes[1].raw == before,
         name .. ': rejected replacement preserves the live collider'
     )
     world:release()

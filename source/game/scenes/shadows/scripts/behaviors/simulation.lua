@@ -16,7 +16,7 @@ function Methods:update(dt)
         if dt > 0 then
             self.velocity[1], self.velocity[2], self.velocity[3] =
                 (target - self.shadowCube.position[1]) / dt, 0, 0
-            self.shadowCube.body:setVelocity(self.velocity)
+            self.shadowCube.physics:setVelocity(self.velocity)
         end
     end
     scene.physics:update(dt)

@@ -73,7 +73,7 @@ function T:update()
         self:check(scene.character.grounded, 'Runner settles above the start platform')
         demo.abilities:jump()
         scene.physics:update(1 / 60)
-        self:check(demo.body.body:getVelocity()[2] > 0, 'First jump changes physics velocity')
+        self:check(demo.body.physics:getVelocity()[2] > 0, 'First jump changes physics velocity')
         scene.character.grounded = false
         scene.character.sinceGrounded = 1
         demo.abilities.jumps = 1
@@ -108,7 +108,7 @@ function T:update()
                 -1,
             },
         }) do
-            demo.body.body:setVelocity({ direction[1] * 70, 0, direction[2] * 70 })
+            demo.body.physics:setVelocity({ direction[1] * 70, 0, direction[2] * 70 })
             demo:update(0)
             local matrix = M.compose({ 0, 0, 0 }, demo.rig.root.rotation, { 1, 1, 1 })
             local x, _, z = M.transform(matrix, 0, 0, 1, 0)
@@ -146,7 +146,7 @@ function T:update()
         )
         katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
         scene:resize(960, 540)
-        demo.body.body:setVelocity({ 0, 0, 0 })
+        demo.body.physics:setVelocity({ 0, 0, 0 })
         demo.controlsPanel.visible = true
         self.capture = 'runner'
     elseif self.frame == 2 then

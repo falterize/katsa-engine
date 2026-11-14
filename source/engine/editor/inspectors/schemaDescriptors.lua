@@ -1,3 +1,4 @@
+local bodyOf = require('source.engine.physics.bodyOf')
 local descriptions = {
     Camera3D = {
         projectionMode = {
@@ -28,7 +29,7 @@ local descriptions = {
     Body3D = {
         mass = {
             get = function(node)
-                return node.mass or node.body and node.body:getMass()
+                return node.mass or bodyOf(node) and bodyOf(node):getMass()
             end,
             min = 0.00001,
         },

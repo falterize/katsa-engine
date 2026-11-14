@@ -70,7 +70,7 @@ function NightPlayer.build(self, scene)
     })
     scene.world:setCamera(self.first)
     scene.character = Character.new(
-        self.player.body,
+        self.player.physics,
         scene.camera,
         { height = 32, radius = 8, speed = 65, jumpSpeed = 95 }
     )

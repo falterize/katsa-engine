@@ -100,7 +100,7 @@ function Tests.run(tester)
                 .. ': player starts grounded and idle ('
                 .. player.fsm.name
                 .. ', y='
-                .. player.body.object.position[2]
+                .. player.body.node.position[2]
                 .. ', vy='
                 .. player.velocity[2]
                 .. ', normal='
@@ -173,7 +173,7 @@ function Tests.run(tester)
             backend .. ': crouch resizes capsule and uses original movement speed'
         )
         tester:check(
-            math.abs(player.body.object.position[2] - 1) < 0.04
+            math.abs(player.body.node.position[2] - 1) < 0.04
                 and math.abs(player.collider.position[2] + 0.5) < 1e-6,
             backend .. ': crouching keeps feet on the floor'
         )
@@ -201,14 +201,14 @@ function Tests.run(tester)
         )
         frames(manager, 17)
         tester:check(
-            player.fsm.name == 'fall' and player.body.object.position[2] > 1.3,
+            player.fsm.name == 'fall' and player.body.node.position[2] > 1.3,
             backend .. ': jump reaches its apex and changes to fall'
         )
         frames(manager, 50)
         tester:check(
             player.fsm.name == 'idle'
                 and player.grounded
-                and math.abs(player.body.object.position[2] - 1) < 0.04,
+                and math.abs(player.body.node.position[2] - 1) < 0.04,
             backend .. ': fall lands without sinking'
         )
         state.orbit:look(360, 48)
@@ -249,12 +249,12 @@ function Tests.run(tester)
         scene.showStats = false
         input:reset()
         frames(manager, 20)
-        local rootY = player.body.object.position[2]
+        local rootY = player.body.node.position[2]
         scene.systems:setEnabled('simulation', false)
         input:keypressed('space')
         frames(manager, 10)
         tester:check(
-            player.body.object.position[2] == rootY,
+            player.body.node.position[2] == rootY,
             'Disabling the scene simulation system freezes physics'
         )
         scene.systems:setEnabled('simulation', true)

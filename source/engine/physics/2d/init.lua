@@ -40,11 +40,11 @@ function Physics2D.new(options)
     assert(self.maxSteps >= 1 and self.maxSteps % 1 == 0, 'Invalid 2D maxSteps')
     self.collisionGroups = require('source.engine.core.groups').new(function(registry)
         for _, body in ipairs(self.bodies) do
-            if registry.renamed and body.object.collisionGroup == registry.renamed[1] then
-                body.object.collisionGroup = registry.renamed[2]
+            if registry.renamed and body.node.collisionGroup == registry.renamed[1] then
+                body.node.collisionGroup = registry.renamed[2]
             end
-            if not registry.bits[body.object.collisionGroup or 'Default'] then
-                body.object.collisionGroup = 'Default'
+            if not registry.bits[body.node.collisionGroup or 'Default'] then
+                body.node.collisionGroup = 'Default'
             end
             body:refreshFilters()
         end
@@ -59,6 +59,17 @@ function Physics2D:addBody(object, settings)
         'Cannot add a body during a solver callback'
     )
     return Body.new(self, object, settings or {})
+end
+
+-- Backend-native body -> physics object / node; nil when the body is not one of ours.
+function Physics2D:physicsOf(raw)
+    local body = raw and raw:getUserData()
+    return body and body.space == self and body or nil
+end
+
+function Physics2D:nodeOf(raw)
+    local body = self:physicsOf(raw)
+    return body and body.node
 end
 
 function Physics2D:defer(callback)

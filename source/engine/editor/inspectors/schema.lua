@@ -3,6 +3,7 @@ local pairs = require('../../math.array').pairs
 -- Inherited class descriptions keep public properties independent of cache layout.
 local Schema = {}
 local Fields = require('./schemaFields')
+local bodyOf = require('../../physics.bodyOf')
 local groups, enum = Fields.groups, Fields.enum
 
 function Schema.keys(target, fallback)
@@ -195,9 +196,9 @@ function Schema.options(target, key)
         return world and world.layerGroups.names
     end
     if key == 'collisionGroup' then
-        local body = target.body or target._body
+        local body = bodyOf(target) or target._body
         local world = target._world or target._sceneWorld
-        local physics = body and body.physics or world and world.physics
+        local physics = body and body.space or world and world.physics
         return physics and physics.collisionGroups.names
     end
     if key == 'poseMode' then
@@ -269,7 +270,7 @@ function Schema.reason(target, key)
     if key == 'status' or key == 'effectType' or key == 'actualMSAA' then
         return 'Reported by the runtime.'
     end
-    if target.body and (key == 'size' or key == 'scale') then
+    if bodyOf(target) and (key == 'size' or key == 'scale') then
         return 'Rebuild the rigid body to change collider dimensions.'
     end
     if

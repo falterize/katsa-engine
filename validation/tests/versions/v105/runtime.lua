@@ -236,14 +236,14 @@ function Tests:settings()
     world.physics = Physics.new({ backend = 'jolt', workerThreads = 0 })
     local node = world:create('Body3D', { autoSleep = false })
     node:update(0)
-    self:check(node.body.settings.autoSleep == false, 'Body3D forwards explicit sleep policy')
+    self:check(node.physics.settings.autoSleep == false, 'Body3D forwards explicit sleep policy')
     node.friction = -1
     self:check(not pcall(node.update, node, 0), 'Invalid changed settings fail validation')
     self:check(not pcall(node.update, node, 0), 'Failed settings remain pending for retry')
     node.friction, node.autoSleep = 0.8, true
     node:update(0)
     self:check(
-        node.body.settings.friction == 0.8 and node.body.settings.autoSleep == true,
+        node.physics.settings.friction == 0.8 and node.physics.settings.autoSleep == true,
         'Corrected settings commit and refresh the snapshot'
     )
     local changes = node._settingsDelta

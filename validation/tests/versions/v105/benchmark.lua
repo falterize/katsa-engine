@@ -40,7 +40,7 @@ function Benchmark:draw()
                 size = { 20, 20, 20 },
                 autoSleep = false,
             })
-            node.body:set({ autoSleep = false })
+            node.physics:set({ autoSleep = false })
         end
         collectgarbage('collect')
         for step = 1, 180 do

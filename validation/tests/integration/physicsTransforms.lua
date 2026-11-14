@@ -45,7 +45,7 @@ return function(test)
     physics:update(1 / 60)
     local hit = physics:raycast({ -5, 3, -30 }, { -5, 3, 50 })
     test:check(
-        hit and hit.body.object == mesh,
+        hit and hit.physics.node == mesh,
         'Uniformly scaled collider remains queryable after rotated teleport'
     )
     mesh:setLocalTransform({ position = { 0, 0, 0 }, rotation = { 0, 0, 0 } })
@@ -62,7 +62,7 @@ return function(test)
     )
     local uneven = Node.new('Mesh3D', { scale = { 1, 2, 1 } }, root)
     test:check(
-        not pcall(physics.addBody, physics, uneven, { type = 'Static' }) and not uneven.body,
+        not pcall(physics.addBody, physics, uneven, { type = 'Static' }) and not uneven.physics,
         'Nonuniform physics scale fails before solver insertion'
     )
     root.scale = { 2, 2, 2 }

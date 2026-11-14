@@ -15,7 +15,7 @@ function Module.run(self)
     end
     for _ = 1, 600 do
         host:update(1 / 60, 1 / 60)
-        local v = flying.body:getVelocity()
+        local v = flying.physics:getVelocity()
         maxSpeed = math.max(maxSpeed, math.abs(v[1]), math.abs(v[2]), math.abs(v[3]))
     end
     local p = flying.position

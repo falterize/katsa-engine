@@ -37,7 +37,7 @@ function Tests:draw()
         local netId = session.client:getCar()
         local node = session.server.game.bodies[netId].node
         node.position = { -30, 8, -10 }
-        node.body:sync()
+        node.physics:sync()
     elseif frame >= 260 and (frame - 260) % 20 == 0 then
         local index = (frame - 260) / 20 + 1
         local view = VIEWS[index]

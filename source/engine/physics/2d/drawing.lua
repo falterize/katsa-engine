@@ -43,7 +43,7 @@ function Drawing.debug(self)
         local x, y = body:getPosition()
         g.translate(x, y)
         g.rotate(body.raw:getAngle())
-        if body.object.isTrigger then
+        if body.node.isTrigger then
             g.setColor(1, 0.65, 0.2)
         elseif body.type == 'Static' then
             g.setColor(0.45, 0.65, 1)

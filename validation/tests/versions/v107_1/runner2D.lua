@@ -111,19 +111,19 @@ function Tests.scenes(tester)
             )
         end
         local object = scene.demo.ball or scene.demo.player
-        object.body:teleport(100, 300)
-        object.body:setVelocity({ 30, 0 })
+        object.physics:teleport(100, 300)
+        object.physics:setVelocity({ 30, 0 })
         scene.systems:setEnabled('simulation', false)
-        local x, y = object.body:getPosition()
+        local x, y = object.physics:getPosition()
         advance(scene, 5)
-        local px, py = object.body:getPosition()
+        local px, py = object.physics:getPosition()
         tester:check(
             x == px and y == py,
             name .. ': disabling simulation freezes native 2D physics'
         )
         scene.systems:setEnabled('simulation', true)
         advance(scene, 5)
-        _, py = object.body:getPosition()
+        _, py = object.physics:getPosition()
         tester:check(py < y, name .. ': negative Y gravity falls downward after resuming')
         scene.world.debug.orientation2D, scene.world.debug.orientation3D = true, true
         scene:draw()
@@ -414,7 +414,7 @@ function Tests.scenes(tester)
     tester:check(controller.grounded, 'Runner rests on a Box2D platform with Y-up coordinates')
     controller:request('jump')
     advance(scene, 1)
-    local _, vy = state.player.body:getLinearVelocity()
+    local _, vy = state.player.physics:getLinearVelocity()
     tester:check(vy > 250 and controller.jumps == 1, 'Runner jumps upward through native physics')
     controller:request('jump')
     advance(scene, 1)
@@ -424,7 +424,7 @@ function Tests.scenes(tester)
     tester:check(controller.jumps == 2, 'Runner rejects a third airborne jump')
     controller:request('dash')
     advance(scene, 1)
-    local vx = state.player.body:getLinearVelocity()
+    local vx = state.player.physics:getLinearVelocity()
     tester:check(
         vx > 400 and controller.motion == 'Dash',
         'Runner dash uses its own animation state'
@@ -433,8 +433,8 @@ function Tests.scenes(tester)
         state.trail.rate == 100 and state.trail:isA('ParticleEmitter2D'),
         'Runner dash emits the adapted 3D trail at the original rate'
     )
-    state.player.body:teleport(590, 125)
-    state.player.body:setVelocity({ 0, 0 })
+    state.player.physics:teleport(590, 125)
+    state.player.physics:setVelocity({ 0, 0 })
     advance(scene, 2)
     tester:check(state.checkpoint == 1, 'Entering a checkpoint trigger saves the new spawn point')
     tester:check(
@@ -449,15 +449,15 @@ function Tests.scenes(tester)
     scene.audio.play = play
 
     local deaths = state.deaths
-    state.player.body:teleport(400, -100)
+    state.player.physics:teleport(400, -100)
     advance(scene, 3)
-    local x, y = state.player.body:getPosition()
+    local x, y = state.player.physics:getPosition()
     tester:check(
         state.deaths == deaths + 1 and near(x, 590, 10) and y > 100,
         'Kill-zone trigger respawns the player at the saved checkpoint'
     )
-    state.player.body:teleport(100, 17)
-    state.player.body:setVelocity({ 0, 0 })
+    state.player.physics:teleport(100, 17)
+    state.player.physics:setVelocity({ 0, 0 })
     advance(scene, 5)
     controller:request('slide')
     advance(scene, 1)
@@ -497,7 +497,7 @@ function Tests.scenes(tester)
     advance(host, 50)
     host:keypressed('space')
     advance(host, 2)
-    local _, velocity = host.state.player.body:getLinearVelocity()
+    local _, velocity = host.state.player.physics:getLinearVelocity()
     tester:check(
         velocity > 200,
         'The portable runner responds to keyboard actions in the minimal game host'

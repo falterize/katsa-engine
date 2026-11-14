@@ -35,7 +35,7 @@ function Lab.new(scene)
     )
     self.body:update(0)
     scene.character = require('source.engine.physics.3d.character').new(
-        self.body.body,
+        self.body.physics,
         scene.camera,
         { radius = 4, height = 32, speed = 70, jumpSpeed = 112 }
     )
@@ -143,8 +143,8 @@ function Lab.new(scene)
 end
 
 function Lab:respawn()
-    self.body.body:teleport({ unpack(self.spawn) })
-    self.body.body:setVelocity({ 0, 0, 0 })
+    self.body.physics:teleport({ unpack(self.spawn) })
+    self.body.physics:setVelocity({ 0, 0, 0 })
     self.abilities.dashTime = 0
     self.abilities.slideTime = 0
     self.collider.height = 24
@@ -164,7 +164,7 @@ function Lab:update(dt)
         }
     end
     scene.physics:update(dt)
-    local v = self.body.body:getVelocity(self.velocity)
+    local v = self.body.physics:getVelocity(self.velocity)
     local speed = math.sqrt(v[1] ^ 2 + v[3] ^ 2)
     local c = scene.character
     local state = c.grounded and (speed > 100 and 'Run' or speed > 5 and 'Walk' or 'Idle')
