@@ -15,7 +15,7 @@ function Renderer.draw(system)
     system.stats.rendered, system.stats.drawCalls = 0, 0
     system.shader = system.shader
         or ui.resources:cached('shader', 'particles2D', function(owner)
-            return owner:own((Programs.compile('assets/shaders/particles/sprite2d.glsl')))
+            return owner:own((Programs.compile('assets/shaders/engine/particles/sprite2d.glsl')))
         end)
     for _, e in ipairs(system.emitters) do
         if Visibility.relevant(e, ui.currentCamera, true) then

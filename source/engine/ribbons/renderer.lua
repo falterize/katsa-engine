@@ -76,7 +76,7 @@ function R.draw(system, camera, node)
     local time = world.simulationTime or 0
     if not system.shader then
         system.shader = world.resources:own(
-            (Programs.compile('assets/shaders/particles/sprite.glsl'))
+            (Programs.compile('assets/shaders/engine/particles/sprite.glsl'))
         )
     end
     local image = Image.resolve(world.resources, node, node.texture, world.environment)

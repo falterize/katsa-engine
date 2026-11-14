@@ -43,7 +43,7 @@ world:create('Shader3D', {
 Shader paths resolve like every asset path (`scene://`, `shared://`, project paths). Scenes keep
 their shaders in `assets/shaders/`. Examples live in scenes: `shaderLab` (tint, wave, pixel UV,
 PlayStation vertex snap, toon light, CRT static, mosaic), `platformer` (speed blur),
-`stareShooter` (retro screen). Open them as code to copy from.
+`stareShooter` (retro screen, plus a disabled `VertexSnap` node under World3D to switch on in the Workspace). Open them as code to copy from.
 
 ## File structure
 
@@ -365,7 +365,7 @@ assets/shaders/engine/
     chunks/        mesh (skin, instancing), pbr, surface (maps), lighting (light loop),
                    shadowSampling, fog, depth (post depth helpers)
     post/          full-screen passes (glow, ssao, dof, fxaa, volumetric fog, finish ...)
-assets/shaders/particles/sprite.glsl   particle, beam and trail template
+    particles/     sprite.glsl (particle, beam, trail template), sprite2d.glsl
 ```
 
 * **Templates** are dialect GLSL (`vec4 position(...)`, `vec4 effect(...)`, `attribute`, `varying`,

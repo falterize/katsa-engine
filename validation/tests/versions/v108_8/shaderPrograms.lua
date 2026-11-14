@@ -34,7 +34,7 @@ function Module.run(self)
         entries = { vertex = true },
     })
     self:check(shadow:hasUniform('s1_amplitude'), 'The shadow program runs the user vertex()')
-    local sprite = Programs.compile('assets/shaders/particles/sprite.glsl', {
+    local sprite = Programs.compile('assets/shaders/engine/particles/sprite.glsl', {
         shaders = { displace },
         entries = { vertex = true, fragment = true },
     })

@@ -52,7 +52,7 @@ uniform bool multiplyMode;
 highp vec3 particleShadowPosition;
 uniform highp float particleShadowOffset;
 #define worldPosition particleShadowPosition
-#include "../engine/chunks/shadowSampling.glsl"
+#include "../chunks/shadowSampling.glsl"
 uniform float particleShadowSlot[8];
 uniform vec3 particleLighting;
 uniform bool particleUnlit;

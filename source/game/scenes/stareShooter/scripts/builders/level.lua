@@ -44,6 +44,14 @@ function Level.create(scene)
         friction = 0,
         restitution = 0,
     })
+    -- PlayStation vertex snap with affine textures. Off by default: enable the node in the
+    -- Workspace to see it.
+    world:create('Shader3D', {
+        name = 'VertexSnap',
+        shaderPath = 'scene://shaders/vertexSnap.glsl',
+        enabled = false,
+        uniforms = { snapScale = 75 },
+    })
     world:create('DirectionalLight3D', {
         name = 'Sun',
         direction = { 0.5, -0.75, -0.43301266 },

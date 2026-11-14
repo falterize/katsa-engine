@@ -39,7 +39,7 @@ function R.draw(system, camera, emitter)
     end
     if not system.shader then
         system.shader = system.world.resources:own(
-            (Programs.compile('assets/shaders/particles/sprite.glsl'))
+            (Programs.compile('assets/shaders/engine/particles/sprite.glsl'))
         )
     end
     g.push('all')

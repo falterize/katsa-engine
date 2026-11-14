@@ -100,7 +100,7 @@ function Resolver.resolve(world, object)
         local options = {
             kind = 'world',
             shaders = {},
-            template = particle and 'assets/shaders/particles/sprite.glsl' or nil,
+            template = particle and 'assets/shaders/engine/particles/sprite.glsl' or nil,
         }
         for index, node in ipairs(active) do
             options.shaders[index] = shaderFor(world, node)

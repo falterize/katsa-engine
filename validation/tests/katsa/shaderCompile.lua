@@ -61,7 +61,7 @@ local function templates(kind, shaders)
         }
     end
     list[#list + 1] = { 'assets/shaders/engine/shadow.glsl', { entries = { vertex = true } } }
-    list[#list + 1] = { 'assets/shaders/particles/sprite.glsl', { entries = { vertex = true, fragment = true } } }
+    list[#list + 1] = { 'assets/shaders/engine/particles/sprite.glsl', { entries = { vertex = true, fragment = true } } }
     return list
 end
 
