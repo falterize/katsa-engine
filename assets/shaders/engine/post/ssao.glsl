@@ -50,9 +50,19 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
     // floor that is several world units per pixel, so a tap that lands a pixel or two away would
     // read the floor itself as an occluder (this drew bands). Every tap tolerates the surface
     // slope times its pixel distance from the centre.
-    // The larger side of each axis: depth is stored in steps on far floors, and the smaller side
-    // is often zero there.
-    highp float slope=max(max(abs(px1.z-p.z),abs(p.z-px0.z)),max(abs(py1.z-p.z),abs(p.z-py0.z)));
+    // Depth is stored in steps (24 bits): one step in view units is `stair`. A side whose change is
+    // much larger than the other side's plus the stair is an edge (a box foot beside the floor),
+    // not slope, so it is ignored; otherwise the larger side counts, since on far floors the
+    // smaller side is often zero.
+    highp float stair=orthographic
+        ? 4.0*2.0/16777216.0/abs(depthRange.x)
+        : 4.0*2.0/16777216.0*z*z/abs(depthRange.y);
+    highp vec4 steps=abs(vec4(px1.z-p.z,p.z-px0.z,py1.z-p.z,p.z-py0.z));
+    highp vec2 sx=vec2(min(steps.x,steps.y),max(steps.x,steps.y));
+    highp vec2 sy=vec2(min(steps.z,steps.w),max(steps.z,steps.w));
+    highp float slopeX=sx.y<=2.0*sx.x+stair ? sx.y : sx.x+stair;
+    highp float slopeY=sy.y<=2.0*sy.x+stair ? sy.y : sy.x+stair;
+    highp float slope=max(slopeX,slopeY);
     highp float angle=noise(screen)*6.2831853;
     highp float occlusion=0.0;
     for(int i=0;i<24;i++) {
@@ -69,7 +79,7 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screen) {
         if(quv.x<0.||quv.x>1.||quv.y<0.||quv.y>1.) continue;
         highp float sceneZ=viewDepth(quv);
         highp float range=smoothstep(0.0,1.0,radius/max(abs(z-sceneZ),1e-4));
-        highp float tolerance=bias+slope*0.5*length((quv-uv)*depthSize)+q.z*0.004;
+        highp float tolerance=bias+slope*2.0*length((quv-uv)*depthSize)+q.z*0.004;
         occlusion+=(sceneZ<=q.z-tolerance ? 1.0 : 0.0)*range;
     }
     return vec4(vec3(1.0-occlusion/float(sampleCount)),1.0);
