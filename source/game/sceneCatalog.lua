@@ -5,6 +5,7 @@ local Catalog = {
         { id = 'physics2D', path = 'source/game/scenes/physics2D' },
         { id = 'physicsMixed', path = 'source/game/scenes/physicsMixed' },
         { id = 'stareShooter', path = 'source/game/scenes/stareShooter' },
+        { id = 'replicationLab', path = 'source/game/scenes/replicationLab' },
         { id = 'animationPhysicsLab', path = 'source/game/scenes/animationPhysicsLab' },
         { id = 'graphicsLab', path = 'source/game/scenes/graphicsLab' },
         { id = 'shaderLab', path = 'source/game/scenes/shaderLab' },

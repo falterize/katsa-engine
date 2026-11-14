@@ -214,6 +214,9 @@ function Node:attachment(properties)
     return Node.new('Attachment3D', properties or {}, self)
 end
 local BaseNode = Node.define('Node')
+-- Network: a node with `replicated = true` is mirrored on every client (net/replication/init.lua).
+-- The class default makes the flag visible and editable in the inspector without a field per node.
+BaseNode.replicated = false
 for _, key in ipairs({
     'setParent',
     'find',

@@ -1,3 +1,5 @@
+-- Third-person character input shared by the character scenes: move, look, jump, crouch, sprint,
+-- mouse capture and the menu toggle. A scene sets `input.keyHandler(key)` for its own keys.
 local Base = require('source.engine.input.input')
 
 local Input = setmetatable({}, { __index = Base })
@@ -93,8 +95,10 @@ function Input:keypressed(key)
     if key == self.menuKey then
         self:toggleMenu()
         return
-    elseif key == 'f6' then
-        self.scene.demo.retro.enabled = not self.scene.demo.retro.enabled
+    end
+    -- A scene hooks its own keys here; returning true keeps the key from the engine.
+    if self.keyHandler and self.keyHandler(key) then
+        return
     end
     Base.keypressed(self, key)
 end

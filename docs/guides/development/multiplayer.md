@@ -186,3 +186,5 @@ client:remote('voice'):fireServer(bytes)
 Both ends must mark the remote `unreliable()`; reliable remotes (the default) are ordered and
 retransmitted. See [multiplayerCars](multiplayerCars.md) for chat, voice, host-only kick requests
 (`remote:onRequest`) and console events.
+
+Node replication (Roblox-style server to client mirroring): see [replication](replication.md).

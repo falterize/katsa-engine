@@ -1,8 +1,8 @@
 local Level = require('./builders.level')
-local Builder = require('./builders.player')
+local Builder = require('source.game.characters.playerBody')
 local Destare = require('./builders.destare')
-local Orbit = require('./cameras.orbit')
-local Input = require('./controller.input')
+local Orbit = require('source.game.characters.orbit')
+local Input = require('source.game.characters.thirdPersonInput')
 local Animation = require('source.game.characters.animation')
 
 local Content = {}
@@ -21,6 +21,12 @@ function Content.new(scene)
     local orbit = Orbit.new(scene, player)
     scene.character = player
     scene.input = Input.new(scene, player, orbit)
+    scene.input.keyHandler = function(key)
+        if key == 'f6' then
+            scene.demo.retro.enabled = not scene.demo.retro.enabled
+            return true
+        end
+    end
     orbit:update()
     return setmetatable(
         { scene = scene, player = player, orbit = orbit, animation = Animation.new(player) },

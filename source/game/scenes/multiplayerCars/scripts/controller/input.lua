@@ -1,4 +1,4 @@
--- The StareShooter input (scripts/controller/input.lua) for a networked game: the cursor is hidden
+-- The StareShooter input (source/game/characters/thirdPersonInput.lua) for a networked game: the cursor is hidden
 -- and captured while playing, the mouse turns the camera at once, Tab (or the on-screen button)
 -- gives the cursor back, the wheel zooms, Space/Shift/Ctrl/C/Q drive the character. Added on top:
 -- the touch layout (joystick + camera drag, only on phones/tablets), the Run and Crouch toggles

@@ -2,7 +2,7 @@ local Mesh = require('source.engine.composition.mesh')
 local Models = require('source.engine.import.models')
 
 -- One AnimationTree on the shooter character. Its graph is a set of AnimationGraphNode nodes
--- (`scripts.builders.graph.lua`); the buttons only set parameters, the graph decides weights, fades and
+-- (`source/game/characters/heroTree.lua`); the buttons only set parameters, the graph decides weights, fades and
 -- transitions. The same graph as a plain table is shown in docs/guides/animation/animationTree.md.
 local Lab = {}
 Lab.__index = Lab
@@ -37,7 +37,7 @@ function Lab.new(scene, context)
     end
     assert(self.jumpLength, 'Player_Jump is missing from the character')
     self.tree = world:create('AnimationTree', { name = 'HeroTree' }, root)
-    context:require('scripts.builders.graph').build(world, self.tree)
+    require('source.game.characters.heroTree').build(world, self.tree)
     self.tree:set('speed', 0)
     self.tree:set('stance', 'Stand')
     self.tree:set('squat', 0)

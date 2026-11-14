@@ -1,3 +1,5 @@
+-- Orbit camera of the third-person character: yaw and pitch follow the mouse, the distance is the
+-- zoom (0 is first person), and a ray keeps the camera out of walls.
 local Orbit = {}
 Orbit.__index = Orbit
 

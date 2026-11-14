@@ -1,5 +1,5 @@
 -- The StareShooter orbit camera, shared by the on-foot player and the car. The look, zoom and
--- wall-avoidance maths are the source's (scripts/cameras/orbit.lua); only these are added for a
+-- wall-avoidance maths are the source's (source/game/characters/orbit.lua); only these are added for a
 -- driving game: the view eases behind the car once the player stops dragging, and the field of
 -- view widens smoothly with speed.
 local Orbit = {}

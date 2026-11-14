@@ -44,10 +44,8 @@ Everything specific to this game lives in `source/game/scenes/stareShooter`.
 | `main.lua` | Five lifecycle hooks and explicit system discovery/settings |
 | `systems/simulation.lua` | Fixed-step physics/FSM; animation, nodes and camera updates |
 | `scripts/content.lua` | Scene composition and cleanup |
-| `scripts/builders/` | Level, capsule and imported model construction |
-| `scripts/controller/` | Keyboard, mouse and touch input |
-| `source/game/characters/` | Shared character: capsule controller, state machine, locomotion, six states and clip blending (also used by the navMeshLab walkers) |
-| `scripts/cameras/` | Spring-arm orbit, camera collision and zoom |
+| `scripts/builders/` | Level and the imported Destare model |
+| `source/game/characters/` | Shared character: capsule controller and body (`playerBody`), keyboard/mouse/touch input (`thirdPersonInput`), spring-arm orbit camera (`orbit`), state machine, locomotion, six states and clip blending (also used by navMeshLab and replicationLab) |
 | `scripts/ui/` | HUD and optional screen effect as engine UI nodes |
 | `assets/` | Converted character, original images, baked environment and shader |
 

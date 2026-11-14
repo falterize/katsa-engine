@@ -1,5 +1,5 @@
 local groups = {
-    Node = { 'name', 'visible', 'enabled' },
+    Node = { 'name', 'visible', 'enabled', 'replicated' },
     World3D = { 'currentCamera', 'timeScale' },
     Actor = { 'script', 'workers', 'autoStart', 'messagesPerFrame' },
     Environment = { 'ambient', 'toneMapping', 'exposure' },

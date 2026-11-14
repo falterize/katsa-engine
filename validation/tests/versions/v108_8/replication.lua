@@ -31,6 +31,10 @@ function Module.run(self)
     server:replicate(serverWorld)
     server:start()
 
+    self:check(
+        serverWorld:create('Folder', { name = 'Plain' }).replicated == false,
+        'Every node has a replicated flag that is off by default (the inspector shows it)'
+    )
     local round = serverWorld:create('Folder', { name = 'Round', replicated = true })
     round:setAttribute('Timer', 30)
     local pad = serverWorld:create('Mesh3D', { name = 'Pad', replicated = true }, round)

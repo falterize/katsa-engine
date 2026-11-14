@@ -192,6 +192,8 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 - `jit.p` output is GL-bound and uninformative for render cost; use the engine profiler (`manager.profiler`, stages: Scene update, Node/gameplay/physics update, Cars: *, Shadow build, Main submission, Screen UI ...).
 - Windows-only behaviour (e.g. "No answer from the server" on multiplayer) needs the owner's confirmation; do not claim it fixed from the sandbox.
 
+- **Replication** (`source/engine/net/replication`): nodes with `replicated = true` plus everything in `ReplicatedStorage` mirror to clients; `replicatedProperties` lists synced properties; `ServerStorage` is never scanned. Server writes win; client edits stay local. Reference scene `replicationLab`; shared controller modules in `source/game/characters`. Guide: `docs/guides/development/replication.md`.
+
 ## 16. Open items (keep this list current)
 
 - **Shader tags/groups (future, discuss with the owner first)**: bind a Shader3D/Shader2D to objects by tag or group instead of (or besides) subtree scope. Godot has no direct equivalent: `ShaderMaterial` is per object or per `CanvasItem` subtree; `global shader uniforms`, visibility layers and per-instance uniforms are the closest. Decide how it relates to shader layers and the uiStyler tag selectors.

@@ -1,3 +1,4 @@
+-- The physics body, collider and visual model of a walking character (capsule, no rotation).
 local Models = require('source.engine.import.models')
 local Player = require('source.game.characters.controller')
 
