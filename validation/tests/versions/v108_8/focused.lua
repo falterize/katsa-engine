@@ -21,6 +21,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_8.physicsAccess').run(self)
     require('validation.tests.versions.v108_8.shaderComposer').run(self)
     require('validation.tests.versions.v108_8.shaderPrograms').run(self)
+    require('validation.tests.versions.v108_8.replication').run(self)
     print('PASSED ' .. self.count .. ' v108.8 focused checks')
     katsa.event.quit()
 end

@@ -14,6 +14,7 @@ local P = require('./protocol')
 local Ping = require('./ping')
 local Registry = require('./registry')
 local Remote = require('./remote')
+local Replication = require('./replication')
 local Signal = require('./signal')
 
 local Server = {}
@@ -77,6 +78,12 @@ function Server:define(kind, definition)
 end
 
 -- The simulated network conditions of every connection (Conditions: latency, jitter, loss).
+-- Turns on node replication for `world` (see replication/init.lua). Call before start().
+function Server:replicate(world, options)
+    self.replication = Replication.Server.new(self, world, options)
+    return self.replication
+end
+
 function Server:getConditions()
     return self.conditions
 end
@@ -376,6 +383,9 @@ local function handleHello(self, peer, reader)
     for _, id in ipairs(ids) do
         self:sendSpawn(player, self.entities[id])
     end
+    if self.replication then
+        self.replication:sendAll(player)
+    end
     player.ready = true
     self:refreshAdvertisement()
 end
@@ -620,6 +630,9 @@ function Server:update(dt)
         self.ticked:fire(self.tickDelta)
         if self.tick % self.snapshotEvery == 0 then
             sendSnapshots(self, self.tick % self.keyframeEvery == 0)
+            if self.replication then
+                self.replication:step()
+            end
         end
     end
     for _, player in pairs(self.players) do

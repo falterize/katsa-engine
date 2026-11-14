@@ -15,6 +15,7 @@ local P = require('./protocol')
 local Ping = require('./ping')
 local Registry = require('./registry')
 local Remote = require('./remote')
+local Replication = require('./replication')
 local Signal = require('./signal')
 
 local Client = {}
@@ -62,11 +63,19 @@ function Client.new(context, options)
         entitySpawned = Signal.new(),
         authorityChanged = Signal.new(),
         entityRemoved = Signal.new(),
+        -- (node): a replicated node was created on this client.
+        nodeCreated = Signal.new(),
     }, Client)
 end
 
 function Client:define(kind, definition)
     return self.registry:define(kind, definition)
+end
+
+-- Turns on node replication for `world` (see replication/init.lua). Call before connect().
+function Client:replicate(world)
+    self.replication = Replication.Client.new(self, world)
+    return self.replication
 end
 
 function Client:remote(name)
@@ -324,6 +333,10 @@ local function handleMessage(self, data)
         if player then
             self.players[player.id] = nil
             self.playerLeft:fire(player)
+        end
+    elseif kind == P.NODES then
+        if self.replication then
+            self.replication:apply(reader:value())
         end
     elseif kind == P.REMOTE then
         local remote = self.remotes[reader:string()]

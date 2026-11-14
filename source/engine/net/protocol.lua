@@ -17,6 +17,7 @@ return {
     REQUEST = 9,
     RESPONSE = 10,
     AUTHORITY = 11,
+    NODES = 12, -- replicated node operations (see replication/init.lua)
     -- sequenced messages
     SNAPSHOT = 20,
     INPUT = 21,
