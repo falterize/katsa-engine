@@ -198,6 +198,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 
 ## 16. Open items (keep this list current)
 
+- **Tomorrow (owner, 2026-11-14)**: (1) SSAO still bands over the whole screen on the owner's hardware (replicationLab screenshot: horizontal stripes on the map floor; I enabled SSAO in that scene's `level.lua` in v108.8, so it shows there; see also the older SSAO item below). (2) Audit all node classes for empty properties that do nothing, e.g. `visible` on `StorageFolder` (it is always hidden): remove them through the class `omit` list, with a test per class.
 - **Shader tags/groups (future, discuss with the owner first)**: bind a Shader3D/Shader2D to objects by tag or group instead of (or besides) subtree scope. Godot has no direct equivalent: `ShaderMaterial` is per object or per `CanvasItem` subtree; `global shader uniforms`, visibility layers and per-instance uniforms are the closest. Decide how it relates to shader layers and the uiStyler tag selectors.
 - ImGui follow-ups: Windows and Android binaries (the owner builds them or CI does), more tools as windows (Debug F4, Profiler, Console; Workspace/Inspector last), `ImGuiLayer` docking option.
 - Shader follow-ups: `sky`/`fog` shaders, `hint_screen_texture`/`hint_depth_texture` and the hint-driven uniform editor exist (v108.8). Open: the depth texture is the raw depth sampler (no linearising helper), no `hint_enum`/`hint_range` for sampler textures, node-assigned textures for `sampler2D` uniforms, canvas_item screen texture.
