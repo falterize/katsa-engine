@@ -105,7 +105,7 @@ function World3D:createPhysics(settings)
     return self.physics
 end
 
--- Nearest hit of a segment against this world's bodies: `hit.physics`, `hit.node`,
+-- Nearest hit of a segment against this world's bodies: `hit.node`,
 -- `hit.position`, `hit.normal`, `hit.fraction`; nil when nothing was hit.
 function World3D:raycast(from, to, filter, out)
     assert(self.physics, 'Create the world physics before raycasting')

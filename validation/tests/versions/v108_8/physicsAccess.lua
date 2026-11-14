@@ -45,8 +45,8 @@ function Module.run(self)
     })
     local hit = world:raycast({ 10, 10, 0 }, { 30, 10, 0 })
     self:check(
-        hit and hit.physics == floor.physics and hit.node == floor,
-        'world:raycast returns hit.physics and hit.node'
+        hit and hit.node == floor and hit.node == floor,
+        'world:raycast returns the hit node'
     )
     self:check(world.root.physics == nil, 'Nodes without a body have no physics object')
     world:release()
@@ -67,8 +67,8 @@ function Module.run(self)
     self:check(near(ball.velocity[1], 30), 'Body2D velocity reads and writes the solver')
     local hit2 = ui:raycast({ 100, 100 }, { 300, 100 })
     self:check(
-        hit2 and hit2.physics == wall.physics and hit2.node == wall,
-        'World2D raycast returns hit.physics and hit.node'
+        hit2 and hit2.node == wall,
+        'World2D raycast returns the hit node'
     )
     release()
 end

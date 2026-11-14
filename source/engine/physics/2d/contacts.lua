@@ -21,9 +21,9 @@ local function queue(physics, phase, a, b, contact, impulse)
     local f = physics.factor
     physics.events[#physics.events + 1] = {
         phase = phase,
-        physics0 = da.body,
+        _body0 = da.body,
+        _body1 = db.body,
         node0 = da.body.node,
-        physics1 = db.body,
         node1 = db.body.node,
         collider0 = da.collider,
         collider1 = db.collider,
@@ -83,12 +83,12 @@ local function emit(body, name, other, event)
             collisionExit = 'collisionExited',
         })[name]
         if alias then
-            body.node:emit(alias, other, event)
+            body.node:emit(alias, other.node, event)
         end
     end
     local callback = body[name]
     if callback then
-        callback(body, other, event)
+        callback(body.node, other.node, event)
     end
 end
 
@@ -103,7 +103,7 @@ function Contacts.dispatch(physics)
     physics._dispatching = true
     local ok, message = pcall(function()
         for _, event in ipairs(events) do
-            local a, b = event.physics0, event.physics1
+            local a, b = event._body0, event._body1
             if event.phase == 'begin' or event.phase == 'end' then
                 -- Fixture pairs are counted so compound bodies emit one enter/exit.
                 local setA = event.sensor and a.triggerOverlaps or a.collisionOverlaps

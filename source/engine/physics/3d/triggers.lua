@@ -97,7 +97,7 @@ function Triggers.step(physics)
                         if hit then
                             current[other] = true
                             if not previous[other] then
-                                body.node:emit('triggerEntered', other)
+                                body.node:emit('triggerEntered', other.node)
                             end
                         end
                         if body.destroyed then
@@ -109,7 +109,7 @@ function Triggers.step(physics)
             if not body.destroyed then
                 for other in pairs(previous) do
                     if not current[other] then
-                        body.node:emit('triggerExited', other)
+                        body.node:emit('triggerExited', other.node)
                     end
                 end
                 if not body.destroyed then

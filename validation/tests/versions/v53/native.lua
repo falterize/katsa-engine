@@ -65,7 +65,7 @@ return function(test)
     check(near(mesh.matrix[4], 4), 'Mesh3D render matrix uses interpolated body pose')
     local hit = physics:raycast({ 2, 0, 70 }, { 2, 0, 90 })
     check(
-        hit and hit.physics == body.physics and near(body:getWorldPosition()[1], 2),
+        hit and hit.node == body and near(body:getWorldPosition()[1], 2),
         'Physical raycast uses the exact solver pose independently of rendered geometry'
     )
     world:updateObject(mesh)
@@ -173,7 +173,7 @@ return function(test)
         )
     end
     local entered, exited = 0, 0
-    local nearbyBody = nearby.physics
+    local nearbyBody = nearby
     sensor:connect('triggerEntered', function(other)
         if other == nearbyBody then
             entered = entered + 1

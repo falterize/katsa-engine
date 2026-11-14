@@ -45,7 +45,7 @@ return function(test)
     physics:update(1 / 60)
     local hit = physics:raycast({ -5, 3, -30 }, { -5, 3, 50 })
     test:check(
-        hit and hit.physics.node == mesh,
+        hit and hit.node == mesh,
         'Uniformly scaled collider remains queryable after rotated teleport'
     )
     mesh:setLocalTransform({ position = { 0, 0, 0 }, rotation = { 0, 0, 0 } })

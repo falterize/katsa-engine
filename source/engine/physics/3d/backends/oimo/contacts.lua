@@ -14,7 +14,7 @@ function Contacts.create(body)
         local first, second = contact:getShape1().userData, contact:getShape2().userData
         local other = first == self and second or first
         self:_recordContact(other, contact, phase == 'begin')
-        self.node:emit(phase == 'begin' and 'contactBegin' or 'contactEnd', other, contact)
+        self.node:emit(phase == 'begin' and 'contactBegin' or 'contactEnd', other.node, contact)
         if not self.destroyed and not self.node.destroyed and self.settings.onContact then
             self.settings.onContact(self, phase, contact)
         end

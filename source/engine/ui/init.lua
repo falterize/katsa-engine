@@ -270,7 +270,7 @@ function UI:worldToScreen2D(x, y)
     return x * self.scale + self.offsetX, y * self.scale + self.offsetY
 end
 
--- Nearest hit of a segment against this world's bodies: `hit.physics`, `hit.node`, `hit.collider`,
+-- Nearest hit of a segment against this world's bodies: `hit.node`, `hit.collider`,
 -- `hit.position`, `hit.normal`, `hit.fraction`; nil when nothing was hit.
 function UI:raycast(from, to, filter, out)
     assert(self.physics2D, 'World2D has no physics; call createPhysics first')

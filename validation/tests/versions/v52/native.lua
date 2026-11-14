@@ -122,12 +122,12 @@ return function(test)
     })
     local entered, exited = 0, 0
     sensor:connect('triggerEntered', function(other)
-        if other == body.physics then
+        if other == body then
             entered = entered + 1
         end
     end)
     sensor:connect('triggerExited', function(other)
-        if other == body.physics then
+        if other == body then
             exited = exited + 1
         end
     end)
@@ -152,10 +152,10 @@ return function(test)
     world.physics:update(1 / 60)
     check(entered == 3, 'Re-enabled colliders may enter trigger volumes again')
     sensor:connect('triggerEntered', function(other)
-        if other == nested.physics then
-            other:set({ type = 'Kinematic' })
-            other:setCollider({ shape = 'Sphere', radius = 1 })
-            other:teleport({ 30, 0, 80 })
+        if other == nested then
+            other.physics:set({ type = 'Kinematic' })
+            other.physics:setCollider({ shape = 'Sphere', radius = 1 })
+            other.physics:teleport({ 30, 0, 80 })
         end
     end)
     nested.physics:teleport({ 0, 0, 60 })
@@ -167,8 +167,8 @@ return function(test)
         'Contact-time mode/shape/teleport changes are deferred safely'
     )
     sensor:connect('triggerEntered', function(other)
-        if other.object.name == 'DeleteInTrigger' then
-            other.object:destroy()
+        if other.name == 'DeleteInTrigger' then
+            other:destroy()
         end
     end)
     local doomed = world:create('Body3D', { name = 'DeleteInTrigger', position = { 0, 0, 60 } })

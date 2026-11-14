@@ -147,14 +147,14 @@ function Tests:collidersAndQueries()
     )
     local hit = physics:raycast({ 0, 50 }, { 150, 50 })
     self:check(
-        hit and hit.physics == box.physics and near(hit.position[1], 40),
+        hit and hit.node == box and near(hit.position[1], 40),
         'Raycast returns the nearest world-space hit'
     )
     local all = physics:raycastAll({ 0, 50 }, { 150, 50 })
     self:check(#all == 2 and all[1].fraction < all[2].fraction, 'Raycast-all sorts unclipped hits')
     box.canQuery = false
     self:check(
-        physics:raycast({ 0, 50 }, { 150, 50 }).physics == ball.physics,
+        physics:raycast({ 0, 50 }, { 150, 50 }).node == ball,
         'canQuery hides a body from raycasts'
     )
     box.canQuery = true

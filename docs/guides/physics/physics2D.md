@@ -275,7 +275,7 @@ local boxBodies = physics:overlapBox({ 400, 100 }, { 100, 80 })
 local circleBodies = physics:overlapCircle({ 400, 100 }, 50)
 ```
 
-Rays return physics, node, collider, fraction, position and normal. raycastAll sorts hits;
+Rays return node, collider, fraction, position and normal. raycastAll sorts hits;
 compound bodies can contribute multiple fixture hits. Overlaps return unique body
 wrappers and perform exact fixture tests after AABB traversal, including every
 chain segment. Optional filters receive `(bodyWrapper, colliderNode)`; overlaps
@@ -297,8 +297,8 @@ ball.collisionGroup = 'Player'
 ```
 
 Events: collisionEnter, collisionExit, collisionHit, triggerEnter and triggerExit.
-The event contains physics0/physics1, node0/node1, collider0/collider1, sensor, position (if available)
-and normal directed from physics0 to physics1. collisionHit includes normal impulse.
+The event contains node0/node1, collider0/collider1, sensor, position (if available)
+and normal directed from node0 to node1. collisionHit includes normal impulse.
 Fixture contacts are counted separately for trigger and solid channels, emitting
 one enter/exit per body pair/channel. User callbacks run after native stepping
 unlocks; destruction and queued changes are then flushed safely.

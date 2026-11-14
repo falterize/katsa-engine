@@ -103,12 +103,12 @@ function PhysicsExample.build(self, scene)
         castShadow = false,
     }, trigger)
     trigger:connect('triggerEntered', function(other)
-        if other == self.independentBody.physics then
+        if other == self.independentBody then
             indicator.color = { 0.2, 1, 0.25, 1 }
         end
     end)
     trigger:connect('triggerExited', function(other)
-        if other == self.independentBody.physics then
+        if other == self.independentBody then
             indicator.color = { 0.2, 0.65, 0.9, 1 }
         end
     end)

@@ -67,14 +67,14 @@ function T:backend(name)
     self:check(beginCount > 0, name .. ': native contactBegin reaches scene events')
     local hit = p:raycast({ 0, 100, 0 }, { 0, -40, 0 })
     self:check(
-        hit and hit.physics == cube.physics and hit.normal[2] > 0.9,
+        hit and hit.node == cube and hit.normal[2] > 0.9,
         name .. ': closest ray hit and normal'
     )
     hit = p:raycast({ 0, 100, 0 }, { 0, -40, 0 }, function(b)
         return b ~= cube.physics
     end)
     self:check(
-        hit and hit.physics == floor.physics,
+        hit and hit.node == floor,
         name .. ': filtered ray sees body behind rejected hit'
     )
     cube.physics:teleport({ 0, 80, 0 }, { 0, 0, 0 })
@@ -92,7 +92,7 @@ function T:backend(name)
     cube.physics:setCollider({ shape = 'Sphere', radius = 15 })
     hit = p:raycast({ 0, 100, 0 }, { 0, 0, 0 })
     self:check(
-        hit and hit.physics == cube.physics and math.abs(hit.position[2] - 65) < 0.2,
+        hit and hit.node == cube and math.abs(hit.position[2] - 65) < 0.2,
         name .. ': rebuilt collider is visible to ray immediately'
     )
     local sensor = body(w, 'Sensor', { 70, 30, 0 }, 'Static')

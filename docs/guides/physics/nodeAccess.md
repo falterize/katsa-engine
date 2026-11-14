@@ -36,17 +36,18 @@ p.raw                          -- the native Oimo / Jolt / Box2D body
 
 ## Where `.node` is available
 
-Every physics object knows its node, so any API that hands you a physics object gives you the node:
+Queries and events hand you **nodes**, in 2D and 3D alike; reach the physics object with `.physics`. A physics object also knows its node (`.node`), so you can go back and forth:
 
 ```lua
 local hit = world:raycast({ 0, 50, 0 }, { 0, -50, 0 })
 if hit then
-    print(hit.node.name)        -- the node that was hit
-    hit.physics:applyImpulse({ 0, 10, 0 })   -- and its physics object
+    print(hit.node.name)                        -- the node that was hit
+    hit.node.physics:applyImpulse({ 0, 10, 0 })  -- and, when you need it, its physics object
 end
 
-ball:connect('contactBegin', function(other)   -- `other` is a physics object
-    print(other.node.name)
+ball:connect('contactBegin', function(other)   -- `other` is a node
+    print(other.name)
+    other.physics:applyImpulse({ 0, 5, 0 })
 end)
 ```
 
@@ -113,15 +114,14 @@ end
 
 | Field | Meaning |
 | --- | --- |
-| `hit.physics` | The physics object that was hit. |
-| `hit.node` | Its node. |
+| `hit.node` | The node that was hit (`hit.node.physics` is its physics object). |
 | `hit.position`, `hit.normal` | World position and surface normal. |
 | `hit.fraction` | Distance along the segment, 0..1. |
 | `hit.collider` | 2D only: the collider descriptor that was hit. |
 
-`filter(physics, collider)` returns `false` to skip a body. Pass an `out` table to reuse it between
+`filter(physics, collider)` receives the physics object (`physics.node` is the node) and returns `false` to skip it. Pass an `out` table to reuse it between
 frames. The same call exists on the space (`node.physics.space:raycast(...)`); 2D also has
-`raycastAll`. The 2D contact events carry `physics0` / `physics1` and `node0` / `node1`.
+`raycastAll`. The contact signals of 2D (`collisionEnter`, `collisionExit`, `collisionHit`, `triggerEnter`, `triggerExit`) and of 3D (`contactBegin`, `contactEnd`, `triggerEntered`, `triggerExited`) pass the other **node**; the 2D `event` table has `node0` / `node1`.
 
 ## The raw body
 
@@ -141,5 +141,6 @@ updates, unit conversion and interpolation. Prefer `node.physics`.
 | `node.body.object` | `node.physics.node` |
 | `node.body.physics` (the physics world) | `node.physics.space` |
 | `node.body.raw` | `node.physics.raw` |
-| `hit.body` | `hit.physics` (and `hit.node`) |
-| 2D event `body0` / `body1` | `physics0` / `physics1` (and `node0` / `node1`) |
+| `hit.body` | `hit.node` (and `hit.node.physics`) |
+| 2D event `body0` / `body1` | `node0` / `node1` |
+| 3D `contactBegin(other)` / `triggerEntered(other)` with a physics object | `other` is the node: `other.physics` |

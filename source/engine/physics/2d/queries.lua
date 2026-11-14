@@ -31,8 +31,7 @@ function Queries.raycast(self, a, b, filter, out)
             end
             local data = fixture:getUserData()
             hit = out or hit or {}
-            hit.physics, hit.collider, hit.fraction = data.body, data.collider, fraction
-            hit.node = data.body.node
+            hit.node, hit.collider, hit.fraction = data.body.node, data.collider, fraction
             hit.position, hit.normal = hit.position or {}, hit.normal or {}
             hit.position[1], hit.position[2] = x / f, y / f
             hit.normal[1], hit.normal[2] = nx, ny
@@ -65,7 +64,6 @@ function Queries.raycastAll(self, a, b, filter)
             if accepts(fixture, filter) then
                 local data = fixture:getUserData()
                 hits[#hits + 1] = {
-                    physics = data.body,
                     node = data.body.node,
                     collider = data.collider,
                     fraction = fraction,

@@ -16,7 +16,7 @@ end
 
 function BouncePad:bindPhysics(physics, player)
     self:connect('contactBegin', function(other)
-        if self.enabled and other and other.node == player then
+        if self.enabled and other and other == player then
             self.pendingLaunch = other
         end
     end)
@@ -24,7 +24,7 @@ function BouncePad:bindPhysics(physics, player)
 end
 
 function BouncePad:update(dt)
-    local body = self.pendingLaunch
+    local body = self.pendingLaunch and self.pendingLaunch.physics
     if self.enabled == false then
         self.pendingLaunch = nil
         return
@@ -40,7 +40,7 @@ function BouncePad:update(dt)
     local velocity = body:getVelocity(self._launchVelocity)
     velocity[2] = self.launchSpeed
     body:setVelocity(velocity)
-    self:emit('launched', body)
+    self:emit('launched', body.node)
 end
 
 function BouncePad.register(world)

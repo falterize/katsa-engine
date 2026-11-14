@@ -255,7 +255,7 @@ function Walker:step(dt)
         -- is kept relative to that ground while the states run, then the ground's is added back.
         local platform, carry = self.platform, self.carry
         platform[1], platform[2], platform[3] = 0, 0, 0
-        local ridden = onGround and hit.physics
+        local ridden = onGround and hit.node.physics
         if ridden and ridden ~= self.body and ridden.type ~= 'Static' then
             ridden:getPointVelocity(hit.position, platform)
         end
