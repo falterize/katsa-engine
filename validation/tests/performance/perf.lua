@@ -11,7 +11,10 @@ local Previous = require('validation.tests.versions.v107.physics2D')
 local Tests = setmetatable({}, { __index = Previous })
 Tests.__index = Tests
 
-local WARMUP, SAMPLE = 60, 30
+-- Software GL makes every pixel expensive, so the suite renders small and samples few frames; the
+-- counters it compares do not depend on the resolution. `warmup`/`sample` override per case.
+local WARMUP, SAMPLE = 40, 8
+local WIDTH, HEIGHT = 480, 270
 -- Counters that fail the test when they grow beyond `tolerance` (relative) plus `slack` (absolute).
 local counters = {
     { 'glDrawCalls', 0.10, 3 },
@@ -30,7 +33,7 @@ local counters = {
 local cases = {
     { name = 'lights', scene = 'lights' },
     { name = 'shadows', scene = 'shadows' },
-    { name = 'graphicsLab', scene = 'graphicsLab' },
+    { name = 'graphicsLab', scene = 'graphicsLab', warmup = 20, sample = 3 },
     { name = 'particles', scene = 'particles' },
     { name = 'ribbonLab', scene = 'ribbonLab' },
     { name = 'shaderLab', scene = 'shaderLab' },
@@ -54,6 +57,7 @@ local cases = {
 }
 
 function Tests.new(manager)
+    katsa.window.setMode(WIDTH, HEIGHT, { vsync = 0, depth = 24, stencil = 8 })
     local self = setmetatable(Previous.new(manager), Tests)
     self.mode = 'check'
     self.index, self.frame, self.rows = 0, 0, {}
@@ -117,11 +121,12 @@ function Tests:draw()
     self.gl = katsa.graphics.getStats(self.gl or {})
     local t2 = os.clock()
     self.frame = self.frame + 1
-    if self.frame > WARMUP then
+    local warmup = self.current.warmup or WARMUP
+    if self.frame > warmup then
         local timing = self.timing
         timing.update, timing.draw, timing.n = timing.update + (t1 - t0), timing.draw + (t2 - t1), timing.n + 1
     end
-    if self.frame < WARMUP + SAMPLE then
+    if self.frame < warmup + (self.current.sample or SAMPLE) then
         return
     end
     local case = self.current
