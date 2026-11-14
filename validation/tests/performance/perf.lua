@@ -14,7 +14,9 @@ Tests.__index = Tests
 local WARMUP, SAMPLE = 60, 30
 -- Counters that fail the test when they grow beyond `tolerance` (relative) plus `slack` (absolute).
 local counters = {
-    { 'drawCalls', 0.10, 3 },
+    { 'glDrawCalls', 0.10, 3 },
+    { 'shaderSwitches', 0.15, 3 },
+    { 'canvasSwitches', 0.15, 2 },
     { 'objects', 0.10, 3 },
     { 'mainTriangles', 0.10, 500 },
     { 'shadowDrawCalls', 0.15, 3 },
@@ -60,12 +62,14 @@ end
 
 function Tests:update() end
 
-local function measure(host)
+local function measure(host, gl)
     local renderer = host.world and host.world._activeRenderer
     local stats = renderer and renderer.stats or {}
     local shadows = renderer and renderer.shadows
     local out = {
-        drawCalls = stats.drawCalls,
+        glDrawCalls = gl.drawcalls,
+        shaderSwitches = gl.shaderswitches,
+        canvasSwitches = gl.canvasswitches,
         objects = stats.objects,
         mainTriangles = stats.mainTriangles,
         shadowDrawCalls = stats.shadowDrawCalls,
@@ -110,6 +114,7 @@ function Tests:draw()
     host:update(1 / 60, 1 / 60)
     local t1 = os.clock()
     host:draw()
+    self.gl = katsa.graphics.getStats(self.gl or {})
     local t2 = os.clock()
     self.frame = self.frame + 1
     if self.frame > WARMUP then
@@ -120,7 +125,7 @@ function Tests:draw()
         return
     end
     local case = self.current
-    local values = measure(host)
+    local values = measure(host, self.gl)
     values.updateMs = self.timing.update / self.timing.n * 1000
     values.drawMs = self.timing.draw / self.timing.n * 1000
     self.rows[#self.rows + 1] = { name = case.name, values = values }
