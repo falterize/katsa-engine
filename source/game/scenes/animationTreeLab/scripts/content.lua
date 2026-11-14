@@ -1,8 +1,12 @@
 local Mesh = require('source.engine.composition.mesh')
 local Models = require('source.engine.import.models')
 
--- One AnimationTree on the shooter character. A StateMachine has three states: Ground (a
--- Blend1D of Player_Idle and Player_Walk driven by the `speed` parameter), Crouch and Air.
+-- One AnimationTree on the shooter character, built from the node types of the tree:
+--   OneShot      `wave`: the jump clip plays once on the arms only (filter) over everything below
+--   StateMachine Ground <-> Air (the landing waits for the end of the clip: switch = 'AtEnd')
+--   Transition   `stance` crossfades between standing and the crouch clip (smooth curve)
+--   Add2         `squat` adds the crouch pose on top of the walk, from nothing to fully
+--   Blend1D      idle -> walk over `speed`
 -- The buttons only set parameters; the graph decides weights, fades and transitions.
 local Lab = {}
 Lab.__index = Lab
@@ -11,23 +15,45 @@ local CHARACTER = 'assets/models/characters/player.glb'
 
 local function definition()
     return {
-        type = 'StateMachine',
-        start = 'Ground',
-        states = {
-            Ground = {
-                type = 'Blend1D',
-                param = 'speed',
-                points = { { 0, 'Player_Idle' }, { 1, 'Player_Walk' } },
+        type = 'OneShot',
+        request = 'wave',
+        fadeIn = 0.15,
+        fadeOut = 0.25,
+        filter = { 'Upper_Arm_L', 'Upper_Arm_R' },
+        filterChildren = true,
+        shot = { clip = 'Player_Jump' },
+        input = {
+            type = 'StateMachine',
+            start = 'Ground',
+            states = {
+                Ground = {
+                    type = 'Transition',
+                    param = 'stance',
+                    fade = 0.25,
+                    curve = 'smooth',
+                    inputs = {
+                        {
+                            'Stand',
+                            {
+                                type = 'Add2',
+                                amount = 'squat',
+                                add = { clip = 'Player_Crouch' },
+                                base = {
+                                    type = 'Blend1D',
+                                    param = 'speed',
+                                    points = { { 0, 'Player_Idle' }, { 1, 'Player_Walk' } },
+                                },
+                            },
+                        },
+                        { 'Crouch', { clip = 'Player_Crouch' } },
+                    },
+                },
+                Air = { clip = 'Player_Jump', loop = false },
             },
-            Crouch = { clip = 'Player_Crouch' },
-            Air = { clip = 'Player_Jump', loop = false },
-        },
-        transitions = {
-            { from = 'Ground', to = 'Crouch', when = 'crouching', fade = 0.2 },
-            { from = 'Crouch', to = 'Ground', when = function(p) return not p.crouching end, fade = 0.2 },
-            { from = 'Ground', to = 'Air', when = function(p) return not p.grounded end, fade = 0.1 },
-            { from = 'Crouch', to = 'Air', when = function(p) return not p.grounded end, fade = 0.1 },
-            { from = 'Air', to = 'Ground', when = 'grounded', fade = 0.15 },
+            transitions = {
+                { from = 'Ground', to = 'Air', when = function(p) return not p.grounded end, fade = 0.1 },
+                { from = 'Air', to = 'Ground', when = 'grounded', fade = 0.15, switch = 'AtEnd' },
+            },
         },
     }
 end
@@ -61,7 +87,8 @@ function Lab.new(scene)
     assert(self.jumpLength, 'Player_Jump is missing from the character')
     self.tree = world:create('AnimationTree', { name = 'HeroTree', definition = definition() }, root)
     self.tree:set('speed', 0)
-    self.tree:set('crouching', false)
+    self.tree:set('stance', 'Stand')
+    self.tree:set('squat', 0)
     self.tree:set('grounded', true)
     world.environment.sky.enabled = true
     scene.camera.position = { 0, 1.3, -4 }
@@ -74,7 +101,19 @@ function Lab:setSpeed(value)
 end
 
 function Lab:toggleCrouch()
-    self.tree:set('crouching', not self.tree:get('crouching'))
+    self.tree:set('stance', self.tree:get('stance') == 'Stand' and 'Crouch' or 'Stand')
+end
+
+-- Squat steps 0, 0.5, 1: the crouch pose added over the walk by the Add2 node.
+function Lab:cycleSquat()
+    local value = self.tree:get('squat') or 0
+    value = value >= 1 and 0 or value + 0.5
+    self.tree:set('squat', value)
+    return value
+end
+
+function Lab:wave()
+    self.tree:trigger('wave')
 end
 
 function Lab:jump()
@@ -88,10 +127,11 @@ end
 -- Text for the HUD: the machine's current state and its parameters.
 function Lab:describe()
     local tree = self.tree
-    return ('State: %s\nspeed %.2f  crouching %s  grounded %s'):format(
+    return ('State: %s  stance %s\nspeed %.2f  squat %.1f  grounded %s'):format(
         tostring(tree.tree and tree.tree:state() or ''),
+        tostring(tree:get('stance')),
         tree:get('speed') or 0,
-        tostring(tree:get('crouching')),
+        tree:get('squat') or 0,
         tostring(tree:get('grounded'))
     )
 end

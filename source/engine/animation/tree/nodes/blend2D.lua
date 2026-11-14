@@ -1,7 +1,12 @@
 -- Blend2D: clips laid out on a plane (for example strafe and walk directions over `x`, `y`).
--- Weights use gradient-band interpolation: a clip's weight falls to zero at every other clip,
--- so the result is smooth, local, and needs no triangulation.
+-- Interpolated (default): the points are triangulated (Delaunay) and the three clips of the
+-- triangle around the sample share the weight by barycentric coordinates; outside the hull the
+-- nearest edge decides. Points that do not span a plane (fewer than three, or one line) use
+-- gradient-band weights instead: a clip's weight falls to zero at every other clip.
+-- `mode` 'Discrete' plays the nearest clip only, 'Carry' also carries the phase over.
 local Params = require('../params')
+local Discrete = require('../discrete')
+local Triangulate = require('../triangulate')
 
 local Blend2D = {}
 Blend2D.__index = Blend2D
@@ -24,6 +29,8 @@ function Blend2D.new(definition, build)
         y = definition.y,
         sync = definition.sync ~= false,
         points = points,
+        mode = Discrete.check(definition.mode),
+        mesh = Triangulate.build(points) or false,
         weights = {},
         children = children,
     }, Blend2D)
@@ -75,8 +82,25 @@ end
 
 function Blend2D:evaluate(weight, scale, context)
     local tree = context.tree
-    local weights = self:solve(Params.read(tree, self.x), Params.read(tree, self.y))
+    local px, py = Params.read(tree, self.x), Params.read(tree, self.y)
     context:group(self)
+    if self.mode ~= 'Interpolated' then
+        local nearest, best = 1, math.huge
+        for i, point in ipairs(self.points) do
+            local distance = (px - point.x) ^ 2 + (py - point.y) ^ 2
+            if distance < best then
+                nearest, best = i, distance
+            end
+        end
+        Discrete.play(self, self.points, nearest, weight, scale, context)
+        return
+    end
+    local weights
+    if self.mesh then
+        weights = Triangulate.solve(self.mesh, self.points, px, py, self.weights)
+    else
+        weights = self:solve(px, py)
+    end
     for i, point in ipairs(self.points) do
         if weights[i] > 0 then
             point.node:evaluate(weight * weights[i], scale, context)

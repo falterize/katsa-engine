@@ -20,6 +20,7 @@
 -- (`order`), markers and root motion of the Animator keep working. Blend1D and Blend2D keep
 -- their clips in step (their speeds are scaled so all clips share one phase) unless `sync = false`.
 local Graph = require('./graph')
+local Layers = require('./layers')
 
 local Tree = {}
 Tree.__index = Tree
@@ -52,12 +53,14 @@ function Tree.new(animator, definition)
     for _, leaf in ipairs(self.leaves) do
         local settings = {
             looped = leaf.loop,
-            order = leaf.definition.order,
-            boneMask = leaf.definition.mask,
+            order = (leaf.definition.order or 0) + (leaf.orderBoost or 0),
+            boneMask = Layers.mask(leaf, animator.model),
             retarget = leaf.definition.retarget,
             speed = leaf.speed,
         }
         leaf.track = animator:load(leaf.definition.clip, settings)
+        leaf.track.additive = leaf.additive
+        leaf.track.additiveReference = leaf.additiveReference
         leaf.track:play(0, leaf.speed, 0)
     end
     self.context = setmetatable({ tree = self, weights = {}, scales = {}, groups = {}, dt = 0 }, context)
@@ -79,9 +82,10 @@ function Tree:trigger(name)
     self.triggers[#self.triggers + 1] = name
 end
 
--- Moves the state machine named `machine` (the root when it is one) to `state`.
+-- Moves the state machine named `machine` (the root when it is one) to `state`: along the chain of
+-- transitions between the two when there is one, else straight there.
 function Tree:travel(state, machine, fade)
-    local node = machine and self:find(machine) or self.root
+    local node = machine and self:find(machine) or self:firstMachine()
     assert(node and node.travel, 'travel needs a StateMachine')
     node:travel(state, fade, self)
 end
@@ -102,9 +106,27 @@ function Tree:find(name)
     return search(self.root)
 end
 
--- Name of the active state of the root state machine (nil for other roots).
+-- The first StateMachine of the graph (depth first), or nil.
+function Tree:firstMachine()
+    local function search(node)
+        if node.kind == 'StateMachine' then
+            return node
+        end
+        for _, child in ipairs(node.children) do
+            local found = search(child)
+            if found then
+                return found
+            end
+        end
+    end
+    return search(self.root)
+end
+
+-- Name of the active state of the first state machine in the graph (the root, or the first one
+-- below it, for example under a OneShot); nil without one.
 function Tree:state()
-    return self.root.kind == 'StateMachine' and self.root.current or nil
+    local machine = self:firstMachine()
+    return machine and machine.current or nil
 end
 
 function Tree:update(dt)
@@ -150,7 +172,8 @@ function Tree:update(dt)
     end
     for _, leaf in ipairs(self.leaves) do
         local track = leaf.track
-        track.weight = math.max(0, math.min(1, ctx.weights[leaf] or 0))
+        leaf.lastWeight = ctx.weights[leaf] or 0
+        track.weight = math.max(0, math.min(1, leaf.lastWeight))
         track.speed = leaf.speed * (ctx.scales[leaf] or 1) * (factor[leaf] or 1)
     end
     for i = #self.triggers, 1, -1 do

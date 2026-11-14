@@ -5,13 +5,32 @@ local Graph = {}
 local constructors = {
     Animation = require('./nodes.animation').new,
     Blend = require('./nodes.blend').new,
+    Blend3 = require('./nodes.blend3').new,
+    Add2 = require('./nodes.add2').new,
+    Add3 = require('./nodes.add3').new,
+    OneShot = require('./nodes.oneShot').new,
+    Transition = require('./nodes.transition').new,
+    TimeSeek = require('./nodes.timeSeek').new,
     Blend1D = require('./nodes.blend1D').new,
     Blend2D = require('./nodes.blend2D').new,
     TimeScale = require('./nodes.timeScale').new,
     StateMachine = require('./nodes.stateMachine').new,
 }
 
-Graph.types = { 'Animation', 'Blend', 'Blend1D', 'Blend2D', 'TimeScale', 'StateMachine' }
+Graph.types = {
+    'Animation',
+    'Blend',
+    'Blend1D',
+    'Blend2D',
+    'Blend3',
+    'Add2',
+    'Add3',
+    'OneShot',
+    'Transition',
+    'TimeScale',
+    'TimeSeek',
+    'StateMachine',
+}
 
 function Graph.build(definition)
     if type(definition) == 'string' or type(definition) == 'number' then

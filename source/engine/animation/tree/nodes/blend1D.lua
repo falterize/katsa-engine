@@ -1,6 +1,8 @@
 -- Blend1D: clips laid out along one parameter (for example idle / walk / run over `speed`);
--- the two neighbours of the current value share the weight.
+-- the two neighbours of the current value share the weight. `mode`: 'Interpolated' (default),
+-- 'Discrete' (the nearest clip only) or 'Carry' (discrete, the phase moves on to the next clip).
 local Params = require('../params')
+local Discrete = require('../discrete')
 
 local Blend1D = {}
 Blend1D.__index = Blend1D
@@ -23,6 +25,7 @@ function Blend1D.new(definition, build)
         kind = 'Blend1D',
         definition = definition,
         param = definition.param,
+        mode = Discrete.check(definition.mode),
         sync = definition.sync ~= false,
         points = points,
         children = children,
@@ -40,6 +43,17 @@ function Blend1D:evaluate(weight, scale, context)
     local points = self.points
     context:group(self)
     local last = #points
+    if self.mode ~= 'Interpolated' then
+        local nearest, best = 1, math.huge
+        for i, point in ipairs(points) do
+            local distance = math.abs(point.at - value)
+            if distance < best then
+                nearest, best = i, distance
+            end
+        end
+        Discrete.play(self, points, nearest, weight, scale, context)
+        return
+    end
     if value <= points[1].at or last == 1 then
         points[1].node:evaluate(weight, scale, context)
         return

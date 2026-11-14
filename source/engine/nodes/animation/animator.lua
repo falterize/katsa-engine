@@ -202,6 +202,54 @@ function Animator:removeController(controller)
     return false
 end
 
+-- Additive tracks (`track.additive`) add the difference between their pose and a reference on
+-- top of the mixed pose: the clip's first frame (default) or the rest pose
+-- (`additiveReference = 'rest'`). Rotations compose (`out * reference^-1 * pose`, scaled by the
+-- weight), translations and scales add.
+local function addDelta(track, node, path, out, rest, weight)
+    local lookup = track.clip._lookup[node]
+    local channel = lookup and lookup[path]
+    if not channel then
+        return
+    end
+    local value = Pose.sample(channel, track.timePosition, track._buffers[channel])
+    track._buffers[channel] = value
+    local reference = rest
+    if track.additiveReference ~= 'rest' then
+        track._references = track._references or {}
+        reference = track._references[channel]
+        if not reference then
+            reference = Pose.copy(Pose.sample(channel, 0, {}))
+            track._references[channel] = reference
+        end
+    end
+    if path ~= 'rotation' then
+        for i = 1, #out do
+            out[i] = out[i] + (value[i] - reference[i]) * weight
+        end
+        return
+    end
+    local rx, ry, rz, rw = -reference[1], -reference[2], -reference[3], reference[4]
+    local vx, vy, vz, vw = value[1], value[2], value[3], value[4]
+    -- delta = reference^-1 * value, shortest way round
+    local dx = rw * vx + rx * vw + ry * vz - rz * vy
+    local dy = rw * vy - rx * vz + ry * vw + rz * vx
+    local dz = rw * vz + rx * vy - ry * vx + rz * vw
+    local dw = rw * vw - rx * vx - ry * vy - rz * vz
+    if dw < 0 then
+        dx, dy, dz, dw = -dx, -dy, -dz, -dw
+    end
+    -- nlerp from the identity towards delta
+    dx, dy, dz, dw = dx * weight, dy * weight, dz * weight, 1 - weight + dw * weight
+    local length = math.sqrt(dx * dx + dy * dy + dz * dz + dw * dw)
+    dx, dy, dz, dw = dx / length, dy / length, dz / length, dw / length
+    local ox, oy, oz, ow = out[1], out[2], out[3], out[4]
+    out[1] = ow * dx + ox * dw + oy * dz - oz * dy
+    out[2] = ow * dy - ox * dz + oy * dw + oz * dx
+    out[3] = ow * dz + ox * dy - oy * dx + oz * dw
+    out[4] = ow * dw - ox * dx - oy * dy - oz * dz
+end
+
 function Animator:update(dt)
     local model = self.model
     for _, controller in ipairs(self.controllers) do
@@ -226,7 +274,10 @@ function Animator:update(dt)
     self._poseWall = self._poseWall % interval
     self._active = self._active or {}
     local active = self._active
-    local count = 0
+    self._additive = self._additive or {}
+    self._additiveWeights = self._additiveWeights or {}
+    local additives, additiveWeights = self._additive, self._additiveWeights
+    local count, additiveCount = 0, 0
     for _, track in ipairs(self.tracks) do
         if
             not track.destroyed
@@ -234,12 +285,20 @@ function Animator:update(dt)
             and track.state ~= 'Stopped'
             and track._blendWeight > 0
         then
-            count = count + 1
-            active[count] = track
+            if track.additive then
+                additiveCount = additiveCount + 1
+                additives[additiveCount] = track
+            else
+                count = count + 1
+                active[count] = track
+            end
         end
     end
     for i = #active, count + 1, -1 do
         active[i] = nil
+    end
+    for i = #additives, additiveCount + 1, -1 do
+        additives[i] = nil
     end
     table.sort(active, higher)
     self._nodeWeights, self._nodeLookups, self._maskedTracks =
@@ -259,6 +318,10 @@ function Animator:update(dt)
             local weight = math.max(0, math.min(1, track._blendWeight * mask))
             weights[i] = weight
             lookups[i] = weight > 0 and track.clip._lookup[node] or false
+        end
+        for i, track in ipairs(additives) do
+            local mask = next(track.boneMask) and (track.boneMask[node.name] or 0) or 1
+            additiveWeights[i] = math.max(0, math.min(1, track._blendWeight * mask))
         end
         for _, path in ipairs(posePaths) do
             local out = node[path]
@@ -321,6 +384,11 @@ function Animator:update(dt)
                 end
                 for i = 1, #rest do
                     out[i] = out[i] + rest[i] * remaining
+                end
+            end
+            for i, track in ipairs(additives) do
+                if additiveWeights[i] > 0 then
+                    addDelta(track, node, path, out, rest, additiveWeights[i])
                 end
             end
             if path == 'rotation' then

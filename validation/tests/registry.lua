@@ -2,6 +2,8 @@
 local Registry = {}
 local entries = {
     ['--test-v108.1'] = { module = 'validation.tests.versions.v108_1.focused', mode = 'default' },
+    ['--test-v108.8.shots'] = { module = 'validation.tests.versions.v108_8.treeShots', mode = 'default' },
+    ['--test-v108.8'] = { module = 'validation.tests.versions.v108_8.focused', mode = 'default' },
     ['--test-v108.7.rev'] = { module = 'validation.tests.versions.v108_7.revProbe', mode = 'default' },
     ['--test-v108.7.alpha'] = { module = 'validation.tests.versions.v108_7.alphaProbe', mode = 'default' },
     ['--test-v108.7.tab'] = { module = 'validation.tests.versions.v108_7.tabProbe', mode = 'default' },

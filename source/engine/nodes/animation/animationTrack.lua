@@ -12,6 +12,8 @@ Track.propertySchema = {
     fadeIn = { min = 0 },
     fadeOut = { min = 0 },
     boneMask = { kind = 'bindings' },
+    additive = {},
+    additiveReference = { options = { 'firstFrame', 'rest' } },
 }
 
 function Track.initialize(self)

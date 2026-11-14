@@ -2,6 +2,10 @@
 
 Per-version notes. Test results and logs for each release live in Git history and tags.
 
+## v108.8
+
+- AnimationTree gets the node types of Godot 4: `Blend3`, `Add2`, `Add3` (additive clips), `OneShot`, `Transition` (named inputs, crossfade curves) and `TimeSeek`; `Blend` takes a bone `filter`; `Blend1D`/`Blend2D` get `mode` (`Interpolated`, `Discrete`, `Carry`) and `Blend2D` triangulates its points (Delaunay; the old gradient bands remain for points on one line). StateMachine: transition `switch` (`Immediate`/`Sync`/`AtEnd`), `advance` (`Auto`/`Disabled`), `priority`, `reset`, per-transition `curve`, nested machines with an `End` state, and `travel` that walks the shortest chain of transitions (direct jump when there is none). `Tree:state()` and `travel` find the first state machine below any root. The Animator mixes additive `AnimationTrack`s (`additive`, `additiveReference`) on top of the layered pose. The `animationTreeLab` scene shows Transition, Add2, OneShot and an AtEnd landing. Guide: `docs/guides/animation/animationTree.md`. Tests: `v108_8/animationNodes.lua`, `additivePose.lua`; `--test-v108.8.shots` renders the lab poses. Not done: Godot's blend-tree editor layout (graphs are Lua tables; there are no inspector nodes per graph node yet).
+
 ## v108.7
 
 - SSAO no longer bands or blackens far grazing floors (stareShooter floor, `shadows` ground): the surface-slope tolerance now ignores depth edges (a foot beside the floor) and adds the 24-bit depth step as a floor, so a tap on the same plane is never read as an occluder while contact shading stays. Shader `post/ssao.glsl`; GPU look needs hardware.

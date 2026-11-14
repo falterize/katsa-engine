@@ -38,14 +38,79 @@ current `state`.
 | Type | Does |
 | --- | --- |
 | `Animation` (`{ clip = 'Walk' }`, or just the clip name) | plays one clip; `loop`, `speed`, `order`, `mask` |
-| `Blend` | mixes two inputs by `param` (0..1) |
-| `Blend1D` | clips placed on one parameter axis (`points = { { value, clip } ... }`), neighbours are mixed |
-| `Blend2D` | clips placed in a plane (`param`/`paramY`), weights by inverse distance |
+| `Blend` | mixes `a` and `b` by `amount` (0..1); with `filter`, only those bones mix |
+| `Blend3` | `a`, `b`, `c` on `amount` from -1 to 1 |
+| `Blend1D` | clips on one parameter axis (`points = { { value, clip } ... }`), neighbours are mixed |
+| `Blend2D` | clips in a plane (`x`, `y`, `points = { { x, y, clip } ... }`), Delaunay triangulation |
+| `Add2` | `base` plus the additive `add` clip scaled by `amount` (0..1) |
+| `Add3` | `base` plus additive `plus` (amount > 0) or `minus` (amount < 0) |
+| `OneShot` | plays `shot` once over `input` when `request` is triggered |
+| `Transition` | one of several `inputs`, chosen by a parameter, with a crossfade |
 | `TimeScale` | multiplies the speed of its input |
-| `StateMachine` | states, transitions with `when` (parameter name, function or trigger), `fade`, `travel` |
+| `TimeSeek` | moves its child's clips to a time when `seek` is set |
+| `StateMachine` | states, transitions (`when`, `onFinish`), `switch`, `advance`, `priority`, `travel`, `End` |
 
 `Blend1D` and `Blend2D` keep their clips in step (one shared phase, clip speeds scaled by length)
 so a walk and a run do not drift apart. Pass `sync = false` to turn that off.
+
+### Blend spaces
+
+`Blend2D` triangulates its points; the three clips of the triangle around the sample share the
+weight, outside the hull the nearest edge decides. Points on one line (or fewer than three) use
+gradient-band weights instead. `mode` (also on `Blend1D`): `'Interpolated'` (default),
+`'Discrete'` (the nearest clip only) or `'Carry'` (discrete, and the new clip starts at the old
+one's phase).
+
+### Additive clips and filters
+
+Clips under `Add2`/`Add3` (and a `OneShot` with `mode = 'Add'`) are additive tracks: the Animator
+adds their difference to a reference pose on top of the mixed pose (`reference = 'firstFrame'`,
+the default, or `'rest'`). Rotations compose, translations and scales add. Any of these nodes,
+and `Blend`, accept `filter` (bone names, or `{ Bone = weight }`) and `filterChildren = true`
+(adds the descendants); the filter becomes the bone mask of the clips below.
+
+```lua
+{ type = 'Add2', amount = 'lean', base = locomotion, add = 'Lean_Right', filter = { 'Spine_001' } }
+```
+
+### OneShot
+
+```lua
+{ type = 'OneShot', input = locomotion, shot = 'Wave', request = 'wave', fadeIn = 0.1, fadeOut = 0.2,
+  filter = { 'Upper_Arm_R' }, filterChildren = true, abort = 'stopWave', restart = false }
+tree:trigger('wave')
+```
+
+The shot plays once as a layer above `input` (it keeps `input` running underneath), fades in and
+out and ends with its longest clip. `restart = true` restarts it when requested again;
+`abort` names a trigger that fades it out early.
+
+### Transition
+
+```lua
+{ type = 'Transition', param = 'stance', fade = 0.25, curve = 'smooth',
+  inputs = { { 'Stand', stand }, { 'Crouch', crouch } } }
+tree:set('stance', 'Crouch')   -- an input name or its 1-based index
+```
+
+`curve`: `'linear'`, `'smooth'`, `'easeIn'`, `'easeOut'` or a function of 0..1. `reset = false`
+keeps the chosen input where it was. A change during a fade continues from the reached weights.
+
+### StateMachine
+
+Transitions are tried by `priority` (lower first, then as listed). Per transition: `fade`,
+`curve`, `switch` (`'Immediate'`, `'Sync'` carries the phase, `'AtEnd'` waits until the clip is about
+to end), `advance` (`'Auto'`, or `'Disabled'` for use by `travel` only), `reset`. A state may be
+another `StateMachine`; going to the state `'End'` finishes the machine, so a parent's `onFinish`
+transition fires. `tree:travel('Target')` walks the shortest chain of transitions and honours each
+`switch`; with no chain it jumps directly. `tree:state()` is the first state machine's state.
+
+```lua
+{ type = 'TimeSeek', seek = 'rewind', child = clip }
+tree:set('rewind', 0)   -- seeks to second 0, then the parameter clears itself
+```
+
+Demo: the `animationTreeLab` scene (Transition stance, Add2 squat, OneShot wave on the arms).
 
 ## Retargeting
 
