@@ -19,17 +19,18 @@ local function readState(node, parentId)
     return { name = node.name, parent = parentId, props = props, attrs = attrs }
 end
 
--- endpoint: the net Server. options.roots: nodes to scan (default the world root).
+-- endpoint: the net Server. options.roots: nodes to scan (default the world root and ReplicatedStorage).
 function ServerReplication.new(endpoint, world, options)
     local self = setmetatable({
         endpoint = endpoint,
         world = world,
-        roots = options and options.roots or { world.root },
+        roots = options and options.roots,
         records = {},
         byNode = setmetatable({}, { __mode = 'k' }),
         nextId = Storage.REPLICATED_ID + 1,
     }, ServerReplication)
     self.replicatedStorage, self.serverStorage = Storage.install(world, true)
+    self.roots = self.roots or { world.root, self.replicatedStorage }
     self.replicatedStorage.replicatedContainer = true
     self.records[Storage.REPLICATED_ID] = { node = self.replicatedStorage }
     return self

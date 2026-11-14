@@ -91,6 +91,10 @@ function Class.mount(world, properties, parent)
     }) do
         settings[key] = node[key]
     end
+    if node:isStored() then
+        -- A template in storage: inert until a clone or a reparent brings it into the world.
+        settings.type, settings.canCollide, settings.canQuery = 'Static', false, false
+    end
     settings.velocity = rawget(node, '_initialVelocity')
     settings.angularVelocity = rawget(node, '_initialAngularVelocity')
     world.physics:addBody(node, settings)
@@ -113,7 +117,7 @@ local settingsKeys = {
 }
 
 function Class:update(dt)
-    if not self.physics or self.physics.destroyed then
+    if not self.physics or self.physics.destroyed or self:isStored() then
         return
     end
     local inputs = self._settingsInputs or {}

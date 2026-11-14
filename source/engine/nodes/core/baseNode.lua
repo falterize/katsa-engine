@@ -63,6 +63,19 @@ function Node.create(className, properties, parent, context)
     return Node.new(className, properties, parent)
 end
 
+-- True inside ReplicatedStorage/ServerStorage: stored nodes are templates; they are hidden
+-- (the containers are invisible) and own no active physics body.
+function Node:isStored()
+    local node = self
+    while node do
+        if rawget(node, 'storageContainer') then
+            return true
+        end
+        node = rawget(node, '_parent')
+    end
+    return false
+end
+
 function Node:setProcess(enabled)
     local tree = self._tree or self._processTree
     assert(tree, 'setProcess requires a node registered with a World3D NodeTree')
@@ -229,6 +242,7 @@ for _, key in ipairs({
     'hasConnections',
     'emit',
     'setProcess',
+    'isStored',
     'trackConnection',
     'own',
     'getChildren',

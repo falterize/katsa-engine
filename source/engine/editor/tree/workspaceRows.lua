@@ -2,6 +2,7 @@
 -- name and its class. Depth indents without limit; the list scrolls on both axes, so deep nodes
 -- keep their full width and stay offset from their parents.
 local Tree = require('./traversal')
+local Storage = require('source.engine.net.replication.storage')
 
 local WorkspaceRows = {}
 
@@ -61,8 +62,13 @@ end
 
 function WorkspaceRows.install(Workspace)
     function Workspace:refreshTree()
+        local roots = { self.scene.world.root }
+        for _, container in ipairs(Storage.list(self.scene.world)) do
+            roots[#roots + 1] = container
+        end
+        roots[#roots + 1] = self.settingsRoot
         self.rows = Tree.rows(
-            { self.scene.world.root, self.settingsRoot },
+            roots,
             self.collapsed,
             self.group,
             self.query

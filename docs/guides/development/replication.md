@@ -21,6 +21,10 @@ client.nodeCreated:connect(function(node) end)
 - `replicated` is a flag on every node (Node group in the inspector, off by default).
 - `replicatedProperties` lists the properties that follow the server. It is stored on the node
   and is set from code.
+- `ReplicatedStorage` and `ServerStorage` are top-level nodes beside the World3D root (not inside
+  it), shown as their own roots in the Explorer. They are invisible: meshes, lights and particles
+  inside are never drawn, and a `Body3D` inside is an inert static template. Use them for templates
+  and data; place a `node:clone(props, parent)` in the world to bring one to life.
 - Everything inside `ReplicatedStorage` replicates without a flag. `ServerStorage` exists only on
   the server and is never scanned, so private nodes live there. A host is a normal client.
 - A node's parent on the client is its nearest replicated ancestor (or the world root).

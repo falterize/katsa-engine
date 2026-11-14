@@ -35,6 +35,19 @@ function Module.run(self)
         serverWorld:create('Folder', { name = 'Plain' }).replicated == false,
         'Every node has a replicated flag that is off by default (the inspector shows it)'
     )
+    local storage = server.replication.replicatedStorage
+    self:check(
+        storage.parent == nil
+            and storage.visible == false
+            and serverWorld.storage.ServerStorage.parent == nil,
+        'Storage containers live outside the world root and are hidden'
+    )
+    local template = serverWorld:create('Mesh3D', { name = 'Template' }, storage)
+    local copy = template:clone({ name = 'TemplateCopy' }, serverWorld.root)
+    self:check(
+        template:isStored() and not template:isVisible() and copy:isVisible() and not copy:isStored(),
+        'Stored templates are hidden and a clone placed in the world is visible'
+    )
     local round = serverWorld:create('Folder', { name = 'Round', replicated = true })
     round:setAttribute('Timer', 30)
     local pad = serverWorld:create('Mesh3D', { name = 'Pad', replicated = true }, round)
