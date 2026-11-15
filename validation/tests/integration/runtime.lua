@@ -48,9 +48,9 @@ function Runtime:update()
         end
         self.screenshot = 'menu'
     elseif self.frame == 5 then
-        s.ui:layout()
+        s.root:find('World3D/World2D'):layout()
         local button = s.firstSceneButton
-        local x, y = s.ui:position(button)
+        local x, y = s.root:find('World3D/World2D'):position(button)
         x = x + button._width / 2
         y = y + button._height / 2
         m:dispatch('pointerpressed', 'test', x, y)
@@ -177,7 +177,7 @@ function Runtime:update()
         katsa.resize(960, 540)
     elseif self.frame == 68 then
         self:check(
-            s.renderer.width == 960 and s.ui.scale == 1 and s.ui.width == 960,
+            s.renderer.width == 960 and s.root:find('World3D/World2D').scale == 1 and s.root:find('World3D/World2D').width == 960,
             'Resize recreates render targets and adapts UI'
         )
         m:switch(require('source.game.runtime.menu').new)
@@ -237,10 +237,10 @@ function Runtime:update()
         m:switch(require('source.game.runtime.game').new, 'nightPlayer')
     elseif self.frame == 112 then
         require('validation.tests.integration.cameraDebug')(self, s)
-        s.input:press('look', 700 * s.ui.scale, 300 * s.ui.scale)
+        s.input:press('look', 700 * s.root:find('World3D/World2D').scale, 300 * s.root:find('World3D/World2D').scale)
         local yaw = s.camera.rotation[2]
         m.time:setScale(0)
-        s.input:move('look', 750 * s.ui.scale, 300 * s.ui.scale, 50 * s.ui.scale, 0)
+        s.input:move('look', 750 * s.root:find('World3D/World2D').scale, 300 * s.root:find('World3D/World2D').scale, 50 * s.root:find('World3D/World2D').scale, 0)
         self:check(
             s.camera.rotation[2] == yaw + 5,
             'Camera3D look keeps real-time sensitivity while time is frozen'
@@ -282,11 +282,11 @@ function Runtime:update()
             s.world.lighting.sun.enabled and s.world.lighting.sky.brightness > 0.9,
             'Noon slider configuration lights the player scene'
         )
-        s.ui:pointer(
+        s.root:find('World3D/World2D'):pointer(
             s.demo.daySlider,
             'press',
-            (s.demo.daySlider._x + 12) * s.ui.scale + s.ui.offsetX,
-            (s.demo.daySlider._y + 20) * s.ui.scale + s.ui.offsetY,
+            (s.demo.daySlider._x + 12) * s.root:find('World3D/World2D').scale + s.root:find('World3D/World2D').offsetX,
+            (s.demo.daySlider._y + 20) * s.root:find('World3D/World2D').scale + s.root:find('World3D/World2D').offsetY,
             'day'
         )
         self:check(

@@ -115,7 +115,7 @@ function T:draw()
         a.color[1][4] == before + 1,
         'Another renderer cannot hide pending light input changes'
     )
-    local ui = s.ui
+    local ui = s.root:find('World3D/World2D')
     local scroll =
         ui:scroll({ position = { 0, 0, 0, 0 }, size = { 0, 100, 0, 50 }, length = 300 }, ui.content)
     local child =

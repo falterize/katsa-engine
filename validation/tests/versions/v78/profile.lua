@@ -213,7 +213,7 @@ function T:draw()
         local start = katsa.timer.getTime()
         for i = 1, 120 do
             s:update(1 / 60)
-            s.ui:draw()
+            s.root:find('World3D/World2D'):draw()
         end
         profile.stop()
         print('UPDATE_UI', zone, (katsa.timer.getTime() - start) * 1000 / 120)

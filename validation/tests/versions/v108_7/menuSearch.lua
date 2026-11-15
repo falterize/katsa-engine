@@ -17,7 +17,7 @@ function Tests:draw()
     local host = require('source.game.runtime.application').new(self.manager, 'menu')
     host:load()
     local function rows()
-        return #host.ui:find('LevelList', true).children
+        return #host.root:find('World3D/World2D'):find('LevelList', true).children
     end
     local all = rows()
     self:check(all > 5, 'the menu lists scenes')

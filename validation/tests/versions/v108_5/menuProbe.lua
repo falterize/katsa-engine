@@ -38,7 +38,7 @@ function Tests:draw()
     end
     local scroll = frame >= 200 and frame < 300
     if scroll and frame % 1 == 0 then
-        local ui = host.scene and host.scene.state and host.scene.state.ui or host.ui
+        local ui = host.scene and host.scene.state and host.scene.state.root:find('World3D/World2D') or host.root:find('World3D/World2D')
         for _, frameNode in ipairs(ui and findScroll(ui) or {}) do
             frameNode.scrollY = (frameNode.scrollY or 0) + (frame % 2 == 0 and 7 or -5)
             ui:invalidate()

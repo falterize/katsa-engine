@@ -5,17 +5,17 @@ local Module = {}
 
 function Module.run(self)
     local hits, last = 0, nil
-    local scene = {
-        ui = {
-            blocksWorldClick = function() return false end,
-            offsetX = 0,
-            offsetY = 0,
-            scale = 1,
-            hit = function(_, x, y)
-                hits, last = hits + 1, x
-            end,
-        },
+    local ui = {
+        blocksWorldClick = function() return false end,
+        offsetX = 0,
+        offsetY = 0,
+        scale = 1,
+        hit = function(_, x, y)
+            hits, last = hits + 1, x
+        end,
     }
+    -- The input finds the screen UI through the scene's node tree.
+    local scene = { root = { find = function() return ui end } }
     local input = Input.new(scene, nil)
     for x = 1, 20 do
         input:move('mouse', x, 5, 1, 0)

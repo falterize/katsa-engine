@@ -11,7 +11,11 @@ local function fake(blocked)
         touches = {},
         scene = {
             input = { joystickId = 1, playing = function() return true end },
-            ui = { blocksWorldClick = function() return blocked end },
+            root = {
+                find = function()
+                    return { blocksWorldClick = function() return blocked end }
+                end,
+            },
         },
         orbit = { zoom = function(_, amount) zoomed = zoomed + math.abs(amount) end },
     }, {})

@@ -124,7 +124,7 @@ function Tests.run(tester)
     menu:draw()
     menu.tagChooser.visible = false
     menu.setTags({ physics = true })
-    local shown = #menu.ui:find('LevelList', true).children
+    local shown = #menu.root:find('World3D/World2D'):find('LevelList', true).children
     tester:check(
         not menu:canReuseWindowFrame(),
         'Tag changes rebuild and repaint the scene list'
@@ -133,18 +133,18 @@ function Tests.run(tester)
     tester:check(shown > 0 and shown < 20, 'Selecting the physics tag narrows the scene list (' .. shown .. ')')
     menu.setTags({})
     menu:draw()
-    local list = menu.ui:find('LevelList', true)
-    menu.ui:scrollBy(list, 48)
+    local list = menu.root:find('World3D/World2D'):find('LevelList', true)
+    menu.root:find('World3D/World2D'):scrollBy(list, 48)
     tester:check(not menu:canReuseWindowFrame(), 'Scrolling invalidates the retained Menu image')
     menu:draw()
     -- The layout observer determines animation from nodes, not a caller-owned flag.
-    local effect = menu.ui:create('Shader2D', {
+    local effect = menu.root:find('World3D/World2D'):create('Shader2D', {
         name = 'IdleAnimationProbe',
         size = { 1, 0, 1, 0 },
         shaderPath = 'source/game/runtime/game/shaders/uiPulse.glsl',
-    }, menu.ui.content)
-    menu.ui:layout()
-    menu.state._paintRevision = menu.ui.revision
+    }, menu.root:find('World3D/World2D').content)
+    menu.root:find('World3D/World2D'):layout()
+    menu.state._paintRevision = menu.root:find('World3D/World2D').revision
     tester:check(not menu:canReuseWindowFrame(), 'Animated menu shaders never reuse a frozen frame')
     effect:destroy()
     menu:resize(katsa.graphics.getDimensions())

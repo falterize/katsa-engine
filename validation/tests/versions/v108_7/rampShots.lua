@@ -48,7 +48,7 @@ function Tests:draw()
         katsa.graphics.captureScreenshot((os.getenv('KATSA_SHOT') or 'tmp/ramp') .. '/curve.png')
     elseif frame == 16 then
         -- Drag the last point (140) down by 60 px through the ScrollFrame.
-        local graph, ui = self.popup.graph, self.host.ui
+        local graph, ui = self.popup.graph, self.host.root:find('World3D/World2D')
         ui:layout()
         local range = { graph.points[1].value[1], graph.points[2].value[1] }
         local x = (graph._x + graph._width - 14 - graph._endMargin) * ui.scale + ui.offsetX

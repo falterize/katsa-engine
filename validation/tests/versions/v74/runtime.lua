@@ -24,11 +24,11 @@ function T:draw()
         menu:resize(unpack(size))
         local chooser = menu.categoryChooser
         chooser.visible = true
-        menu.ui:scrollBy(chooser, 10000)
-        menu.ui:layout()
+        menu.root:find('World3D/World2D'):scrollBy(chooser, 10000)
+        menu.root:find('World3D/World2D'):layout()
         local last = chooser.children[#chooser.children]
         local x, y = last._x + last._width / 2, last._y + last._height / 2
-        local ui = menu.ui
+        local ui = menu.root:find('World3D/World2D')
         self:check(
             y <= ui.height and chooser._y + chooser._height <= ui.height,
             'Category viewport and last row fit ' .. size[1] .. 'x' .. size[2]
@@ -132,13 +132,13 @@ function T:draw()
         not off._appearancePending and off._surfaceAppearance,
         'Returning mesh resolves its appearance immediately'
     )
-    local target = s.ui:scroll({ position = { 0, 0, 0, 0 }, size = { 0, 30, 0, 30 } }, s.ui.content)
-    local nested = s.ui:scroll({ position = { 0, 0, 0, 100 }, size = { 0, 30, 0, 30 } }, target)
+    local target = s.root:find('World3D/World2D'):scroll({ position = { 0, 0, 0, 0 }, size = { 0, 30, 0, 30 } }, s.root:find('World3D/World2D').content)
+    local nested = s.root:find('World3D/World2D'):scroll({ position = { 0, 0, 0, 100 }, size = { 0, 30, 0, 30 } }, target)
     local drawn = 0
     nested.drawSelf = function()
         drawn = drawn + 1
     end
-    s.ui:draw()
+    s.root:find('World3D/World2D'):draw()
     self:check(drawn == 0, 'Empty clipped UI subtrees issue no draw work')
     local projections = c._cameraProjectionState
     c:update(640, 360)

@@ -132,7 +132,7 @@ function Tests:interfaces()
         scene:resize(960, 540)
         scene:draw()
         self:check(
-            scene.state.world and scene.state.ui and scene.state.systems,
+            scene.state.world and scene.state.root:find('World3D/World2D') and scene.state.systems,
             'Interface scenes use the same lifecycle and private system ownership'
         )
     end

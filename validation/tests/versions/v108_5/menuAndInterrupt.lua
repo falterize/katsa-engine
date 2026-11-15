@@ -8,7 +8,7 @@ function Module.run(self)
     local switched = {}
     local menu = setmetatable({
         loadingLabel = {},
-        ui = { invalidate = function() end },
+        _ui = { invalidate = function() end },
         manager = {
             switch = function(_, _, id)
                 switched[#switched + 1] = id

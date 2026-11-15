@@ -26,10 +26,10 @@ function Tests:draw()
     local styler = node:getStyler()
     self:check(#styler.rules > 10, 'The styles folder is loaded: ' .. #styler.rules .. ' rules')
     self:check(styler:getTheme() == 'dark' and node.theme == 'dark', 'The node applies its theme')
-    local first = self.host.ui:find('Launcher', true)
+    local first = self.host.root:find('World3D/World2D'):find('Launcher', true)
     local before = first and first.backgroundColor
     local button
-    for _, candidate in ipairs(self.host.ui.content:getDescendants()) do
+    for _, candidate in ipairs(self.host.root:find('World3D/World2D').content:getDescendants()) do
         if candidate.className == 'Button' and candidate.text == 'Help' then
             button = candidate
         end

@@ -301,9 +301,9 @@ function T:update()
         )
         local menu = assert(self.manager:switch(require('source.game.runtime.menu').new))
         menu.rebuildCategory('Physics')
-        local list = menu.ui:find('LevelList', true)
+        local list = menu.root:find('World3D/World2D'):find('LevelList', true)
         self:check(#list.children > 0 and #list.children < 10, 'Menu category filters scene list')
-        local scroll = menu.ui:scroll({
+        local scroll = menu.root:find('World3D/World2D'):scroll({
             scrollBarThickness = 10,
             scrollBarImageColor3 = { 1, 0, 0 },
             scrollBarImageTransparency = 0.2,
@@ -311,7 +311,7 @@ function T:update()
             clip = false,
             length = 1000,
             size = { 0, 100, 0, 80 },
-        }, menu.ui.content)
+        }, menu.root:find('World3D/World2D').content)
         self:check(
             scroll.clip == false and scroll.scrollBarThickness == 10,
             'ScrollFrame supports custom scrollbar and optional clipping'
