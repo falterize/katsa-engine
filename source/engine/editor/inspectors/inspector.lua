@@ -224,7 +224,8 @@ function Inspector.install(Workspace)
                                 button:connect('press', function()
                                     if field.readOnly then
                                         self.status.text = field.reason or 'Read-only property'
-                                        if field.kind == 'string' and field.value and field.value ~= '' then
+                                        -- A read-only text row still opens, so its value can be read.
+                                        if field.kind == 'string' then
                                             self:showHint(field)
                                         end
                                         return
@@ -355,8 +356,14 @@ function Inspector.install(Workspace)
         self.popup = require('source.engine.editor.panels.popup').new(self, field)
         -- A read-only text row opens with its full value above the explanation.
         local text = field.hint or field.reason
-        if field.readOnly and field.kind == 'string' and field.value ~= nil and field.value ~= '' then
-            text = tostring(field.value) .. '\n\n' .. text
+        if field.readOnly and field.kind == 'string' then
+            local value = tostring(field.value or '')
+            if field.key == 'replicatedProperties' then
+                value = value ~= '' and value:gsub(', ', '\n') or '(no properties are replicated)'
+            elseif value == '' then
+                value = '(empty)'
+            end
+            text = value .. '\n\n' .. text
         end
         self.popup:hintEditor(text)
     end

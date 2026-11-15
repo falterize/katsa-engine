@@ -12,6 +12,8 @@ function Bootstrap.install(project, options)
         )
     end
     Runtime.initialize()
+    -- `project.version` is the engine the project was made for; a mismatch only warns.
+    require('source.engine.core.version').check(project.version, 'Project')
     Runtime.frameRateLimit = Runtime.validateFrameRateLimit(project.frameRateLimit or 0)
     local createScene = options.createScene
         or function(owner, source)

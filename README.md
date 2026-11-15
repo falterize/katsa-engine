@@ -92,3 +92,29 @@ nested folders. `read/write` handles progress/preferences `.json` tables and raw
 text/binary files through one API under `saves/`. Root `main.lua` and `conf.lua`
 only install the shared engine bootstrap/window configuration; demo-only startup
 adapters stay in `source/game/runtime/startup.lua`.
+
+## Credits
+
+Katsa is built on the work of others. Each library keeps its own license next to its sources
+(`vendor/`, `source/katsa/graphics/fonts`, `source/plugins/imgui/vendor`).
+
+| Component | Author | Used for |
+| --- | --- | --- |
+| [LuaJIT](https://luajit.org/) | Mike Pall | the scripting runtime |
+| [SDL2](https://libsdl.org/) | Sam Lantinga and contributors | window, input and the Android activity |
+| [Box2D](https://github.com/erincatto/box2d) | Erin Catto | 2D physics |
+| [Jolt Physics](https://github.com/jrouwe/JoltPhysics), [joltc](https://github.com/amerkoleci/joltc), [JoltPhysicsSharp](https://github.com/amerkoleci/JoltPhysicsSharp) | Jorrit Rouwe; Amer Koleci | 3D physics backend and its C API and binaries |
+| [OimoPhysics](https://github.com/saharan/OimoPhysics) | Yuya Saito (saharan) | pure Lua 3D physics backend |
+| [ENet](https://github.com/lsalzman/enet) | Lee Salzman | reliable UDP for `katsa.net` |
+| [stb](https://github.com/nothings/stb) | Sean Barrett | image, TrueType and Ogg Vorbis decoding |
+| [dr_libs](https://github.com/mackron/dr_libs) | David Reid | MP3 and FLAC decoding |
+| [Dear ImGui](https://github.com/ocornut/imgui), [cimgui](https://github.com/cimgui/cimgui) | Omar Cornut; the cimgui contributors | the engine tool windows (`imgui` plugin) |
+| [json.lua](https://github.com/rxi/json.lua) | rxi | JSON |
+| [DejaVu Sans](https://dejavu-fonts.github.io/) | Bitstream, Inc. and the DejaVu authors (Stepan Roh and others) | the default UI font |
+
+Assets:
+
+- The Teletubby character model (`assets/models/characters/player.glb`) was made by
+  [@falterize](https://github.com/falterize) and is licensed under
+  [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/) (CC BY).
+- `xbot.glb` is converted from Mixamo's X Bot and stays under Mixamo/Adobe's terms.

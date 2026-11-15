@@ -82,14 +82,11 @@ function Package.open(source)
         )
         Layout.validate(root, self.settings)
         -- `version` is the engine version the scene was made for; a mismatch is reported, not fatal.
-        local status, note = require('source.engine.core.version').compatible(self.settings.version)
+        local status, note = require('source.engine.core.version').check(
+            self.settings.version,
+            'Scene ' .. self.id
+        )
         self.compatibility = { status = status, message = note, declared = self.settings.version }
-        if status == 'newer' or (status == 'older' and note) then
-            katsa.log.write(
-                status == 'newer' and 'warn' or 'log',
-                ('Scene %s: %s'):format(self.id, note)
-            )
-        end
         self.paths = { scene = root .. '/assets', shared = 'assets', package = self }
     end)
     if not ok then

@@ -4,7 +4,7 @@
 -- 1.0.0rc (release candidate); no letter means a stable release.
 -- Projects and scenes may declare the engine they were made for (`version = '1.0.0a'`);
 -- compatible() tells a launcher or the loader whether that declaration matches this engine.
-local Version = { name = 'Katsa', value = 'v108.8', release = '1.0.0a' }
+local Version = { name = 'Katsa', value = 'v108.8', release = '1.0.8b' }
 
 local STAGES = { a = 1, b = 2, rc = 3, [''] = 4 }
 Version.stageNames = { a = 'alpha', b = 'beta', rc = 'release candidate', [''] = 'stable' }
@@ -62,6 +62,19 @@ function Version.compatible(declared, current)
         return 'older', ('Made for engine %s; running %s'):format(declared, current)
     end
     return 'newer', ('Made for engine %s, newer than the running %s'):format(declared, current)
+end
+
+-- Checks a declaration and warns in the console when it differs from this engine, naming `what`
+-- ("Project", "Scene menu"). Never blocks loading. Returns status, message like compatible().
+-- A missing declaration is silent: declaring the version is optional.
+function Version.check(declared, what, current)
+    local status, message = Version.compatible(declared, current)
+    if status == 'older' or status == 'newer' then
+        katsa.log.warn(('%s: %s; it may be incompatible'):format(what, message))
+    elseif status == 'unknown' and declared ~= nil then
+        katsa.log.warn(('%s: %s'):format(what, message))
+    end
+    return status, message
 end
 
 return Version

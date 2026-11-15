@@ -85,7 +85,7 @@ katsa . --scene-package dist/exampleScene.zip
 ```lua
 local Settings = {
     layoutVersion = 3,
-    version = '1.0.0a',
+    version = '1.0.8b',
     id = 'exampleScene',
     title = 'Example scene',
     category = 'Gameplay',
@@ -124,12 +124,14 @@ as its only tag. Filtering lives in `source/game/sceneTags.lua`.
 hooks. Version 2 archives retain their original root ui folder; archives without
 a layout version retain the earlier compatibility loader. New scenes use version 3.
 
-`version` (optional) is the engine version the scene was made for, in the form of
-`source/engine/core/version.lua` (`Version.release`, written `1.0.0a`: `MAJOR.MINOR.PATCH` plus `a` alpha, `b` beta or `rc`; no letter is stable). The loader compares it with the running engine
-(`Version.compatible`): a scene made for a newer engine logs a warning, an older one a note, and
-`package.compatibility` holds `{ status, message, declared }` (`same`, `older`, `newer`,
-`unknown`) for a launcher to show. Projects declare the same in `source/game/data/project.lua`
-(`version`). A mismatch never blocks loading.
+`version` (optional) is the engine version the scene was made for, written like `Version.release` in
+`source/engine/core/version.lua` (now `1.0.8b`: `MAJOR.MINOR.PATCH` plus `a` alpha, `b` beta or `rc`;
+no letter is stable). The loader compares it with the running engine (`Version.check`): any
+difference, older or newer, writes a console warning about possible incompatibility, and
+`package.compatibility` holds `{ status, message, declared }` (`same`, `older`, `newer`, `unknown`)
+for a launcher to show. A scene without `version` is silent. Projects declare the same in
+`source/game/data/project.lua` (`version`), checked once at startup. A mismatch never blocks loading.
+The engine's own number is `Version.release` in `source/engine/core/version.lua`.
 
 World settings apply before creation. `scene:createPhysics3D()` merges call-site
 defaults, scene settings, then explicit launch options. `physicsBackend` overrides
