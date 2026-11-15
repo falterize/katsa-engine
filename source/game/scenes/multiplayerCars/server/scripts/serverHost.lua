@@ -3,6 +3,7 @@
 -- plays through the network exactly like every other client.
 local World3D = require('source.engine.world.world')
 local Plugins = require('source.engine.plugins')
+local RootNode = require('source.engine.scenes.rootNode')
 local Statics = require('../../scripts.shared.arenaStatics')
 local GameServer = require('./gameServer')
 
@@ -21,6 +22,7 @@ function ServerHost.new(resources, options)
             fixedDelta = 1 / 60,
         },
     })
+    local root = RootNode.create(world)
     Plugins.activate(world, { 'pathfinding' })
     Statics.build({ world = world })
     local settings = {}
@@ -30,6 +32,7 @@ function ServerHost.new(resources, options)
     settings.world = world
     return setmetatable({
         world = world,
+        root = root,
         game = GameServer.new({}, settings),
         options = options,
     }, ServerHost)
@@ -52,7 +55,7 @@ end
 
 function ServerHost:stop()
     self.game:stop()
-    self.world._node:destroy()
+    self.root:destroy()
 end
 
 return ServerHost

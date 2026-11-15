@@ -7,7 +7,7 @@ geometry immutable and use copied point tables for manual changes.
 ## Manual Collider2D points
 
 ```lua
-local collider = scene.ui:create('Collider2D', {
+local collider = scene.root:find('World3D/World2D'):create('Collider2D', {
     shape = 'Polygon',
     points = {
         { -30, -30 }, { 30, -30 }, { 30, -10 },
@@ -32,7 +32,7 @@ Multiple Collider2D nodes are usually easier to inspect and edit.
 ## Collider2D from an image
 
 ```lua
-scene.ui:create('Collider2D', {
+scene.root:find('World3D/World2D'):create('Collider2D', {
     shape = 'Image',
     image = 'scene://textures/platform.png',
     size = { 256, 128 },

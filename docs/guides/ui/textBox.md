@@ -5,7 +5,7 @@ standalone scene Host route keyboard/text events to its focused instance and
 suspend gameplay movement while typing. Workspace and popup fields use this node.
 
 ```lua
-local input = scene.ui:create('TextBox', {
+local input = scene.root:find('World3D/World2D'):create('TextBox', {
     name = 'PlayerNameInput',
     text = '',
     placeholderText = 'Player name',
@@ -22,7 +22,7 @@ local input = scene.ui:create('TextBox', {
     onSubmit = function(node, text)
         print('Submitted:', text)
     end,
-}, scene.ui.content)
+}, scene.root:find('World3D/World2D').content)
 
 input:focus(true) -- Focus and select all; false/nil retains selection.
 -- input.text holds the current value, including programmatic assignments.

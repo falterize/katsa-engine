@@ -7,7 +7,8 @@ local AvatarEntity = require('../shared.avatarEntity')
 local Session = {}
 Session.__index = Session
 
--- options: port, nickname, simulate. callbacks: avatarAdded(object, netId, owned), avatarRemoved(netId),
+-- options: port, nickname, simulate, parent (the World3D node the server's nodes replicate into).
+-- callbacks: avatarAdded(object, netId, owned), avatarRemoved(netId),
 -- teleport(x, y, z), chat(author, text).
 function Session.new(world, options, callbacks)
     local client = Net.Client.new({}, {
@@ -16,7 +17,10 @@ function Session.new(world, options, callbacks)
         name = options.nickname,
         simulate = options.simulate,
     })
-    local self = setmetatable({ client = client, world = world, callbacks = callbacks }, Session)
+    local self = setmetatable(
+        { client = client, world = world, parent = options.parent, callbacks = callbacks },
+        Session
+    )
     AvatarEntity.define(client)
     client:replicate(world)
     client.entitySpawned:connect(function(object, _, netId, owned)
@@ -48,7 +52,7 @@ end
 
 -- The replicated nodes the server made, by name (nil until they have arrived).
 function Session:node(name)
-    return self.world._node:find(name, false)
+    return self.parent:find(name, false)
 end
 
 -- Publishes the local character's pose; the server validates it and the others interpolate it.

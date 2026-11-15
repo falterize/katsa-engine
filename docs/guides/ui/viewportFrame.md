@@ -4,12 +4,12 @@ Properties use the engine's lowerCamelCase convention. World3D.CurrentCamera is
 also accepted as an alias of currentCamera.
 
 ```lua
-local frame = scene.ui:create('ViewportFrame', {
+local frame = scene.root:find('World3D/World2D'):create('ViewportFrame', {
     position = { 0, 20, 0, 100 },
     size = { 0, 360, 0, 240 },
     renderScale = 1,
-}, scene.ui.content)
-local root = scene.ui:create('World3D', { name = 'PreviewWorld' }, frame)
+}, scene.root:find('World3D/World2D').content)
+local root = scene.root:find('World3D/World2D'):create('World3D', { name = 'PreviewWorld' }, frame)
 local camera = root:create('Camera3D', { position = { 0, 30, -100 } })
 root.currentCamera = camera
 root._world.environment.ambient = { 120, 140, 180 }
@@ -27,7 +27,7 @@ end)
 ```
 
 World3D roots expose create(type, properties, parent), currentCamera and update(dt).
-The existing world service and world.root remain available. Only a live Camera3D
+The world service stays available as `scene.world`. Only a live Camera3D
 belonging to that same world can be assigned. Assign nil to suspend 3D drawing
 while retaining World2D overlays. Workspace uses a camera node selector.
 

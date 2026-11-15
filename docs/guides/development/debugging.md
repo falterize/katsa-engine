@@ -20,12 +20,12 @@ for both dimensions. Gravity, gravityDirection, timeScale and currentCamera stay
 on their owning world because they control the simulation and active view.
 
 ```lua
-local environment = scene.ui.environment
+local environment = scene.root:find('World3D/World2D').environment
 -- Settings exist even before physics or particle emitters are created.
 environment.debug.physics.enabled = true
 environment.particles.maxParticles = 2048
 environment.particles.wind = { 20, 0 }
-scene.ui.currentCamera = scene.ui:create('Camera2D', { fov = 60 })
+scene.root:find('World3D/World2D').currentCamera = scene.root:find('World3D/World2D'):create('Camera2D', { fov = 60 })
 ```
 
 Debug/F4 has separate tabs for 2D Physics, 3D Physics, Rendering, Directions and

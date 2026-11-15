@@ -25,7 +25,7 @@ During content creation:
 
 ```lua
 local physics = scene:createPhysics2D()
-local ui = scene.ui
+local ui = scene.root:find('World3D/World2D')
 local camera = ui:create('Camera2D', {
     name = 'Camera2D',
     position = { 640, 360 },
@@ -157,10 +157,10 @@ in direction `{ 0, -1 }` (9.81 times the default units per meter).
 Directions are normalized for simulation; a zero direction or magnitude disables gravity.
 
 ```lua
-scene.world.root.gravity = 196.2
-scene.world.root.gravityDirection = { 0, -1, 0 }
-scene.ui.gravity = 627.84
-scene.ui.gravityDirection = { 1, 0 }
+scene.root:find('World3D').gravity = 196.2
+scene.root:find('World3D').gravityDirection = { 0, -1, 0 }
+scene.root:find('World3D/World2D').gravity = 627.84
+scene.root:find('World3D/World2D').gravityDirection = { 1, 0 }
 ```
 
 Edits apply on the next physics update and wake dynamic bodies. Worlds are independent;
@@ -212,7 +212,7 @@ The common scene main pattern is:
 
 ```lua
 function Scene.update2D(state, dt, realDt)
-    state.scene.ui:update(realDt or dt, dt)
+    state.scene.root:find('World3D/World2D'):update(realDt or dt, dt)
     state.scene.systems:update2D(dt, realDt)
 end
 ```
@@ -225,7 +225,7 @@ pauses only that physical world. Existing scene mains pass both deltas.
 
 The provided examples explicitly set `ui.autoUpdatePhysics = false` in content creation.
 Their `systems/simulation.lua` owns `Simulation:update2D(dt)` and calls
-`state.scene.ui:updatePhysics(dt)` exactly once. Disabling that system freezes the
+`state.scene.root:find('World3D/World2D'):updatePhysics(dt)` exactly once. Disabling that system freezes the
 solver while keeping menus responsive. The mixed example keeps its separate 3D update.
 Camera tracking is refreshed after the manual 2D step. For another scene, set
 `ui.autoUpdatePhysics = false`, then call
@@ -402,7 +402,7 @@ contributions without hiding the Mesh3D itself; its fallback material remains av
 ```lua
 scene.world.layerGroups:add('Effects')
 scene.world.layerGroups:add('HUDViewer')
-scene.ui.layerGroup = 'HUDViewer'
+scene.root:find('World3D/World2D').layerGroup = 'HUDViewer'
 label.layerGroup = 'Effects'
 scene.world.layerGroups:set('HUDViewer', 'Effects', false)
 ```

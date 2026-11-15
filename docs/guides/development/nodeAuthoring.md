@@ -290,7 +290,7 @@ local spinner = scene.world:create('Spinner', {
     size = { 20, 20, 20 },
     position = { 0, 20, 40 },
     spinSpeed = 90,
-}, scene.world.root)
+}, scene.root:find('World3D'))
 ```
 
 The engine handles Mesh3D mounting and schedules the custom update; the scene's

@@ -5,7 +5,7 @@ Collider2D. It uses Y-up world coordinates. Its optional adornee must be a Node2
 in the same World2D; ownership and destruction still follow Parent.
 
 ```lua
-local emitter = scene.ui:create('ParticleEmitter2D', {
+local emitter = scene.root:find('World3D/World2D'):create('ParticleEmitter2D', {
     name = 'Sparks', position = { 200, -300 },
     shape = 'Disc', shapeSize = { 30, 12 }, surfaceOnly = false,
     rate = 40, lifetime = { 1, 3 }, speed = { 80, 160 },
@@ -14,7 +14,7 @@ local emitter = scene.ui:create('ParticleEmitter2D', {
     collisionEnabled = true, collisionResponse = 'Bounce',
     restitution = 0.5, collisionFriction = 0.1,
     offscreenBehavior = 'Simulate',
-}, scene.ui)
+}, scene.root:find('World3D/World2D'))
 emitter:emit(20)
 -- emitter:clear(); emitter:setSeed(123)
 ```

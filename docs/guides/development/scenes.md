@@ -227,7 +227,7 @@ Scene scripts get the running scene as `scene` (`context.scene`, `self` in a sys
 Game                      scene.root
 ├─ World3D                the main 3D world (a node like any other)
 │  ├─ Map, Player ...     what the scene creates
-│  └─ World2D             the screen UI (also reachable as scene.ui)
+│  └─ World2D             the screen UI (`scene.root:find('World3D/World2D')`)
 ├─ ReplicatedStorage      always there; its content replicates
 └─ ServerStorage          there in single-player and on a server; a client of a remote server has none
 ```
@@ -272,8 +272,10 @@ end)
 A nested `World3D` (inside a `ViewportFrame`) is the same kind of node: its descendants are its own inner world, and `node:create` / `node:find` on it work as on the main one.
 
 `scene.world` is not a node. It is the service object of the main world: `create`, `raycast`,
-`loadModel`, layers, quality profile, lights, audio and physics access. `scene.world.root` is the
-`World3D` node and equals `scene.root:find('World3D')`.
+`loadModel`, layers, quality profile, lights, audio and physics access. Scripts reach the nodes
+through `scene.root`: there is no `scene.ui` and no `world.root`; the main UI is
+`scene.root:find('World3D/World2D')` and the world node is `scene.root:find('World3D')`. A script
+that uses the UI often keeps it in a local: `local ui = scene.root:find('World3D/World2D')`.
 
 <details><summary>Fields and methods of `scene`<br>
 </summary>
@@ -282,7 +284,6 @@ A nested `World3D` (inside a `ViewportFrame`) is the same kind of node: its desc
 | --- | --- |
 | `root` | the `Game` node described above |
 | `world` | the world service (see above) |
-| `ui` | the main `World2D`, UI under `ui.content` |
 | `camera` | the default 3D camera |
 | `physics`, `audio`, `resources`, `renderer` | services owned by the scene |
 | `settings`, `package` | the scene's `settings.lua` and archive/folder package |
@@ -353,7 +354,7 @@ project-relative paths and manifest aliases remain supported. Images, models,
 shaders and audio share these namespaces.
 
 ```lua
-scene.ui:image({ image = 'shared://audio/ui/click.jpg', size = { 0, 64, 0, 64 } })
+scene.root:find('World3D/World2D'):image({ image = 'shared://audio/ui/click.jpg', size = { 0, 64, 0, 64 } })
 scene.audio:play('shared://audio/ui/click.wav')
 scene.resources:image('portrait')
 ```

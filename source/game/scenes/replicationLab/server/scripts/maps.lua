@@ -77,8 +77,9 @@ local function addBox(world, parent, center, box, name)
 end
 
 -- storage: the ServerStorage container. Builds the templates once.
-function Maps.new(world, storage)
-    local self = setmetatable({ world = world, last = nil }, Maps)
+-- parent: the world's World3D node, where a round's map is cloned.
+function Maps.new(world, storage, parent)
+    local self = setmetatable({ world = world, parent = parent, last = nil }, Maps)
     self.folder = world:create('Folder', { name = 'Maps' }, storage)
     for _, spec in ipairs(SPECS) do
         local template = world:create('Folder', { name = spec.name }, self.folder)
@@ -102,7 +103,7 @@ function Maps:spawn()
         pick = templates[math.random(#templates)]
     until #templates == 1 or pick.name ~= self.last
     self.last = pick.name
-    local map = pick:clone({ name = 'Map' }, self.world._node)
+    local map = pick:clone({ name = 'Map' }, self.parent)
     map:setAttribute('Title', pick.name)
     for _, node in ipairs(map:getDescendants()) do
         if node.className == 'Mesh3D' then

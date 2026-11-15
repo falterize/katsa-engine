@@ -48,7 +48,7 @@ Use the project flipbook manifest schema documented in [Physics2D](../physics/ph
 This is not an importer for arbitrary XML formats from other engines or atlas tools.
 
 ```lua
-local sprite = scene.ui:create('ImageRect', {
+local sprite = scene.root:find('World3D/World2D'):create('ImageRect', {
     imageMode = 'XML',
     xml = 'scene://animations/player.xml',
     image = 'scene://textures/player-red.png', -- Optional alternate atlas with the same layout.

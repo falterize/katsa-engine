@@ -59,6 +59,7 @@ function Content.new(scene)
     self.host = GameServer.new(scene.resources, settings):start()
     self.nickname = 'Player' .. math.random(100, 999)
     self.session = Session.new(scene.world, {
+        parent = scene.root:find('World3D'),
         port = settings.port,
         nickname = self.nickname,
         simulate = settings.simulate,

@@ -1,5 +1,6 @@
 local Net = require('source.engine.net')
 local World3D = require('source.engine.world.world')
+local RootNode = require('source.engine.scenes.rootNode')
 local AvatarEntity = require('../../scripts.shared.avatarEntity')
 local Arena = require('../../scripts.shared.arena')
 local Roster = require('./roster')
@@ -16,6 +17,7 @@ GameServer.__index = GameServer
 -- resources: a scope that outlives the server. options: port, bots, simulate, maxPlayers.
 function GameServer.new(resources, options)
     local world = World3D.new(resources)
+    local root = RootNode.create(world)
     local server = Net.Server.new({}, {
         port = options.port,
         maxPlayers = options.maxPlayers or 8,
@@ -23,13 +25,13 @@ function GameServer.new(resources, options)
     })
     server:replicate(world)
     AvatarEntity.define(server)
-    local self = setmetatable({ world = world, server = server, avatars = {}, time = 0 }, GameServer)
+    local self = setmetatable({ world = world, root = root, server = server, avatars = {}, time = 0 }, GameServer)
     self.roster = Roster.new(world)
     self.chat = Chat.new(server, function(player)
         return player.name
     end)
     self.teleportRemote = server:remote('Teleport')
-    self.maps = Maps.new(world, server.replication.serverStorage)
+    self.maps = Maps.new(world, server.replication.serverStorage, root:find('World3D'))
     self.rounds = Rounds.new(world, self.roster, function(avatar, position)
         self:teleport(avatar, position)
     end, function(text)
@@ -104,7 +106,7 @@ end
 
 function GameServer:stop()
     self.server:stop()
-    self.world._node:destroy()
+    self.root:destroy()
 end
 
 return GameServer
