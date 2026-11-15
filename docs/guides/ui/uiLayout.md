@@ -113,6 +113,39 @@ Primary conventions:
 https://create.roblox.com/docs/reference/engine/enums/SizeConstraint
 https://create.roblox.com/docs/ui/position-and-size
 
+## Measuring a node
+
+`size` and `position` hold what you authored (a UDim2). Four methods return what the layout made of
+it. Each returns two numbers (no table), resolves the lazy layout first, and returns `0, 0` for a node
+that has no UI yet.
+
+| Method | Returns |
+| --- | --- |
+| `node:getAbsoluteSize()` | width, height in interface units |
+| `node:getAbsolutePosition()` | top-left corner in interface units, from the top-left of the UI, scroll offsets included |
+| `node:getPixelSize()` | width, height in window pixels |
+| `node:getPixelPosition()` | top-left corner in window pixels, letterbox offset included |
+
+Interface units are the UI's own logical resolution (for example 800x450). The window stretches
+that to the screen with `ui.scale` and `ui.offsetX/offsetY`, so pixels = units * scale (+ offset for
+positions). With scale 1 and no offset the two pairs are equal.
+
+```lua
+-- the UI is 800x450 logical units and the window shows it at scale 2
+local button = ui:button({ size = { 0.5, 0, 0, 100 } }, ui.content)
+
+button.size                      --> { 0.5, 0, 0, 100 }  what you wrote
+local w, h = button:getAbsoluteSize()   --> 400, 100      half the UI width, 100 units
+local pw, ph = button:getPixelSize()    --> 800, 200      the same on the monitor
+local x, y = button:getPixelPosition()  --> where a finger would touch its top-left corner
+```
+
+The position is absolute: a child at `position = { 0, 5, 0, 5 }` inside a panel at `{ 0, 20, 0, 30 }`
+reports `25, 35`, not `5, 5`. Rotation and scale modifiers are not included (the rectangle is the
+unrotated layout box). Use the pixel methods for anything outside the UI coordinates (taps, an ImGui
+window, a tooltip at the real screen position) and the absolute methods for layout logic inside it.
+`getScreenCenter()` is built from the pixel rectangle.
+
 ## Reference semantics
 
 The four components and anchor semantics follow [Roblox UDim2](https://create.roblox.com/docs/reference/engine/datatypes/UDim2), [UI positioning](https://create.roblox.com/docs/ui/position-and-size) and [SizeConstraint](https://create.roblox.com/docs/reference/engine/enums/SizeConstraint). Roblox SizeConstraint applies to size; the independent position-relative setting is this engine's extension.

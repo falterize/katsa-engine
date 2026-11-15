@@ -59,10 +59,11 @@ function Module.run(self)
         'Each round clones a random map from ServerStorage/Maps and replicates it'
     )
     local bot = state.host.bots.list[1].avatar
-    local x, z = bot.x, bot.z
     frames(scene, 30)
+    local x, z = bot.x, bot.z
+    frames(scene, 6) -- a short step: the heading follows the current direction, not an old turn
     local dx, dz = bot.x - x, bot.z - z
-    if dx * dx + dz * dz > 1 then
+    if dx * dx + dz * dz > 0.04 then
         local heading = math.deg(math.atan2(dx, -dz))
         self:check(
             math.abs((heading - bot.heading + 180) % 360 - 180) < 45,
@@ -70,11 +71,21 @@ function Module.run(self)
         )
     end
 
-    local coin = session:node('Coins').children[1]
+    -- Bots race for the same coins, so walk onto a few of them until one is taken.
     local count = #session:node('Coins').children
-    local at = coin.position
-    state:teleport(at[1], at[2], at[3])
-    frames(scene, 40)
+    for attempt = 1, 3 do
+        local coin = session:node('Coins').children[attempt]
+        if coin then
+            local at = coin.position
+            for _, entry in pairs(state.host.roster.entries) do
+                if entry.nickname == state.nickname then
+                    -- The server moves the avatar and asks the client to follow, as a round does.
+                    state.host:teleport(entry.entity, { at[1], at[2], at[3] })
+                end
+            end
+            frames(scene, 20)
+        end
+    end
     self:check(#session:node('Coins').children < count, 'Touching a coin makes the server delete it everywhere')
 
     state.host.rounds.clock = 0

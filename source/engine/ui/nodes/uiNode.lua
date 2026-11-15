@@ -57,13 +57,49 @@ end
 
 function UINode:pointer(ui, phase, x, y, id) end
 
--- Centre of the node in screen pixels, where a finger would touch (screen UI only).
-function UINode:getScreenCenter()
+-- Resolved layout in interface units (the UI's own logical resolution, before the window scales
+-- it). Layout is lazy, so ask the owner to resolve it first. A node that is not laid out yet
+-- (no UI) reports zeros.
+function UINode:getAbsoluteSize()
     local ui = self.ui
+    if not ui then
+        return 0, 0
+    end
     ui:layout()
-    local x, y = ui:position(self)
-    return ui.offsetX + (x + self._width / 2) * ui.scale,
-        ui.offsetY + (y + self._height / 2) * ui.scale
+    return self._width or 0, self._height or 0
+end
+
+-- Top-left corner measured from the top-left of the UI, scroll offsets included.
+function UINode:getAbsolutePosition()
+    local ui = self.ui
+    if not ui then
+        return 0, 0
+    end
+    return ui:position(self)
+end
+
+-- The same size in window pixels (interface units times the UI scale).
+function UINode:getPixelSize()
+    local width, height = self:getAbsoluteSize()
+    local scale = self.ui and self.ui.scale or 1
+    return width * scale, height * scale
+end
+
+-- The same corner in window pixels, letterbox offset included.
+function UINode:getPixelPosition()
+    local ui = self.ui
+    local x, y = self:getAbsolutePosition()
+    if not ui then
+        return x, y
+    end
+    return ui.offsetX + x * ui.scale, ui.offsetY + y * ui.scale
+end
+
+-- Centre of the node in window pixels, where a finger would touch (screen UI only).
+function UINode:getScreenCenter()
+    local x, y = self:getPixelPosition()
+    local width, height = self:getPixelSize()
+    return x + width / 2, y + height / 2
 end
 
 -- Pointer verbs for code, the same three as ClickDetector3D: the node gets the events a touch at

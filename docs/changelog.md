@@ -11,6 +11,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 - `ReplicatedStorage`/`ServerStorage` are `StorageFolder` nodes without a `replicated` switch; the inspector lists `replicatedProperties` (editable on the server and in the editor, read only on client copies).
 - A sky shader that never reads `SKY_COLOR` no longer fails on the dropped image uniforms. The header buttons spread evenly when Tools is hidden.
 - Documentation: secondary parts (platform build steps, reference tables, errors, internals) are collapsible `<details>` blocks; the rule is in `docs/AGENTS.md`.
+- `UINode:getAbsoluteSize/getAbsolutePosition` (interface units) and `getPixelSize/getPixelPosition` (window pixels) report the resolved layout; `getScreenCenter` uses them. Guide: `docs/guides/ui/uiLayout.md`. Test: `v108_8/uiMeasure.lua`.
 
 - `shader_type sky` and `shader_type fog` (Godot 4 style) on `Shader3D` nodes: a custom background and a per-sample volumetric fog density, colour and glow.
 - Spatial shaders: `SCREEN_UV`, `hint_screen_texture`, `hint_depth_texture`; the Inspector's uniform editor follows `hint_range`, `source_color`, `hint_enum`.
