@@ -8,8 +8,8 @@ from io import BytesIO
 from PIL import Image
 
 root = Path(__file__).resolve().parents[2]
-source = root / 'assets/sources/textures/sky/dayCross-original.png'
-output = root / 'assets/textures/sky/dayCross.png'
+source = root / 'assets/textures/engine/sky/cross.png'
+output = root / 'assets/textures/engine/sky/dayCross.png'
 if not source.exists():
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_bytes(output.read_bytes())

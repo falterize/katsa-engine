@@ -29,7 +29,8 @@ function Tests.run(tester)
             size = { 2, 3, 4 },
         }, body)
         for _, filename in ipairs({ 'pyramid.obj', 'cubeTriangle.glb', 'skinRibbon.gltf' }) do
-            local path = 'shared://models/examples/' .. filename
+            local path = filename == 'skinRibbon.gltf' and 'validation/tests/fixtures/models/' .. filename
+                or 'shared://models/examples/' .. filename
             local count = #world._node:getDescendants()
             collider.shape, collider.geometrySource = 'Geometry', path
             local points, indices = collider:getPointsFromModel()

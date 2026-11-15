@@ -53,7 +53,7 @@ function Test:update()
         self:check(ramp.track.elapsed == 0, 'Playing true restarts Ramp from the beginning')
         local sound = scene.world:create(
             'Sound',
-            { resource = 'assets/audio/ambient/ambient.wav', looped = true, playing = true }
+            { resource = 'validation/tests/fixtures/audio/ambient.wav', looped = true, playing = true }
         )
         sound.Enabled = false
         self:check(
@@ -162,7 +162,7 @@ function Test:update()
             'Cube and floating triangle share one asset with separate mesh bodies'
         )
         local root, ribbon = scene.world:loadModel(
-            'assets/models/examples/skinRibbon.gltf',
+            'validation/tests/fixtures/models/skinRibbon.gltf',
             { name = 'Ribbon', position = { -110, 10, 50 }, scale = { 12, 12, 12 } }
         )
         local marker = false

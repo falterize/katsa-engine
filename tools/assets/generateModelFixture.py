@@ -145,7 +145,7 @@ d = {
 }
 js = json.dumps(d).encode()
 js += b' ' * ((-len(js)) % 4)
-p = Path('assets/models/examples/skinRibbon.glb')
+p = Path('validation/tests/fixtures/models/skinRibbon.glb')
 p.write_bytes(
     struct.pack('<4sII', b'glTF', 2, 28 + len(js) + len(binary))
     + struct.pack('<II', len(js), 0x4E4F534A)

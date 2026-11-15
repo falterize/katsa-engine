@@ -17,7 +17,7 @@ def sound(name, seconds, frequencies, volume):
         envelope = min(1, t * 30, (seconds - t) * 20)
         value = sum(math.sin(t * f * math.tau) for f in frequencies) / len(frequencies)
         samples.append(struct.pack('<h', int(value * volume * envelope * 32767)))
-    destination = ROOT / 'assets/audio' / ('ambient' if name == 'ambient.wav' else 'effects') / name
+    destination = (ROOT / 'validation/tests/fixtures/audio' / name) if name == 'ambient.wav' else (ROOT / 'assets/audio/effects' / name)
     destination.parent.mkdir(parents=True, exist_ok=True)
     with wave.open(str(destination), 'wb') as output:
         output.setparams((1, 2, rate, 0, 'NONE', 'not compressed'))

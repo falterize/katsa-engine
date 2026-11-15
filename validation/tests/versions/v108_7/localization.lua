@@ -56,7 +56,7 @@ function Tests.run(tester)
     ui:destroy()
 
     local real = Localization.new()
-    local codes = real:loadDirectory(tester.manager.resources:scope(), 'shared://locales')
+    local codes = real:loadDirectory(tester.manager.resources:scope(), 'game/scenes/localizationLab/assets/locales')
     tester:check(#codes >= 3 and real:setLocale('de') and real:t('lab.items', { count = 3 }) == '3 Gegenstände im Beutel', 'locale files load from a folder')
 end
 

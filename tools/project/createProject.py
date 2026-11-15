@@ -34,7 +34,8 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
         )
         for directory in (
             'source/engine', 'vendor', 'assets/shaders', 'assets/textures/internal',
-            'assets/textures/particles', 'assets/textures/sky', 'tools/run', 'tools/build',
+            'assets/textures/particles', 'assets/textures/engine', 'assets/fonts/engine', 'tools/run',
+            'tools/build',
         ):
             shutil.copytree(source / directory, stage / directory,
                             ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))

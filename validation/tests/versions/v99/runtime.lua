@@ -41,8 +41,8 @@ local function extra(test)
     keyedImage:release()
     keyed:release()
     key:release()
-    local original = katsa.image.newImageData('assets/sources/textures/sky/dayCross-original.png')
-    local optimized = katsa.image.newImageData('assets/textures/sky/dayCross.png')
+    local original = katsa.image.newImageData('assets/textures/engine/sky/cross.png')
+    local optimized = katsa.image.newImageData('assets/textures/engine/sky/dayCross.png')
     test:check(
         original:getFormat() == optimized:getFormat()
             and original:getString() == optimized:getString(),

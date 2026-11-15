@@ -9,7 +9,7 @@ function Content.new(scene)
     scene.camera.position = { 0, 30, -80 }
     scene.world.environment.debug.gizmos.enabled = false
     local service = Localization.get()
-    service:loadDirectory(scene.resources, 'shared://locales')
+    service:loadDirectory(scene.resources, 'scene://locales')
     service:setLocale(service:detect())
     return setmetatable({ scene = scene, items = 1, service = service }, Content)
 end

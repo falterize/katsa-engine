@@ -255,11 +255,11 @@ function Tests.run(tester)
             input.captureWanted and not scene.navigation.visible,
             'Touching Resume game returns to gameplay'
         )
-        local rootA, modelA = scene.world:loadModel('assets/models/examples/skinRibbon.glb', {
+        local rootA, modelA = scene.world:loadModel('validation/tests/fixtures/models/skinRibbon.glb', {
             name = 'FourWeightProbeA',
             position = { 20, 0, 0 },
         })
-        local rootB, modelB = scene.world:loadModel('assets/models/examples/skinRibbon.glb', {
+        local rootB, modelB = scene.world:loadModel('validation/tests/fixtures/models/skinRibbon.glb', {
             name = 'FourWeightProbeB',
             position = { 24, 0, 0 },
         })

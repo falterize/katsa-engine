@@ -185,8 +185,8 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 - Image-bearing nodes use `components/media/image.lua` (sampler, XML and UV policy). XML mode: `xml` visible only in XML mode, `atlasFrame` editable in Atlas/XML; XML owns grid/filter and fills `image` automatically but `image` stays an editable override. Rebind only when the manifest path or resource owner changes; rendering never creates playback or resets `atlasFrame`.
 - Invalid XML or incompatible atlas art reports diagnostics and renders a checker; it never asserts from a render callback.
 - Models: glTF accessors are read with typed arrays; preserve glTF transforms; cache successful and failed loads. Skin limits: `docs/guides/rendering/skinLimits.md`.
-- Fonts: `font` property on Label/Button/TextBox resolves like image paths (`shared://fonts/test-font`); a missing file warns and falls back.
-- Asset ownership: engine files live in `assets/<kind>/engine/` (default font `assets/fonts/engine/DejaVuSans.ttf`, shaders `assets/shaders/engine/`); a file used by one scene belongs in that scene's `assets/` and is read as `scene://...`; only files used by several scenes stay in the shared `assets/`.
+- Fonts: `font` property on Label/Button/TextBox resolves like image paths (`shared://fonts/engine/DejaVuSans`); a missing file warns and falls back.
+- Asset ownership: engine files live in `assets/<kind>/engine/` (default font `assets/fonts/engine/DejaVuSans.ttf`, default sky `assets/textures/engine/sky/` with its full-quality original `cross.png` for `tools/assets/optimizeSky.py`, shaders `assets/shaders/engine/`); a file used by one scene belongs in that scene's `assets/` and is read as `scene://...`; only files used by several scenes stay in the shared `assets/`.
 - Save directory: `Katsa/katsa-engine` (older builds used a nested folder; leave old files alone).
 
 ## 15. Sandbox pitfalls

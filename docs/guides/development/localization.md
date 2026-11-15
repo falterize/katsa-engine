@@ -5,7 +5,7 @@
 ```lua
 local Localization = require('source.engine.localization')
 local L = Localization.get()                          -- the shared service
-L:loadDirectory(scene.resources, 'shared://locales')  -- en.lua, ru.lua, de.lua
+L:loadDirectory(scene.resources, 'scene://locales')  -- en.lua, ru.lua, de.lua
 L:setLocale(L:detect())                               -- system language, else the fallback (en)
 L:t('menu.play')                                      -- 'Play'
 L:t('lab.items', { count = 5 })                       -- plural form + {count}

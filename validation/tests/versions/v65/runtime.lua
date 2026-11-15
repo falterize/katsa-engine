@@ -65,12 +65,12 @@ function T:update()
         local field = { key = 'texture', kind = 'string' }
         self:check(
             not Properties.set(scene, sky, field, 'assets/missing-sky.png')
-                and sky.texture == 'assets/textures/sky/dayCross.png',
+                and sky.texture == 'assets/textures/engine/sky/dayCross.png',
             'Missing sky path is rejected without changing texture'
         )
         self:check(not Properties.set(scene, sky, field, 'white'), 'Non-cross texture is rejected')
         self:check(
-            Properties.set(scene, sky, field, 'assets/textures/sky/dayCross.png'),
+            Properties.set(scene, sky, field, 'assets/textures/engine/sky/dayCross.png'),
             'Valid sky path is editable'
         )
         self.expectedErrors = #self.manager.journal.entries

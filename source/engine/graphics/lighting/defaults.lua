@@ -47,7 +47,7 @@ function Defaults.create()
         gizmos = gizmos, -- Previous API shares the canonical debug settings.
         sky = {
             enabled = true,
-            texture = 'assets/textures/sky/dayCross.png',
+            texture = 'assets/textures/engine/sky/dayCross.png',
             pixelate = false,
             _settingsKind = 'Sky',
             color = { 255, 255, 255 },

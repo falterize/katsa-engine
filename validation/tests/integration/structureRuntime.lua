@@ -23,7 +23,7 @@ function Tests:draw()
     local scope = self.manager.resources:scope()
     for _, path in ipairs({
         'game/scenes/models/assets/models/animated.glb',
-        'assets/models/examples/skinRibbon.glb',
+        'validation/tests/fixtures/models/skinRibbon.glb',
     }) do
         local model = GLB.load(path, scope)
         assert(#model.nodes > 0, 'Legacy GLB reader returned no nodes')

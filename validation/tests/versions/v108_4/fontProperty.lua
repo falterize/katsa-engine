@@ -7,14 +7,14 @@ function Module.run(self)
     local resources = self.manager.resources:scope()
     local ui = UI.new(400, 240, resources)
     local plain = ui:rasterFont(20)
-    local custom = ui:rasterFont(20, 'shared://fonts/test-font')
+    local custom = ui:rasterFont(20, 'validation/tests/fixtures/fonts/test-font')
     self:check(custom ~= plain, 'font path yields a different font object than the default')
     self:check(
         custom:getWidth('Test') ~= plain:getWidth('Test'),
         'custom font has its own glyph metrics'
     )
     self:check(
-        ui:rasterFont(20, 'shared://fonts/test-font') == custom,
+        ui:rasterFont(20, 'validation/tests/fixtures/fonts/test-font') == custom,
         'custom fonts are cached per path and size'
     )
     self:check(
@@ -23,13 +23,13 @@ function Module.run(self)
     )
     local label = ui:create(
         'Label',
-        { x = 0, y = 0, width = 200, height = 40, text = 'Hello', font = 'shared://fonts/test-font' },
+        { x = 0, y = 0, width = 200, height = 40, text = 'Hello', font = 'validation/tests/fixtures/fonts/test-font' },
         ui.content
     )
     ui:layout()
     require('source.engine.ui.drawing.text').prepare(ui, label)
     self:check(
-        label._textLines ~= nil and label.font == 'shared://fonts/test-font',
+        label._textLines ~= nil and label.font == 'validation/tests/fixtures/fonts/test-font',
         'Label keeps the font property'
     )
     label.font = ''
