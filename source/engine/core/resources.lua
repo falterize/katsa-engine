@@ -4,7 +4,7 @@ local Paths = require('../scenes.paths')
 local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 -- Reference-counted immutable assets shared by explicit scene scopes.
-local missingImage = 'assets/textures/internal/missing.png'
+local missingImage = 'assets/textures/engine/missing.png'
 local Resources = {}
 Resources.__index = Resources
 

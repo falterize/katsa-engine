@@ -74,7 +74,7 @@ function Models.load(path, resources)
                     {
                         name = 'MissingModel',
                         geometry = geometry,
-                        material = { image = 'assets/textures/internal/missing.png' },
+                        material = { image = 'assets/textures/engine/missing.png' },
                     },
                 },
                 animations = {},

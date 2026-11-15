@@ -33,8 +33,8 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
             encoding='utf-8', newline='\n',
         )
         for directory in (
-            'source/engine', 'vendor', 'assets/shaders', 'assets/textures/internal',
-            'assets/textures/particles', 'assets/textures/engine', 'assets/fonts/engine', 'tools/run',
+            'source/engine', 'vendor', 'assets/shaders',
+            'assets/textures/engine', 'assets/fonts/engine', 'tools/run',
             'tools/build',
         ):
             shutil.copytree(source / directory, stage / directory,

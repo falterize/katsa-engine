@@ -1,5 +1,5 @@
 return {
-    white = { path = 'assets/textures/internal/white.png', filter = 'nearest' },
+    white = { path = 'assets/textures/engine/white.png', filter = 'nearest' },
     ['demoSky'] = { path = 'assets/textures/engine/sky/dayCross.png', filter = 'linear' },
     ['bricks'] = { path = 'assets/textures/surfaces/bricks.jpg', filter = 'linear' },
     ['skebob'] = { path = 'assets/textures/characters/skebob.jpg', filter = 'linear' },

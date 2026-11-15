@@ -142,7 +142,7 @@ function FlipbookXml.bind(resources, target, source)
                     or image:getHeight() ~= definition.rows * definition.frameHeight
                 )
             then
-                selected = 'assets/textures/internal/missing.png'
+                selected = 'assets/textures/engine/missing.png'
                 if resources.store.journal then
                     resources.store.journal:record(
                         'Resources',

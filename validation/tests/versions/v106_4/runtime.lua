@@ -44,13 +44,13 @@ function Tests:package(source)
     )
     self:check(resources:image('thumbnail') == image, 'Manifest alias shares the same image')
     self:check(
-        second:image('shared://textures/internal/white.png')
-            == resources:image('assets/textures/internal/white.png'),
+        second:image('shared://textures/engine/white.png')
+            == resources:image('assets/textures/engine/white.png'),
         'Shared and ordinary paths share one native asset'
     )
     self:check(
-        resources:canonical('shared://textures/../textures/internal/white.png')
-            == 'assets/textures/internal/white.png',
+        resources:canonical('shared://textures/../textures/engine/white.png')
+            == 'assets/textures/engine/white.png',
         'URI normalization remains inside its namespace'
     )
     self:check(

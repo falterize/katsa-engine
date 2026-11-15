@@ -13,7 +13,7 @@ local Brightness = require('../../components.rendering.brightness')
 
 Ribbon.defaults = {
     color = { 1, 1, 1 },
-    texture = 'assets/textures/internal/white.png',
+    texture = 'assets/textures/engine/white.png',
     textureMode = 'Stretch',
     textureLength = 1,
     textureSpeed = 0,

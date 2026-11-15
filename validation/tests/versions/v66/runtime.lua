@@ -83,7 +83,7 @@ function T:update()
                 ),
                 'Direct mesh texture is rejected'
             )
-            local broken = 'assets/textures/internal/broken-test.png'
+            local broken = 'assets/textures/engine/broken-test.png'
             -- This existing text file deliberately tests the corrupt-image fallback without adding an asset.
             scene.resources:image('README.md')
             self:check(

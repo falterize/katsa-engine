@@ -9,7 +9,7 @@
 - Put texture sampling and map settings in SurfaceAppearance3D, spatial transforms
   in Node3D/Mesh3D and shader behavior in Shader3D. Shared composition helpers create
   real inspectable children and do not move game behavior into the engine.
-- textures: surfaces, sky, ui, characters, particles, materials, internal.
+- textures: surfaces, sky, ui, characters, particles, materials, engine (sky and diagnostic images).
   audio: music, ambient, effects. models: characters, examples, sources.
   shaders: engine, examples, particles. Keep paired model sidecars/MTLs adjacent.
 - Engine UI: drawing, input, layout, spatial and node definitions. Renderer: pipeline,
