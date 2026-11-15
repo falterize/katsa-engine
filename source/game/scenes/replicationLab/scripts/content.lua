@@ -21,6 +21,7 @@ local function buildTree(scene, player)
     HeroTree.build(scene.world, tree)
     tree:set('speed', 0)
     tree:set('stride', 1)
+    tree:set('crouchRate', 0)
     tree:set('stance', 'Stand')
     tree:set('squat', 0)
     tree:set('grounded', true)
@@ -105,7 +106,7 @@ function Content:updateNetwork(dt)
     local matrix = player.body.node:getRenderWorldMatrix()
     local speed = math.sqrt(player.velocity[1] ^ 2 + player.velocity[3] ^ 2)
     self.tree:set('speed', math.min(1, speed / WALK_SPEED))
-    self.tree:set('stride', HeroTree.stride(speed))
+    HeroTree.setRate(self.tree, player.walkScale, speed)
     self.tree:set('stance', player.input.crouch and 'Crouch' or 'Stand')
     self.tree:set('grounded', player.grounded)
     player.model.root.rotation[2] = math.deg(player.smooth.yaw:sampleFor(player.body.space))
@@ -115,7 +116,9 @@ function Content:updateNetwork(dt)
         matrix[12],
         player.model.root.rotation[2],
         speed,
-        not player.grounded
+        not player.grounded,
+        player.walkScale,
+        player.input.crouch == true
     )
     self.host:update(dt)
     self.session:update(dt)

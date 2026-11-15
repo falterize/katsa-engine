@@ -112,6 +112,7 @@ function Bots:update(dt, rounds)
         a.x = a.x + math.sin(rad) * bot.v * dt
         a.z = a.z - math.cos(rad) * bot.v * dt
         a.speed = bot.v
+        a.walkScale = bot.v > 0.2 and 2.5 or 0
         -- Stand on the map: rise and fall toward the ground height (that shows as a jump).
         local ground = self.maps:heightAt(a.x, a.z) + 1
         local climb = math.max(-RISE * dt * 1.5, math.min(RISE * dt, ground - a.y))

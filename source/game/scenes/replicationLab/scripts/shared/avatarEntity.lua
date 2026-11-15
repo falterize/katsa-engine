@@ -11,6 +11,9 @@ function AvatarEntity.create(_, args)
         z = args.z or 0,
         heading = 0,
         speed = 0,
+        -- The walk cycle's rate (negative when walking backward, 0 on the spot) and the crouch stance.
+        walkScale = 0,
+        crouch = false,
         air = false,
         name = args.name or 'Player',
         bot = args.bot == true,
@@ -58,7 +61,7 @@ function AvatarEntity.define(endpoint)
         set = set,
         validate = validate,
         clientAuthoritative = true,
-        fields = { 'position:vec3', 'heading:angle', 'speed:f32', 'air:bool' },
+        fields = { 'position:vec3', 'heading:angle', 'speed:f32', 'walkScale:f32', 'crouch:bool', 'air:bool' },
     })
 end
 

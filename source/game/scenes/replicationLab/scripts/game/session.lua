@@ -56,10 +56,11 @@ function Session:node(name)
 end
 
 -- Publishes the local character's pose; the server validates it and the others interpolate it.
-function Session:publish(x, y, z, heading, speed, air)
+function Session:publish(x, y, z, heading, speed, air, walkScale, crouch)
     local own = self.own
     if own then
         own.x, own.y, own.z, own.heading, own.speed, own.air = x, y, z, heading, speed, air
+        own.walkScale, own.crouch = walkScale or 0, crouch == true
     end
 end
 

@@ -87,6 +87,42 @@ function Module.run(self)
         HeroTree.stride(0) == 1 and HeroTree.stride(5) == 2.5 and HeroTree.stride(8) == 3.5,
         'The walk cycle plays at the controller scene rate: 2.5x walking, 3.5x running, idle 1x'
     )
+    local set = {}
+    local fake = {
+        set = function(_, key, value)
+            set[key] = value
+        end,
+    }
+    HeroTree.setRate(fake, 0, 0)
+    self:check(set.stride == 1 and set.crouchRate == 0, 'Standing still: idle at 1x and the crouch pose holds (rate 0)')
+    HeroTree.setRate(fake, -1.5, 3.25)
+    self:check(
+        set.crouchRate == -1.5 and set.stride < 0,
+        'Moving backward plays the walk and crouch clips with a negative multiplier'
+    )
+    HeroTree.setRate(fake, 2.5, 5)
+    self:check(set.stride == 2.5 and set.crouchRate == 2.5, 'Walking forward plays them at the controller rate')
+    -- The real tree: a negative rate reaches the tracks, and 0 freezes the crouch clip.
+    local engineTree = state.tree.tree
+    local function crouchSpeed()
+        for _, leaf in ipairs(engineTree.leaves) do
+            if leaf.definition.name == 'CrouchClip' then
+                return leaf.track.speed
+            end
+        end
+    end
+    state.tree:set('stance', 'Crouch')
+    HeroTree.setRate(state.tree, -1.5, 3.25)
+    for _ = 1, 40 do
+        engineTree:update(1 / 60)
+    end
+    local backward = crouchSpeed()
+    HeroTree.setRate(state.tree, 0, 0)
+    engineTree:update(1 / 60)
+    self:check(
+        backward and backward < 0 and crouchSpeed() == 0,
+        'The crouch track plays backward when walking backward and stops on the spot'
+    )
     local bot = state.host.bots.list[1].avatar
     frames(scene, 30)
     local x, z = bot.x, bot.z
