@@ -3,7 +3,7 @@ return function(test)
     local Resources = require('source.engine.core.resources')
     local World3D = require('source.engine.world.world')
     local Renderer = require('source.engine.graphics.pipeline.renderer')
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local settings = require('game.data.settings').create()
     settings.shadows.enabled = true
     settings.shadows.resolution = 64

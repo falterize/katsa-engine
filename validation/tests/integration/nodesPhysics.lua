@@ -31,7 +31,7 @@ return function(test)
         cleaned and attachment.destroyed,
         'Destroy releases descendants and cleanup handlers'
     )
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local ui = UI.new(1280, 720, resources)
     local panel = ui:create('ScrollFrame', {
         position = UI.udim2(1, -20, 0.5, 0),

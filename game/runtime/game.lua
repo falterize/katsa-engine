@@ -67,7 +67,7 @@ function Game:load()
         )
     self.settings = self.package.settings
     self.zone = self.package.id
-    local manifest = Loader.manifest(require('game.data.manifest'), self.settings.assets)
+    local manifest = Loader.manifest({}, self.settings.assets)
     self.resources = self.manager.resources:scope(manifest, self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
     profiler:markLoad('Open package, resources and audio')

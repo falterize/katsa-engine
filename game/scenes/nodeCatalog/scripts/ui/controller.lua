@@ -11,8 +11,7 @@ end
 
 function Scene:load()
     self.settings = self.package.settings
-    self.resources =
-        self.manager.resources:scope(require('game.data.manifest'), self.package.paths)
+    self.resources = self.manager.resources:scope({}, self.package.paths)
     require('source.engine.ui.sceneRoot').create(self, 1280, 720)
     self.input = Input.new(self)
     self.panel = self._ui:container({

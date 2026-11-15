@@ -112,7 +112,6 @@ game/scenes/original/assets/audio
 game/scenes/original/assets/fonts
 game/scenes/original/assets/models
 game/scenes/original/assets/shaders
-game/scenes/original/assets/textures
 game/scenes/original/nodes
 game/scenes/particles/assets/audio
 game/scenes/particles/assets/fonts

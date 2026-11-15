@@ -118,7 +118,7 @@ Both the collection and generated games install `source.engine.scenes.bootstrap`
 The root `main.lua` only supplies project configuration and optional adapters.
 Input, touch, focus, visibility, resize, draw/update, file drops, errors, shutdown,
 frame pacing and smoke tests share the same implementation. The collection adds
-its demo scene factory, manifest, legacy migration and test registry through
+its demo scene factory, legacy migration and test registry through
 `game/runtime/startup.lua`. Those adapters are not copied into a new game.
 
 `conf.lua` uses `source.engine.core.windowConfig` with `game/data/project.lua`.

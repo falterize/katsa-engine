@@ -18,7 +18,7 @@ local function active(world, object)
 end
 
 local function world3D()
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local settings = require('game.data.settings').create()
     settings.gizmos.enabled, settings.shadows.enabled = false, false
     return World3D.new(resources, settings), resources

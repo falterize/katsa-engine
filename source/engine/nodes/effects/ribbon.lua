@@ -13,7 +13,7 @@ local Brightness = require('../../components.rendering.brightness')
 
 Ribbon.defaults = {
     color = { 1, 1, 1 },
-    texture = 'assets/textures/engine/fallback/white.png',
+    texture = 'white',
     textureMode = 'Stretch',
     textureLength = 1,
     textureSpeed = 0,

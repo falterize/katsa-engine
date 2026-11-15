@@ -16,7 +16,7 @@ The dependency direction is game → engine → vendor. Engine services do not d
 | `engine/scenes` | Package loading, archive mounts, resource namespaces and named systems |
 | `game/scenes` | Scene packages with settings, main entry points and private assets/scripts |
 | `game/runtime` | Common gameplay host, update/draw phases, input and overlays |
-| `game/ui`, `game/data` | Common Stats adapter, resource manifest, startup scene and defaults |
+| `game/ui`, `game/data` | Common Stats adapter, startup scene and defaults |
 
 Named Lua modules use the same shape: imports, local bindings, a module table, private helpers, named functions, and the final table export. Factories expose `create`/`new`; example builders expose `build`; class installers expose `install`; node registration uses `register`. Stateful methods use `:` and stateless helpers use `.`. These roles share the same source layout.
 

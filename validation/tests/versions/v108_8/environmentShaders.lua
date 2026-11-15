@@ -9,7 +9,7 @@ local WIDTH, HEIGHT = 160, 90
 local fixtures = 'validation/tests/fixtures/shaders/'
 
 local function build()
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local settings = require('game.data.settings').create()
     settings.gizmos.enabled, settings.shadows.enabled = false, false
     local world = World3D.new(resources, settings)

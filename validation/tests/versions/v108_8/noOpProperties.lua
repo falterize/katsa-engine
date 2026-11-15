@@ -22,7 +22,7 @@ function Module.run(self)
             self:check(omitted[key], name .. ' omits ' .. key)
         end
     end
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local world = World3D.new(resources, require('game.data.settings').create())
     local bone = world:create('Bone3D', {})
     for _, row in ipairs(Properties.list(bone)) do

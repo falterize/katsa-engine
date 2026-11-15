@@ -26,7 +26,7 @@ function T:draw()
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Resources = require('source.engine.core.resources')
     local World = require('source.engine.world.world')
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local settings = require('source.engine.graphics.lighting.defaults').create()
     settings.sky.enabled, settings.fog.enabled = false, false
     settings.debug.gizmos.enabled = false

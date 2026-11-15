@@ -20,6 +20,9 @@ local Settings = {
     -- The game server runs inside this process on its own headless world; the client joins it
     -- through the loopback like any other player.
     net = { port = 47820, bots = 3, simulate = nil },
+    assets = {
+        stone = { path = 'shared://textures/surfaces/stone.png', filter = 'nearest' },
+    },
 }
 
 return Settings

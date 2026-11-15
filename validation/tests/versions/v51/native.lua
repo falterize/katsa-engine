@@ -17,7 +17,7 @@ return function(test)
     local function near(a, b)
         return math.abs(a - b) < 0.0001
     end
-    local resources = Resources.new(require('game.data.manifest'))
+    local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local v = V2.new(0.1, 4)
     v.Offset = 6
     check(

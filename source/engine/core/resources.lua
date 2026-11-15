@@ -5,6 +5,9 @@ local ipairs = require('../math.array').ipairs
 local pairs = require('../math.array').pairs
 -- Reference-counted immutable assets shared by explicit scene scopes.
 local missingImage = 'assets/textures/engine/fallback/missing.png'
+-- The plain-fill texture every object without an image is tinted through; it has no file, the
+-- engine creates it (a manifest or scene entry named `white` still takes precedence).
+local whiteImage = 'builtin:white'
 local Resources = {}
 Resources.__index = Resources
 
@@ -41,6 +44,9 @@ end
 function Resources:canonical(path)
     local entry = self.manifest[path]
     path = entry and entry.path or path
+    if path == whiteImage then
+        return path
+    end
     local cached = self.canonicalPaths[path]
     if cached then
         return cached
@@ -161,6 +167,9 @@ function Resources:imageVariant(name, pixel)
     end
     local entry = self.manifest[name]
     local authored = entry and entry.path or name
+    if name == 'white' and not entry then
+        authored = whiteImage
+    end
     local filter = pixel == nil and (entry and entry.filter or 'linear')
         or (pixel and 'nearest' or 'linear')
     local lookup = self.imageLookups[name]
@@ -174,9 +183,22 @@ function Resources:imageVariant(name, pixel)
     end
     local path = self:canonical(authored)
     local image = self:cached('image', path .. '|' .. filter, function(owner)
-        local value = owner:loadImage(path, path)
+        local value
+        if path == whiteImage then
+            local data = katsa.image.newImageData(1, 1)
+            data:mapPixel(function()
+                return 1, 1, 1, 1
+            end)
+            value = owner:loadImage(data, path)
+            data:release()
+        else
+            value = owner:loadImage(path, path)
+        end
         local anisotropy = math.min(8, katsa.graphics.getSystemLimits().textureanisotropy or 1)
         local sampler = (path == missingImage or owner.imageErrors[path]) and 'nearest' or filter
+        if path == whiteImage then
+            sampler = 'nearest'
+        end
         value:setFilter(sampler, sampler, sampler == 'linear' and anisotropy or 1)
         if sampler == 'linear' and value:getMipmapCount() > 1 then
             value:setMipmapFilter('linear')

@@ -3,7 +3,7 @@ return function(test)
         test:check(ok, msg)
     end
     local Resources = require('source.engine.core.resources')
-    local r = Resources.new(require('game.data.manifest'))
+    local r = Resources.new(require('validation.tests.fixtures.manifest'))
     local child = r:scope()
     local image = r:image('white')
     check(child:image('white') == image, 'Resource scopes share the same texture')
