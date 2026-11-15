@@ -43,7 +43,7 @@ function Image.resolve(resources, node, source, environment)
                 node,
                 source
             )
-            local resolved = ok and node._xmlBinding.image or 'assets/textures/engine/missing.png'
+            local resolved = ok and node._xmlBinding.image or 'assets/textures/engine/fallback/missing.png'
             if not ok and resources.store.journal then
                 resources.store.journal:record(
                     'Resources',

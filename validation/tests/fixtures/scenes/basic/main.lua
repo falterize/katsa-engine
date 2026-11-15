@@ -18,7 +18,7 @@ function Scene:buildUI()
     }, self.scene.root:find('World3D/World2D').content)
     self.scene.root:find('World3D/World2D'):create('ImageRect', {
         name = 'SharedImage',
-        image = 'shared://textures/engine/white.png',
+        image = 'shared://textures/engine/fallback/white.png',
         position = { 0, 56, 0, 0 },
         size = { 0, 48, 0, 48 },
     }, self.scene.root:find('World3D/World2D').content)
