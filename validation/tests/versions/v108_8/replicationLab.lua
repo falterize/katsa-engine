@@ -123,6 +123,28 @@ function Module.run(self)
         backward and backward < 0 and crouchSpeed() == 0,
         'The crouch track plays backward when walking backward and stops on the spot'
     )
+    -- Every node the server marks replicated is a replica on the client, and nothing else is.
+    local function walk(node, visit)
+        visit(node)
+        for _, child in ipairs(node.children) do
+            walk(child, visit)
+        end
+    end
+    local marked, seen, replicas = {}, 0, 0
+    walk(state.host.world._node, function(node)
+        if rawget(node, 'replicated') == true then
+            marked[#marked + 1] = node.className .. ' ' .. node:getFullName()
+        end
+    end)
+    walk(scene.root:find('World3D'), function(node)
+        if rawget(node, 'replica') then
+            replicas = replicas + 1
+            if rawget(node, 'replicated') == true then
+                seen = seen + 1
+            end
+        end
+    end)
+    self:check(#marked == replicas and seen == replicas, 'The client has a replica, flagged replicated, for every server-marked node')
     local bot = state.host.bots.list[1].avatar
     frames(scene, 30)
     local x, z = bot.x, bot.z

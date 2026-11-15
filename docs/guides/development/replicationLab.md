@@ -16,6 +16,25 @@ Example of node replication: rounds, teleporting, nicknames and chat on a hosted
   character is carried by moving ones through `Player.carrier`. Bots stand on the map through
   `Maps:heightAt`, because the server has no physics.
 
+<details><summary>What carries `replicated = true`</summary><br>
+
+On the server world, the nodes that reach every client are exactly these (a client copy shows
+`replicated = true` too, read-only, with the property list the server sends):
+
+| Node | Created in | Replicated properties |
+| --- | --- | --- |
+| `Players` and one folder per player or bot | `roster.lua` | none (attributes `Nickname`, `Score`) |
+| `Round` | `rounds.lua` | none (attributes `State`, `Timer`, `Message`, `Map`) |
+| `Coins` and every `Coin<N>` | `rounds.lua` | coins: `kind`, `position`, `size`, `color` |
+| `Platform` | `gameServer.lua` | `position`, `size`, `color` |
+| `Map` and its `<Map>Part<N>` boxes | `maps.lua` (clone of a `ServerStorage/Maps` template) | boxes: `kind`, `position`, `size`, `color` |
+
+Everything inside `ReplicatedStorage` replicates without the flag. `ServerStorage` never does.
+Avatars are net entities, not nodes, so they do not appear in the tree (their model nodes are
+local to each client).
+
+</details>
+
 <details><summary>Adding a map</summary><br>
 
 Add a spec (boxes `{ x, y, z, width, height, depth, color }` around the arena centre and coins
