@@ -5,6 +5,10 @@ Shader.propertySchema = {
     shaderPath = {},
     shaderTransparency = { min = 0, max = 1 },
     shaderLayer = {},
+    tagDepth = {
+        min = -1,
+        hint = 'Levels below a #shader- tagged node that the shader reaches (0 = the node only); -1 = the whole subtree.',
+    },
     zIndex = {},
     uniforms = { kind = 'bindings' },
 }
@@ -21,6 +25,7 @@ function Shader.initialize(self)
     self.zIndex = self._zIndexAuthored and self.zIndex or self.order or self.zIndex or 0
     self.order = nil
     self.uniforms = self.uniforms or {}
+    self.tagDepth = self.tagDepth or -1
 end
 
 return Shader

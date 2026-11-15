@@ -49,8 +49,9 @@ function Resolver.resolve(world, object)
         then
             local ancestor = object
             if Tags.has(shader) then
-                -- A tagged shader acts on the nodes that carry its tag, wherever they are.
-                if Tags.shares(shader, object) then
+                -- A tagged shader acts on the nodes that carry its tag (and their descendants,
+                -- within the tag's depth), wherever they are.
+                if Tags.applies(shader, object) then
                     nodes[#nodes + 1] = shader
                 end
                 ancestor = nil

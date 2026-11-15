@@ -1,19 +1,45 @@
 local pairs = require('../../math.array').pairs
 
--- Shader tags bind a shader node to objects through the ordinary tag system: a Shader3D or
--- Shader2D tagged `#shader-<group>` acts only on nodes of its world kind that carry the same tag.
--- A shader without a `#shader-` tag keeps its subtree scope. Tagged shaders sharing a tag stack by
--- the usual shader layer priority; the layer interaction matrix applies to them like any other.
+-- Shader tags bind a shader node to objects through the ordinary tag system.
+--
+--   #shader-<group>    on a node: the group's shaders act on this node and its descendants
+--   #noshader-<group>  on a node: the group's shaders skip this node and its descendants
+--
+-- How far a tag reaches is counted in tree levels, the tagged node being level 0. The include depth
+-- is the node's `shaderDepth.<group>` attribute, else the shader's `tagDepth`; -1 or nothing is unlimited; the
+-- exclude depth is the node's `noShaderDepth.<group>` attribute, else unlimited. For an object the
+-- nearest ancestor (the object itself counts) whose tag reaches it decides, and at one node an
+-- exclusion beats an inclusion. A shader without a `#shader-` tag keeps its subtree scope; tagged
+-- shaders sharing a group stack by the usual shader layer priority.
 local Tags = {}
 
-local PREFIX = '#shader-'
+local INCLUDE, EXCLUDE = '#shader-', '#noshader-'
+local INCLUDE_DEPTH, EXCLUDE_DEPTH = 'shaderDepth.', 'noShaderDepth.'
 
+local function prefixed(tag, prefix)
+    return type(tag) == 'string' and #tag > #prefix and tag:sub(1, #prefix) == prefix
+end
+
+-- Whether `tag` is an engine shader tag (`#shader-<group>` or `#noshader-<group>`).
 function Tags.is(tag)
-    return type(tag) == 'string' and #tag > #PREFIX and tag:sub(1, #PREFIX) == PREFIX
+    return prefixed(tag, INCLUDE) or prefixed(tag, EXCLUDE)
 end
 
 -- Whether the node carries at least one `#shader-` tag.
 function Tags.has(node)
+    local tags = rawget(node, '_tags')
+    if tags then
+        for tag in pairs(tags) do
+            if prefixed(tag, INCLUDE) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- Whether the node carries any `#shader-` or `#noshader-` tag.
+function Tags.any(node)
     local tags = rawget(node, '_tags')
     if tags then
         for tag in pairs(tags) do
@@ -25,22 +51,64 @@ function Tags.has(node)
     return false
 end
 
--- Whether the shader and the target carry a common `#shader-` tag.
-function Tags.shares(shader, target)
-    local own, other = rawget(shader, '_tags'), rawget(target, '_tags')
-    if own and other then
-        for tag in pairs(own) do
-            if other[tag] and Tags.is(tag) then
-                return true
+local function depthOf(node, name, fallback)
+    local attributes = rawget(node, '_attributes')
+    local value = attributes and attributes[name]
+    if type(value) ~= 'number' then
+        value = fallback
+    end
+    -- A missing or negative depth reaches the whole subtree.
+    return type(value) == 'number' and value >= 0 and value or math.huge
+end
+
+-- Whether one group's tags on `node` reach an object `distance` levels below it. Returns true
+-- (included), false (excluded) or nil (this node says nothing about the object).
+local function decide(shader, node, group, distance)
+    local tags = rawget(node, '_tags')
+    if not tags then
+        return nil
+    end
+    if tags[EXCLUDE .. group] and distance <= depthOf(node, EXCLUDE_DEPTH .. group) then
+        return false
+    end
+    if
+        tags[INCLUDE .. group]
+        and distance <= depthOf(node, INCLUDE_DEPTH .. group, rawget(shader, 'tagDepth'))
+    then
+        return true
+    end
+    return nil
+end
+
+-- Whether the tagged `shader` acts on `object`: any of the shader's groups includes it.
+function Tags.applies(shader, object)
+    local own = rawget(shader, '_tags')
+    if not own then
+        return false
+    end
+    for tag in pairs(own) do
+        if prefixed(tag, INCLUDE) then
+            local group = tag:sub(#INCLUDE + 1)
+            local node, distance = object, 0
+            while node do
+                local verdict = decide(shader, node, group, distance)
+                if verdict ~= nil then
+                    if verdict then
+                        return true
+                    end
+                    break
+                end
+                node, distance = node.parent, distance + 1
             end
         end
     end
     return false
 end
 
--- A tag changed on `node`: the render resolves shader stacks again and the UI repaints.
+-- A tag or a depth attribute changed on `node`: the render resolves shader stacks again and the UI
+-- repaints.
 function Tags.changed(node, tag)
-    if not Tags.is(tag) then
+    if not Tags.is(tag) and not prefixed(tag, INCLUDE_DEPTH) and not prefixed(tag, EXCLUDE_DEPTH) then
         return
     end
     local world = rawget(node, '_sceneWorld') or rawget(node, '_world')

@@ -210,7 +210,7 @@ function Drawing.install(UI)
         if n:isA('Shader2D') and not (rawget(n, '_tags') and Tags.has(n)) then
             require('source.engine.ui.drawing.compositor').apply(self, n)
         end
-        if rawget(n, '_tags') then
+        if self._taggedEffects and self._taggedEffects[1] then
             require('source.engine.ui.drawing.compositor').applyTagged(self, n)
         end
         if n.material then

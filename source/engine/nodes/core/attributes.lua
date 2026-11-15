@@ -25,6 +25,10 @@ local function isNode(value)
 end
 
 local function changed(self, name, value)
+    -- Shader tag depths (`shaderDepth.<group>`, `noShaderDepth.<group>`) change what a tag reaches.
+    if name:find('haderDepth.', 1, true) then
+        require('source.engine.graphics.shaders.tags').changed(self, name)
+    end
     self:emit('AttributeChanged', name, value)
     self:emit('AttributeChanged:' .. name, value)
 end

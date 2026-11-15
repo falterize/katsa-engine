@@ -27,14 +27,14 @@ local function collect(list, out, tagged, targets)
             and not node._layoutCollapsed
             and (not node.ui or node.ui:layerVisible(node))
         then
-            local shaderTagged = rawget(node, '_tags') and Tags.has(node)
+            local carriesTag = rawget(node, '_tags') and Tags.has(node)
             if active(node) then
                 out[#out + 1] = node
-                if shaderTagged then
+                if carriesTag then
                     tagged[#tagged + 1] = node
                 end
             end
-            if shaderTagged and not node:isA('Shader2D') then
+            if carriesTag and not node:isA('Shader2D') then
                 targets[#targets + 1] = node
             end
             collect(node.children, out, tagged, targets)
@@ -222,6 +222,26 @@ local function shader(ui, node)
     return s
 end
 
+-- Whether `target` is the outermost node `effect` reaches: its rectangle already holds the
+-- descendants that inherit the tag, so only this node runs the effect.
+function Compositor.isTagRoot(effect, target)
+    return Tags.applies(effect, target)
+        and not (target.parent and Tags.applies(effect, target.parent))
+end
+
+-- Appends to `out` the nodes below `region` that `effect` does not reach (their subtrees included).
+local function excluded(effect, region, out)
+    for _, child in ipairs(region.children) do
+        if child:isA('UINode') and child.visible then
+            if Tags.applies(effect, child) then
+                excluded(effect, child, out)
+            else
+                out[#out + 1] = child
+            end
+        end
+    end
+end
+
 -- Runs `node`'s effect over `region`'s rectangle (the node itself unless it is tagged: then the
 -- effect runs over each target that carries its tag, see `Compositor.applyTagged`).
 function Compositor.apply(ui, node, region)
@@ -283,7 +303,7 @@ function Compositor.apply(ui, node, region)
             if rawget(upper, '_tags') and Tags.has(upper) then
                 -- A tagged effect masks only where its targets are.
                 for _, target in ipairs(ui._taggedTargets) do
-                    if Tags.shares(upper, target) then
+                    if Compositor.isTagRoot(upper, target) then
                         masks[#masks + 1] = target
                     end
                 end
@@ -291,6 +311,10 @@ function Compositor.apply(ui, node, region)
                 masks[#masks + 1] = upper
             end
         end
+    end
+    if region ~= node then
+        -- Descendants the tags leave out (`#noshader-`, depth) are cut out of the effect.
+        excluded(node, region, masks)
     end
     local regions = { { x, y, x2 - x, y2 - y } }
     for _, upper in ipairs(masks) do
@@ -325,7 +349,7 @@ function Compositor.applyTagged(ui, target)
         return
     end
     for _, effect in ipairs(tagged) do
-        if effect ~= target and Tags.shares(effect, target) then
+        if effect ~= target and Compositor.isTagRoot(effect, target) then
             Compositor.apply(ui, effect, target)
         end
     end

@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- Shader tags inherit: `#shader-<group>` reaches the tagged node and its descendants, `#noshader-<group>` excludes a subtree, and the reach is bounded by the attributes `shaderDepth.<group>` / `noShaderDepth.<group>` or the shader's new `tagDepth` property (-1 = whole subtree). The nearest tag that reaches an object decides; an exclusion beats an inclusion on the same node. This replaces the earlier "children do not inherit the tag" rule. Test: `v108_8/shaderTagDepth.lua`.
 - The obsolete project name is gone from the engine: the window title is `Katsa Engine <version>`, the internal sound effect name is `KatsaEffect`, and the one-time migration of the old save folder was removed with `SaveData.migrate`.
 - `source/game` moved to `game/` in the repository root (`characters`, `runtime`, `data`, `scenes`, `sceneCatalog`, `sceneTags`); `source/` holds only the engine (`engine`, `katsa`, `plugins`). Modules are required as `game.*`; there are no aliases for the old `source.game.*` names.
 - README has a Credits section (libraries, the default font, the Teletubby model by @falterize under CC BY 4.0). A read-only text row in the inspector (for example `replicatedProperties` on a client copy) always opens its value, one entry per line, even when empty.

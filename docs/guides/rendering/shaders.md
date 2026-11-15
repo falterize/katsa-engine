@@ -398,24 +398,47 @@ Cached stacks are released with their world resource scope.
 
 ## Shader tags
 
-Tag a `Shader3D` or `Shader2D` with `#shader-<group>` and it acts only on the nodes
-that carry the same tag, wherever they are in the tree.
+Tag a `Shader3D` or `Shader2D` with `#shader-<group>` and it acts only on the nodes that carry
+the same tag **and on their descendants**, wherever they are in the tree. `#noshader-<group>` on a
+node switches the group off for that node and its subtree.
 
 ```lua
 local glow = scene.world:create('Shader3D', { shaderPath = 'shared://shaders/glow.glsl' })
 glow:addTag('#shader-glow')
-mesh:addTag('#shader-glow')     -- receives the shader
-mesh:removeTag('#shader-glow')  -- unbinds it again
+model:addTag('#shader-glow')                  -- the whole model glows
+eyes:addTag('#noshader-glow')                 -- ... except the eyes and what is inside them
+model:setAttribute('shaderDepth.glow', 2)     -- only two levels below the model
+model:removeTag('#shader-glow')               -- unbinds it again
 ```
 
-- Shaders of one group stack by their layer priority; shader layers and the
-  interaction matrix apply as usual, in 2D and 3D.
-- A shader without the tag keeps the subtree scope.
-- Tag the nodes themselves: children do not inherit the tag. `Shader2D` filters the
-  rectangle of each tagged UI node.
+**Levels.** Reach is counted in tree levels, the tagged node being level 0. How far an include tag
+reaches comes from, in order: the node's attribute `shaderDepth.<group>`, the shader's `tagDepth`
+property, else the whole subtree. How far an exclusion reaches is the node's attribute
+`noShaderDepth.<group>`, else the whole subtree. `-1` (or no value) always means unlimited.
+
+**Which tag decides.** For an object, the nearest ancestor (the object itself counts) whose tag
+*reaches* it decides. On one node an exclusion beats an inclusion.
+
+| Tags on node `R` | Level 0 | 1 | 2 | 3 | 4 |
+| --- | --- | --- | --- | --- | --- |
+| `#shader-fx` | yes | yes | yes | yes | yes |
+| `#shader-fx`, `shaderDepth.fx = 1` | yes | yes | no | no | no |
+| `#shader-fx` + `#noshader-fx` (no depths) | no | no | no | no | no |
+| `#shader-fx` depth 3 + `#noshader-fx` depth 1 | no | no | yes | yes | no |
+
+An `#shader-` tag below an exclusion switches the group back on for its own subtree.
+
+- Shaders of one group stack by their layer priority; shader layers and the interaction matrix
+  apply as usual, in 2D and 3D.
+- A shader without a `#shader-` tag keeps the subtree scope.
 - A shader binds only nodes of its own world kind; 2D and 3D groups never mix.
 - Environment, sky and fog shaders are not tag-bound.
-- The inspector edits them in the ordinary `tags` row; a tag starting with `#` must look like `#shader-<group>`.
+- 2D: a post effect filters the rectangle of the outermost reached `UINode`, so its children are
+  inside it and depth cannot separate them; `#noshader-` cuts the excluded node's rectangle out.
+- The inspector edits the tags in the ordinary `tags` row (a `#` tag must look like
+  `#shader-<group>` or `#noshader-<group>`), the depth attributes under Attributes and `tagDepth`
+  on the shader.
+- A depth attribute without a matching tag does nothing.
 
 ## Errors
 

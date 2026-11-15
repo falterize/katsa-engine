@@ -101,7 +101,7 @@ function PropertyWrite.install(Properties)
             for tag in tostring(text):gmatch('[^,%s]+') do
                 -- A leading # marks an engine tag: a malformed one would silently bind nothing.
                 if tag:sub(1, 1) == '#' and not Tags.is(tag) then
-                    return false, 'Engine tags look like #shader-<group>: ' .. tag
+                    return false, 'Engine tags look like #shader-<group> or #noshader-<group>: ' .. tag
                 end
                 wanted[tag] = true
             end
