@@ -1,4 +1,4 @@
--- Node paths: find('A/B'), escaped slashes, findAncestor, isDescendantOf, getFullName, waitFor.
+-- Node paths: find('A/B'), slashes inside names, findAncestor, isDescendantOf, getFullName, waitFor.
 local Node = require('source.engine.nodes')
 
 local Module = {}
@@ -13,6 +13,8 @@ function Module.run(self)
     local house = make('House', map)
     local odd = make('Test/odd', map)
     local inner = make('Room', odd)
+    local trailing = make('Slashed/', map)
+    local after = make('after', trailing)
     self:check(
         root:find('World3D/Map/House') == house and root:find('World3D/Nothing/House') == nil,
         'find follows a path of child names and returns nil on a missing step'
@@ -22,11 +24,15 @@ function Module.run(self)
         'A recursive path searches its first step in the whole subtree'
     )
     self:check(
-        root:find('World3D/Map/Test//odd/Room') == inner and root:find('Map//House') == nil,
-        'A doubled slash is a slash inside a name'
+        root:find('World3D/Map/Test/odd/Room') == inner and root:find('World3D/Map/Test/odd') == odd,
+        'A slash inside a name is written as it is'
     )
     self:check(
-        inner:getFullName() == 'Game/World3D/Map/Test//odd/Room'
+        root:find('World3D/Map/Slashed//after') == after and root:find('World3D/Map/Slashed/') == trailing,
+        'The last of several slashes separates the steps (a name may end with a slash)'
+    )
+    self:check(
+        inner:getFullName() == 'Game/World3D/Map/Test/odd/Room'
             and root:find(inner:getFullName(root)) == inner,
         'getFullName gives a path that find accepts (relative to an ancestor)'
     )

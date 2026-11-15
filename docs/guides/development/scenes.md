@@ -240,14 +240,15 @@ scene.root:find('World3D'):create('Mesh3D', { name = 'Box' })
 
 ### Finding nodes by path
 
-`find` takes a name or a path of child names separated by `/` (every step is a direct child), on any node:
+`find` takes a name or a path of child names separated by `/` (every step is a direct child), on any node. The path is matched against the real children, so names that contain `/` need no escaping; when several slashes follow each other, the last one separates the steps:
 
 ```lua
 node:find('House')                      -- a direct child
 node:find('Map/House')                  -- a path
 node:find('House', true)                -- anywhere below
 node:find('Map/House', true)            -- the first step anywhere below, the rest child by child
-node:find('World3D/Map/Test//odd')      -- a node named "Test/odd": a doubled slash is a slash in a name
+node:find('World3D/Map/Test/odd')       -- a node named "Test/odd": a slash in a name is written as it is
+node:find('Slashed//after')             -- "Slashed/" then "after": the last slash separates the steps
 ```
 
 Helpers that go with it:

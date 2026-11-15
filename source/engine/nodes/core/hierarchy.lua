@@ -48,50 +48,28 @@ function Hierarchy.findAll(self, filter, recursive)
 end
 
 -- A path is child names separated by '/', like `game.Workspace.Map.House` in Roblox:
--- `scene.root:find('World3D/Map/House')`. A literal '/' inside a name is written '//' (a node named
--- "Test/test2" is 'Test//test2'); empty steps are ignored.
-local function splitPath(path)
-    local steps, step, i = {}, {}, 1
-    local length = #path
-    while i <= length do
-        local char = path:sub(i, i)
-        if char == '/' and path:sub(i + 1, i + 1) == '/' then
-            step[#step + 1] = '/'
-            i = i + 1
-        elseif char == '/' then
-            if #step > 0 then
-                steps[#steps + 1] = table.concat(step)
-                step = {}
-            end
-        else
-            step[#step + 1] = char
-        end
-        i = i + 1
+-- `scene.root:find('World3D/Map/House')`. A name may contain '/' itself: the path is matched
+-- against the real children, so a node named "Test/" with a child "test2" is 'Test//test2' (the
+-- slash of the name, then the separator). Empty steps are ignored.
+local function resolve(node, rest)
+    rest = rest:gsub('^/+', '')
+    if rest == '' then
+        return node
     end
-    if #step > 0 then
-        steps[#steps + 1] = table.concat(step)
-    end
-    return steps
-end
-
--- A step is a plain name: it may contain '/' after unescaping, so it never goes through find.
-local function direct(node, name)
     for _, child in ipairs(node.children) do
-        if child.name == name then
-            return child
+        local name = child.name
+        if type(name) == 'string' and name ~= '' then
+            if rest == name then
+                return child
+            end
+            if rest:sub(1, #name + 1) == name .. '/' then
+                local found = resolve(child, rest:sub(#name + 2))
+                if found then
+                    return found
+                end
+            end
         end
     end
-end
-
-local function followSteps(node, steps, index)
-    local child = direct(node, steps[index])
-    if not child then
-        return nil
-    end
-    if index == #steps then
-        return child
-    end
-    return followSteps(child, steps, index + 1)
 end
 
 -- `find(name)` / `find(path)`: direct children only. With `recursive` the first step is searched
@@ -111,25 +89,17 @@ function Hierarchy.find(self, name, recursive)
         end
         return nil
     end
-    local steps = splitPath(name)
-    if #steps == 0 then
-        return nil
-    end
-    if not recursive then
-        return followSteps(self, steps, 1)
-    end
     local function search(node)
-        for _, child in ipairs(node.children) do
-            if child.name == steps[1] then
-                local found = #steps == 1 and child
-                    or followSteps(child, { unpack(steps, 2) }, 1)
+        local found = resolve(node, name)
+        if found and found ~= node then
+            return found
+        end
+        if recursive then
+            for _, child in ipairs(node.children) do
+                found = search(child)
                 if found then
                     return found
                 end
-            end
-            local deeper = search(child)
-            if deeper then
-                return deeper
             end
         end
     end
@@ -168,12 +138,12 @@ function Hierarchy.isDescendantOf(self, other)
 end
 
 -- The path from the top node (or from `relativeTo`, which must be an ancestor) to this node:
--- `node:getFullName(root)` can be given back to `root:find`. A '/' inside a name is written '//'.
+-- `node:getFullName(root)` can be given back to `root:find`.
 function Hierarchy.getFullName(self, relativeTo)
     local names = {}
     local node = self
     while node and node ~= relativeTo do
-        names[#names + 1] = tostring(node.name or node.className or '?'):gsub('/', '//')
+        names[#names + 1] = tostring(node.name or node.className or '?')
         node = node.parent
     end
     assert(
