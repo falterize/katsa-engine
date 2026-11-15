@@ -50,7 +50,7 @@ function Lab.new(scene)
     self.single = world:create('Trail3D', {
         name = 'BallTrail',
         trailMode = 'Single',
-        texture = 'assets/textures/particles/trail.png',
+        texture = 'scene://textures/trail.png',
         width = 0.9,
         lifetime = 1.4,
         minLength = 0.15,
@@ -74,7 +74,7 @@ function Lab.new(scene)
         attachment0 = tip,
         attachment1 = guard,
         faceCamera = false,
-        texture = 'assets/textures/particles/trail.png',
+        texture = 'scene://textures/trail.png',
         lifetime = 0.5,
         minLength = 0.05,
         color = { 0.55, 0.8, 1 },
@@ -96,7 +96,7 @@ function Lab.new(scene)
         curveSize0 = 7,
         curveSize1 = 7,
         segments = 24,
-        texture = 'assets/textures/particles/beam.png',
+        texture = 'scene://textures/beam.png',
         textureMode = 'Wrap',
         textureLength = 2,
         textureSpeed = -1.5,
@@ -118,7 +118,7 @@ function Lab.new(scene)
         receiveShadow = true,
         lightInfluence = 1,
         color = { 0.9, 0.5, 0.9 },
-        texture = 'assets/textures/particles/trail.png',
+        texture = 'scene://textures/trail.png',
     })
     -- Align the flat strip: its face normal is the first node's Y axis.
     c.rotation = { 0, 0, 0 }

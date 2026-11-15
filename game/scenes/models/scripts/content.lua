@@ -24,7 +24,7 @@ function Scene.new(scene)
         obj,
         { name = 'OBJ', position = { -28, -10, 35 }, size = { 20, 20, 20 } }
     )
-    scene.model = Models.load('assets/models/examples/animated.glb', scene.resources)
+    scene.model = Models.load('scene://models/animated.glb', scene.resources)
     Models.instantiate(
         scene.world,
         scene.model,

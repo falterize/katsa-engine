@@ -16,12 +16,12 @@ local function defaultFontData()
     if not defaultData then
         local FS = require('source.katsa.core.filesystem')
         local host = rawget(_G, 'katsa_host')
-        local relative = 'source/katsa/graphics/fonts/DejaVuSans.ttf'
+        local relative = 'assets/fonts/engine/DejaVuSans.ttf'
         defaultData = host and host.read and host.read(relative)
         if not defaultData then
             local source = debug.getinfo(1, 'S').source:gsub('^@', '')
             local directory = source:match('^(.*)[/\\][^/\\]*$') or '.'
-            local file = io.open(directory .. '/fonts/DejaVuSans.ttf', 'rb')
+            local file = io.open(directory .. '/../../../' .. relative, 'rb')
             if file then
                 defaultData = file:read('*a')
                 file:close()

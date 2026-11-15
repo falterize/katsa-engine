@@ -186,6 +186,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 - Invalid XML or incompatible atlas art reports diagnostics and renders a checker; it never asserts from a render callback.
 - Models: glTF accessors are read with typed arrays; preserve glTF transforms; cache successful and failed loads. Skin limits: `docs/guides/rendering/skinLimits.md`.
 - Fonts: `font` property on Label/Button/TextBox resolves like image paths (`shared://fonts/test-font`); a missing file warns and falls back.
+- Asset ownership: engine files live in `assets/<kind>/engine/` (default font `assets/fonts/engine/DejaVuSans.ttf`, shaders `assets/shaders/engine/`); a file used by one scene belongs in that scene's `assets/` and is read as `scene://...`; only files used by several scenes stay in the shared `assets/`.
 - Save directory: `Katsa/katsa-engine` (older builds used a nested folder; leave old files alone).
 
 ## 15. Sandbox pitfalls

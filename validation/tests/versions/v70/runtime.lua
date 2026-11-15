@@ -183,7 +183,7 @@ function T:update()
             keys.castShadow and keys.receiveShadow and keys.shadowGroup and not keys.quality,
             'Particle shadow and budget properties appear in Workspace'
         )
-        local source = katsa.audio.newSource('assets/audio/effects/effectProbe.wav', 'static')
+        local source = katsa.audio.newSource('game/scenes/audioNodes/assets/audio/effectProbe.wav', 'static')
         local filter = {
             enabled = true,
             effectType = 'filter',

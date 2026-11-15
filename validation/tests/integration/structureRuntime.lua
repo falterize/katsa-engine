@@ -21,8 +21,11 @@ function Tests:draw()
     self.done = true
 
     local scope = self.manager.resources:scope()
-    for _, filename in ipairs({ 'animated.glb', 'skinRibbon.glb' }) do
-        local model = GLB.load('assets/models/examples/' .. filename, scope)
+    for _, path in ipairs({
+        'game/scenes/models/assets/models/animated.glb',
+        'assets/models/examples/skinRibbon.glb',
+    }) do
+        local model = GLB.load(path, scope)
         assert(#model.nodes > 0, 'Legacy GLB reader returned no nodes')
         model:update(0)
     end

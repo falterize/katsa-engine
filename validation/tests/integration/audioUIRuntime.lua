@@ -9,7 +9,7 @@ return function(test)
     local group = Node.create('SoundGroup', { volume = 0.5 }, root, world)
     local sound = Node.create(
         'Sound',
-        { resource = 'assets/audio/effects/effectProbe.wav', looped = true, volume = 0.6 },
+        { resource = 'game/scenes/audioNodes/assets/audio/effectProbe.wav', looped = true, volume = 0.6 },
         group,
         world
     )

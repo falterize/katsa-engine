@@ -124,7 +124,7 @@ local shared = {
     optionalImage = 'Optional image override. An empty path uses the XML manifest image in XML '
         .. 'mode.',
     renderRange = 'Render cutoff distance from the camera in world units; 0 disables it.',
-    ribbonTexture = 'Image path, for example scene://assets/textures/trail.png. Empty or '
+    ribbonTexture = 'Image path, for example scene://textures/trail.png. Empty or '
         .. 'missing files render the diagnostic checker. Use pixelate for nearest filtering.',
     surfaceBrightness = 'Colour multiplier applied after lighting. 1 keeps the colour, 0 is '
         .. 'black, values above 1 brighten.',

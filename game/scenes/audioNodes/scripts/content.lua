@@ -42,7 +42,7 @@ function Demo.new(scene)
     )
     self.sound = world:create('Sound', {
         name = 'EffectProbe',
-        resource = 'assets/audio/effects/effectProbe.wav',
+        resource = 'scene://audio/effectProbe.wav',
         group = self.group,
         volume = 0.7,
         looped = true,

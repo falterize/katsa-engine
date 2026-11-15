@@ -96,7 +96,7 @@ function Module.run(self)
     -- Images decode on workers and match the main thread's decoder.
     local ImageLoader = require('source.engine.actors.imageLoader')
     local loader = ImageLoader.new(2)
-    local path = 'assets/textures/particles/atlas.png'
+    local path = 'game/scenes/particles/assets/textures/atlas.png'
     local loaded, failed
     loader:load(path, function(ok, image) loaded = ok and image end)
     loader:load('assets/missing.png', function(ok) failed = not ok end)

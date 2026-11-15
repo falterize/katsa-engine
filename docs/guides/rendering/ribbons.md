@@ -47,7 +47,7 @@ frame and aged with the world's simulation time, so `timeScale` and pause apply.
 
 ## Shared appearance
 
-- **Image**: `texture` is a normal image path (`scene://assets/textures/trail.png`, `shared://...`);
+- **Image**: `texture` is a normal image path (`scene://textures/trail.png`, `shared://...`);
   `imageMode` is `Decal` (static), `Texture`, `Tiles`, `Atlas` or `XML`, with `pixelate`, `tileSize`,
   `tileOffset`, `textureSize`, `atlasGrid`, `atlasFrame`, `atlasEnabled`/`atlasFPS`/`atlasLoop` and `xml` -
   the same configuration as every other image node. A missing file shows the diagnostic checker.
@@ -86,7 +86,7 @@ local Mesh = require('source.engine.composition.mesh')
 local ball = Mesh.create(world, { kind = 'sphere', size = { 1, 1, 1 }, position = { -6, 2, 0 } })
 world:create('Trail3D', {          -- Single: put it under the moving node
     trailMode = 'Single',
-    texture = 'assets/textures/particles/trail.png',
+    texture = 'scene://textures/trail.png',
     width = 0.9,
     lifetime = 1.4,
 }, ball)
@@ -100,6 +100,6 @@ world:create('Beam3D', {
     width1 = 1.4,
     curveSize0 = 7,
     curveSize1 = 7,
-    texture = 'assets/textures/particles/beam.png',
+    texture = 'scene://textures/beam.png',
 })
 ```

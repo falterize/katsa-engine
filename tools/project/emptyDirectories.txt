@@ -15,7 +15,6 @@ game/scenes/animationPhysicsLab/assets/models
 game/scenes/animationPhysicsLab/assets/shaders
 game/scenes/animationPhysicsLab/assets/textures
 game/scenes/animationPhysicsLab/nodes
-game/scenes/audioNodes/assets/audio
 game/scenes/audioNodes/assets/fonts
 game/scenes/audioNodes/assets/models
 game/scenes/audioNodes/assets/shaders
@@ -48,7 +47,6 @@ game/scenes/flyingAudio/nodes
 game/scenes/graphicsLab/assets/audio
 game/scenes/graphicsLab/assets/fonts
 game/scenes/graphicsLab/assets/models
-game/scenes/graphicsLab/assets/shaders
 game/scenes/graphicsLab/assets/textures
 game/scenes/graphicsLab/nodes
 game/scenes/lights/assets/audio
@@ -78,7 +76,6 @@ game/scenes/modelLab/assets/textures
 game/scenes/modelLab/nodes
 game/scenes/models/assets/audio
 game/scenes/models/assets/fonts
-game/scenes/models/assets/models
 game/scenes/models/assets/shaders
 game/scenes/models/assets/textures
 game/scenes/models/nodes
@@ -121,7 +118,6 @@ game/scenes/particles/assets/audio
 game/scenes/particles/assets/fonts
 game/scenes/particles/assets/models
 game/scenes/particles/assets/shaders
-game/scenes/particles/assets/textures
 game/scenes/particles/nodes
 game/scenes/physics/assets/audio
 game/scenes/physics/assets/fonts
@@ -142,13 +138,11 @@ game/scenes/physicsMixed/nodes
 game/scenes/platformer/assets/audio
 game/scenes/platformer/assets/fonts
 game/scenes/platformer/assets/models
-game/scenes/platformer/assets/shaders
 game/scenes/platformer/assets/textures
 game/scenes/platformer/nodes
 game/scenes/shaderLab/assets/audio
 game/scenes/shaderLab/assets/fonts
 game/scenes/shaderLab/assets/models
-game/scenes/shaderLab/assets/shaders
 game/scenes/shaderLab/assets/textures
 game/scenes/shaderLab/nodes
 game/scenes/shadows/assets/audio

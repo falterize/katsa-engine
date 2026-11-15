@@ -136,6 +136,6 @@ body = (
     + struct.pack('<II', len(binary), 0x004E4942)
     + binary
 )
-(ROOT / 'assets/models/examples/animated.glb').write_bytes(
+(ROOT / 'game/scenes/models/assets/models/animated.glb').write_bytes(
     b'glTF' + struct.pack('<II', 2, len(body) + 12) + body
 )

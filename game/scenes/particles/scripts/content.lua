@@ -62,7 +62,7 @@ local presets = {
         _c2 = { 0.25, 0.04, 0 },
         blendMode = 'Add',
         atlasEnabled = true,
-        texture = 'assets/textures/particles/atlas.png',
+        texture = 'scene://textures/atlas.png',
         atlasFPS = 14,
         drag = 0.4,
     },

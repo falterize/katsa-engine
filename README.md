@@ -96,7 +96,7 @@ adapters stay in `game/runtime/startup.lua`.
 ## Credits
 
 Katsa is built on the work of others. Each library keeps its own license next to its sources
-(`vendor/`, `source/katsa/graphics/fonts`, `source/plugins/imgui/vendor`).
+(`vendor/`, `assets/fonts/engine`, `source/plugins/imgui/vendor`).
 
 | Component | Author | Used for |
 | --- | --- | --- |

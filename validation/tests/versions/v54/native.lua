@@ -13,8 +13,8 @@ return function(test)
     child:release()
     check(image:getWidth() > 0, 'Releasing one scope retains another owner texture')
     local models = require('source.engine.import.models')
-    local a = models.load('assets/models/examples/animated.glb', r)
-    local b = models.load('assets/models/examples/animated.glb', r)
+    local a = models.load('game/scenes/models/assets/models/animated.glb', r)
+    local b = models.load('game/scenes/models/assets/models/animated.glb', r)
     check(
         a ~= b and a.parts[1].geometry == b.parts[1].geometry and a.nodes ~= b.nodes,
         'Cached models share GPU geometry and isolate animation state'
@@ -28,11 +28,11 @@ return function(test)
     end
     r:preload({
         { kind = 'image', path = 'white' },
-        { kind = 'model', path = 'assets/models/examples/animated.glb' },
+        { kind = 'model', path = 'game/scenes/models/assets/models/animated.glb' },
         { kind = 'sound', path = 'assets/audio/effects/click.wav' },
     })
     check(
-        r.store.entries['model:assets/models/examples/animated.glb'] ~= nil,
+        r.store.entries['model:game/scenes/models/assets/models/animated.glb'] ~= nil,
         'Typed preload leases existing decoded model data'
     )
     check(not pcall(r.image, r, 'missing-v54.png'), 'Missing resource reports a loading error')
