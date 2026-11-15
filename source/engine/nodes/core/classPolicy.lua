@@ -87,6 +87,9 @@ local omit = {
     Camera2D = { 'transparency', 'visible' },
     Attachment2D = { 'transparency' },
     InverseKinematics3D = { 'visible' },
+    Bone3D = { 'transparency' },
+    AudioListener = { 'transparency', 'scale', 'inheritScale' },
+    AudioSource = { 'transparency', 'scale', 'inheritScale' },
     StorageFolder = { 'replicated' },
     Game = { 'visible', 'replicated' },
 }

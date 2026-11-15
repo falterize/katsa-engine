@@ -1,0 +1,35 @@
+-- Classes omit the properties they never read: no default, no inspector row.
+local Resources = require('source.engine.core.resources')
+local World3D = require('source.engine.world.world')
+local Nodes = require('source.engine.nodes')
+local Policy = require('source.engine.nodes.core.classPolicy')
+local Properties = require('source.engine.editor.inspectors.properties')
+
+local Module = {}
+
+local expected = {
+    Bone3D = { 'transparency' },
+    AudioListener = { 'transparency', 'scale', 'inheritScale' },
+    AudioSource = { 'transparency', 'scale', 'inheritScale' },
+    StorageFolder = { 'replicated' },
+    Game = { 'visible', 'replicated' },
+}
+
+function Module.run(self)
+    for name, keys in pairs(expected) do
+        local omitted = Policy.omitted(Nodes.classes[name])
+        for _, key in ipairs(keys) do
+            self:check(omitted[key], name .. ' omits ' .. key)
+        end
+    end
+    local resources = Resources.new(require('source.game.data.manifest'))
+    local world = World3D.new(resources, require('source.game.data.settings').create())
+    local bone = world:create('Bone3D', {})
+    for _, row in ipairs(Properties.list(bone)) do
+        self:check(row.key ~= 'transparency', 'Bone3D shows no transparency row')
+    end
+    self:check(bone.transparency == nil, 'Bone3D has no transparency value')
+    world:release()
+end
+
+return Module
