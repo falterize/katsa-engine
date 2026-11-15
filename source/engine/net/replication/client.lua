@@ -28,6 +28,23 @@ local function setAttributes(node, attrs, removed)
     end
 end
 
+-- A copy lists the properties the server sends, so the inspector can show them.
+local function listProperties(node, props)
+    local keys = {}
+    for _, key in ipairs(rawget(node, 'replicatedProperties') or {}) do
+        keys[key] = true
+    end
+    for key in pairs(props or {}) do
+        keys[key] = true
+    end
+    local list = {}
+    for key in pairs(keys) do
+        list[#list + 1] = key
+    end
+    table.sort(list)
+    node.replicatedProperties = #list > 0 and list or nil
+end
+
 function ClientReplication:create(op)
     local parent = self:resolve(op.parent)
     if not parent or parent.destroyed then
@@ -44,6 +61,7 @@ function ClientReplication:create(op)
     end
     setAttributes(node, op.attrs)
     node.replica = true
+    listProperties(node, op.props)
     -- The server's flag is not sent; a replica shows it so the Explorer reads like the server tree.
     node.replicated = true
     self.records[op.id] = node
@@ -62,6 +80,9 @@ function ClientReplication:change(op)
     end
     for key, value in pairs(op.props or {}) do
         node[key] = value
+    end
+    if op.props then
+        listProperties(node, op.props)
     end
     setAttributes(node, op.attrs, op.removedAttrs)
 end

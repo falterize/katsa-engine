@@ -224,6 +224,9 @@ function Inspector.install(Workspace)
                                 button:connect('press', function()
                                     if field.readOnly then
                                         self.status.text = field.reason or 'Read-only property'
+                                        if field.kind == 'string' and field.value and field.value ~= '' then
+                                            self:showHint(field)
+                                        end
                                         return
                                     end
                                     if
@@ -350,7 +353,12 @@ function Inspector.install(Workspace)
         end
         self:cancelEdit()
         self.popup = require('source.engine.editor.panels.popup').new(self, field)
-        self.popup:hintEditor(field.hint or field.reason)
+        -- A read-only text row opens with its full value above the explanation.
+        local text = field.hint or field.reason
+        if field.readOnly and field.kind == 'string' and field.value ~= nil and field.value ~= '' then
+            text = tostring(field.value) .. '\n\n' .. text
+        end
+        self.popup:hintEditor(text)
     end
 
     function Workspace:openPopup(field)

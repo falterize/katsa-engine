@@ -132,6 +132,16 @@ function Module.run(self)
         copy.replicated == true and replicaRow and replicaRow.value == true and replicaRow.readOnly,
         'A client copy reads replicated = true in the inspector, read-only'
     )
+    local listRow
+    for _, row in ipairs(Properties.list(child(copy, 'Pad') or copy)) do
+        if row.key == 'replicatedProperties' then
+            listRow = row
+        end
+    end
+    self:check(
+        listRow and listRow.readOnly and listRow.value == 'position',
+        'A client copy lists the properties the server sends (read-only)'
+    )
     local copiedPad = copy and child(copy, 'Pad')
     self:check(
         copiedPad and copiedPad.position[1] == 1 and copiedPad.position[3] == 3,
