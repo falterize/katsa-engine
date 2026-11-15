@@ -47,18 +47,186 @@ function Hierarchy.findAll(self, filter, recursive)
     return result
 end
 
--- Follows child names separated by '/', like `game.Workspace.Map.House` in Roblox:
--- `scene.root:findPath('World3D/Map/House')`. Returns nil when a step is missing.
-function Hierarchy.findPath(self, path)
-    assert(type(path) == 'string', 'findPath expects a path such as "World3D/Map/House"')
-    local node = self
-    for name in path:gmatch('[^/]+') do
-        node = node:find(name)
-        if not node then
-            return nil
+-- A path is child names separated by '/', like `game.Workspace.Map.House` in Roblox:
+-- `scene.root:find('World3D/Map/House')`. A literal '/' inside a name is written '//' (a node named
+-- "Test/test2" is 'Test//test2'); empty steps are ignored.
+local function splitPath(path)
+    local steps, step, i = {}, {}, 1
+    local length = #path
+    while i <= length do
+        local char = path:sub(i, i)
+        if char == '/' and path:sub(i + 1, i + 1) == '/' then
+            step[#step + 1] = '/'
+            i = i + 1
+        elseif char == '/' then
+            if #step > 0 then
+                steps[#steps + 1] = table.concat(step)
+                step = {}
+            end
+        else
+            step[#step + 1] = char
+        end
+        i = i + 1
+    end
+    if #step > 0 then
+        steps[#steps + 1] = table.concat(step)
+    end
+    return steps
+end
+
+-- A step is a plain name: it may contain '/' after unescaping, so it never goes through find.
+local function direct(node, name)
+    for _, child in ipairs(node.children) do
+        if child.name == name then
+            return child
         end
     end
-    return node
+end
+
+local function followSteps(node, steps, index)
+    local child = direct(node, steps[index])
+    if not child then
+        return nil
+    end
+    if index == #steps then
+        return child
+    end
+    return followSteps(child, steps, index + 1)
+end
+
+-- `find(name)` / `find(path)`: direct children only. With `recursive` the first step is searched
+-- in the whole subtree (depth first) and the rest follows child by child.
+function Hierarchy.find(self, name, recursive)
+    if type(name) ~= 'string' or not name:find('/', 1, true) then
+        for _, child in ipairs(self.children) do
+            if child.name == name then
+                return child
+            end
+            if recursive then
+                local found = child:find(name, true)
+                if found then
+                    return found
+                end
+            end
+        end
+        return nil
+    end
+    local steps = splitPath(name)
+    if #steps == 0 then
+        return nil
+    end
+    if not recursive then
+        return followSteps(self, steps, 1)
+    end
+    local function search(node)
+        for _, child in ipairs(node.children) do
+            if child.name == steps[1] then
+                local found = #steps == 1 and child
+                    or followSteps(child, { unpack(steps, 2) }, 1)
+                if found then
+                    return found
+                end
+            end
+            local deeper = search(child)
+            if deeper then
+                return deeper
+            end
+        end
+    end
+    return search(self)
+end
+
+-- The nearest ancestor with this name, or matching a filter table like findAll's
+-- (`{ className = 'World3D' }`, `{ tag = 'Level' }`, `{ name = 'Map' }`).
+function Hierarchy.findAncestor(self, filter)
+    local ancestor = self.parent
+    while ancestor do
+        if type(filter) == 'string' then
+            if ancestor.name == filter then
+                return ancestor
+            end
+        elseif
+            (not filter.name or ancestor.name == filter.name)
+            and (not filter.className or ancestor:isA(filter.className))
+            and (not filter.tag or ancestor:hasTag(filter.tag))
+        then
+            return ancestor
+        end
+        ancestor = ancestor.parent
+    end
+end
+
+function Hierarchy.isDescendantOf(self, other)
+    local ancestor = self.parent
+    while ancestor do
+        if ancestor == other then
+            return true
+        end
+        ancestor = ancestor.parent
+    end
+    return false
+end
+
+-- The path from the top node (or from `relativeTo`, which must be an ancestor) to this node:
+-- `node:getFullName(root)` can be given back to `root:find`. A '/' inside a name is written '//'.
+function Hierarchy.getFullName(self, relativeTo)
+    local names = {}
+    local node = self
+    while node and node ~= relativeTo do
+        names[#names + 1] = tostring(node.name or node.className or '?'):gsub('/', '//')
+        node = node.parent
+    end
+    assert(
+        relativeTo == nil or node == relativeTo,
+        'getFullName: relativeTo must be an ancestor of the node'
+    )
+    local reversed = {}
+    for i = #names, 1, -1 do
+        reversed[#reversed + 1] = names[i]
+    end
+    return table.concat(reversed, '/')
+end
+
+-- Calls `callback(node)` when `find(path)` has an answer: at once when the node exists, otherwise
+-- as soon as a descendant is added that completes the path. Returns a handle: `handle.done`,
+-- `handle:cancel()`. The wait ends with this node.
+function Hierarchy.waitFor(self, path, callback)
+    assert(type(callback) == 'function', 'waitFor expects a path and a callback')
+    local handle = { done = false }
+    local connection
+    function handle.cancel()
+        handle.done = true
+        if connection then
+            connection:disconnect()
+        end
+    end
+    local found = self:find(path)
+    if found then
+        handle.done = true
+        callback(found)
+        return handle
+    end
+    connection = self:connect('descendantAdded', function()
+        local node = not handle.done and self:find(path)
+        if node then
+            handle.cancel()
+            callback(node)
+        end
+    end)
+    self:trackConnection(connection)
+    return handle
+end
+
+-- Tells every ancestor that listens that a node joined below it (waitFor); a plain tree walk
+-- that stops costing anything once no ancestor holds a signal table.
+function Hierarchy.announce(node, parent)
+    local ancestor = parent
+    while ancestor do
+        if ancestor._signals and ancestor:hasConnections('descendantAdded') then
+            ancestor:emit('descendantAdded', node)
+        end
+        ancestor = ancestor.parent
+    end
 end
 
 function Hierarchy.findByType(self, className, recursive)

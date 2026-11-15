@@ -17,12 +17,12 @@ function Module.run(self)
         'A single-player scene has both storage containers under the root'
     )
     self:check(
-        root:findPath('World3D/World2D') == scene.ui and root:findPath('World3D/Nothing/X') == nil,
-        'findPath follows names and reports a missing step as nil'
+        root:find('World3D/World2D') == scene.ui and root:find('World3D/Nothing/X') == nil,
+        'find follows a path and reports a missing step as nil'
     )
     local folder = scene.world:create('Folder', { name = 'Stored' }, root:find('ServerStorage'))
     self:check(
-        root:findPath('ServerStorage/Stored') == folder,
+        root:find('ServerStorage/Stored') == folder,
         'ServerStorage holds content in single-player'
     )
     local Storage = require('source.engine.net.replication.storage')

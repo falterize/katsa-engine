@@ -233,14 +233,42 @@ Game                      scene.root
 ```
 
 ```lua
-local house = scene.root:findPath('World3D/Map/House')   -- nil when a step is missing
-local stored = scene.root:findPath('ServerStorage/Maps')
+local house = scene.root:find('World3D/Map/House')   -- nil when a step is missing
+local stored = scene.root:find('ServerStorage/Maps')
 scene.root:find('World3D'):create('Mesh3D', { name = 'Box' })
 ```
 
-`node:findPath('A/B/C')` follows child names separated by `/` on any node. A nested `World3D`
-(inside a `ViewportFrame`) is the same kind of node: its descendants are its own inner world, and
-`node:create` / `node:find` on it work as on the main one.
+### Finding nodes by path
+
+`find` takes a name or a path of child names separated by `/` (every step is a direct child), on any node:
+
+```lua
+node:find('House')                      -- a direct child
+node:find('Map/House')                  -- a path
+node:find('House', true)                -- anywhere below
+node:find('Map/House', true)            -- the first step anywhere below, the rest child by child
+node:find('World3D/Map/Test//odd')      -- a node named "Test/odd": a doubled slash is a slash in a name
+```
+
+Helpers that go with it:
+
+| Method | What it does |
+| --- | --- |
+| `node:findAncestor(name)` / `findAncestor({ className = 'World3D' })` | the nearest ancestor by name or by a `name`/`className`/`tag` filter |
+| `node:isDescendantOf(other)` | whether `other` is above the node |
+| `node:getFullName([ancestor])` | the node's path from the top (or from `ancestor`), the inverse of `find`: `ancestor:find(node:getFullName(ancestor)) == node` |
+| `node:waitFor(path, callback)` | calls `callback(node)` at once if the path exists, otherwise as soon as a node that completes it is added; returns a handle (`handle.done`, `handle:cancel()`) |
+
+```lua
+-- a client waits for the server's map to arrive, then uses it
+scene.root:waitFor('World3D/Map', function(map)
+    print('map ready', map:find('House'))
+end)
+```
+
+`waitFor` has no timeout (the engine has no wait clock for scripts); cancel the handle yourself.
+
+A nested `World3D` (inside a `ViewportFrame`) is the same kind of node: its descendants are its own inner world, and `node:create` / `node:find` on it work as on the main one.
 
 `scene.world` is not a node. It is the service object of the main world: `create`, `raycast`,
 `loadModel`, layers, quality profile, lights, audio and physics access. `scene.world.root` is the

@@ -28,6 +28,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_8.imgui').run(self)
     require('validation.tests.versions.v108_8.uiMeasure').run(self)
     require('validation.tests.versions.v108_8.sceneRoot').run(self)
+    require('validation.tests.versions.v108_8.nodePaths').run(self)
     print('PASSED ' .. self.count .. ' v108.8 focused checks')
     katsa.event.quit()
 end

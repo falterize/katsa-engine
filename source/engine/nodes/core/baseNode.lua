@@ -174,22 +174,11 @@ function Node:setParent(parent)
     if self.ui then
         self.ui:invalidate()
     end
+    if parent then
+        Hierarchy.announce(self, parent)
+    end
     self:emit('parentChanged', parent, oldParent)
     return self
-end
-
-function Node:find(name, recursive)
-    for _, child in ipairs(self.children) do
-        if child.name == name then
-            return child
-        end
-        if recursive then
-            local found = child:find(name, true)
-            if found then
-                return found
-            end
-        end
-    end
 end
 
 function Node:isA(className)
@@ -201,8 +190,12 @@ Node.trackConnection, Node.own = Lifecycle.trackConnection, Lifecycle.own
 for _, key in ipairs({
     'getChildren',
     'getDescendants',
+    'find',
     'findAll',
-    'findPath',
+    'findAncestor',
+    'isDescendantOf',
+    'getFullName',
+    'waitFor',
     'findByType',
     'findByTag',
     'addTag',
@@ -249,7 +242,10 @@ for _, key in ipairs({
     'getChildren',
     'getDescendants',
     'findAll',
-    'findPath',
+    'findAncestor',
+    'isDescendantOf',
+    'getFullName',
+    'waitFor',
     'findByType',
     'findByTag',
     'addTag',
