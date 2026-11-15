@@ -113,7 +113,8 @@ function Maps:spawn()
     map.replicated = true
     local coins = {}
     for _, point in ipairs(self[pick.name].coins) do
-        coins[#coins + 1] = { Arena.arena[1] + point[1], point[3] + 0.8, Arena.arena[3] + point[2] }
+        coins[#coins + 1] =
+            { Arena.arena[1] + point[1], Arena.arena[2] + point[3] + 0.8, Arena.arena[3] + point[2] }
     end
     self.current, self.spec = map, self[pick.name]
     return map, coins, pick.name
@@ -126,7 +127,8 @@ function Maps:clear()
     self.current, self.spec = nil, nil
 end
 
--- The height of the ground at (x, z): the highest box of the current map there, else 0. The
+-- The height of the ground at (x, z) in world units: the highest box of the current map there
+-- (boxes are placed around the arena, y included), else 0. The
 -- server has no physics, so bots use this to stand on the map.
 function Maps:heightAt(x, z)
     local top = 0
@@ -134,7 +136,7 @@ function Maps:heightAt(x, z)
         for _, box in ipairs(self.spec.boxes) do
             local cx, cz = Arena.arena[1] + box[1], Arena.arena[3] + box[3]
             if math.abs(x - cx) <= box[4] / 2 and math.abs(z - cz) <= box[6] / 2 then
-                top = math.max(top, box[2] + box[5] / 2)
+                top = math.max(top, Arena.arena[2] + box[2] + box[5] / 2)
             end
         end
     end

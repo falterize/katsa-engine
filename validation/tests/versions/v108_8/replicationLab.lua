@@ -58,6 +58,30 @@ function Module.run(self)
         title and title ~= '' and session:node('Map') ~= nil and #session:node('Map').children > 3,
         'Each round clones a random map from ServerStorage/Maps and replicates it'
     )
+    -- Coins and bots stand on the map's real surface (the arena is not at y = 0).
+    local function surfaceAt(x, z)
+        local top = 0
+        for _, node in ipairs(state.host.maps.current:getDescendants()) do
+            if node.className == 'Mesh3D' then
+                local p, size = node.position, node.size
+                if math.abs(x - p[1]) <= size[1] / 2 and math.abs(z - p[3]) <= size[3] / 2 then
+                    top = math.max(top, p[2] + size[2] / 2)
+                end
+            end
+        end
+        return top
+    end
+    local floating = true
+    for _, coin in ipairs(state.host.rounds.coins) do
+        local p = coin.position
+        floating = floating and math.abs(p[2] - surfaceAt(p[1], p[3]) - 0.8) < 0.01
+    end
+    self:check(floating, 'Every coin floats 0.8 above the surface of the map it was placed on')
+    local sample = state.host.rounds.coins[1].position
+    self:check(
+        math.abs(state.host.maps:heightAt(sample[1], sample[3]) - surfaceAt(sample[1], sample[3])) < 0.01,
+        'Bots read the same ground height as the map geometry'
+    )
     local bot = state.host.bots.list[1].avatar
     frames(scene, 30)
     local x, z = bot.x, bot.z
