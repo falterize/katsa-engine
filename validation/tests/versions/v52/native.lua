@@ -5,8 +5,8 @@ return function(test)
     local Physics = require('source.engine.physics')
     local Tree = require('source.engine.editor.tree.traversal')
     local Renderer = require('source.engine.graphics.pipeline.renderer')
-    local resources = Resources.new(require('source.game.data.manifest'))
-    local settings = require('source.game.data.settings').create()
+    local resources = Resources.new(require('game.data.manifest'))
+    local settings = require('game.data.settings').create()
     settings.sky.enabled = false
     settings.fog.enabled = false
     settings.gizmos.enabled = false

@@ -1,4 +1,4 @@
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 local Surface = require('source.engine.graphics.materials.surface')
 local Layers = require('source.engine.world.visibilityLayers')
 local Tests = {}
@@ -491,7 +491,7 @@ function Tests.scenes(tester)
     )
     scene:release()
     local package =
-        require('source.engine.scenes.package').open('source/game/scenes/abilityRunner2D')
+        require('source.engine.scenes.package').open('game/scenes/abilityRunner2D')
     local host = require('source.engine.scenes.host').new(tester.manager, package, {})
     host:load()
     advance(host, 50)

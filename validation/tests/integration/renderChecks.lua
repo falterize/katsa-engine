@@ -4,8 +4,8 @@ local Camera3D = require('source.engine.cameras.camera')
 local Renderer = require('source.engine.graphics.pipeline.renderer')
 local BillboardUI = require('source.engine.ui.spatial.billboard')
 return function(test)
-    local resources = Resources.new(require('source.game.data.manifest'))
-    local settings = require('source.game.data.settings').create()
+    local resources = Resources.new(require('game.data.manifest'))
+    local settings = require('game.data.settings').create()
     settings.sky.enabled = false
     settings.fog.enabled = false
     settings.gizmos.enabled = false

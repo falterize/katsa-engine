@@ -57,7 +57,7 @@ function T:draw()
                 katsa.math.setRandomSeed(384)
                 math.randomseed(384)
                 local scene =
-                    assert(self.manager:switch(require('source.game.runtime.game').new, zone))
+                    assert(self.manager:switch(require('game.runtime.game').new, zone))
                 scene.showStats = false
                 if zone == 'combined' then
                     scene.world.environment.shadows.enabled = false

@@ -52,7 +52,7 @@ function Module.run(self)
 
     local World3D = require('source.engine.world.world')
     local Resources = require('source.engine.core.resources')
-    local world = World3D.new(Resources.new(require('source.game.data.manifest')))
+    local world = World3D.new(Resources.new(require('game.data.manifest')))
     require('source.engine.plugins').activate(world, { 'imgui' })
     local layer = world:create('ImGuiLayer', { name = 'Gui', theme = 'Light', scale = 1.5 })
     local seen

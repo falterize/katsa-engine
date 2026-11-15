@@ -3,8 +3,8 @@
 local Tests = {}
 
 function Tests.run(self)
-    local Game = require('source.game.runtime.game')
-    local Catalog = require('source.game.sceneCatalog')
+    local Game = require('game.runtime.game')
+    local Catalog = require('game.sceneCatalog')
     local manager = self.manager
     local checked, blocked, hidden = 0, {}, 0
     for _, entry in ipairs(Catalog.entries) do

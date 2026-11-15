@@ -1,6 +1,6 @@
 -- A replicated walker's blends are extrapolated and can leave 0..1; the animation weights must not
 -- (Track:advance asserts 0..1, which crashed multiplayer sessions).
-local WalkerView = require('source.game.scenes.multiplayerCars.scripts.walker.view')
+local WalkerView = require('game.scenes.multiplayerCars.scripts.walker.view')
 
 local Module = {}
 

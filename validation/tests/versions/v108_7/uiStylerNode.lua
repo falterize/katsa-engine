@@ -14,7 +14,7 @@ function Tests:draw()
         return
     end
     self.done = true
-    self.host = require('source.game.runtime.application').new(self.manager, 'launcherShowcase')
+    self.host = require('game.runtime.application').new(self.manager, 'launcherShowcase')
     self.host:load()
     local node
     for _, candidate in ipairs(self.host.world._node:getDescendants()) do

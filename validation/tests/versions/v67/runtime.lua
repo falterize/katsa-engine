@@ -22,7 +22,7 @@ function T:update()
     if self.frame == 1 then
         katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
         local scene, err =
-            self.manager:switch(require('source.game.runtime.game').new, 'platformer')
+            self.manager:switch(require('game.runtime.game').new, 'platformer')
         assert(scene, err)
         self.scene = scene
         local demo = scene.demo
@@ -102,11 +102,11 @@ function T:update()
         self.scene.world.debug.wireframe = false
         self:check(not katsa.graphics.isWireframe(), 'Wireframe state does not leak into UI')
         print('TRANSITION runner -> menu')
-        local nextScene, err = self.manager:switch(require('source.game.runtime.menu').new)
+        local nextScene, err = self.manager:switch(require('game.runtime.menu').new)
         assert(nextScene, err)
         print('TRANSITION complete')
     elseif self.frame == 4 then
-        self.manager:switch(require('source.game.runtime.menu').new)
+        self.manager:switch(require('game.runtime.menu').new)
         self:check(
             #self.manager.journal.entries == 0,
             'Scene transition releases material buffers cleanly'

@@ -1,5 +1,5 @@
-local Application = require('source.game.runtime.application')
-local Game = require('source.game.runtime.game')
+local Application = require('game.runtime.application')
+local Game = require('game.runtime.game')
 local Runtime = require('source.engine.core.runtime')
 local Json = require('vendor.json')
 

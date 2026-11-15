@@ -23,7 +23,7 @@ function T:update()
         return
     end
     self.done = true
-    local scene = assert(self.manager:switch(require('source.game.runtime.game').new, 'combined'))
+    local scene = assert(self.manager:switch(require('game.runtime.game').new, 'combined'))
     scene.world.environment.shadows.enabled = false
     scene.world.environment.gizmos.enabled = false
     self:check(
@@ -66,7 +66,7 @@ function T:update()
         not shader:hasUniform('objectLights1'),
         'Direct variant compiles out mask decoding and attributes'
     )
-    local tvStatic = 'source/game/scenes/shaderLab/assets/shaders/tvStatic.glsl'
+    local tvStatic = 'game/scenes/shaderLab/assets/shaders/tvStatic.glsl'
     local Programs = require('source.engine.graphics.shaders.programs')
     local crt = Programs.compile(
         'assets/shaders/engine/canvas/item.glsl',
@@ -149,7 +149,7 @@ function T:update()
         )
     end
     ui:destroy()
-    self.manager:switch(require('source.game.runtime.menu').new)
+    self.manager:switch(require('game.runtime.menu').new)
     self:check(
         #self.manager.journal.entries == 0,
         'Scene and graphics cleanup has no journal errors'

@@ -62,7 +62,7 @@ function Runtime:update()
             size[2],
             { resizable = true, depth = 24, stencil = 8, highdpi = true, vsync = 0 }
         )
-        self.scene = self.manager:switch(require('source.game.runtime.game').new, zone)
+        self.scene = self.manager:switch(require('game.runtime.game').new, zone)
     elseif self.frame % 3 == 0 then
         local scene = self.scene
         local ui = scene.root:find('World3D/World2D')

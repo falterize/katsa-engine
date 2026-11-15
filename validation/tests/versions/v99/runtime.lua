@@ -84,7 +84,7 @@ local function extra(test)
         'Released renderers or resource scopes cannot allocate previously unused programs'
     )
     renderer:release()
-    local scene = assert(test.manager:switch(require('source.game.runtime.game').new, 'combined'))
+    local scene = assert(test.manager:switch(require('game.runtime.game').new, 'combined'))
     scene.world.debug.wireframe = true
     test.manager:update(1 / 60)
     test.manager:draw()

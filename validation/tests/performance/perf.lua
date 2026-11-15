@@ -98,7 +98,7 @@ function Tests:begin(case)
     end
     self.current, self.frame = case, 0
     self.timing = { update = 0, draw = 0, n = 0 }
-    self.host = require('source.game.runtime.application').new(self.manager, case.scene)
+    self.host = require('game.runtime.application').new(self.manager, case.scene)
     self.host:load()
     if case.prepare then
         case.prepare(self.host)

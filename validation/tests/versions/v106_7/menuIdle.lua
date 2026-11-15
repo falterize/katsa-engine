@@ -1,4 +1,4 @@
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 local Runtime = require('source.engine.core.runtime')
 local FrameLoop = require('source.engine.core.frameLoop')
 
@@ -141,7 +141,7 @@ function Tests.run(tester)
     local effect = menu.root:find('World3D/World2D'):create('Shader2D', {
         name = 'IdleAnimationProbe',
         size = { 1, 0, 1, 0 },
-        shaderPath = 'source/game/runtime/game/shaders/uiPulse.glsl',
+        shaderPath = 'game/runtime/game/shaders/uiPulse.glsl',
     }, menu.root:find('World3D/World2D').content)
     menu.root:find('World3D/World2D'):layout()
     menu.state._paintRevision = menu.root:find('World3D/World2D').revision
@@ -152,7 +152,7 @@ function Tests.run(tester)
         not menu:canReuseWindowFrame(),
         'Resizing invalidates the previous Menu presentation'
     )
-    local game = assert(tester.manager:switch(require('source.game.runtime.game').new, 'original'))
+    local game = assert(tester.manager:switch(require('game.runtime.game').new, 'original'))
     tester:check(not game.canReuseWindowFrame, 'Gameplay does not opt into Menu idle pacing')
     menu = assert(tester.manager:switch(Application.new, 'menu'))
     tester:check(

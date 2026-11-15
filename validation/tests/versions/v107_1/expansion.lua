@@ -66,8 +66,8 @@ function Tests.run(tester)
     for _, mode in ipairs({ 'Decal', 'Texture', 'Tiles', 'Atlas', 'XML' }) do
         e.imageMode = mode
         if mode == 'XML' then
-            e.xml = 'source/game/scenes/abilityRunner2D/assets/animations/player.xml'
-            e.texture = 'source/game/scenes/abilityRunner2D/assets/textures/player.png'
+            e.xml = 'game/scenes/abilityRunner2D/assets/animations/player.xml'
+            e.texture = 'game/scenes/abilityRunner2D/assets/textures/player.png'
         end
         ui:draw()
         tester:check(
@@ -116,7 +116,7 @@ function Tests.run(tester)
     camera:destroy()
     tester:check(ui.currentCamera == nil, 'Camera destruction clears currentCamera')
     release()
-    local Application = require('source.game.runtime.application')
+    local Application = require('game.runtime.application')
     local platformScene = Application.new(tester.manager, 'physics2D')
     platformScene:load()
     local locked, free =
@@ -199,11 +199,11 @@ function Tests.run(tester)
     )
     local decal = scene.world:create('Decal3D', {
         name = 'ImageModeDecal',
-        image = 'source/game/scenes/abilityRunner2D/assets/textures/player.png',
+        image = 'game/scenes/abilityRunner2D/assets/textures/player.png',
     }, host)
     for _, mode in ipairs({ 'Decal', 'Texture', 'Tiles', 'Atlas', 'XML' }) do
         decal.imageMode = mode
-        decal.xml = 'source/game/scenes/abilityRunner2D/assets/animations/player.xml'
+        decal.xml = 'game/scenes/abilityRunner2D/assets/animations/player.xml'
         decal:update(scene.world, scene.camera)
         scene:draw()
         tester:check(
@@ -223,8 +223,8 @@ function Tests.run(tester)
         local emitter = scene.demo.emitter
         emitter.imageMode = mode
         if mode == 'XML' then
-            emitter.xml = 'source/game/scenes/abilityRunner2D/assets/animations/player.xml'
-            emitter.texture = 'source/game/scenes/abilityRunner2D/assets/textures/player.png'
+            emitter.xml = 'game/scenes/abilityRunner2D/assets/animations/player.xml'
+            emitter.texture = 'game/scenes/abilityRunner2D/assets/textures/player.png'
         end
         emitter:emit(5)
         scene:update(1 / 30, 1 / 30)

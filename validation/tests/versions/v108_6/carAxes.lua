@@ -3,8 +3,8 @@ local Module = {}
 
 function Module.run(self)
     local Math = require('source.engine.math.math3d')
-    local CarAxes = require('source.game.scenes.multiplayerCars.scripts.game.carAxes')
-    local orientation = require('source.game.scenes.multiplayerCars.scripts.shared.orientation')
+    local CarAxes = require('game.scenes.multiplayerCars.scripts.game.carAxes')
+    local orientation = require('game.scenes.multiplayerCars.scripts.shared.orientation')
     local level = CarAxes.up(40, 0, 0)
     self:check(
         math.abs(level[2] - 1) < 1e-9 and math.abs(level[1]) + math.abs(level[3]) < 1e-9,

@@ -135,7 +135,7 @@ function Tests.run(tester)
         world:release()
         resources:release()
     end
-    local scene = require('source.game.runtime.application').new(tester.manager, 'collisionModels')
+    local scene = require('game.runtime.application').new(tester.manager, 'collisionModels')
     scene:load()
     scene:update(1 / 60, 1 / 60)
     local fileCollider

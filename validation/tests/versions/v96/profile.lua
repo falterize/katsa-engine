@@ -59,7 +59,7 @@ function T:draw()
         if not selected or selected == case[1] then
             katsa.math.setRandomSeed(384)
             math.randomseed(384)
-            local scene, err = self.manager:switch(require('source.game.runtime.game').new, case[2])
+            local scene, err = self.manager:switch(require('game.runtime.game').new, case[2])
             assert(scene, err)
             if case.animation then
                 local Models = require('source.engine.import.models')
@@ -69,7 +69,7 @@ function T:draw()
                     model,
                     { name = 'ProfileRig', position = { 0, 0, 80 } }
                 )
-                require('source.game.shared.models.proceduralClips').add(model)
+                require('game.shared.models.proceduralClips').add(model)
                 model.animator:transition('Demo Walk', 0)
             end
             scene.showStats = case.stats or false

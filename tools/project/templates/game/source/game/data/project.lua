@@ -1,7 +1,7 @@
 local Project = {
     title = 'My Game',
     identity = 'katsa-my-game',
-    startScene = 'source/game/scenes/start',
+    startScene = 'game/scenes/start',
     sharedAssets = 'assets',
 }
 

@@ -1,10 +1,10 @@
-local Game = require('source.game.runtime.game')
-local Application = require('source.game.runtime.application')
+local Game = require('game.runtime.game')
+local Application = require('game.runtime.application')
 local Package = require('source.engine.scenes.package')
 local Loader = require('source.engine.scenes.loader')
 local Resources = require('source.engine.core.resources')
 local Systems = require('source.engine.scenes.systems')
-local Catalog = require('source.game.sceneCatalog')
+local Catalog = require('game.sceneCatalog')
 local Models = require('source.engine.import.models')
 
 local Tests = {}

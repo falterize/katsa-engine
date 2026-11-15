@@ -1,6 +1,6 @@
 -- The replicationLab scene end to end: a server in the same process, a client joined to it, rounds,
 -- teleports, coins, the scoreboard, chat and nicknames, all through the network.
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 
 local Module = {}
 
@@ -91,7 +91,7 @@ function Module.run(self)
         math.abs(state.host.maps:heightAt(sample[1], sample[3]) - surfaceAt(sample[1], sample[3])) < 0.01,
         'Bots read the same ground height as the map geometry'
     )
-    local HeroTree = require('source.game.characters.heroTree')
+    local HeroTree = require('game.characters.heroTree')
     self:check(
         HeroTree.stride(0) == 1 and HeroTree.stride(5) == 2.5 and HeroTree.stride(8) == 3.5,
         'The walk cycle plays at the controller scene rate: 2.5x walking, 3.5x running, idle 1x'

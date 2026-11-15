@@ -18,7 +18,7 @@ function Tests:draw()
     self.frame = self.frame + 1
     local frame = self.frame
     if frame == 1 then
-        self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+        self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
         self.session:host('Tester', 47940 + math.floor(os.clock() * 100) % 9, { separate = false })
@@ -32,7 +32,7 @@ function Tests:draw()
     elseif frame == 260 then
         local netId = session.client:getCar()
         local carView = session.views[netId]
-        local WalkerView = require('source.game.scenes.multiplayerCars.scripts.walker.view')
+        local WalkerView = require('game.scenes.multiplayerCars.scripts.walker.view')
         self.riders = {}
         for seat = 2, 4 do
             local model = { state = 8, x = 0, y = 0, z = 0, heading = 0, playerId = 9000 + seat }

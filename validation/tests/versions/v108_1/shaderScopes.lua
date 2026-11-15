@@ -1,5 +1,5 @@
 -- Shader2D touches interface pixels only unless its shader layer interacts with Default3D; Shader3D belongs to World3D space.
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 
 local Module = {}
 

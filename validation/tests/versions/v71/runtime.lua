@@ -50,7 +50,7 @@ function T:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
         local scene =
-            assert(self.manager:switch(require('source.game.runtime.game').new, 'combined'))
+            assert(self.manager:switch(require('game.runtime.game').new, 'combined'))
         self.scene = scene
         scene.world.environment.render.lightLoop = 'Masked'
         scene.world.environment.shadows.enabled = false
@@ -133,7 +133,7 @@ function T:update()
         )
     elseif self.frame == 2 then
         local scene = assert(
-            self.manager:switch(require('source.game.runtime.game').new, 'animationPhysicsLab')
+            self.manager:switch(require('game.runtime.game').new, 'animationPhysicsLab')
         )
         self.scene = scene
         scene.world.environment.shadows.enabled = false
@@ -144,7 +144,7 @@ function T:update()
             #self.manager.journal.entries == 0,
             'Optimized scenes render without journal errors'
         )
-        self.manager:switch(require('source.game.runtime.menu').new)
+        self.manager:switch(require('game.runtime.menu').new)
         print('PASSED ' .. self.count .. ' focused v71 checks')
         katsa.event.quit()
     end

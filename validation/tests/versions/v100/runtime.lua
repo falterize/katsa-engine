@@ -45,7 +45,7 @@ local function extra(test)
             'Coverage scratch retains bounded numeric arrays rather than scenes'
         )
     end
-    local scene = assert(test.manager:switch(require('source.game.runtime.game').new, 'occlusion'))
+    local scene = assert(test.manager:switch(require('game.runtime.game').new, 'occlusion'))
     local Projection = require('source.engine.graphics.occlusion.projection')
     local reference =
         assert(loadstring(katsa.filesystem.read('validation/tests/fixtures/v99-projection.lua')))()

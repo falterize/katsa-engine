@@ -228,7 +228,7 @@ end
 
 local function physics(test)
     local scene =
-        assert(test.manager:switch(require('source.game.runtime.game').new, 'animationPhysicsLab'))
+        assert(test.manager:switch(require('game.runtime.game').new, 'animationPhysicsLab'))
     local w = scene.world
     local node = w:create('Body3D', { bodyType = 'Static' })
     local a =

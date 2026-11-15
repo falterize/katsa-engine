@@ -23,8 +23,8 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
         stage = Path(temporary) / 'game'
         shutil.copytree(source / 'tools/project/templates/game', stage)
         shutil.copy2(source / 'conf.lua', stage / 'conf.lua')
-        scene = stage / 'source/game/scenes/start'
-        shutil.copytree(source / 'source/game/scenes/starterGame', scene)
+        scene = stage / 'game/scenes/start'
+        shutil.copytree(source / 'game/scenes/starterGame', scene)
         scene_settings = scene / 'menu-settings.lua'
         scene_settings.write_text(
             scene_settings.read_text(encoding='utf-8').replace(
@@ -44,7 +44,7 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
         shutil.copy2(source / 'docs/AGENTS.md', stage / 'docs/AGENTS.md')
         for category in ('models', 'textures', 'audio', 'shaders', 'fonts'):
             (stage / 'assets' / category).mkdir(exist_ok=True)
-        project = stage / 'source/game/data/project.lua'
+        project = stage / 'game/data/project.lua'
         settings = project.read_text(encoding='utf-8')
         settings = settings.replace("'My Game'", repr(name.replace('-', ' ').title()))
         settings = settings.replace("'katsa-my-game'", repr(identity))

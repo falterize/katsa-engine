@@ -1,5 +1,5 @@
 -- Car bodies are lofted once and shared as a rest pose; each car keeps its own dentable vertices.
-local Body = require('source.game.scenes.multiplayerCars.scripts.view.carMesh')
+local Body = require('game.scenes.multiplayerCars.scripts.view.carMesh')
 
 local Module = {}
 

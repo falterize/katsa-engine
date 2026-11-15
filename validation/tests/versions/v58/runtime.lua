@@ -10,7 +10,7 @@ function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
         katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-        local scene, err = self.manager:switch(require('source.game.runtime.game').new, 'particles')
+        local scene, err = self.manager:switch(require('game.runtime.game').new, 'particles')
         assert(scene, err)
         self.scene = scene
         for i = 1, 30 do

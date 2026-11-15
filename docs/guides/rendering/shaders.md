@@ -472,6 +472,6 @@ assets/shaders/engine/
 * Adding a built-in: edit `builtins.lua`, declare the local in each template that runs that entry point,
   document it above, and add a case to `validation/tests/versions/v108_8/shaderPrograms.lua`.
 * `validation/tests/katsa/shaderCompile.lua` compiles every engine shader in several variants, and every
-  user shader found under `source/game` and the test fixtures with each template of its type, on desktop and ES.
+  user shader found under `game` and the test fixtures with each template of its type, on desktop and ES.
 
 </details>

@@ -45,7 +45,7 @@ return function(test)
     )
     local Resources = require('source.engine.core.resources')
     local UI = require('source.engine.ui')
-    local resources = Resources.new(require('source.game.data.manifest'))
+    local resources = Resources.new(require('game.data.manifest'))
     local ui = UI.new(64, 64, resources)
     local label = ui:create(
         'Frame',

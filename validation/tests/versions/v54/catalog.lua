@@ -10,7 +10,7 @@ function Test:update()
         return
     end
     self.done = true
-    local samples = require('source.game.scenes.nodeCatalog.scripts.catalog.samples')
+    local samples = require('game.scenes.nodeCatalog.scripts.catalog.samples')
     local groups = {}
     local count = 0
     for _, name in ipairs(samples.names()) do
@@ -19,7 +19,7 @@ function Test:update()
         table.insert(groups[zone], name)
     end
     for zone, names in pairs(groups) do
-        local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
         assert(scene, err)
         for _, kind in ipairs(names) do
             local node = samples.prepare(scene, kind)

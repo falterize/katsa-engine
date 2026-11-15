@@ -18,7 +18,7 @@ function T:draw()
     local modes = { 'Idle', 'Camera', 'Cube', 'Lights', 'All' }
     local output = os.getenv('KATSA_PROFILE_OUTPUT')
     for _, zone in ipairs({ 'combined', 'shadows' }) do
-        local s = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local s = self.manager:switch(require('game.runtime.game').new, zone)
         local r, w, c = s.renderer, s.world, s.camera
         w.environment.gizmos.enabled = false
         s.showStats = false

@@ -22,7 +22,7 @@ function T:draw()
         'viewports',
         'uiGallery',
     }) do
-        local s = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local s = self.manager:switch(require('game.runtime.game').new, zone)
         s.showStats = false
 
         local function measure(label, callback)

@@ -13,8 +13,8 @@ return function(test)
         self.rotation[2] = self.rotation[2] + self.angularSpeed * dt
     end
     Spinner.update = Spinner.advance
-    local resources = Resources.new(require('source.game.data.manifest'))
-    local world = World3D.new(resources, require('source.game.data.settings').create())
+    local resources = Resources.new(require('game.data.manifest'))
+    local world = World3D.new(resources, require('game.data.settings').create())
     local first = world:create('TestSpinner', { name = 'First', angularSpeed = 90 })
     local second = world:create('TestSpinner', { name = 'Second' })
     first:advance(0.5)

@@ -125,7 +125,7 @@ function Tests:measure(host, session)
             -- The seat on the drawn car, lifted along the chassis up axis.
             local view = session.views[netId]
             local _, _, seat = client:getCar()
-            local at = view.root:pointToWorldSpace(require('source.game.scenes.multiplayerCars.scripts.game.seats').offset(seat))
+            local at = view.root:pointToWorldSpace(require('game.scenes.multiplayerCars.scripts.game.seats').offset(seat))
             local ideal = { at[1] + m[2] * lift, at[2] + m[6] * lift, at[3] + m[10] * lift }
             self:note('seatedCapsule', distance(entry, ideal))
         elseif entry and not walker:isRiding() then
@@ -160,7 +160,7 @@ function Tests:draw()
     self.frame = self.frame + 1
     local frame = self.frame
     if frame == 1 then
-        self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+        self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
         self.port = 47960 + math.floor(os.clock() * 100) % 9

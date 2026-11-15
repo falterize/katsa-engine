@@ -1,7 +1,7 @@
 local T = {}
 
 local function extra(test)
-    local scene = test.manager:switch(require('source.game.runtime.game').new, 'combined')
+    local scene = test.manager:switch(require('game.runtime.game').new, 'combined')
     local w, r, c = scene.world, scene.renderer, scene.camera
     w.environment.shadows.enabled = false
     w.environment.render.frameCache = false

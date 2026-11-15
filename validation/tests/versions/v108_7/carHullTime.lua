@@ -16,7 +16,7 @@ function Tests:draw()
     local Models = require('source.engine.import.models')
     local Decomposition = require('source.engine.physics.3d.decomposition')
     local resources = self.manager.resources:scope()
-    local asset = Models.load('source/game/scenes/multiplayerCars/assets/models/duke69.glb', resources)
+    local asset = Models.load('game/scenes/multiplayerCars/assets/models/duke69.glb', resources)
     io.stderr:write('P parts ', #asset.parts, '\n')
     local soup = {}
     for _, part in ipairs(asset.parts) do

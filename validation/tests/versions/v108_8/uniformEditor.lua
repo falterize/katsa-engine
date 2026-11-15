@@ -22,7 +22,7 @@ local function fakePopup(node)
 end
 
 function Module.run(self)
-    local resources = Resources.new(require('source.game.data.manifest'))
+    local resources = Resources.new(require('game.data.manifest'))
     local world = World3D.new(resources)
     local node = world:create('Shader3D', {
         name = 'Edited',

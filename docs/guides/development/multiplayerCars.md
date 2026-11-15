@@ -1,6 +1,6 @@
 # multiplayerCars: the networked sample scene
 
-`source/game/scenes/multiplayerCars` is a complete LAN game built on the engine's networking: host
+`game/scenes/multiplayerCars` is a complete LAN game built on the engine's networking: host
 or join, walk, drive, chat, talk, kick, a bot that chases players, and a damage model.
 
 ## Controls
@@ -16,8 +16,8 @@ or join, walk, drive, chat, talk, kick, a bot that chases players, and a damage 
 | V (hold) | push-to-talk voice, desktop only |
 | Tab | free the cursor and show the player list; the host can **Kick** players |
 
-The controller and camera are the StareShooter ones (`source/game/characters/thirdPersonInput.lua`,
-`source/game/characters/orbit.lua`); driving and seating states were added on top. Driving widens the
+The controller and camera are the StareShooter ones (`game/characters/thirdPersonInput.lua`,
+`game/characters/orbit.lua`); driving and seating states were added on top. Driving widens the
 FOV with speed (`speedFov`).
 
 ## Chat, voice, kick, names

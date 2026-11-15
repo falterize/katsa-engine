@@ -14,7 +14,7 @@ local function smoke(test)
     end
     syntax('source')
     test:check(true, 'All first-party Lua files compile after module extraction')
-    local scene = test.manager:switch(require('source.game.runtime.game').new, 'original')
+    local scene = test.manager:switch(require('game.runtime.game').new, 'original')
     local mesh = scene.world:create(
         'Mesh3D',
         { name = 'InspectorProbe', position = { 0, 0, 30 }, size = { 4, 4, 4 } }
@@ -65,7 +65,7 @@ local function smoke(test)
     voice:release()
     test:check(voice.released, 'Audio playback, application and lifetime remain compatible')
     for _, zone in ipairs({ 'uiGallery', 'animationLab', 'shaderLab', 'audioNodes', 'particles' }) do
-        scene = test.manager:switch(require('source.game.runtime.game').new, zone)
+        scene = test.manager:switch(require('game.runtime.game').new, zone)
         scene:update(1 / 60, 1 / 60)
         scene.renderer:draw(scene.world, scene.camera, 1, true)
         scene.root:find('World3D/World2D'):draw()

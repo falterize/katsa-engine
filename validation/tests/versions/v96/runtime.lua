@@ -9,7 +9,7 @@ end
 
 local function extra(test)
     local scene =
-        assert(test.manager:switch(require('source.game.runtime.game').new, 'animationPhysicsLab'))
+        assert(test.manager:switch(require('game.runtime.game').new, 'animationPhysicsLab'))
     local w, r, c = scene.world, scene.renderer, scene.camera
     w.debug.bones = false
     for _, a in ipairs(w.animators) do
@@ -112,7 +112,7 @@ local function extra(test)
         'Managed constructor and property assignment stress preserves copies and aliases'
     )
     local combined =
-        assert(test.manager:switch(require('source.game.runtime.game').new, 'combined'))
+        assert(test.manager:switch(require('game.runtime.game').new, 'combined'))
     local Managed = require('source.engine.math.managedValue')
     for _, object in ipairs(combined.world.objects) do
         for _, key in ipairs({ 'position', 'rotation', 'scale', 'size' }) do

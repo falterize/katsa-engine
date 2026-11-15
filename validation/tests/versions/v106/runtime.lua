@@ -1,5 +1,5 @@
 local History = require('source.engine.debug.statistics.history')
-local Game = require('source.game.runtime.game')
+local Game = require('game.runtime.game')
 local World = require('source.engine.world.world')
 local Manager = require('source.engine.core.sceneManager')
 local Time = require('source.engine.core.time')

@@ -16,8 +16,8 @@ end
 
 -- A floor, a box standing on it, and a far bright wall.
 local function build()
-    local resources = Resources.new(require('source.game.data.manifest'))
-    local settings = require('source.game.data.settings').create()
+    local resources = Resources.new(require('game.data.manifest'))
+    local settings = require('game.data.settings').create()
     settings.sky.enabled, settings.fog.enabled, settings.gizmos.enabled = false, false, false
     settings.ambient = { 90, 90, 90 }
     settings.shadows.enabled = false

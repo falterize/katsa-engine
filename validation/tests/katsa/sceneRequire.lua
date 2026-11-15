@@ -4,7 +4,7 @@
 local cache = {}
 
 return function(sceneName, name)
-    local root = 'source/game/scenes/' .. sceneName .. '/'
+    local root = 'game/scenes/' .. sceneName .. '/'
     local Relative = require('source.katsa.core.relativeRequire')
     local function resolve(module)
         if Relative.isRelative(module) then

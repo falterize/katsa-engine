@@ -22,7 +22,7 @@ function T.new(manager)
             return a, b, c
         end
     end
-    local Game = require('source.game.runtime.game')
+    local Game = require('game.runtime.game')
     for _, key in ipairs({ 'loadStress', 'buildUI', 'buildMaterials', 'resize' }) do
         wrap(Game, key, 'Game.' .. key)
     end
@@ -56,7 +56,7 @@ function T:draw()
         katsa.math.setRandomSeed(384)
         math.randomseed(384)
         local started = katsa.timer.getTime()
-        local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
+        local scene = assert(self.manager:switch(require('game.runtime.game').new, zone))
         local loaded = katsa.timer.getTime()
         self.manager:update(1 / 60)
         self.manager:draw()

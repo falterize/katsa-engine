@@ -26,7 +26,7 @@ function T:draw()
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Resources = require('source.engine.core.resources')
     local World = require('source.engine.world.world')
-    local resources = Resources.new(require('source.game.data.manifest'))
+    local resources = Resources.new(require('game.data.manifest'))
     local settings = require('source.engine.graphics.lighting.defaults').create()
     settings.sky.enabled, settings.fog.enabled = false, false
     settings.debug.gizmos.enabled = false
@@ -258,7 +258,7 @@ function T:draw()
         'viewports',
         'nightPlayer',
     }) do
-        local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
         assert(scene, err)
         scene.world.environment.shadows.resolution = 64
         scene.world.environment.shadows.maxUpdateFaces = 195

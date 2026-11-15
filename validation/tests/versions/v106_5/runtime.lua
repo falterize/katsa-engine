@@ -1,6 +1,6 @@
 local Previous = require('validation.tests.versions.v106_4.runtime')
-local Application = require('source.game.runtime.application')
-local Game = require('source.game.runtime.game')
+local Application = require('game.runtime.application')
+local Game = require('game.runtime.game')
 local Package = require('source.engine.scenes.package')
 local Layout = require('source.engine.scenes.layout')
 local Nodes = require('source.engine.nodes')
@@ -26,8 +26,8 @@ end
 
 function Tests:layout()
     local count = 0
-    for _, name in ipairs(katsa.filesystem.getDirectoryItems('source/game/scenes')) do
-        local root = 'source/game/scenes/' .. name
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems('game/scenes')) do
+        local root = 'game/scenes/' .. name
         self:check(katsa.filesystem.getInfo(root, 'directory'), 'Scene entry is a folder: ' .. name)
         local package = Package.open(root)
         self:check(
@@ -47,7 +47,7 @@ function Tests:layout()
         count = count + 1
     end
     self:check(
-        count == #require('source.game.sceneCatalog').entries + 1,
+        count == #require('game.sceneCatalog').entries + 1,
         'All gameplay and interface scenes use folders'
     )
     local ok = pcall(Package.open, fixtures .. 'missingCategory.zip')

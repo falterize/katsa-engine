@@ -26,7 +26,7 @@ local function countMarks(world)
 end
 
 function Module.run(self)
-    local host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+    local host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
     host:load()
     local session = host.demo
     session:host('Tester', 47930 + math.floor(os.clock() * 100) % 9, { separate = false })

@@ -1,4 +1,4 @@
-local Game = require('source.game.runtime.game')
+local Game = require('game.runtime.game')
 local FrameTimes = require('source.engine.debug.statistics.frameTimes')
 local Json = require('vendor.json')
 

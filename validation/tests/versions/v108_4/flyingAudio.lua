@@ -6,7 +6,7 @@ local function finite(value)
 end
 
 function Module.run(self)
-    local host = require('source.game.runtime.application').new(self.manager, 'flyingAudio')
+    local host = require('game.runtime.application').new(self.manager, 'flyingAudio')
     host:load()
     local flying = host.demo.flying
     local maxSpeed = 0

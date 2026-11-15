@@ -25,7 +25,7 @@ function T:draw()
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     require('validation.tests.integration.shadowCacheRuntime')(self)
-    local scene = self.manager:switch(require('source.game.runtime.game').new, 'shadows')
+    local scene = self.manager:switch(require('game.runtime.game').new, 'shadows')
     local world, renderer, camera = scene.world, scene.renderer, scene.camera
     local environment = world.environment
     local Tree = require('source.engine.editor.tree.traversal')
@@ -117,7 +117,7 @@ function T:draw()
         rig,
         { name = 'ShadowRig', position = { 0, 0, 50 }, scale = { 0.2, 0.2, 0.2 } }
     )
-    require('source.game.shared.models.proceduralClips').add(rig)
+    require('game.shared.models.proceduralClips').add(rig)
     draw()
     local hasSkin = false
     for _, object in ipairs(renderer.shadows.sunCasters) do

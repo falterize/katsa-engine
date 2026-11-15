@@ -19,7 +19,7 @@ function T:check(ok, label)
 end
 
 function T:load(route)
-    local scene, err = self.manager:switch(require('source.game.runtime.game').new, route)
+    local scene, err = self.manager:switch(require('game.runtime.game').new, route)
     assert(scene, err)
     self.scene = scene
     return scene
@@ -299,7 +299,7 @@ function T:update()
             #self.manager.journal.entries == 0,
             'CRT and suppression effects render without errors'
         )
-        local menu = assert(self.manager:switch(require('source.game.runtime.menu').new))
+        local menu = assert(self.manager:switch(require('game.runtime.menu').new))
         menu.rebuildCategory('Physics')
         local list = menu.root:find('World3D/World2D'):find('LevelList', true)
         self:check(#list.children > 0 and #list.children < 10, 'Menu category filters scene list')

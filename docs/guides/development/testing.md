@@ -30,7 +30,7 @@ python tools/build/packageProject.py --output dist
 
 Historical command names identify stable suites, not the current application version. Set `KATSA_TEST_INTERPRETER=1` to exercise supported suites with JIT disabled. The v104 suite covers both physics backends, mutation safety, lifecycle and animation caches. v102 covers rendering/UI regressions; v75 compares retained text geometry. Stress scenes check bounded finite body poses and debug drawing.
 
-Format first-party Lua using `stylua --syntax LuaJIT --verify source/engine source/game validation/tests main.lua conf.lua`, followed by the same paths with `--check`. Preserve vendor files and historical comparison fixtures. Python tools use the checked-in Black configuration.
+Format first-party Lua using `stylua --syntax LuaJIT --verify source/engine game validation/tests main.lua conf.lua`, followed by the same paths with `--check`. Preserve vendor files and historical comparison fixtures. Python tools use the checked-in Black configuration.
 
 Release-wide runners, frame-hash comparisons, structural audits and completed results live in `validation/` (tests in `validation/tests`, generated logs in `validation/logs`). Re-test the packaged `.katsa` after changes to dependency paths. A Haxe/C++ rebuild requires the corresponding external compiler; library hash verification does not claim a source rebuild or device testing.
 

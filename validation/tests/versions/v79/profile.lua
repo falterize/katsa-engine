@@ -20,7 +20,7 @@ function T:draw()
     )
     local rows = {}
     for _, zone in ipairs({ 'occlusion', 'combined' }) do
-        local scene = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local scene = self.manager:switch(require('game.runtime.game').new, zone)
         local renderer, world, camera = scene.renderer, scene.world, scene.camera
         local environment = world.environment
         environment.gizmos.enabled = false

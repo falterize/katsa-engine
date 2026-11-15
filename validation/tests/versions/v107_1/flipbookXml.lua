@@ -2,7 +2,7 @@ local Xml = require('source.engine.animation.formats.flipbookXml')
 local Tests = {}
 
 function Tests.run(tester)
-    local path = 'source/game/scenes/abilityRunner2D/assets/animations/player.xml'
+    local path = 'game/scenes/abilityRunner2D/assets/animations/player.xml'
     local text = assert(katsa.filesystem.read(path))
     local definition = Xml.parse(text)
     tester:check(

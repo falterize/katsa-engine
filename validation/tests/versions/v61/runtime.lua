@@ -18,7 +18,7 @@ function Test:check(ok, message)
 end
 
 function Test:load(zone)
-    local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
+    local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
     assert(scene, err)
     self.scene = scene
     scene:update(0.016, 0.016)

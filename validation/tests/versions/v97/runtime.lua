@@ -54,7 +54,7 @@ end
 local function extra(test)
     matrixChecks(test)
     local scene =
-        assert(test.manager:switch(require('source.game.runtime.game').new, 'animationPhysicsLab'))
+        assert(test.manager:switch(require('game.runtime.game').new, 'animationPhysicsLab'))
     local w = scene.world
     local parent = w:create('Node3D', { position = { 15, 0, 0 } })
     local node = w:create('Body3D', { bodyType = 'Kinematic', position = { 2, 35, 0 } }, parent)

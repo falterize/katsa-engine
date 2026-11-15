@@ -140,7 +140,7 @@ world:create('AnimationGraphNode', { type = 'Animation', clip = 'Walk', pointX =
 With `liveEdit` (default) the tree notices edits of the nodes and rebuilds itself, keeping the
 parameters; `tree:rebuild()` does it on demand. A `definition` or `definitionFile` wins over nodes.
 
-Demo: the `animationTreeLab` scene builds its graph from nodes (`source/game/characters/heroTree.lua`, shared with replicationLab): Transition
+Demo: the `animationTreeLab` scene builds its graph from nodes (`game/characters/heroTree.lua`, shared with replicationLab): Transition
 stance, Add2 squat, OneShot wave on the arms, an AtEnd landing.
 
 ## Retargeting

@@ -67,7 +67,7 @@ function Tests:draw()
         end
     end
     if frame == 1 then
-        self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+        self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
         self.manager.profiler:startRecording({ scene = 'multiplayerCars' })
@@ -411,7 +411,7 @@ function Tests:draw()
         self:startRemote()
     elseif frame == 641 then
         -- Walk (and sprint) up and down the hills: the fall state must never trigger on terrain.
-        local Arena = require('source.game.scenes.multiplayerCars.scripts.shared.arena')
+        local Arena = require('game.scenes.multiplayerCars.scripts.shared.arena')
         local walker = session.walker
         local keys = host.input.actions.keys
         local runs = { { -48, -10, 90 }, { -30, 10, 180 }, { 10, -35, 90 }, { -5, -40, 90 } }
@@ -469,7 +469,7 @@ function Tests:draw()
         )
         platform:destroy()
         -- The car park: the deck and the ramp are solid, at the heights the navigation assumes.
-        local Arena = require('source.game.scenes.multiplayerCars.scripts.shared.arena')
+        local Arena = require('game.scenes.multiplayerCars.scripts.shared.arena')
         local g = Arena.garage
         local out = {}
         local deck = session.scene.physics:raycast({ -42, 20, -48 }, { -42, -5, -48 }, nil, out)

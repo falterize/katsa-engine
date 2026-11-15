@@ -38,7 +38,7 @@ function T:draw()
         return newShader(...)
     end
     local started = katsa.timer.getTime()
-    local scene = assert(self.manager:switch(require('source.game.runtime.game').new, 'combined'))
+    local scene = assert(self.manager:switch(require('game.runtime.game').new, 'combined'))
     scene.world.environment.shadows.enabled = false
     scene.world.environment.debug.gizmos.enabled = false
     print('ENTER MS', (katsa.timer.getTime() - started) * 1000)

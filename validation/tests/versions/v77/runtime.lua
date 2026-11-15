@@ -49,7 +49,7 @@ function T:draw()
         end
         self:check(true, '1000 growing/shrinking vector and scalar edits match v76 snapshots')
     end
-    local scene = self.manager:switch(require('source.game.runtime.game').new, 'combined')
+    local scene = self.manager:switch(require('game.runtime.game').new, 'combined')
     local r, w, c = scene.renderer, scene.world, scene.camera
     w.environment.shadows.enabled, w.environment.gizmos.enabled = false, false
     w.environment.render.frameCache = false

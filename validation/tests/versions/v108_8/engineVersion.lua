@@ -10,7 +10,7 @@ function Module.run(self)
         'Beta sits between alpha and stable'
     )
     self:check(
-        require('source.game.data.project').version == Version.release,
+        require('game.data.project').version == Version.release,
         'The bundled project declares the running engine'
     )
     local warnings = {}

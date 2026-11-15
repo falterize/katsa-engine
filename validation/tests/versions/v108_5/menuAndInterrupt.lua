@@ -1,5 +1,5 @@
 -- The menu shows its own loading label before building a scene; Ctrl+C is not a crash.
-local Menu = require('source.game.scenes.menu.scripts.ui.controller')
+local Menu = require('game.scenes.menu.scripts.ui.controller')
 local Boot = require('source.katsa.host.boot')
 
 local Module = {}

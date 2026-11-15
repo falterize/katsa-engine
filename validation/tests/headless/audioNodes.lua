@@ -352,7 +352,7 @@ end
 function labWorld:updateNodes() end
 local labUI = UI.new(1280, 720, resources)
 local scene = { world = labWorld, audio = labAudio, ui = labUI, camera = {} }
-local demo = require('source.game.scenes.audioNodes.main').new(scene)
+local demo = require('game.scenes.audioNodes.main').new(scene)
 demo:buildUI()
 check(
     #labWorld.billboards == 1 and demo.sound.parent == demo.emitter,

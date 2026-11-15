@@ -4,9 +4,9 @@ Follow [Running and building Katsa](../katsa/building.md) for your platform, the
 
 ## Editing
 
-Start with `source/game/data/project.lua` to select your game's first scene. The example selector is a testing scene and can be bypassed entirely. Every scene has `settings.lua`, a lifecycle-only `main.lua`, and mandatory `assets`, `nodes`, `systems` and `scripts` categories, with scene UI code under `scripts/ui`. Full scene implementations stay inside their own folders. System discovery and ordering are written directly inside each scene's `main.lua`. See [scene authoring](scenes.md) for hooks, private imports and archive structure. Reusable engine services belong in `source/engine`; common host phases live in `source/game/runtime/game/`.
+Start with `game/data/project.lua` to select your game's first scene. The example selector is a testing scene and can be bypassed entirely. Every scene has `settings.lua`, a lifecycle-only `main.lua`, and mandatory `assets`, `nodes`, `systems` and `scripts` categories, with scene UI code under `scripts/ui`. Full scene implementations stay inside their own folders. System discovery and ordering are written directly inside each scene's `main.lua`. See [scene authoring](scenes.md) for hooks, private imports and archive structure. Reusable engine services belong in `source/engine`; common host phases live in `game/runtime/game/`.
 
-`source/game/data/manifest.lua` registers resources. Put images, models, audio and GLSL in their corresponding `assets` categories. Keep model sidecars beside the model. Import/build helpers are grouped under `tools/import`, `tools/assets` and `tools/build`.
+`game/data/manifest.lua` registers resources. Put images, models, audio and GLSL in their corresponding `assets` categories. Keep model sidecars beside the model. Import/build helpers are grouped under `tools/import`, `tools/assets` and `tools/build`.
 
 ## Physics
 

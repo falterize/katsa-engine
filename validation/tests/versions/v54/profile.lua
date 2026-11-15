@@ -3,7 +3,7 @@ P.__index = P
 
 function P.new(manager)
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    local scene = manager:switch(require('source.game.runtime.game').new, 'combined')
+    local scene = manager:switch(require('game.runtime.game').new, 'combined')
     scene.world.lighting.gizmos.enabled = false
     local m = require('source.engine.math.math3d')
     local original = m.normalMatrix

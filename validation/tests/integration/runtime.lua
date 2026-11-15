@@ -130,7 +130,7 @@ function Runtime:update()
             not s.pauseMenu:isOpen() and m.time.scale == 1 and s.time > self.savedTime,
             'Resume updates game'
         )
-        m:switch(require('source.game.runtime.game').new, 'models')
+        m:switch(require('game.runtime.game').new, 'models')
     elseif self.frame == 34 then
         self:check(
             #s.model.nodes == 2 and #s.model.animations == 1,
@@ -155,12 +155,12 @@ function Runtime:update()
         s.mixerOverlay.visible = false
         s.buttons.effects:press()
     elseif self.frame == 38 then
-        m:switch(require('source.game.runtime.game').new, 'objects')
+        m:switch(require('game.runtime.game').new, 'objects')
     elseif self.frame == 42 then
         self:check(#s.world.objects == 401, '400 object test zone')
         self.screenshot = 'objects'
     elseif self.frame == 46 then
-        m:switch(require('source.game.runtime.game').new, 'lights')
+        m:switch(require('game.runtime.game').new, 'lights')
     elseif self.frame == 50 then
         self:check(
             #s.world.lights == 64 and s.renderer.stats.lights == 32,
@@ -168,7 +168,7 @@ function Runtime:update()
         )
         self.screenshot = 'lights'
     elseif self.frame == 54 then
-        m:switch(require('source.game.runtime.game').new, 'combined')
+        m:switch(require('game.runtime.game').new, 'combined')
     elseif self.frame == 59 then
         self:check(#s.world.objects == 401 and s.renderer.stats.lights == 32, 'Combined test zone')
         self.screenshot = 'combined'
@@ -180,7 +180,7 @@ function Runtime:update()
             s.renderer.width == 960 and s.root:find('World3D/World2D').scale == 1 and s.root:find('World3D/World2D').width == 960,
             'Resize recreates render targets and adapts UI'
         )
-        m:switch(require('source.game.runtime.menu').new)
+        m:switch(require('game.runtime.menu').new)
     elseif self.frame == 70 then
         require('validation.tests.integration.renderChecks')(self)
     elseif self.frame == 72 then
@@ -194,7 +194,7 @@ function Runtime:update()
         require('validation.tests.integration.lightSelection')(self)
         require('validation.tests.integration.classSystem')(self)
         require('validation.tests.integration.nodesPhysics')(self)
-        m:switch(require('source.game.runtime.game').new, 'physics')
+        m:switch(require('game.runtime.game').new, 'physics')
     elseif self.frame == 80 then
         self:check(
             s.physics
@@ -207,7 +207,7 @@ function Runtime:update()
         self.screenshot = 'physics'
     elseif self.frame == 84 then
         self:check(s.physics.debugDraw ~= nil, 'Oimo physics debug geometry draws successfully')
-        m:switch(require('source.game.runtime.game').new, 'collisionModels')
+        m:switch(require('game.runtime.game').new, 'collisionModels')
     elseif self.frame == 92 then
         self:check(
             s.world.byName['Pyramid.detailed'].physics.type == 'static',
@@ -225,7 +225,7 @@ function Runtime:update()
         )
         self.screenshot = 'collision-models'
     elseif self.frame == 94 then
-        m:switch(require('source.game.runtime.game').new, 'flyingAudio')
+        m:switch(require('game.runtime.game').new, 'flyingAudio')
     elseif self.frame == 102 then
         self:check(
             s.demo.voice:isPlaying() and #s.demo.voice.sources == 2,
@@ -234,7 +234,7 @@ function Runtime:update()
         self:check(s.demo.board.worldPosition[1] ~= 0, 'BillboardUI follows moving attachment')
         self.screenshot = 'flying-audio'
     elseif self.frame == 104 then
-        m:switch(require('source.game.runtime.game').new, 'nightPlayer')
+        m:switch(require('game.runtime.game').new, 'nightPlayer')
     elseif self.frame == 112 then
         require('validation.tests.integration.cameraDebug')(self, s)
         s.input:press('look', 700 * s.root:find('World3D/World2D').scale, 300 * s.root:find('World3D/World2D').scale)
@@ -325,7 +325,7 @@ function Runtime:update()
             'Deferred contact transition releases the previous physics scene'
         )
     elseif self.frame == 114 then
-        m:switch(require('source.game.runtime.game').new, 'nodes')
+        m:switch(require('game.runtime.game').new, 'nodes')
     elseif self.frame == 122 then
         self:check(
             s.demo.satellite.parent == s.demo.pivot and s.demo.socket.parent == s.demo.satellite,
@@ -337,7 +337,7 @@ function Runtime:update()
         s.debugOverlay.visible = true
         self.screenshot = 'debug-menu'
     elseif self.frame == 126 then
-        m:switch(require('source.game.runtime.game').new, 'shadows')
+        m:switch(require('game.runtime.game').new, 'shadows')
     elseif self.frame == 128 then
         self:check(s.renderer.shadows.generation > 0, 'Shadow demo renders readable depth maps')
         self.screenshot = 'shadows-spot'
@@ -348,7 +348,7 @@ function Runtime:update()
         s.renderer.shadows.nextUpdate = 0
         self.screenshot = 'shadows-point'
     elseif self.frame == 130 then
-        m:switch(require('source.game.runtime.menu').new)
+        m:switch(require('game.runtime.menu').new)
     elseif self.frame == 134 then
         self:check(#m.stack == 1 and not m.stack[1].world, 'Return to menu releases game scene')
         local name, version, vendor, device = katsa.graphics.getRendererInfo()

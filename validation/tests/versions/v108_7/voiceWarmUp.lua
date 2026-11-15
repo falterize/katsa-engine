@@ -2,7 +2,7 @@
 local Module = {}
 
 function Module.run(self)
-    local Voice = require('source.game.scenes.multiplayerCars.scripts.game.voice')
+    local Voice = require('game.scenes.multiplayerCars.scripts.game.voice')
     local chain = {}
     chain.unreliable = function() return chain end
     chain.onClient = function() return chain end

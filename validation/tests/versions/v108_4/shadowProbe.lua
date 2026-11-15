@@ -15,7 +15,7 @@ function Tests:update()
         require('jit.p').start('Fl1i1', os.getenv('KATSA_PROF'))
     end
     if self.frame == 1 then
-        self.scene = assert(self.manager:switch(require('source.game.runtime.game').new, os.getenv('KATSA_SCENE') or 'animationPhysicsLab'))
+        self.scene = assert(self.manager:switch(require('game.runtime.game').new, os.getenv('KATSA_SCENE') or 'animationPhysicsLab'))
     end
 end
 

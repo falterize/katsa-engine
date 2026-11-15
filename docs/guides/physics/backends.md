@@ -7,7 +7,7 @@ The scene engine uses `source.engine.physics`. Each world selects `oimo`, `jolt`
 The game scene factory accepts options without changing the global default:
 
 ```lua
-local Game = require('source.game.runtime.game')
+local Game = require('game.runtime.game')
 manager:switch(Game.new, 'animationPhysicsLab', {
     physicsBackend = 'jolt',
     physics = { workerThreads = 4, parallelThreshold = 64 },

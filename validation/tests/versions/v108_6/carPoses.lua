@@ -17,7 +17,7 @@ end
 
 function Module.run(self)
     self.stats, self.seed, self.note, self.random = {}, 4242, Probe.note, Probe.random
-    local host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+    local host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
     host:load()
     local session = host.demo
     self.session, self.port = session, 47940 + math.floor(os.clock() * 100) % 9

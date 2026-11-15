@@ -150,7 +150,7 @@ loss duplicate]`, `quit`. Servers may be started from a script and stopped with 
 
 ## Reference game: multiplayerCars
 
-`source/game/scenes/multiplayerCars` combines the pieces: a server-authoritative arena with one car
+`game/scenes/multiplayerCars` combines the pieces: a server-authoritative arena with one car
 per player, up to four riders per car (the driver owns the entity; E moves a rider to a nearby car),
 a bot that patrols and chases a visible player along an A* route (`pathfinding` plugin), body dents
 that are replicated (`nodes/vehicle`), nitro refilled by a rewarded ad (`ads` plugin, validated and

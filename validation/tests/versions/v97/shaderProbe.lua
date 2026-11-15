@@ -54,7 +54,7 @@ function T:draw()
     for _, zone in ipairs({ 'combined', 'shadows', 'animationPhysicsLab' }) do
         katsa.math.setRandomSeed(384)
         math.randomseed(384)
-        local scene = assert(self.manager:switch(require('source.game.runtime.game').new, zone))
+        local scene = assert(self.manager:switch(require('game.runtime.game').new, zone))
         scene.showStats = false
         scene.world.debug.bones = false
         scene.world.environment.shadows.sourceFadeSeconds = 0

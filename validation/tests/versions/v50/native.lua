@@ -5,7 +5,7 @@ return function(test)
     local World3D = require('source.engine.world.world')
     local Camera3D = require('source.engine.cameras.camera')
     local Renderer = require('source.engine.graphics.pipeline.renderer')
-    local resources = Resources.new(require('source.game.data.manifest'))
+    local resources = Resources.new(require('game.data.manifest'))
     local ui = UI.new(200, 200, resources)
     local scroll = ui:scroll(
         { position = { 0, 20, 0, 70 }, size = { 0, 150, 0, 100 }, length = 180, scrollY = 20 },
@@ -106,7 +106,7 @@ return function(test)
     group.enabled = true
     group.interactable = false
     test:check(UI.isWorking(button), 'Interactable false preserves UI work')
-    local settings = require('source.game.data.settings').create()
+    local settings = require('game.data.settings').create()
     settings.sky.enabled = false
     settings.fog.enabled = false
     settings.gizmos.enabled = false
@@ -224,7 +224,7 @@ return function(test)
         math.abs(decal.worldWidth - 12) < 1e-4,
         'Attachment3D surface dimensions use explicit local supportSize'
     )
-    local foreign = World3D.new(resources, require('source.game.data.settings').create())
+    local foreign = World3D.new(resources, require('game.data.settings').create())
     local foreignSocket = foreign:create('Attachment3D', { name = 'Foreign' })
     test:check(
         not pcall(board.setAdornee, board, foreignSocket),

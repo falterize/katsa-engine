@@ -244,7 +244,7 @@ end. Your script does the action however it likes (a Character that presses jump
 agent goes on as soon as the body stands near the far end (`LinkReached` is emitted then). A missed jump simply
 leaves the route and a new one is planned. `navMeshLab` shows the physical version
 (`behaviors/physicalWalker.lua`): walkers use the StareShooter character model, animations and controller
-(`source/game/characters`) on a capsule body. They follow the advised
+(`game/characters`) on a capsule body. They follow the advised
 velocity; at a jump link they press jump close to the start, so the body leaves with the controller's jump power and its running speed, and steer in the air toward the landing like a player (less input when the landing
 is near); a climb link drives the body up the ladder with gravity off. The jump links themselves are found by
 `behaviors/jumpLinks.lua`. Keep `maxStep` at what the body can climb and `agentHeight` at the body height.

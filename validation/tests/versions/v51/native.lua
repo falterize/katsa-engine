@@ -17,7 +17,7 @@ return function(test)
     local function near(a, b)
         return math.abs(a - b) < 0.0001
     end
-    local resources = Resources.new(require('source.game.data.manifest'))
+    local resources = Resources.new(require('game.data.manifest'))
     local v = V2.new(0.1, 4)
     v.Offset = 6
     check(
@@ -255,7 +255,7 @@ return function(test)
         ix == -50 and iy == 0 and iw == 200 and ih == 100,
         'Crop fills the region with symmetric excess'
     )
-    local settings = require('source.game.data.settings').create()
+    local settings = require('game.data.settings').create()
     settings.sun.enabled = false
     settings.shadows.enabled = false
     settings.sky.enabled = false
@@ -693,7 +693,7 @@ return function(test)
         not captured.decalRepeat and captured.decalUVScale[1] == 1,
         'Decal3D places one image instead of repeating'
     )
-    require('source.game.scenes.nightPlayer.nodes.bouncePad').register(world)
+    require('game.scenes.nightPlayer.nodes.bouncePad').register(world)
     local pad = world:create('BouncePad', { name = 'ReusableTrampoline', launchSpeed = 180 })
     local velocity = { 1, 2, 3 }
     local fake = {

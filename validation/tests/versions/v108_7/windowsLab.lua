@@ -2,7 +2,7 @@
 local Module = {}
 
 function Module.run(self)
-    local scene, err = self.manager:switch(require('source.game.runtime.game').new, 'windowsLab')
+    local scene, err = self.manager:switch(require('game.runtime.game').new, 'windowsLab')
     assert(scene, err)
     local state = scene.instance or scene.state
     scene:update(0.1, 0.1)
@@ -39,7 +39,7 @@ function Module.run(self)
     end
     local mini = lab.mini
     local windows = lab.windows
-    self.manager:switch(require('source.game.runtime.menu').new)
+    self.manager:switch(require('game.runtime.menu').new)
     self:check(not windows[1].window:isOpen(), 'Leaving the scene closes its windows')
     self:check(not mini:isOpen(), 'Leaving the scene closes the mini game window')
     for _ = 1, 3 do

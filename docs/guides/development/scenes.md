@@ -5,7 +5,7 @@ live together; a scene does not delegate its implementation to another scene
 or a shared full-scene factory. Shared engine services remain in `source/engine`.
 
 ```text
-source/game/scenes/exampleScene/
+game/scenes/exampleScene/
     settings.lua          engine configuration
     menu-settings.lua     id, title, category, tags (read by menus and launchers)
     main.lua
@@ -63,20 +63,20 @@ loads them. Helpers used by those modules belong under categorized `scripts/`.
 
 ## Starting a game
 
-Set `startScene` in `source/game/data/project.lua` to a scene ID, project-relative
+Set `startScene` in `game/data/project.lua` to a scene ID, project-relative
 scene directory or archive. The default `menu` is an example selector for testing;
 a game can start directly in its own scene without loading the selector.
 
-The optional `source/game/sceneCatalog.lua` maps stable IDs to folders or archives.
+The optional `game/sceneCatalog.lua` maps stable IDs to folders or archives.
 Add an entry only when the ID should be available for navigation or the example
 selector. A direct folder/archive path needs no catalog entry. Menu metadata comes
-from each scene's settings. The common gameplay host is `source/game/runtime/game.lua`.
+from each scene's settings. The common gameplay host is `game/runtime/game.lua`.
 Camera-free menu/pause/catalog scenes use `engine/scenes/interface.lua` instead;
 their implementation still lives inside their own scene folders.
 
 ```text
 katsa . --scene exampleScene
-katsa . --scene source/game/scenes/exampleScene
+katsa . --scene game/scenes/exampleScene
 katsa . --scene-package dist/exampleScene.zip
 ```
 
@@ -118,7 +118,7 @@ return { id = 'multiplayerCars', title = 'Multiplayer cars', category = 'Multipl
 Scene tags: `tags = { 'physics', '2d', 'game' }` in `menu-settings.lua` lists lowercase tags. The menu shows
 them under each scene title and filters by them: the search box matches title, id and tag words, and the
 Tags chooser keeps the scenes that have every selected tag. A scene without `tags` shows its old `category`
-as its only tag. Filtering lives in `source/game/sceneTags.lua`.
+as its only tag. Filtering lives in `game/sceneTags.lua`.
 
 `layoutVersion = 3` does not require the category directories to exist (empty folders are lost by Git and GitHub ZIPs); it validates the five lifecycle
 hooks. Version 2 archives retain their original root ui folder; archives without
@@ -130,7 +130,7 @@ no letter is stable). The loader compares it with the running engine (`Version.c
 difference, older or newer, writes a console warning about possible incompatibility, and
 `package.compatibility` holds `{ status, message, declared }` (`same`, `older`, `newer`, `unknown`)
 for a launcher to show. A scene without `version` is silent. Projects declare the same in
-`source/game/data/project.lua` (`version`), checked once at startup. A mismatch never blocks loading.
+`game/data/project.lua` (`version`), checked once at startup. A mismatch never blocks loading.
 The engine's own number is `Version.release` in `source/engine/core/version.lua`.
 
 World settings apply before creation. `scene:createPhysics3D()` merges call-site
@@ -150,7 +150,7 @@ Stats reports the actual solver. `kind = 'interface'` selects the camera-free ho
 | `update2D(state, dt, realDt)` | Update screen/world UI and dispatch 2D systems |
 | `destroy(state)` | Release systems and scene-specific state |
 
-Use the working `source/game/scenes/physics/main.lua` as a starting point. It calls
+Use the working `game/scenes/physics/main.lua` as a starting point. It calls
 `scripts.content.new(scene)` for construction, `scene:preparePresentation()` for
 common presentation setup, then `scripts.ui.interface.create(state)`. You can call any
 additional private builders directly from `create`; do not add `buildUI` or other
@@ -350,7 +350,7 @@ so tests can load them without a window (`validation/tests/katsa/sceneRequire.lu
 ## Assets and Image properties
 
 `scene://` resolves from the current scene's `assets/`; `shared://` resolves from
-the project asset root configured in `source/game/data/assetRoots.lua`. Ordinary
+the project asset root configured in `game/data/assetRoots.lua`. Ordinary
 project-relative paths and manifest aliases remain supported. Images, models,
 shaders and audio share these namespaces.
 
@@ -371,7 +371,7 @@ mounts until the final lease is released.
 ## Scene and game archives
 
 ```text
-python tools/build/packageScene.py source/game/scenes/exampleScene dist/exampleScene.zip
+python tools/build/packageScene.py game/scenes/exampleScene dist/exampleScene.zip
 python tools/build/packageProject.py --output dist
 ```
 
@@ -409,8 +409,8 @@ See [node authoring](nodeAuthoring.md) for node hooks versus scene/system hooks.
 
 ## Pause menu
 
-`source/game/runtime/pauseMenu.lua` is the Esc menu as a module. `Game` attaches it to every scene by
-default; a scene's `main.lua` can call `require('source.game.runtime.pauseMenu').attach(scene, true)`
+`game/runtime/pauseMenu.lua` is the Esc menu as a module. `Game` attaches it to every scene by
+default; a scene's `main.lua` can call `require('game.runtime.pauseMenu').attach(scene, true)`
 to override it. Opening sets the time scale to 0 and closing restores the previous value; with
 `keepTime = true` the time scale is never touched (hosted multiplayer keeps simulating). The menu is an
 overlay inside the scene, not a separate scene, so the scene keeps updating underneath.

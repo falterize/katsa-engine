@@ -33,7 +33,7 @@ function T:draw()
     }) do
         katsa.math.setRandomSeed(384)
         math.randomseed(384)
-        local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
         assert(scene, err)
         local env = scene.world.environment
         -- Skeleton debug uses table-key iteration; omit its nondeterministic overlay in pixel comparison.

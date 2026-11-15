@@ -57,7 +57,7 @@ function Tests.run(tester)
     ui:draw()
     box:blur()
     release()
-    local scene = require('source.game.runtime.application').new(tester.manager, 'abilityRunner2D')
+    local scene = require('game.runtime.application').new(tester.manager, 'abilityRunner2D')
     scene:load()
     local ws = scene.workspace
     ws:toggle(true)

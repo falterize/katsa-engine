@@ -1,4 +1,4 @@
-local Game = require('source.game.runtime.game')
+local Game = require('game.runtime.game')
 local UI = require('source.engine.ui')
 local SaveData = require('source.engine.core.saveData')
 local Tests = {}

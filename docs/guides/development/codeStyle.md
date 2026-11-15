@@ -26,9 +26,9 @@ Comparable backend modules follow this same layout. Drivers assemble exported me
 
 Use descriptive state/domain names. Conventional loop indices and vector components are useful in math code. Keep related assignments together and expand semicolon-packed control flow. Comments explain units, ownership, callback boundaries, cache invalidation or another non-obvious reason. Straightforward getters and assignments need no narration.
 
-Game code belongs in `source/game`, reusable services in `source/engine`, dependencies in `vendor`, and build/import helpers in `tools`. Vendor code and historical comparison fixtures retain their reference formatting and licenses. Installation and class composition happen at load time, not in hot loops.
+Game code belongs in `game`, reusable services in `source/engine`, dependencies in `vendor`, and build/import helpers in `tools`. Vendor code and historical comparison fixtures retain their reference formatting and licenses. Installation and class composition happen at load time, not in hot loops.
 
-Run StyLua 2.6.0 with `--syntax LuaJIT --verify`, then `--check`, over `source/engine source/game source/katsa validation/tests main.lua conf.lua`. `.styluaignore` excludes vendor/reference files. Python tools use Black 24.10.0 and `pyproject.toml`. Follow formatting with relevant runtime tests; formatting alone does not verify behavior.
+Run StyLua 2.6.0 with `--syntax LuaJIT --verify`, then `--check`, over `source/engine game source/katsa validation/tests main.lua conf.lua`. `.styluaignore` excludes vendor/reference files. Python tools use Black 24.10.0 and `pyproject.toml`. Follow formatting with relevant runtime tests; formatting alone does not verify behavior.
 
 Project-owned C uses the checked-in `.clang-format` (four spaces, 100 columns); format only the bridge, not upstream vendor headers. Python build tools use the checked-in Black configuration.
 

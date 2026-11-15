@@ -69,7 +69,7 @@ There are three ways to start a game:
 
 A `.katsa` file is a plain ZIP of the game folder. Folders, `.katsa`/`.zip` archives and fused
 executables behave the same. Useful flags: `--scene <id>` starts a scene directly (ids are in
-`source/game/sceneCatalog.lua`), `--physics-jolt` / `--physics-oimo` pick the 3D physics backend,
+`game/sceneCatalog.lua`), `--physics-jolt` / `--physics-oimo` pick the 3D physics backend,
 `--test-<name>` runs a test suite (see [testing](../development/testing.md)).
 
 ## Quick start (run from source)

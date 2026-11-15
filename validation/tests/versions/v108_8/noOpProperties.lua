@@ -22,8 +22,8 @@ function Module.run(self)
             self:check(omitted[key], name .. ' omits ' .. key)
         end
     end
-    local resources = Resources.new(require('source.game.data.manifest'))
-    local world = World3D.new(resources, require('source.game.data.settings').create())
+    local resources = Resources.new(require('game.data.manifest'))
+    local world = World3D.new(resources, require('game.data.settings').create())
     local bone = world:create('Bone3D', {})
     for _, row in ipairs(Properties.list(bone)) do
         self:check(row.key ~= 'transparency', 'Bone3D shows no transparency row')

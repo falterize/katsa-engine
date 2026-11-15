@@ -1,6 +1,6 @@
 -- Inspector fields follow the node class: an ImageRect exposes image fields, not text fields,
 -- and describing one class never leaks fields into its base or its siblings.
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 local Schema = require('source.engine.editor.inspectors.schema')
 
 local Module = {}

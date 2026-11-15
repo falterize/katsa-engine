@@ -14,7 +14,7 @@ local function waitFor(condition, seconds)
 end
 
 function Module.run(self)
-    local scene = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+    local scene = require('game.runtime.application').new(self.manager, 'multiplayerCars')
     scene:load()
     local Session = getmetatable(scene.demo).__index
     local ServerProcess, GameClient, ArenaStatics = Session.ServerProcess, Session.GameClient, Session.ArenaStatics

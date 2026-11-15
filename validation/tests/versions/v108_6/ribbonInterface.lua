@@ -1,5 +1,5 @@
 -- The ribbonLab control panel changes ribbon properties through its buttons.
-local Interface = require('source.game.scenes.ribbonLab.scripts.ui.interface')
+local Interface = require('game.scenes.ribbonLab.scripts.ui.interface')
 
 local Module = {}
 

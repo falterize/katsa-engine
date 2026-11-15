@@ -27,7 +27,7 @@ Useful flags: `--scene <id>` (for example `--scene abilityRunner2D`), `--physics
 | Directory | Content |
 | --- | --- |
 | `source/engine/` | Reusable engine services and node APIs |
-| `source/game/` | Self-contained scene folders, common runtime and game data |
+| `game/` | Self-contained scene folders, common runtime and game data |
 | `validation/` | All tests: integration, performance, fixtures and versioned regression suites (`validation/tests/`) |
 | `native/` | The project's C/C++ sources: one folder per native library in `native/src` (host, files and codecs, Box2D, ENet, threads) |
 | `assets/` | Models, textures, shaders, audio and source assets |
@@ -36,7 +36,7 @@ Useful flags: `--scene <id>` (for example `--scene abilityRunner2D`), `--physics
 | `tools/` | Asset generation, importing, building and dependency verification |
 | `docs/` | Current guides, architecture, instructions for AI agents and project conventions (`docs/AGENTS.md`), changelog and reference images |
 
-Select your game's first scene in `source/game/data/project.lua`. Each scene owns its settings, lifecycle-only `main.lua`, assets, nodes, systems and scripts, including `scripts/ui` for its interface code. `scripts/content.lua` composes content; other scripts and UI helpers are grouped by responsibility. Empty directories are preserved by the packers without marker files. The default menu is an example selector; it can be bypassed. System discovery/order/enabling is visible directly in each scene's `main.lua`.
+Select your game's first scene in `game/data/project.lua`. Each scene owns its settings, lifecycle-only `main.lua`, assets, nodes, systems and scripts, including `scripts/ui` for its interface code. `scripts/content.lua` composes content; other scripts and UI helpers are grouped by responsibility. Empty directories are preserved by the packers without marker files. The default menu is an example selector; it can be bypassed. System discovery/order/enabling is visible directly in each scene's `main.lua`.
 
 Every World2D/World3D automatically owns an `Environment` with categorized Debug and particle settings. World3D also includes lighting, shadows, sky, fog and rendering categories. Both world dimensions select their view through `currentCamera`; cameras expose `fov`.
 
@@ -83,7 +83,7 @@ Build an archive with `python tools/build/packageProject.py --output dist` ([pac
 
 Generated scenes expose `scene.data` for shared progress, preferences and arbitrary
 text/binary files in persistent device storage. Keep the save identity stable
-across updates. Starter Game is part of `source/game/scenes/starterGame`; run
+across updates. Starter Game is part of `game/scenes/starterGame`; run
 `katsa . --scene starterGame` or select it in the menu. Its optional
 `settings.lua.frameRateLimit` accepts `0` (uncapped) or a positive ceiling.
 
@@ -91,7 +91,7 @@ Use `scene.data:scope('shooter'):scope('extra')` or `scope('shooter/extra')` for
 nested folders. `read/write` handles progress/preferences `.json` tables and raw
 text/binary files through one API under `saves/`. Root `main.lua` and `conf.lua`
 only install the shared engine bootstrap/window configuration; demo-only startup
-adapters stay in `source/game/runtime/startup.lua`.
+adapters stay in `game/runtime/startup.lua`.
 
 ## Credits
 

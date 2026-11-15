@@ -30,7 +30,7 @@ function Preview:update()
         katsa.window.setMode(entry[2], entry[3], { depth = 24, stencil = 8, vsync = 0 })
         local special = entry[1] == 'group' or entry[1] == 'gradient' or entry[1] == 'corner'
         self.scene = self.manager:switch(
-            require('source.game.runtime.game').new,
+            require('game.runtime.game').new,
             special and 'uiGallery' or entry[1]
         )
         if entry[1] == 'gradient' or entry[1] == 'corner' then

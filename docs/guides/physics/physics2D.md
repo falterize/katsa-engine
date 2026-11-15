@@ -70,7 +70,7 @@ dimension; new class names end in `2D` or `3D`.
 ## Runner example and pixel animation
 
 Select **Ability Runner 2D** (`abilityRunner2D`), or run `katsa . --scene abilityRunner2D`.
-The complete scene lives in `source/game/scenes/abilityRunner2D`, including its level,
+The complete scene lives in `game/scenes/abilityRunner2D`, including its level,
 controller, atlas, UI and systems. A/D or touch buttons move; Space double-jumps, Shift
 dashes, C slides and R respawns. Gold trigger volumes save checkpoints, red lava is a
 kill-zone, and the green finish trigger completes the course.
@@ -91,7 +91,7 @@ runner. Free-3D-camera UP/DOWN buttons are hidden when no 3D camera is active.
 
 ### Edit the player animation XML
 
-Edit [player.xml](../../../source/game/scenes/abilityRunner2D/assets/animations/player.xml).
+Edit [player.xml](../../../game/scenes/abilityRunner2D/assets/animations/player.xml).
 The root `flipbook` element declares format version 1, image path, atlas columns/rows,
 8x8 frame dimensions, `pixelate` and initial state. Each named `animation` has `fps`
 and `loop`; its self-closing `frame` children define the playback order.

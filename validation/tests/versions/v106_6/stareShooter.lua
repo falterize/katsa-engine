@@ -1,5 +1,5 @@
-local Game = require('source.game.runtime.game')
-local Application = require('source.game.runtime.application')
+local Game = require('game.runtime.game')
+local Application = require('game.runtime.application')
 
 local Tests = {}
 Tests.__index = Tests

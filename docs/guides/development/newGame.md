@@ -48,10 +48,10 @@ the same save directory.
 
 ## Change the scene
 
-The example lives in the main project at `source/game/scenes/starterGame`.
+The example lives in the main project at `game/scenes/starterGame`.
 Run `katsa . --scene starterGame` from the engine source directory, or choose
 Starter Game in the scene menu. There is no separate ready-game folder to edit.
-The generator copies this canonical scene to `source/game/scenes/start` only
+The generator copies this canonical scene to `game/scenes/start` only
 when you explicitly create an independent game.
 
 Scene `settings.lua.runInBackground = true` keeps the scene's full update running while the window is unfocused or minimised (default `false`: the scene freezes). The debug menu has a matching toggle for the current run. A scene can instead define `updateInBackground(dt, realDt)` in its state to run only that work (network, physics) while frozen.
@@ -84,14 +84,14 @@ katsa . --scene starterGame
 ```
 
 The generated game's bootstrap loads its configured scene directly. Add another
-scene by copying its folder/categories and changing `source/game/data/project.lua.startScene`, or
-use `katsa . --scene source/game/scenes/another-scene`. Scene ZIP packages use the
+scene by copying its folder/categories and changing `game/data/project.lua.startScene`, or
+use `katsa . --scene game/scenes/another-scene`. Scene ZIP packages use the
 same layout. Set `physics.backend` to `jolt`, `oimo` or `auto`; call
 `scene:createPhysics3D()` in scene creation when physics is actually needed.
 The example cube does not create a physics world unnecessarily.
 
 Image/audio/model references can use `scene://...` and `shared://...`; the latter
-resolves from `source/game/data/project.lua.sharedAssets`. See [scene packages](scenes.md),
+resolves from `game/data/project.lua.sharedAssets`. See [scene packages](scenes.md),
 [node authoring](nodeAuthoring.md) and [persistence](persistence.md).
 
 ## Verify and package
@@ -119,9 +119,9 @@ The root `main.lua` only supplies project configuration and optional adapters.
 Input, touch, focus, visibility, resize, draw/update, file drops, errors, shutdown,
 frame pacing and smoke tests share the same implementation. The collection adds
 its demo scene factory, manifest, legacy migration and test registry through
-`source/game/runtime/startup.lua`. Those adapters are not copied into a new game.
+`game/runtime/startup.lua`. Those adapters are not copied into a new game.
 
-`conf.lua` uses `source.engine.core.windowConfig` with `source/game/data/project.lua`.
+`conf.lua` uses `source.engine.core.windowConfig` with `game/data/project.lua`.
 Generated games copy this same wrapper; window configuration has one implementation.
 Logical window dimensions and optional window overrides go in `Project.window`.
 

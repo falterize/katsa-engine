@@ -194,7 +194,7 @@ function Tests.run(tester)
         extra:read('compatibility.json').volume == 0.25,
         'The optional old settings wrapper interoperates with the unified document API'
     )
-    local Saves = require('source.game.scenes.starterGame.scripts.data.saves')
+    local Saves = require('game.scenes.starterGame.scripts.data.saves')
     assert(extra:save('legacy-progress', { score = 55 }))
     local imported = assert(Saves.read(extra, 'imported.json', 'legacy-progress'))
     tester:check(

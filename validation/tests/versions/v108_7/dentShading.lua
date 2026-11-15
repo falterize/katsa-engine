@@ -6,8 +6,8 @@ local function vertex(x, y, z, nx, ny, nz)
 end
 
 function Module.run(self)
-    local CarModel = require('source.game.scenes.multiplayerCars.scripts.view.carModel')
-    local Deformation = require('source.game.scenes.multiplayerCars.nodes.vehicle.deformation')
+    local CarModel = require('game.scenes.multiplayerCars.scripts.view.carModel')
+    local Deformation = require('game.scenes.multiplayerCars.nodes.vehicle.deformation')
     local rest = {}
     -- Triangle 1: smooth (vertex normals lean away from the face normal +z).
     local s = 0.4

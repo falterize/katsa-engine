@@ -9,8 +9,8 @@ local WIDTH, HEIGHT = 160, 90
 local fixtures = 'validation/tests/fixtures/shaders/'
 
 local function build()
-    local resources = Resources.new(require('source.game.data.manifest'))
-    local settings = require('source.game.data.settings').create()
+    local resources = Resources.new(require('game.data.manifest'))
+    local settings = require('game.data.settings').create()
     settings.gizmos.enabled, settings.shadows.enabled = false, false
     local world = World3D.new(resources, settings)
     local camera = world:addCamera({ position = { 0, 5, 0 }, rotation = { 0, 0, 0 }, drawDistance = 800 })

@@ -58,7 +58,7 @@ function T:draw()
             katsa.math.setRandomSeed(384)
             math.randomseed(384)
             local scene =
-                assert(self.manager:switch(require('source.game.runtime.game').new, case[2]))
+                assert(self.manager:switch(require('game.runtime.game').new, case[2]))
             scene.showStats = false
             local env = scene.world.environment
             env.shadows.enabled = false

@@ -2,7 +2,7 @@
 local Module = {}
 
 function Module.run(self)
-    local CarView = require('source.game.scenes.multiplayerCars.scripts.view.carView')
+    local CarView = require('game.scenes.multiplayerCars.scripts.view.carView')
     local Math = require('source.engine.math.math3d')
     local rotation = CarView.wheelRotation(30, 0)
     local m = Math.compose({ 0, 0, 0 }, rotation, { 1, 1, 1 }, {})

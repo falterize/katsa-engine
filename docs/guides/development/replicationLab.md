@@ -9,7 +9,7 @@ Example of node replication: rounds, teleporting, nicknames and chat on a hosted
 - Client (`scripts`): `game/session.lua` joins and calls `client:replicate`, `avatarView.lua`
   builds the model, AnimationTree and nickname for each avatar, `ui/` holds the HUD and chat
   (Enter opens the chat). The controller is shared with stareShooter
-  (`source/game/characters`).
+  (`game/characters`).
 - Maps: `maps.lua` builds the templates in `ServerStorage/Maps`; each round clones a random one
   into the world (replicated) and destroys it afterwards. Boxes carry the `Solid` attribute
   (`Moving` too for the platform): the client's `game/solids.lua` gives them physics bodies, and the

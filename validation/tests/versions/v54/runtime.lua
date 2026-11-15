@@ -27,7 +27,7 @@ function R:update(dt)
             katsa.event.quit()
             return
         end
-        self.scene = self.manager:switch(require('source.game.runtime.game').new, name)
+        self.scene = self.manager:switch(require('game.runtime.game').new, name)
         if name == 'physics' then
             self.scene.workspace:toggle(true)
             self.scene.workspace:update(0.3)

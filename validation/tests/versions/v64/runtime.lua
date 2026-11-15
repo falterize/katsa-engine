@@ -19,7 +19,7 @@ end
 
 function T:load(zone)
     local start = katsa.timer.getTime()
-    local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
+    local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
     assert(scene, err)
     self.scene = scene
     scene:update(0.02, 0.02)
@@ -32,7 +32,7 @@ function T:update()
     if self.frame == 1 then
         katsa.window.setMode(960, 540, { vsync = 0, stencil = 8, depth = 24 })
         local Resources = require('source.engine.core.resources')
-        local r = Resources.new(require('source.game.data.manifest'))
+        local r = Resources.new(require('game.data.manifest'))
         local start = katsa.timer.getTime()
         local raw = require('source.engine.import.glb').load('assets/models/characters/xbot.glb', r)
         local direct = katsa.timer.getTime() - start
@@ -42,7 +42,7 @@ function T:update()
         end
         r:release()
         collectgarbage()
-        r = Resources.new(require('source.game.data.manifest'))
+        r = Resources.new(require('game.data.manifest'))
         start = katsa.timer.getTime()
         local packed =
             require('source.engine.import.packedModel').try('assets/models/characters/xbot.glb', r)

@@ -56,7 +56,7 @@ source/engine/debug/statistics/
   export.lua     manual CSV snapshots and collision-safe save filenames
   definitions.lua shared metric readers and descriptive labels
   frameTimes.lua bounded exact frame samples for offline percentile reports
-source/game/ui/statistics.lua
+game/ui/statistics.lua
                  compatibility entry point for the shared definitions
 ```
 

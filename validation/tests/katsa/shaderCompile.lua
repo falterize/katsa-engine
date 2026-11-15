@@ -100,7 +100,7 @@ return function(T)
     end
     T.check(#engine >= 5, 'project shader files found')
     local users = {}
-    for _, directory in ipairs({ 'source/game/scenes', 'source/game/runtime', 'validation/tests/fixtures/shaders' }) do
+    for _, directory in ipairs({ 'game/scenes', 'game/runtime', 'validation/tests/fixtures/shaders' }) do
         for _, path in ipairs(find(directory)) do
             -- Include-only files have no shader_type; they are compiled through their users.
             if (read(path) or ''):find('shader_type', 1, true) then

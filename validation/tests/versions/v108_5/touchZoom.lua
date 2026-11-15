@@ -1,6 +1,6 @@
 -- Pinch zoom follows the mouse-wheel rules: the joystick finger never counts, and a finger over an
 -- interactable UI element blocks the zoom.
-local Pinch = require('source.game.scenes.multiplayerCars.scripts.controller.pinch')
+local Pinch = require('game.scenes.multiplayerCars.scripts.controller.pinch')
 
 local Module = {}
 

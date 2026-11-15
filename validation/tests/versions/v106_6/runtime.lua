@@ -1,5 +1,5 @@
 local Previous = require('validation.tests.versions.v106_5.runtime')
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 
 local Tests = setmetatable({}, { __index = Previous })
 Tests.__index = Tests
@@ -43,8 +43,8 @@ end
 
 function Tests:layout()
     Previous.layout(self)
-    for _, name in ipairs(katsa.filesystem.getDirectoryItems('source/game/scenes')) do
-        local root = 'source/game/scenes/' .. name
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems('game/scenes')) do
+        local root = 'game/scenes/' .. name
         self:check(
             not katsa.filesystem.getInfo(root .. '/ui'),
             'UI code belongs under scripts: ' .. name
@@ -62,7 +62,7 @@ function Tests:layout()
         )
     end
     self:check(
-        markerFree('source/game/scenes'),
+        markerFree('game/scenes'),
         'All scene categories survive without marker files'
     )
 end

@@ -23,7 +23,7 @@ function T:update()
         return
     end
     self.done = true
-    local s = assert(self.manager:switch(require('source.game.runtime.game').new, 'combined'))
+    local s = assert(self.manager:switch(require('game.runtime.game').new, 'combined'))
     local r, w, c = s.renderer, s.world, s.camera
     local clock = 0
 

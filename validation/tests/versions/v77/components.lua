@@ -12,7 +12,7 @@ function T:draw()
         return
     end
     self.done = true
-    local s = self.manager:switch(require('source.game.runtime.game').new, 'combined')
+    local s = self.manager:switch(require('game.runtime.game').new, 'combined')
     local base = assert(os.getenv('KATSA_BASELINE'))
     local original = assert(loadfile(base .. '/source/engine/core/valueSnapshot.lua'))()
     local current = require('source.engine.core.valueSnapshot')

@@ -30,7 +30,7 @@ end
 local M = {}
 
 function M.run(self)
-    local root = 'source/game/scenes/multiplayerCars'
+    local root = 'game/scenes/multiplayerCars'
     local found = {}
     for _, folder in ipairs({ '/server', '/scripts/shared', '/nodes/vehicle' }) do
         scan(root .. folder, found)

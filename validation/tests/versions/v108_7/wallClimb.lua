@@ -58,7 +58,7 @@ function Tests:draw()
         return
     end
     self.done = true
-    self.host = require('source.game.runtime.application').new(self.manager, 'multiplayerCars')
+    self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
     self.host:load()
     local intactRise = self:crash(0, 3, 15)
     local dentedRise = self:crash(8, 3, 15)

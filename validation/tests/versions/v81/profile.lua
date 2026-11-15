@@ -24,7 +24,7 @@ function T:draw()
     for _, zone in
         ipairs((os.getenv('KATSA_PAIR_DEPTH') and { 'combined' } or { 'occlusion', 'combined' }))
     do
-        local scene = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local scene = self.manager:switch(require('game.runtime.game').new, zone)
         local renderer, world, camera = scene.renderer, scene.world, scene.camera
         local environment = world.environment
         environment.gizmos.enabled = false

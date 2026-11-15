@@ -50,7 +50,7 @@ function T:update()
     end
     local zone = zones[self.frame]
     if zone then
-        local scene, err = self.manager:switch(require('source.game.runtime.game').new, zone)
+        local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
         assert(scene, err)
         self.scene = scene
         scene:update(0.02, 0.02)
@@ -98,7 +98,7 @@ function T:update()
             #self.manager.journal.entries == 0,
             'Rendering after folder/API migration adds no errors'
         )
-        self.manager:switch(require('source.game.runtime.menu').new)
+        self.manager:switch(require('game.runtime.menu').new)
         print('PASSED ' .. self.count .. ' focused v66 checks')
         katsa.event.quit()
     end

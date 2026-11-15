@@ -1,5 +1,5 @@
-local Game = require('source.game.runtime.game')
-local Application = require('source.game.runtime.application')
+local Game = require('game.runtime.game')
+local Application = require('game.runtime.application')
 local Limits = require('source.engine.animation.skeleton.skinLimits')
 local Schema = require('source.engine.editor.inspectors.schema')
 local Properties = require('source.engine.editor.inspectors.properties')

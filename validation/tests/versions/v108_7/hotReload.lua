@@ -10,7 +10,7 @@ function Tests.run(tester)
         classify('assets/locales/ru.lua') == 'locale'
             and classify('assets/tilesets/a.lua') == 'tileset'
             and classify('assets/textures/a.png') == 'image'
-            and classify('source/game/scenes/x/main.lua') == 'restart'
+            and classify('game/scenes/x/main.lua') == 'restart'
             and classify('assets/shaders/engine/world.glsl') == 'restart'
             and classify('source/engine/ui/init.lua') == 'engine',
         'changes are classified by what they need'

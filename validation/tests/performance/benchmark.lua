@@ -3,7 +3,7 @@ Benchmark.__index = Benchmark
 
 function Benchmark.new(manager)
     katsa.window.setVSync(0)
-    local scene = manager:switch(require('source.game.runtime.game').new, 'lights32')
+    local scene = manager:switch(require('game.runtime.game').new, 'lights32')
     scene.world.lighting.fog.enabled = false
     return setmetatable({
         manager = manager,

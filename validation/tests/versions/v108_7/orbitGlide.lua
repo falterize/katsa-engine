@@ -1,5 +1,5 @@
 -- The multiplayerCars camera glides between the on-foot and car views instead of cutting.
-local Orbit = require('source.game.scenes.multiplayerCars.scripts.cameras.orbit')
+local Orbit = require('game.scenes.multiplayerCars.scripts.cameras.orbit')
 
 local Module = {}
 

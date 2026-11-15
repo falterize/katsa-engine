@@ -25,10 +25,10 @@ function Preview:update()
         end
         katsa.window.setMode(entry[2], entry[3], { depth = 24, stencil = 8, vsync = 0 })
         if entry[1] == 'menu' then
-            self.scene = self.manager:switch(require('source.game.scenes.' .. entry[1]).new)
+            self.scene = self.manager:switch(require('game.scenes.' .. entry[1]).new)
         else
             self.scene = self.manager:switch(
-                require('source.game.runtime.game').new,
+                require('game.runtime.game').new,
                 entry[1] == 'workspace' and 'audioNodes'
                     or entry[1] == 'palette' and 'uiGallery'
                     or entry[1]

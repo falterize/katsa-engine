@@ -1,4 +1,4 @@
-local Application = require('source.game.runtime.application')
+local Application = require('game.runtime.application')
 local Plane = require('source.engine.ui.spatial.plane')
 
 local Tests = {}

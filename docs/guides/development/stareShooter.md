@@ -3,7 +3,7 @@
 The supplied Godot project is available as `stareShooter` in the example selector.
 Run it directly with `katsa . --scene stareShooter`; add `--physics-jolt` or
 `--physics-oimo` to choose a backend. Change `startScene` in
-`source/game/data/project.lua` to make it your game's entry scene.
+`game/data/project.lua` to make it your game's entry scene.
 
 ## Controls
 
@@ -36,7 +36,7 @@ inspecting; use Pause or time scale to stop it.
 
 ## Scene ownership
 
-Everything specific to this game lives in `source/game/scenes/stareShooter`.
+Everything specific to this game lives in `game/scenes/stareShooter`.
 
 | Location | Responsibility |
 | --- | --- |
@@ -45,7 +45,7 @@ Everything specific to this game lives in `source/game/scenes/stareShooter`.
 | `systems/simulation.lua` | Fixed-step physics/FSM; animation, nodes and camera updates |
 | `scripts/content.lua` | Scene composition and cleanup |
 | `scripts/builders/` | Level and the imported Destare model |
-| `source/game/characters/` | Shared character: capsule controller and body (`playerBody`), keyboard/mouse/touch input (`thirdPersonInput`), spring-arm orbit camera (`orbit`), state machine, locomotion, six states and clip blending (also used by navMeshLab and replicationLab) |
+| `game/characters/` | Shared character: capsule controller and body (`playerBody`), keyboard/mouse/touch input (`thirdPersonInput`), spring-arm orbit camera (`orbit`), state machine, locomotion, six states and clip blending (also used by navMeshLab and replicationLab) |
 | `scripts/ui/` | HUD and optional screen effect as engine UI nodes |
 | `assets/` | Converted character, original images, baked environment and shader |
 
@@ -85,6 +85,6 @@ not alternate runtime modes in this port. Imported asset rights remain those of
 the supplied project; see [license notices](licenses.md).
 
 Package the scene with
-`python tools/build/packageScene.py source/game/scenes/stareShooter dist/Stare-Shooter.zip`.
+`python tools/build/packageScene.py game/scenes/stareShooter dist/Stare-Shooter.zip`.
 It can then run through `katsa . --scene-package dist/Stare-Shooter.zip` on this
 engine. Godot and its project files are not runtime dependencies.

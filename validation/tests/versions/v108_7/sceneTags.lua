@@ -2,7 +2,7 @@
 local Module = {}
 
 function Module.run(self)
-    local Tags = require('source.game.sceneTags')
+    local Tags = require('game.sceneTags')
     self:check(
         table.concat(Tags.of({ tags = { 'Physics', '2D', 'physics' } }), ',') == 'physics,2d',
         'Tags are lowercase and unique'
@@ -31,7 +31,7 @@ function Module.run(self)
     self:check(collected[1].tag == 'physics' and collected[1].count == 2, 'Tags are listed most used first')
 
     -- Every shipped scene lists tags, and the menu shows them.
-    local Catalog = require('source.game.sceneCatalog')
+    local Catalog = require('game.sceneCatalog')
     local Loader = require('source.engine.scenes.loader')
     local missing = {}
     for _, entry in ipairs(Catalog.entries) do

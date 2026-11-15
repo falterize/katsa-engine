@@ -34,7 +34,7 @@ function HotReload.new(manager, options)
     options = options or {}
     local self = setmetatable({
         manager = manager,
-        roots = options.roots or { 'source/game', 'source/engine', 'source/katsa', 'source/plugins', 'assets' },
+        roots = options.roots or { 'game', 'source/engine', 'source/katsa', 'source/plugins', 'assets' },
         interval = options.interval or 0.5,
         settle = options.settle or 0.3,
         budget = options.budget or 400,

@@ -27,7 +27,7 @@ function T:draw()
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     print('RENDERER', katsa.graphics.getRendererInfo())
-    local scene = self.manager:switch(require('source.game.runtime.game').new, 'occlusion')
+    local scene = self.manager:switch(require('game.runtime.game').new, 'occlusion')
     local renderer, world, camera = scene.renderer, scene.world, scene.camera
     world.environment.render.frameCache = false
     world.environment.shadows.sourceFadeSeconds = 0

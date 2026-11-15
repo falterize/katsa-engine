@@ -21,7 +21,7 @@ function Tests:draw()
     local Models = require('source.engine.import.models')
     local Resources = require('source.engine.core.resources')
     local resources = Resources.new and Resources.new() or self.manager.resources
-    local path = 'source/game/scenes/multiplayerCars/assets/models/duke69.glb'
+    local path = 'game/scenes/multiplayerCars/assets/models/duke69.glb'
     local ok, asset = pcall(Models.load, path, resources)
     if not ok then
         print('LOAD FAILED', asset)

@@ -3,7 +3,7 @@ return function(test)
         test:check(ok, msg)
     end
     local Resources = require('source.engine.core.resources')
-    local r = Resources.new(require('source.game.data.manifest'))
+    local r = Resources.new(require('game.data.manifest'))
     local child = r:scope()
     local image = r:image('white')
     check(child:image('white') == image, 'Resource scopes share the same texture')
@@ -37,7 +37,7 @@ return function(test)
     )
     check(not pcall(r.image, r, 'missing-v54.png'), 'Missing resource reports a loading error')
     local World3D = require('source.engine.world.world')
-    local settings = require('source.game.data.settings').create()
+    local settings = require('game.data.settings').create()
     local world = World3D.new(r, settings)
     local obj = world:create(
         'Mesh3D',
