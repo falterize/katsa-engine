@@ -69,6 +69,17 @@ function Module.run(self)
             and not Properties.set(nil, watched, listed, 'nonsense'),
         'The list is parsed and unknown property names are rejected'
     )
+    watched.replica = true
+    local mirrored, free = rowOf(watched, 'position'), rowOf(watched, 'brightness')
+    self:check(
+        mirrored and mirrored.readOnly and not Properties.set(nil, watched, mirrored, '1, 2, 3'),
+        'A replicated property is read-only on a client replica'
+    )
+    self:check(
+        not free or not free.readOnly,
+        'Properties the server does not replicate stay editable on a replica'
+    )
+    watched.replica = nil
     watched:destroy()
     -- Tags are plain strings: the planned engine tags look like `#shader-<group>`.
     local tagged = serverWorld:create('Folder', { name = 'Tagged' })

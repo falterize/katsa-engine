@@ -157,10 +157,11 @@ in direction `{ 0, -1 }` (9.81 times the default units per meter).
 Directions are normalized for simulation; a zero direction or magnitude disables gravity.
 
 ```lua
+local ui = scene.root:find('World3D/World2D')
 scene.root:find('World3D').gravity = 196.2
 scene.root:find('World3D').gravityDirection = { 0, -1, 0 }
-scene.root:find('World3D/World2D').gravity = 627.84
-scene.root:find('World3D/World2D').gravityDirection = { 1, 0 }
+ui.gravity = 627.84
+ui.gravityDirection = { 1, 0 }
 ```
 
 Edits apply on the next physics update and wake dynamic bodies. Worlds are independent;

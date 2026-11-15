@@ -95,6 +95,10 @@ ANDROID_NDK_HOME=/path/to/ndk python3 source/plugins/imgui/build/buildNative.py 
 python3 source/plugins/imgui/build/generateBindings.py                 # after updating vendor/cimgui
 ```
 
+The `imgui` GitHub Actions workflow (`.github/workflows/imgui.yml`, also runnable by hand) builds
+`cimgui.dll` for Windows x64 and `libcimgui.so` for the three Android ABIs and uploads them as
+artifacts; copy them into `native/` and commit them.
+
 The result goes to `native/<os>-<arch>/`. Until a binary exists for a platform the scene runs
 with the legacy Stats panel and Tools button, and `ImGui.reason()` says what is missing.
 

@@ -4,12 +4,13 @@ Properties use the engine's lowerCamelCase convention. World3D.CurrentCamera is
 also accepted as an alias of currentCamera.
 
 ```lua
-local frame = scene.root:find('World3D/World2D'):create('ViewportFrame', {
+local ui = scene.root:find('World3D/World2D')
+local frame = ui:create('ViewportFrame', {
     position = { 0, 20, 0, 100 },
     size = { 0, 360, 0, 240 },
     renderScale = 1,
-}, scene.root:find('World3D/World2D').content)
-local root = scene.root:find('World3D/World2D'):create('World3D', { name = 'PreviewWorld' }, frame)
+}, ui.content)
+local root = ui:create('World3D', { name = 'PreviewWorld' }, frame)
 local camera = root:create('Camera3D', { position = { 0, 30, -100 } })
 root.currentCamera = camera
 root._world.environment.ambient = { 120, 140, 180 }

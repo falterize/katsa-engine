@@ -261,6 +261,13 @@ function Schema.reason(target, key)
     if key == 'parent' then
         return 'Use the hierarchy API to reparent nodes.'
     end
+    if target.replica == true then
+        for _, name in ipairs(rawget(target, 'replicatedProperties') or {}) do
+            if name == key then
+                return 'Replicated: the server owns this value.'
+            end
+        end
+    end
     if key == 'length' and target.automaticLength then
         return 'Computed from visible content; disable automaticLength for manual editing.'
     end

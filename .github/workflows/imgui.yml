@@ -1,0 +1,41 @@
+name: imgui
+on:
+  workflow_dispatch:
+  push:
+    branches: ['v108*']
+    paths: ['source/plugins/imgui/vendor/**', 'source/plugins/imgui/build/**', '.github/workflows/imgui.yml']
+env:
+  PYTHONUNBUFFERED: '1'
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc python
+      - name: Build cimgui.dll
+        run: python source/plugins/imgui/build/buildNative.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imgui-win-x64
+          path: source/plugins/imgui/native/win-x64/cimgui.dll
+  android:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build libcimgui.so
+        # The runner image ships an NDK; ANDROID_NDK_HOME points at it.
+        run: python3 source/plugins/imgui/build/buildNative.py --android-abi ${{ matrix.abi }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imgui-android-${{ matrix.abi }}
+          path: source/plugins/imgui/native/android-*/libcimgui.so

@@ -6,8 +6,9 @@ reference: a launcher window (toolbar with icons, grouped list, action panel, st
 only by `scripts/styles/sheet.lua` and the theme token files.
 
 ```lua
+local ui = scene.root:find('World3D/World2D')
 local UIStyler = require('source.engine.plugins').require('uiStyler')
-local styler = UIStyler.new(scene.root:find('World3D/World2D'))
+local styler = UIStyler.new(ui)
 styler:defineTheme('dark', UIStyler.themes.dark)     -- tokens: plugins/uiStyler/themes/dark.lua
 styler:defineTheme('light', UIStyler.themes.light)
 styler:sheet({
@@ -17,7 +18,7 @@ styler:sheet({
     { '#Search', { textColor = '$muted' } },
 })
 styler:setTheme('dark')
-styler:apply(scene.root:find('World3D/World2D').content)       -- also call it for subtrees created later
+styler:apply(ui.content)       -- also call it for subtrees created later
 node:addTag('primary')               -- tags choose rules; restyle with styler:apply(root)
 styler:setTheme('light')             -- every applied root is restyled
 ```
