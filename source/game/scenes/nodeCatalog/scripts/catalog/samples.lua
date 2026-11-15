@@ -28,6 +28,7 @@ local routes = {
     Node3D = 'nodes',
     Folder = 'nodes',
     StorageFolder = 'nodes',
+    Game = 'nodes',
     World3D = 'viewports',
     World2D = 'viewports',
     ViewportFrame = 'viewports',
@@ -225,6 +226,8 @@ function Catalog.prepare(scene, name)
             end
         elseif name == 'Node' or name == 'Node3D' or name == 'Folder' or name == 'StorageFolder' then
             node = scene.world:create(name, { name = 'Catalog' .. name })
+        elseif name == 'Game' then
+            node = scene.root
         elseif name == 'Node2D' then
             node = scene.ui:create('Node2D', { name = 'CatalogNode2D', position = { 640, -300 } })
         elseif name == 'VirtualJoystick' then
