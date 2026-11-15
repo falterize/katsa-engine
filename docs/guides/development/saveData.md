@@ -6,8 +6,7 @@ actual location on other platforms. Stats CSV files live in `stats-logs/`;
 verified native libraries live in content-addressed `native-cache/` directories.
 Project source, assets and vendor files stay inside the project or archive.
 
-The identity is `SaveData.identity` in `source/engine/core/saveData.lua`; a project passes it as
-`identity` in `project.lua`. Saves kept under an older identity are not migrated.
+The identity is the `identity` string in the project's `project.lua`. Saves kept under an older identity are not migrated.
 
 ## Example
 

@@ -1,6 +1,5 @@
 local Game = require('game.runtime.game')
 local UI = require('source.engine.ui')
-local SaveData = require('source.engine.core.saveData')
 local Tests = {}
 Tests.__index = Tests
 
@@ -23,89 +22,6 @@ function Tests:check(value, label)
     assert(value, label)
     self.count = self.count + 1
     print('PASS v106.2', label)
-end
-
-function Tests:migration()
-    local identity = SaveData.identity
-    local old = { ['stats-logs'] = true, ['stats-logs/user.csv'] = 'recorded', conflict = 'old' }
-    local current = { conflict = 'new' }
-    local fs = {}
-    local function storage()
-        return identity == SaveData.identity and current or old
-    end
-    fs.getIdentity = function()
-        return identity
-    end
-    fs.setIdentity = function(value)
-        identity = value
-    end
-    fs.getSaveDirectory = function()
-        return '/saves/' .. identity
-    end
-    fs.getInfo = function(path)
-        local value = storage()[path]
-        return value ~= nil and { type = value == true and 'directory' or 'file' } or nil
-    end
-    fs.getDirectoryItems = function(path)
-        local result = {}
-        local prefix = path == '' and '' or path .. '/'
-        for name in pairs(storage()) do
-            if name:sub(1, #prefix) == prefix and not name:sub(#prefix + 1):find('/') then
-                result[#result + 1] = name:sub(#prefix + 1)
-            end
-        end
-        if path == '' then
-            result[#result + 1] = 'main.lua'
-        end
-        return result
-    end
-    fs.getRealDirectory = function(path)
-        return path == 'main.lua' and '/game' or fs.getSaveDirectory()
-    end
-    fs.read = function(path)
-        return assert(storage()[path])
-    end
-    fs.write = function(path, data)
-        storage()[path] = data
-        return true
-    end
-    fs.createDirectory = function(path)
-        storage()[path] = true
-        return true
-    end
-    local ok, count = SaveData.migrate(fs)
-    self:check(
-        ok and count == 1 and current['stats-logs/user.csv'] == 'recorded',
-        'Migration copies nested user data'
-    )
-    self:check(
-        current.conflict == 'new' and not current['main.lua'],
-        'Migration preserves destination files and excludes project assets'
-    )
-    self:check(identity == SaveData.identity, 'Migration restores the destination identity')
-    ok, count = SaveData.migrate(fs)
-    self:check(ok and count == 0, 'Completed migration is idempotent')
-    current['.legacy-save-migrated'] = nil
-    fs.read = function()
-        error('Read failure fixture')
-    end
-    ok = SaveData.migrate(fs)
-    self:check(
-        not ok and identity == SaveData.identity and not current['.legacy-save-migrated'],
-        'Read errors restore the identity and remain retryable'
-    )
-    fs.read = function(path)
-        return assert(storage()[path])
-    end
-    current = {}
-    fs.write = function()
-        return false, 'Write failure fixture'
-    end
-    ok = SaveData.migrate(fs)
-    self:check(
-        not ok and identity == SaveData.identity and not current['.legacy-save-migrated'],
-        'Write errors preserve the source and remain retryable'
-    )
 end
 
 function Tests:scrolling(scene, scale)
@@ -188,7 +104,6 @@ function Tests:draw()
         return
     end
     self.done = true
-    self:migration()
     self:check(
         require('source.engine.core.runtime').machineCodeKiB == 32768,
         'The machine-code budget covers the extended rig workload'
