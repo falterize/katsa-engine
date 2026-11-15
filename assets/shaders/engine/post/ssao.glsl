@@ -1,7 +1,6 @@
 // Screen-space ambient occlusion from the scene depth. Draws occlusion (1 = open) into a
 // half-resolution target; the apply shader multiplies it into the image.
 #include "../chunks/depth.glsl"
-uniform highp vec2 depthSize;        // depth texture size in pixels
 uniform highp vec2 viewSize;         // logical view size the focal length belongs to
 uniform highp float focal;           // perspective focal length (view-size units)
 uniform highp float pixelsPerUnit;   // orthographic scale
@@ -27,8 +26,9 @@ highp vec2 viewToUV(highp vec3 p) {
     return vec2(.5 + s.x, .5 - s.y);
 }
 
-vec4 effect(vec4 color, Image image, vec2 uv, vec2 screenPosition) {
+vec4 effect(vec4 color, Image image, vec2 targetUV, vec2 screenPosition) {
     highp vec2 texel = 1.0 / depthSize;
+    highp vec2 uv = snapToDepthTexel(targetUV);
     // Sky and far clip carry no occluders.
     if (isSkyDepth(uv)) {
         return vec4(1.0);
@@ -48,23 +48,14 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screenPosition) {
         n = -n; // face the camera (view space looks down +z)
     }
 
-    // Depth changes by this much from one pixel to the next on this surface. On a far, grazing
-    // floor that is several world units per pixel, so a tap that lands a pixel or two away would
-    // read the floor itself as an occluder (this drew bands). Every tap tolerates the surface
-    // slope times its pixel distance from the centre.
-    // Depth is stored in steps (24 bits): one step in view units is `stair`. A side whose change
-    // is much larger than the other side's plus the stair is an edge (a box foot beside the
-    // floor), not slope, so it is ignored; otherwise the larger side counts, since on far floors
-    // the smaller side is often zero.
+    // Depth is stored in steps (24 bits); `stair` is one step in view units at this depth.
     highp float stair = orthographic
-        ? 4.0 * 2.0 / 16777216.0 / abs(depthRange.x)
-        : 4.0 * 2.0 / 16777216.0 * z * z / abs(depthRange.y);
-    highp vec4 steps = abs(vec4(px1.z - p.z, p.z - px0.z, py1.z - p.z, p.z - py0.z));
-    highp vec2 sx = vec2(min(steps.x, steps.y), max(steps.x, steps.y));
-    highp vec2 sy = vec2(min(steps.z, steps.w), max(steps.z, steps.w));
-    highp float slopeX = sx.y <= 2.0 * sx.x + stair ? sx.y : sx.x + stair;
-    highp float slopeY = sy.y <= 2.0 * sy.x + stair ? sy.y : sy.x + stair;
-    highp float slope = max(slopeX, slopeY);
+        ? 2.0 / 16777216.0 / abs(depthRange.x)
+        : 2.0 / 16777216.0 * z * z / abs(depthRange.y);
+    highp vec3 viewRay = orthographic ? vec3(0., 0., 1.) : p / z;
+    // Height above the tangent plane that depth quantisation and the reconstructed normal cannot
+    // tell from the plane itself. Anything lower is the surface, not an occluder.
+    highp float planeEpsilon = bias + 4.0 * stair * abs(dot(n, viewRay));
 
     highp float angle = screenNoise(screenPosition) * 6.2831853;
     // Orient the taps into the hemisphere above the surface.
@@ -84,10 +75,15 @@ vec4 effect(vec4 color, Image image, vec2 uv, vec2 screenPosition) {
         if (quv.x < 0. || quv.x > 1. || quv.y < 0. || quv.y > 1.) {
             continue;
         }
+        quv = snapToDepthTexel(quv);
         highp float sceneZ = viewDepth(quv);
+        highp vec3 hit = viewPosition(quv, sceneZ);
+        // The tap is occluded when the depth buffer has geometry in front of it that stands
+        // above the receiver's tangent plane: the plane itself (a floor seen at a grazing
+        // angle) can never shade the point it belongs to, however coarse its depth steps are.
+        highp float aboveSurface = dot(hit - p, n);
         highp float range = smoothstep(0.0, 1.0, radius / max(abs(z - sceneZ), 1e-4));
-        highp float tolerance = bias + slope * 2.0 * length((quv - uv) * depthSize) + q.z * 0.004;
-        occlusion += (sceneZ <= q.z - tolerance ? 1.0 : 0.0) * range;
+        occlusion += (sceneZ <= q.z - bias && aboveSurface > planeEpsilon ? 1.0 : 0.0) * range;
     }
     return vec4(vec3(1.0 - occlusion / float(sampleCount)), 1.0);
 }

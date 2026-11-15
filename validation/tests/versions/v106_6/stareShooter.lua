@@ -223,10 +223,11 @@ function Tests.run(tester)
         )
         input:keyreleased('q')
         input:keyreleased('s')
+        local before = state.orbit.distance
         input:wheelmoved(0, -4)
         frames(manager, 1)
         tester:check(
-            state.orbit.distance == 4,
+            state.orbit.distance == before + 4,
             'Wheel zoom uses one-meter steps through the scene input hook'
         )
         state.orbit:zoom(-1000)

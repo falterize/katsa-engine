@@ -5,6 +5,14 @@
 uniform highp Image depthTexture;
 uniform highp vec2 depthRange;
 uniform bool orthographic;
+uniform highp vec2 depthSize; // depth texture size in pixels
+
+// The centre of the depth texel `uv` falls in. Post targets can be smaller than the depth
+// texture, so their pixel centres land exactly on texel borders, where a nearest lookup picks
+// either neighbour depending on rounding. Reading neighbours from snapped centres is exact.
+highp vec2 snapToDepthTexel(highp vec2 uv) {
+    return (floor(uv * depthSize) + .5) / depthSize;
+}
 
 // Depth of the surface at `uv`, in view units along the camera axis.
 highp float viewDepth(highp vec2 uv) {

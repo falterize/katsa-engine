@@ -37,7 +37,9 @@ passes run.
   256x16), not a 3D texture.
 - SSAO and depth of field read the depth of the batched opaque scene; transparent surfaces and
   alpha cutouts are not part of it. SSAO is applied to the finished image rather than only to
-  ambient light.
+  ambient light. Post targets can be smaller than the depth texture, so SSAO always reads depth at
+  texel centres (`snapToDepthTexel` in `chunks/depth.glsl`); a nearest lookup on a texel border
+  picks either neighbour at random and broke the surface normal.
 - There is no TAA (it needs per-pixel motion vectors and a history buffer). A vignette is not
   built in: put an `ImageRect` with a radial gradient over the screen.
 - Volumetric fog is a screen-space ray march, not Godot's froxel grid. It is lit by the sun (with

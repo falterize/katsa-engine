@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- SSAO banding fixed at its cause: the half-resolution target's pixel centres fall on the borders of the full-resolution depth texels, so a nearest lookup one texel away returned the centre texel or the next one depending on rounding. The surface normal then flipped between the real one and `(0, 0, -1)` from row to row, and the hemisphere built on it sank into the floor (dark bands on far floors and terrain). Every depth read in `post/ssao.glsl` and `post/ssaoBlur.glsl` now snaps to a texel centre (`snapToDepthTexel` in `chunks/depth.glsl`), and the occlusion test compares against the receiver's tangent plane instead of slope heuristics. Test: `v108_8/ssaoDepth.lua`; the GPU look needs hardware.
 - replicationLab keeps its hosted server and connection running while the window is unfocused (`updateInBackground`); before, a long alt-tab froze the server and the client lost every replicated node. Replicas list the properties the server sends; crouch holds on the spot and walking backward plays reversed.
 - replicationLab: coins and bots now use the arena's real surface height (they sat 1 unit low), and the walk cycle plays at the stareShooter rate (`HeroTree.stride`: 2.5x walking, 3.5x running).
 - The Explorer shows Debug / Input under the `Root` node, the root of everything. Client copies of replicated nodes read `replicated = true` (read-only), so they can be found in the Explorer.
