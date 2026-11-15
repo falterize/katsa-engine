@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- replicationLab: coins and bots now use the arena's real surface height (they sat 1 unit low), and the walk cycle plays at the stareShooter rate (`HeroTree.stride`: 2.5x walking, 3.5x running).
 - The Explorer shows Debug / Input under the `Game` root, so `Game` is the root of everything. Client copies of replicated nodes read `replicated = true` (read-only), so they can be found in the Explorer.
 - Values of replicated properties are read-only in the inspector on client replicas. Guide snippets use a local for the main `World2D`. New `imgui` workflow builds the Windows and Android ImGui libraries.
 - No-op properties audit: `Bone3D` has no `transparency`, `AudioListener`/`AudioSource` have no `transparency`, `scale` or `inheritScale` (class `omit` lists, tested in `v108_8/noOpProperties.lua`).

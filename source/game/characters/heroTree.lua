@@ -4,9 +4,20 @@
 --   StateMachine        Ground <-> Air (the landing waits for the end of the clip: AtEnd)
 --   Transition Ground   `stance` crossfades between Stand and Crouch (smooth curve)
 --   Add2 Stand          `squat` adds the crouch pose on top of the walk, from nothing to fully
---   TimeScale Stride    `stride` speeds the walk cycle up with the movement speed
+--   TimeScale Stride    `stride` (Graph.stride(speed)) speeds the walk cycle up with the movement
 --   Blend1D Walk        idle -> walk over `speed`
 local Graph = {}
+
+-- The walk cycle's playback rate for a ground speed, matching the controller scene (stareShooter):
+-- the clip plays 2.5x at walking pace and 3.5x at running pace; idle stays at 1x.
+local WALK_SPEED, RUN_SPEED = 5, 8
+
+function Graph.stride(speed)
+    if speed <= WALK_SPEED then
+        return 1 + 1.5 * math.max(0, speed) / WALK_SPEED
+    end
+    return math.min(3.5, 2.5 + (speed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED))
+end
 
 local function node(world, parent, properties)
     return world:create('AnimationGraphNode', properties, parent)

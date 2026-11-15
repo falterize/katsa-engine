@@ -54,7 +54,7 @@ function AvatarView:update()
     root.position = { object.x, object.y - 1, object.z }
     root.rotation = { 0, object.heading, 0 }
     self.tree:set('speed', math.min(1, object.speed / WALK_SPEED))
-    self.tree:set('stride', math.max(1, object.speed / WALK_SPEED))
+    self.tree:set('stride', HeroTree.stride(object.speed))
     self.tree:set('grounded', not object.air)
 end
 
