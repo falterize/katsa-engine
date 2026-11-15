@@ -26,7 +26,7 @@ function Runtime:update(dt)
         and (base.scene.zone == 'surfaceGallery' or base.scene.zone == 'uiGallery')
     then
         local scene = base.scene
-        self.capture = 'v51-' .. scene.zone .. '-' .. scene.ui.width .. 'x' .. scene.ui.height
+        self.capture = 'v51-' .. scene.zone .. '-' .. scene.root:find('World3D/World2D').width .. 'x' .. scene.root:find('World3D/World2D').height
         if scene.zone == 'uiGallery' then
             local ws = scene.workspace
             ws:select(scene.demo.fitImage)

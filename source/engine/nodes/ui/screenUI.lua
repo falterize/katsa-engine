@@ -21,7 +21,7 @@ function C.initialize(self)
 end
 
 function C.mount(world, properties, parent)
-    assert(parent == world.root, 'World2D belongs directly to its World3D')
+    assert(parent == world._node, 'World2D belongs directly to its World3D')
     local ui = require('source.engine.ui')
         .new(properties.width or 640, properties.height or 360, world.resources)
         :bindWorld(world)

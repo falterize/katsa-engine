@@ -101,9 +101,9 @@ function Test:update()
             self.ramp.points[2].time == 0.35 and not pcall(model.time, self.ramp.points, 2, 1.1),
             'Point time editing enforces the normalized timeline'
         )
-        scene.ui:layout()
-        local x = (graph._x + graph._width * 0.35) * scene.ui.scale + scene.ui.offsetX
-        local y = (graph._y + graph._height * 0.5) * scene.ui.scale + scene.ui.offsetY
+        scene.root:find('World3D/World2D'):layout()
+        local x = (graph._x + graph._width * 0.35) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX
+        local y = (graph._y + graph._height * 0.5) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetY
         local scroll = popup.body.scrollY
         scene.input:press('curve', x, y)
         self:check(
@@ -119,13 +119,13 @@ function Test:update()
         self.capture = 'points'
     elseif self.frame == 3 then
         local scene = self:load('uiGallery')
-        local node = scene.ui:container({ size = { 0, 100, 0, 50 } }, scene.ui.content)
-        local ramp = scene.ui:create(
+        local node = scene.root:find('World3D/World2D'):container({ size = { 0, 100, 0, 50 } }, scene.root:find('World3D/World2D').content)
+        local ramp = scene.root:find('World3D/World2D'):create(
             'Ramp',
             { goals = { backgroundColor = { 1, 0, 0 }, backgroundTransparency = 1 } },
             node
         )
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
         self:check(
             ramp:isSpatialGradient() and node._backgroundGradient,
             'Static UI color goals infer spatial gradient without Applications'
@@ -136,9 +136,9 @@ function Test:update()
             'Transparency goal reaches its own alpha endpoint'
         )
         local stroke =
-            scene.ui:create('UIStroke', { color = { 1, 1, 1 }, thickness = { 0, 2 } }, node)
-        local outline = scene.ui:create('Ramp', { goals = { color = { 0, 1, 0 } } }, stroke)
-        scene.ui:layout()
+            scene.root:find('World3D/World2D'):create('UIStroke', { color = { 1, 1, 1 }, thickness = { 0, 2 } }, node)
+        local outline = scene.root:find('World3D/World2D'):create('Ramp', { goals = { color = { 0, 1, 0 } } }, stroke)
+        scene.root:find('World3D/World2D'):layout()
         self:check(
             stroke._backgroundGradient and outline:isSpatialGradient(),
             'Stroke supports its independent color Goals'

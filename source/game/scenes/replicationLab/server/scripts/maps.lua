@@ -102,7 +102,7 @@ function Maps:spawn()
         pick = templates[math.random(#templates)]
     until #templates == 1 or pick.name ~= self.last
     self.last = pick.name
-    local map = pick:clone({ name = 'Map' }, self.world.root)
+    local map = pick:clone({ name = 'Map' }, self.world._node)
     map:setAttribute('Title', pick.name)
     for _, node in ipairs(map:getDescendants()) do
         if node.className == 'Mesh3D' then

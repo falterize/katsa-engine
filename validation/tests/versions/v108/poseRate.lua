@@ -28,7 +28,7 @@ function Tests.run(tester)
         for _ = 1, 30 do
             manager:update(1 / 60)
         end
-        scene.world.root.timeScale = timeScale
+        scene.root:find('World3D').timeScale = timeScale
         scene.input.actions.keys.d = true
         for _ = 1, 20 do
             manager:update(1 / 60)
@@ -51,7 +51,7 @@ function Tests.run(tester)
             )
         )
         scene.input.actions.keys.d = nil
-        scene.world.root.timeScale = 1
+        scene.root:find('World3D').timeScale = 1
     end
 end
 

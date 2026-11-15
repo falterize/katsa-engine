@@ -199,14 +199,14 @@ function T:update()
     )
     camera.layers = -1
     e.layers = 1
-    local saved = w.root.currentCamera
-    w.root.currentCamera = nil
+    local saved = w._node.currentCamera
+    w._node.currentCamera = nil
     system:update(1 / 60)
     self:check(
         e._simulationPaused and system.stats.collisionQueries == 0,
         'Camera-free world pauses visual particle effects'
     )
-    w.root.currentCamera = saved
+    w._node.currentCamera = saved
     e:clear()
     e:emit(1)
     p = e.particles[1]

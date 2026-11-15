@@ -10,7 +10,7 @@ function Tests:draw()
         self.host:load(); self.session = self.host.demo
         self.session:host('Tester', 47950 + math.floor(os.clock() * 100) % 9, { separate = false })
     end
-    local ui = self.session.scene.ui
+    local ui = self.session.scene.root:find('World3D/World2D')
     local r0 = ui.revision
     self.host:update(1/60, 1/60); self.host:draw()
     if self.frame > 100 and self.frame <= 106 then print('REV frame', self.frame, 'delta', ui.revision - r0) end

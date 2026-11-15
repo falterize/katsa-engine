@@ -8,7 +8,7 @@ local Tests = {}
 function Tests.cameraFollowsRenderedPose(tester, frameDelta, label)
     local scene = Application.new(tester.manager, 'abilityRunner2D')
     scene:load()
-    local state, ui = scene.demo, scene.ui
+    local state, ui = scene.demo, scene.root:find('World3D/World2D')
     local camera = ui.currentCamera
     local physics = state.player.physics.space
     local worst, checked = 0, 0

@@ -16,7 +16,7 @@ function Preview:draw()
     self.done = true
     local scene = assert(self.manager:switch(Game.new, 'uiGallery'))
     self.manager:update(1 / 60)
-    scene.ui:scrollBy(scene.demo.right, 310)
+    scene.root:find('World3D/World2D'):scrollBy(scene.demo.right, 310)
     self.manager:draw()
     katsa.graphics.captureScreenshot(function(image)
         local path = assert(os.getenv('KATSA_PREVIEW_PATH'), 'Set KATSA_PREVIEW_PATH')

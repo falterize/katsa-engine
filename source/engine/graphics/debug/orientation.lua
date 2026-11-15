@@ -21,7 +21,7 @@ end
 
 function Orientation.draw(scene)
     local settings = scene.world.debug
-    local orientation2D = settings.orientation2D or scene.ui.debug and scene.ui.debug.orientation2D
+    local orientation2D = settings.orientation2D or scene.root:find('World3D/World2D').debug and scene.root:find('World3D/World2D').debug.orientation2D
     if not orientation2D and not settings.orientation3D then
         return
     end
@@ -36,12 +36,12 @@ function Orientation.draw(scene)
     g.setScissor()
     g.setStencilTest()
     g.setLineWidth(2 * scale)
-    g.setFont(scene.ui:font(14))
+    g.setFont(scene.root:find('World3D/World2D'):font(14))
     if orientation2D then
         local x = w / 2 - (settings.orientation3D and gap or 0)
-        local angle = scene.ui.currentCamera and math.rad(scene.ui.currentCamera.rotation) or 0
-        if scene.ui.currentCamera then
-            local _, _, rotation = scene.ui.currentCamera:getWorldPose()
+        local angle = scene.root:find('World3D/World2D').currentCamera and math.rad(scene.root:find('World3D/World2D').currentCamera.rotation) or 0
+        if scene.root:find('World3D/World2D').currentCamera then
+            local _, _, rotation = scene.root:find('World3D/World2D').currentCamera:getWorldPose()
             angle = math.rad(rotation)
         end
         axis(x, h / 2, math.cos(angle), math.sin(angle), 1, nil, length)

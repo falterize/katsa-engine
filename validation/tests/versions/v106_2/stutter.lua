@@ -49,8 +49,8 @@ function Probe:draw()
             events[key] = (events[key] or 0) + 1
         end, 'trace')
     end
-    local uiDraw, uiMilliseconds = scene.ui.draw, 0
-    scene.ui.draw = function(ui, ...)
+    local uiDraw, uiMilliseconds = scene.root:find('World3D/World2D').draw, 0
+    scene.root:find('World3D/World2D').draw = function(ui, ...)
         local start = katsa.timer.getTime()
         uiDraw(ui, ...)
         uiMilliseconds = (katsa.timer.getTime() - start) * 1000

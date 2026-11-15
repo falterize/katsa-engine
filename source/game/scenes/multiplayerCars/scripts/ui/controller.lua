@@ -16,7 +16,7 @@ end
 
 -- callbacks: send(text), kick(playerId), hostCommand(name)
 function Social.create(scene, callbacks)
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local self = setmetatable({ ui = ui, callbacks = callbacks, lines = {}, open = false }, Social)
     self.root = ui:container({
         name = 'CarsSocial',

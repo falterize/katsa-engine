@@ -1,7 +1,7 @@
 local Interface = {}
 
 function Interface.create(state)
-    local scene, ui = state.scene, state.scene.ui
+    local scene, ui = state.scene, state.scene.root:find('World3D/World2D')
     -- A layer that interacts with Default3D, so the filter also processes the 3D render.
     if not scene.world.shaderLayers.priorities.Screen then
         scene.world.shaderLayers:add('Screen')

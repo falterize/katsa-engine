@@ -128,7 +128,7 @@ function Lab.new(scene)
     if not scene.world.shaderLayers.priorities.Screen then
         scene.world.shaderLayers:add('Screen')
     end
-    self.blur = scene.ui:create('Shader2D', {
+    self.blur = scene.root:find('World3D/World2D'):create('Shader2D', {
         name = 'SpeedBlur',
         position = { 0, 0, 0, 0 },
         size = { 1, 0, 1, 0 },
@@ -138,7 +138,7 @@ function Lab.new(scene)
         shaderPath = 'scene://shaders/speedBlur.glsl',
         shaderLayer = 'Screen',
         uniforms = { strength = 0 },
-    }, scene.ui.content)
+    }, scene.root:find('World3D/World2D').content)
     return self
 end
 
@@ -158,9 +158,9 @@ function Lab:update(dt)
     if self.controlsPanel then
         self.controlsPanel.size = {
             0,
-            math.min(245, scene.ui.width - 24),
+            math.min(245, scene.root:find('World3D/World2D').width - 24),
             0,
-            math.min(180, math.max(36, scene.ui.height * 0.66 - 165)),
+            math.min(180, math.max(36, scene.root:find('World3D/World2D').height * 0.66 - 165)),
         }
     end
     scene.physics:update(dt)

@@ -98,10 +98,10 @@ function Statistics.new(scene, parent)
         return c.scene.manager.time.scale
     end)
     add(definitions, 'scale.world2D', 'World2D time scale', 'x', function(c)
-        return c.scene.ui.timeScale
+        return c.scene.root:find('World3D/World2D').timeScale
     end)
     add(definitions, 'scale.world3D', 'World3D time scale', 'x', function(c)
-        return c.scene.world.root.timeScale
+        return c.scene.world._node.timeScale
     end)
     add(definitions, 'drawcalls', 'Draw calls', nil, function(c)
         return c.graphics.drawcalls
@@ -154,7 +154,7 @@ function Statistics.new(scene, parent)
         { 'sleeping', '2D sleeping bodies' },
         { 'droppedTime', '2D dropped time', 's' },
     }, function(c)
-        return c.scene.ui.physics2D and c.scene.ui.physics2D.stats
+        return c.scene.root:find('World3D/World2D').physics2D and c.scene.root:find('World3D/World2D').physics2D.stats
     end)
     fields(definitions, 'net.', {
         { 'ping', 'Network ping', 'ms' },
@@ -208,7 +208,7 @@ function Statistics.new(scene, parent)
             or id:sub(1, 5) == 'loop.'
     end
     local self = setmetatable(
-        { scene = scene, graphics = {}, panel = Panel.new(scene.ui, parent, definitions) },
+        { scene = scene, graphics = {}, panel = Panel.new(scene.root:find('World3D/World2D'), parent, definitions) },
         Statistics
     )
     self.context = { scene = scene, graphics = self.graphics }
@@ -235,13 +235,13 @@ function Statistics:sample()
         self.panel.exportMetadata = self.panel.exportMetadata or {}
         self.panel.exportMetadata.scene = scene.zone
         self.panel.exportMetadata.backend = (physics and physics.backendName or 'none')
-            .. (scene.ui.physics2D and ' + Box2D (2D)' or '')
+            .. (scene.root:find('World3D/World2D').physics2D and ' + Box2D (2D)' or '')
         self.panel.header.text = string.format(
             '%s | Physics: %s | requested: %s%s\nRuntime: %s (%s, %s) | Light loop: %s\nClick '
                 .. 'any numeric row for history. %s',
             scene.zone,
             (physics and physics.backendName or 'none')
-                .. (scene.ui.physics2D and ' + Box2D (2D)' or ''),
+                .. (scene.root:find('World3D/World2D').physics2D and ' + Box2D (2D)' or ''),
             scene.options.physicsBackend
                 or (scene.options.physics or {}).backend
                 or (scene.settings.physics or {}).backend

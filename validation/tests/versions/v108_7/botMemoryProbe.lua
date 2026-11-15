@@ -36,7 +36,7 @@ function Tests:report(label)
     local stats = katsa.graphics.getStats()
     local groups = #self.host.renderer.batches.groups
     print(('MEM %-14s live %.1f MB  bots %d  cars %d  nodes %d  drawcalls %d  batchGroups %d'):format(
-        label, live(), bots, #server.order, #self.host.world.root:getDescendants(),
+        label, live(), bots, #server.order, #self.host.world._node:getDescendants(),
         stats.drawcalls or -1, groups))
 end
 

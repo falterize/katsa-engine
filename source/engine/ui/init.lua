@@ -221,7 +221,7 @@ function UI:bindWorld(world)
         end)
     end
     if not self.owner then
-        self.parent = world.root
+        self.parent = world._node
     end
     self.nodeTypes = world.nodeTypes or {}
     world.nodeTypes = self.nodeTypes

@@ -7,8 +7,8 @@ local RootNode = {}
 
 function RootNode.create(world)
     local root = Node.create('Game', { name = 'Game' }, nil, world)
-    world.root._worldBoundary = true
-    world.root.parent = root
+    world._node._worldBoundary = true
+    world._node.parent = root
     Storage.install(world, true)
     return root
 end

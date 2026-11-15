@@ -16,9 +16,9 @@ function Tests.run(tester)
     local world, ui, physics, body, release = tester:environment()
     ui.width, ui.height, ui.scale, ui.offsetX, ui.offsetY = 256, 256, 1, 0, 0
     tester:check(
-        not has(world.root, 'position')
-            and not has(world.root, 'rotation')
-            and not has(world.root, 'scale'),
+        not has(world._node, 'position')
+            and not has(world._node, 'rotation')
+            and not has(world._node, 'scale'),
         'World3D has no editable transform settings'
     )
     tester:check(

@@ -48,7 +48,7 @@ end
 
 -- The replicated nodes the server made, by name (nil until they have arrived).
 function Session:node(name)
-    return self.world.root:find(name, false)
+    return self.world._node:find(name, false)
 end
 
 -- Publishes the local character's pose; the server validates it and the others interpolate it.

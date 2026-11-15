@@ -3,7 +3,7 @@ local Theme = require('source.engine.ui.theme')
 local Interface = {}
 
 function Interface.create(state)
-    local scene, ui = state.scene, state.scene.ui
+    local scene, ui = state.scene, state.scene.root:find('World3D/World2D')
     local panel = ui:container({
         _viewportAuthored = true,
         name = 'TreeControls',

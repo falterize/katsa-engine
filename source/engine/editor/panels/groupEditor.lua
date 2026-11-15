@@ -7,7 +7,7 @@ function Editor.open(workspace)
     if workspace.popup then
         workspace.popup:close(true)
     end
-    workspace.selected = workspace.selected or workspace.scene.world.root
+    workspace.selected = workspace.selected or workspace.scene.world._node
     local popup =
         Popup.new(workspace, { key = 'Groups', kind = 'string', value = '', readOnly = true })
     workspace.popup = popup
@@ -29,7 +29,7 @@ function Editor.open(workspace)
                 and selectedNode:isA('World2D')
                 and selectedNode
             or selectedNode and selectedNode._plane
-            or workspace.scene.ui
+            or workspace.scene.root:find('World3D/World2D')
         return plane.physics2D
     end
 

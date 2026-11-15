@@ -73,8 +73,8 @@ function Tests:systems()
             'Disabled systems do not run their start hook'
         )
         local uiUpdates = 0
-        local updateUI = scene.ui.update
-        scene.ui.update = function(ui, ...)
+        local updateUI = scene.root:find('World3D/World2D').update
+        scene.root:find('World3D/World2D').update = function(ui, ...)
             uiUpdates = uiUpdates + 1
             return updateUI(ui, ...)
         end

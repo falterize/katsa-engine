@@ -24,7 +24,7 @@ end
 
 function Scene.update2D(state, dt, realDt)
     local scene = state.scene
-    scene.ui:update(realDt or dt, dt)
+    scene.root:find('World3D/World2D'):update(realDt or dt, dt)
 end
 
 function Scene.destroy(state)

@@ -76,7 +76,7 @@ function Controller:update(dt, snap)
     if self._targetName ~= camera.followTarget then
         self._targetName = camera.followTarget
         self.target = nil
-        for _, node in ipairs(camera._world.root:getDescendants()) do
+        for _, node in ipairs(camera._world._node:getDescendants()) do
             if node.name == camera.followTarget and node.getWorldMatrix then
                 self.target = node
                 break

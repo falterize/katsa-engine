@@ -8,7 +8,7 @@ local BUTTON = { 0.085, 0.135, 0.19 }
 
 -- callbacks: host(name, { separate }), join(address, port, name); canSeparate: a server window is possible
 function Menu.create(scene, callbacks)
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local self = setmetatable({ ui = ui, callbacks = callbacks, rows = {} }, Menu)
     self.panel = ui:container({
         name = 'CarsMenu',
@@ -183,7 +183,7 @@ local function button(ui, settings, parent)
 end
 
 function Hud.create(scene, callbacks)
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local self = setmetatable({ ui = ui }, Hud)
     self.root = ui:container({
         name = 'CarsHud',

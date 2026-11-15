@@ -100,7 +100,7 @@ function Tests:nodeAuthoring()
         name = 'GuideSpinner',
         size = { 20, 20, 20 },
         position = { 4, 0, 0 },
-    }, world.root)
+    }, world._node)
     self:check(
         spinner:isA('Mesh3D') and spinner.spinSpeed == 45 and #world.objects == before + 1,
         'Guide node inherits mounting and property defaults'
@@ -125,11 +125,11 @@ function Tests:nodeAuthoring()
         Node.adopt(raw, 'Folder') == raw and raw:isA('Node3D'),
         'adopt is idempotent and does not reclassify an existing node'
     )
-    raw:setParent(world.root)
+    raw:setParent(world._node)
     local child = Node.create('Folder', { name = 'GuideChild' }, raw, world)
     child:addTag('Guide')
     self:check(
-        raw:find('GuideChild') == child and world.root:findByTag('Guide', true) == child,
+        raw:find('GuideChild') == child and world._node:findByTag('Guide', true) == child,
         'Hierarchy and tag queries find the authored node'
     )
     local snapshot = raw:getChildren()

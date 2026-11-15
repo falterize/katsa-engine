@@ -15,10 +15,10 @@ World3D.__index = function(world, key)
 end
 World3D.__newindex = function(world, key, value)
     if key == 'physics' and value and value.bindDebug then
-        require('source.engine.world.gravity').bind(world.root, value)
+        require('source.engine.world.gravity').bind(world._node, value)
         value:bindDebug(world.environment.debug.physics)
         rawset(world, key, value)
-        world.root:onDestroy(function()
+        world._node:onDestroy(function()
             value:release()
         end)
     elseif key == 'debug' and world.environment then
@@ -46,7 +46,7 @@ function World3D.new(resources, lighting, options)
         lights = {},
         billboards = {},
         geometry = {},
-        root = Node.new(
+        _node = Node.new(
             'World3D',
             { name = 'World3D', position = { 0, 0, 0 }, rotation = { 0, 0, 0 }, size = { 1, 1, 1 } }
         ),
@@ -56,10 +56,10 @@ function World3D.new(resources, lighting, options)
     self.animations = require('source.engine.animation.scheduler').new()
     self.shaderLayers = require('source.engine.graphics.shaders.layers').new(function(registry, info)
         -- Renames and removals reach every shader node of this world, like layer groups.
-        if not info or not self.root then
+        if not info or not self._node then
             return
         end
-        for _, node in ipairs(self.root:getDescendants()) do
+        for _, node in ipairs(self._node:getDescendants()) do
             if node.shaderLayer and (node._world or node._sceneWorld) == self then
                 if info.renamed and node.shaderLayer == info.renamed[1] then
                     node.shaderLayer = info.renamed[2]
@@ -70,9 +70,9 @@ function World3D.new(resources, lighting, options)
         end
     end)
     self:initializeLayerGroups()
-    self.root._world = self
-    self.root._sceneWorld = self
-    Node.create('Environment', lighting, self.root, self)
+    self._node._world = self
+    self._node._sceneWorld = self
+    Node.create('Environment', lighting, self._node, self)
     self.prefabs = require('source.engine.core.prefabs').new(self)
     self.decals = {}
     self.directionalLights = {}
@@ -83,12 +83,12 @@ function World3D.new(resources, lighting, options)
     -- Explorer shows no organizational folders.
     self.folders = setmetatable({}, {
         __index = function()
-            return self.root
+            return self._node
         end,
     })
-    self.root._world = self
-    self.nodeTree = NodeTree.new(self.root)
-    self.root._nodeTree = self.nodeTree
+    self._node._world = self
+    self.nodeTree = NodeTree.new(self._node)
+    self._node._nodeTree = self.nodeTree
     self.geometry.cube = Geometry.cube()
     self.geometry.plane = Geometry.plane()
     resources:own(self.geometry.cube.mesh)
@@ -130,7 +130,7 @@ function World3D:updateCameras(dt)
     if not camera._controller then
         local name = camera.followTarget
         local target
-        for _, node in ipairs(self.root:getDescendants()) do
+        for _, node in ipairs(self._node:getDescendants()) do
             if node.name == name and node.getWorldMatrix then
                 target = node
                 break
@@ -155,7 +155,7 @@ function World3D:create(className, properties, parent)
     className = Node.aliases[className] or className
     properties = properties or {}
     if className == 'World2D' or className == 'Environment' or className == 'Shader3D' then
-        parent = parent or self.root
+        parent = parent or self._node
     end
     local category = ({
         Mesh3D = 'Geometry',
@@ -266,7 +266,7 @@ end
 
 function World3D:release()
     self.animations:release()
-    local ok, message = pcall(self.root.destroy, self.root)
+    local ok, message = pcall(self._node.destroy, self._node)
     self.nodeTree:release()
     self.nodeTypes, self.interactionSource = {}, nil
     if not ok then

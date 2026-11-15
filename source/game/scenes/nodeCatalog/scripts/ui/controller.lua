@@ -15,13 +15,13 @@ function Scene:load()
         self.manager.resources:scope(require('source.game.data.manifest'), self.package.paths)
     require('source.engine.ui.sceneRoot').create(self, 1280, 720)
     self.input = Input.new(self)
-    self.panel = self.ui:container({
+    self.panel = self._ui:container({
         position = { 0.5, 0, 0.5, 0 },
         size = { 1, -24, 1, -24 },
         anchorPoint = { 0.5, 0.5 },
         backgroundColor = { 0.035, 0.065, 0.105 },
-    }, self.ui.content)
-    self.ui:text({
+    }, self._ui.content)
+    self._ui:text({
         position = { 0, 16, 0, 12 },
         size = { 1, -32, 0, 44 },
         text = 'Node catalog / runnable samples',
@@ -29,7 +29,7 @@ function Scene:load()
         maxTextSize = 26,
     }, self.panel)
     do
-        local node = self.ui:button({
+        local node = self._ui:button({
             position = { 0, 16, 0, 64 },
             size = { 1, -32, 0, 38 },
             text = 'Back to scenes',
@@ -40,7 +40,7 @@ function Scene:load()
     end
     self.entries = Samples.entries()
     self.tab, self.query = 'All', ''
-    self.search = self.ui:create('TextBox', {
+    self.search = self._ui:create('TextBox', {
         name = 'CatalogSearch',
         position = { 0, 16, 0, 110 },
         size = { 1, -32, 0, 34 },
@@ -57,7 +57,7 @@ function Scene:load()
     self.tabButtons = {}
     local tabs = Samples.TABS
     for i, name in ipairs(tabs) do
-        self.tabButtons[name] = self.ui:button({
+        self.tabButtons[name] = self._ui:button({
             position = { (i - 1) / #tabs, (i == 1) and 16 or 2, 0, 152 },
             size = { 1 / #tabs, (i == 1 or i == #tabs) and -18 or -4, 0, 32 },
             text = name,
@@ -68,14 +68,14 @@ function Scene:load()
             self:refill()
         end)
     end
-    self.count = self.ui:text({
+    self.count = self._ui:text({
         position = { 0, 16, 0, 190 },
         size = { 1, -32, 0, 22 },
         text = '',
         textScaled = true,
         maxTextSize = 14,
     }, self.panel)
-    self.list = self.ui:scroll(
+    self.list = self._ui:scroll(
         { position = { 0, 16, 0, 216 }, size = { 1, -32, 1, -232 }, length = 0 },
         self.panel
     )
@@ -96,7 +96,7 @@ function Scene:refill()
             shown = shown + 1
             local label = entry.name .. ' / ' .. (entry.plugin and ('plugin ' .. entry.plugin .. ' / ') or '') .. entry.zone
             do
-                local node = self.ui:button({
+                local node = self._ui:button({
                     position = { 0, 0, 0, (shown - 1) * 46 },
                     size = { 1, 0, 0, 42 },
                     text = label,
@@ -117,8 +117,8 @@ function Scene:refill()
 end
 
 function Scene:resize(w, h)
-    self.ui:fit(w, h)
-    self.panel.size = { 0, math.min(760, self.ui.width - 24), 1, -24 }
+    self._ui:fit(w, h)
+    self.panel.size = { 0, math.min(760, self._ui.width - 24), 1, -24 }
 end
 
 function Scene:update(dt, realDt)
@@ -127,7 +127,7 @@ end
 
 function Scene:draw()
     katsa.graphics.clear(0.025, 0.04, 0.065, 1)
-    self.ui:draw()
+    self._ui:draw()
 end
 
 function Scene:pointerpressed(id, x, y)
@@ -143,7 +143,7 @@ function Scene:pointerreleased(id, x, y)
 end
 
 function Scene:wheelmoved(x, y)
-    self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
+    self._ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 function Scene:exit()

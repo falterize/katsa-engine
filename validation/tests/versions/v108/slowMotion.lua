@@ -32,7 +32,7 @@ function Tests.stareShooter(tester, backend)
         return true
     end
     frames(manager, 30)
-    scene.world.root.timeScale = 0.1
+    scene.root:find('World3D').timeScale = 0.1
     scene.input.actions.keys.d = true
     local yaw = {}
     frames(manager, 120, function()
@@ -49,7 +49,7 @@ function Tests.stareShooter(tester, backend)
             .. ')'
     )
     scene.input.actions.keys.d = nil
-    scene.world.root.timeScale = 1
+    scene.root:find('World3D').timeScale = 1
 end
 
 function Tests.run(tester)

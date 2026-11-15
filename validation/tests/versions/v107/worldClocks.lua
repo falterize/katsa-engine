@@ -32,12 +32,12 @@ function Tests.run(tester)
     })
     local scriptA = ui:create('ClockScript2D', {})
     local scriptB = other:create('ClockScript2D', {})
-    world.root.timeScale = 0
+    world._node.timeScale = 0
     for _ = 1, 60 do
         ui:update(1 / 60, 1 / 60)
         other:update(1 / 60, 1 / 60)
-        world.physics:update(Clock.delta(world.root, 1 / 60))
-        world:updateNodes(Clock.delta(world.root, 1 / 60))
+        world.physics:update(Clock.delta(world._node, 1 / 60))
+        world:updateNodes(Clock.delta(world._node, 1 / 60))
     end
     tester:check(
         math.abs(a.position[1] - 160) < 0.1,
@@ -52,13 +52,13 @@ function Tests.run(tester)
         math.abs(scriptA.elapsed - 1) < 0.01 and math.abs(scriptB.elapsed - 0.5) < 0.01,
         'Processed Node2D scripts use their own World2D clocks while World3D is paused'
     )
-    world.root.timeScale, ui.timeScale, other.timeScale = 1, 0, 2
+    world._node.timeScale, ui.timeScale, other.timeScale = 1, 0, 2
     local time = ui.time
     for _ = 1, 60 do
         ui:update(1 / 60, 1 / 60)
         other:update(1 / 60, 1 / 60)
-        world.physics:update(Clock.delta(world.root, 1 / 60))
-        world:updateNodes(Clock.delta(world.root, 1 / 60))
+        world.physics:update(Clock.delta(world._node, 1 / 60))
+        world:updateNodes(Clock.delta(world._node, 1 / 60))
     end
     tester:check(
         math.abs(a.position[1] - 160) < 0.1 and ui.time == time,
@@ -80,7 +80,7 @@ function Tests.run(tester)
         end,
     })
     local movable = world:create('ClockScriptNode', {}, ui)
-    movable:setParent(world.root)
+    movable:setParent(world._node)
     world:updateNodes(0.1)
     tester:check(
         math.abs(movable.elapsed - 0.1) < 0.001,
@@ -148,8 +148,8 @@ function Tests.run(tester)
         scene:keypressed('f4')
         tester:check(scene.debugOverlay.visible, name .. ': F4 opens the shared Debug menu')
         scene.debugOverlay.visible = false
-        scene.world.root.timeScale = 0
-        scene.ui.timeScale = 1
+        scene.root:find('World3D').timeScale = 0
+        scene.root:find('World3D/World2D').timeScale = 1
         local ball = scene.demo.ball
         ball.physics:teleport(700, 400)
         ball.physics:setVelocity({ 60, 0 })
@@ -160,7 +160,7 @@ function Tests.run(tester)
             ball.position[1] > 705,
             name .. ': the runtime does not apply the 3D clock to 2D physics'
         )
-        scene.ui.timeScale = 0
+        scene.root:find('World3D/World2D').timeScale = 0
         local x, y = ball.physics:getPosition()
         for _ = 1, 5 do
             scene:update(1 / 60, 1 / 60)

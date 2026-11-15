@@ -24,7 +24,7 @@ function R:update()
             'Viewport worlds retain independent ownership and update trees'
         )
         self:check(
-            scene.ui.className == 'World2D' and scene.ui.parent == scene.world.root,
+            scene.root:find('World3D/World2D').className == 'World2D' and scene.root:find('World3D/World2D').parent == scene.root:find('World3D'),
             'Main World2D belongs to World3D'
         )
         self:check(
@@ -124,10 +124,10 @@ function R:update()
         )
         local button = a.ui.content.children[2]
         a.ui:layout()
-        local x = (a.frame._x + button._x + button._width / 2) * self.scene.ui.scale
-            + self.scene.ui.offsetX
-        local y = (a.frame._y + button._y + button._height / 2) * self.scene.ui.scale
-            + self.scene.ui.offsetY
+        local x = (a.frame._x + button._x + button._width / 2) * self.scene.root:find('World3D/World2D').scale
+            + self.scene.root:find('World3D/World2D').offsetX
+        local y = (a.frame._y + button._y + button._height / 2) * self.scene.root:find('World3D/World2D').scale
+            + self.scene.root:find('World3D/World2D').offsetY
         local before = a.root.currentCamera
         self.scene.input:press('viewport-ui', x, y)
         self.scene.input:release('viewport-ui', x, y)
@@ -147,7 +147,7 @@ function R:update()
         local renderer = world.renderer
         a.frame:destroy()
         self:check(
-            world.root.destroyed and world.resources.released and renderer.canvas == nil,
+            world._node.destroyed and world.resources.released and renderer.canvas == nil,
             'Removing ViewportFrame destroys its world and releases target/resources'
         )
         local scene, err = self.manager:switch(require('source.game.runtime.game').new, 'particles')

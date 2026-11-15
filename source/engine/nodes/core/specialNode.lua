@@ -12,7 +12,7 @@ function Registry.register(world, name, definition)
         type(name) == 'string' and name ~= '' and Array.is(definition),
         'Registration requires a nonempty name and definition'
     )
-    assert(not world.root.destroyed, 'Cannot register types in a released World3D')
+    assert(not world._node.destroyed, 'Cannot register types in a released World3D')
     assert(
         not Node.classes[name] and not Node.aliases[name],
         'Custom types cannot replace global classes: ' .. name

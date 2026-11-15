@@ -52,8 +52,8 @@ function Test:update()
             'Missing camera cannot generate a world ray'
         )
         scene = self:load('animationLab')
-        local camera, renderer = scene.world.root.currentCamera, scene.renderer
-        scene.world.root.currentCamera = nil
+        local camera, renderer = scene.root:find('World3D').currentCamera, scene.renderer
+        scene.root:find('World3D').currentCamera = nil
         scene.renderer = nil
         scene.input:press('camera-free', 959, 539)
         scene.input:move('camera-free', 900, 500)
@@ -64,22 +64,22 @@ function Test:update()
             'Camera-free world does not capture world look or picking'
         )
         local fired = false
-        local button = scene.ui:button({
+        local button = scene.root:find('World3D/World2D'):button({
             position = { 0, 400, 0, 80 },
             size = { 0, 100, 0, 40 },
             text = 'UI test',
             zIndex = 500,
-        }, scene.ui.content)
+        }, scene.root:find('World3D/World2D').content)
         button:connect('press', function()
             fired = true
         end)
-        scene.ui:layout()
-        local x = (button._x + 50) * scene.ui.scale + scene.ui.offsetX
-        local y = (button._y + 20) * scene.ui.scale + scene.ui.offsetY
+        scene.root:find('World3D/World2D'):layout()
+        local x = (button._x + 50) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX
+        local y = (button._y + 20) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetY
         scene.input:press('ui', x, y)
         scene.input:release('ui', x, y)
         self:check(fired, 'Camera-free world still dispatches screen UI events')
-        scene.world.root.currentCamera = camera
+        scene.root:find('World3D').currentCamera = camera
         scene.renderer = renderer
         local Sequence = require('source.engine.animation.sequence')
         local ramp = scene.world:create('Ramp', {
@@ -133,27 +133,27 @@ function Test:update()
         local graph = scene.workspace.popup.graph
         ramp.points = { { time = 0, value = 0 }, { time = 1, value = 1 }, interpolation = 'Curve' }
         graph.points, graph.interpolation = ramp.points, 'Curve'
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
 
         local function point(t, v)
-            return (graph._x + t * graph._width) * scene.ui.scale + scene.ui.offsetX,
-                (graph._y + (1 - v) * graph._height) * scene.ui.scale + scene.ui.offsetY
+            return (graph._x + t * graph._width) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX,
+                (graph._y + (1 - v) * graph._height) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetY
         end
         x, y = point(1 / 3, 1 / 3)
-        graph:pointer(scene.ui, 'press', x, y, 'out')
+        graph:pointer(scene.root:find('World3D/World2D'), 'press', x, y, 'out')
         x, y = point(0.99, 0.1)
-        graph:pointer(scene.ui, 'move', x, y, 'out')
-        graph:pointer(scene.ui, 'release', x, y, 'out')
+        graph:pointer(scene.root:find('World3D/World2D'), 'move', x, y, 'out')
+        graph:pointer(scene.root:find('World3D/World2D'), 'release', x, y, 'out')
         self:check(
             ramp.points[1].outgoing[1] <= 2 / 3 + 1e-10 and pcall(Sequence.validate, ramp.points),
             'Outgoing handle cannot cross an implicit incoming handle'
         )
         graph.selected = 2
         x, y = point(2 / 3, 2 / 3)
-        graph:pointer(scene.ui, 'press', x, y, 'in')
+        graph:pointer(scene.root:find('World3D/World2D'), 'press', x, y, 'in')
         x, y = point(0.01, 0.9)
-        graph:pointer(scene.ui, 'move', x, y, 'in')
-        graph:pointer(scene.ui, 'release', x, y, 'in')
+        graph:pointer(scene.root:find('World3D/World2D'), 'move', x, y, 'in')
+        graph:pointer(scene.root:find('World3D/World2D'), 'release', x, y, 'in')
         self:check(
             ramp.points[2].incoming[1] >= ramp.points[1].outgoing[1]
                 and pcall(Sequence.validate, ramp.points),
@@ -169,7 +169,7 @@ function Test:update()
         scene.input:press('shader-background', 959, 539)
         scene.input:release('shader-background', 959, 539)
         self:check(
-            scene.demo.preview._world.root ~= scene.world.root,
+            scene.demo.preview._world._node ~= scene.root:find('World3D'),
             'Shader viewport worlds remain independent after input fix'
         )
     elseif self.frame == 3 then

@@ -1,7 +1,7 @@
 local Playground = {}
 
 function Playground.create(state)
-    local ui = state.scene.ui
+    local ui = state.scene.root:find('World3D/World2D')
     local function body(name, x, y, w, h, bodyType, shape)
         local item = ui:create('Body2D', {
             name = name,

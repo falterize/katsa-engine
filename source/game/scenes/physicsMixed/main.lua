@@ -60,7 +60,7 @@ end
 
 function Scene.update2D(state, dt, realDt)
     local scene = state.scene
-    scene.ui:update(realDt or dt, dt)
+    scene.root:find('World3D/World2D'):update(realDt or dt, dt)
     for _, board in ipairs(scene.world.billboards) do
         board.ui:update(realDt or dt)
     end

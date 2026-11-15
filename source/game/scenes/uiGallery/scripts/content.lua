@@ -4,7 +4,7 @@ local Demo = {}
 Demo.__index = Demo
 
 function Demo.new(scene)
-    scene.ui.layoutMode = 'Viewport'
+    scene.root:find('World3D/World2D').layoutMode = 'Viewport'
     scene.showStats = false
     scene.camera.position = { 0, 30, -80 }
     scene.world.environment.debug.gizmos.enabled = false
@@ -12,7 +12,7 @@ function Demo.new(scene)
 end
 
 function Demo:update(dt)
-    local narrow = self.scene.ui.width < 600
+    local narrow = self.scene.root:find('World3D/World2D').width < 600
     self.root.position = { 0.5, 0, 0.5, 44 }
     self.root.size = { 1, -24, 1, -166 }
     self.left.size = narrow and { 1, -36, 1, -85 } or { 0.48, -20, 1, -85 }

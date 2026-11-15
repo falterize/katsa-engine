@@ -11,8 +11,8 @@ local function render(scene, effect)
     g.setCanvas({ canvas, stencil = true })
     -- A flat colour stands in for the 3D render underneath the interface.
     g.clear(0.2, 0.4, 0.6, 1)
-    scene.ui:fit(w, h)
-    scene.ui:draw()
+    scene.root:find('World3D/World2D'):fit(w, h)
+    scene.root:find('World3D/World2D'):draw()
     g.pop()
     local data = canvas:newImageData()
     local r, gr, b, a = data:getPixel(2, 2)
@@ -25,7 +25,7 @@ function Module.run(self)
     local scene = Application.new(self.manager, 'models')
     scene:load()
     scene:update(1 / 60, 1 / 60)
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local effect = ui:create('Shader2D', {
         _viewportAuthored = true,
         position = { 0, 0, 0, 0 },

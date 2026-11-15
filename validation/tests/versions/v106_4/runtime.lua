@@ -241,10 +241,10 @@ function Tests:allScenes()
                         motion.cube.position.y ~= cubeY,
                         'Named stress system updates enabled motion'
                     )
-                    scene.ui:fit(320, 240)
+                    scene.root:find('World3D/World2D'):fit(320, 240)
                     motion:resize()
                     self:check(
-                        motion.panel.size[2] <= scene.ui.width - 20,
+                        motion.panel.size[2] <= scene.root:find('World3D/World2D').width - 20,
                         'Stress controls retain compact-window resizing'
                     )
                 end

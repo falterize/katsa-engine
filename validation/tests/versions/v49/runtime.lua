@@ -24,7 +24,7 @@ function Runtime:update()
     end
     local scene = self.base.scene
     local ws = scene.workspace
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     if scene.zone == 'uiGallery' then
         ws:toggle(true)
         ws:update(0.3)

@@ -20,8 +20,8 @@ local function capture(scene, name)
     local worldImage = scene.renderer:draw(scene.world, scene.camera, scene.time, true)
     g.setColor(1, 1, 1, 1)
     g.draw(worldImage)
-    scene.ui.backgroundCanvas = worldImage
-    scene.ui:draw()
+    scene.root:find('World3D/World2D').backgroundCanvas = worldImage
+    scene.root:find('World3D/World2D'):draw()
     g.pop()
     local data = canvas:newImageData()
     local directory = os.getenv('KATSA_TEST_OUTPUT')

@@ -9,7 +9,7 @@ function Checks.run(tests, scene)
     local file = assert(io.open(path, 'rb'))
     local reference = assert(loadstring(file:read('*a'), 'trusted-text-reference'))()
     file:close()
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local label = ui:text({
         size = { 0, 260, 0, 110 },
         textScaled = true,

@@ -73,7 +73,7 @@ function Tests:draw()
         self.manager.profiler:startRecording({ scene = 'multiplayerCars' })
         self:check(self.session.mode == 'menu', 'cars scene starts at the menu')
         local ground
-        for _, node in ipairs(self.host.world.root:getDescendants()) do
+        for _, node in ipairs(self.host.world._node:getDescendants()) do
             if node.name == 'Ground' and node.className == 'Body3D' then
                 ground = node
             end
@@ -363,7 +363,7 @@ function Tests:draw()
         self:check(session.orbit.distance < before, 'the zoom button brings the camera closer')
         session.hud.zoomOut:press()
         session.hud.zoomOut:press()
-        local fx, fy = self:freeSpot(session.scene.ui, 260)
+        local fx, fy = self:freeSpot(session.scene.root:find('World3D/World2D'), 260)
         session:pointerpressed(1, fx, fy)
         session:pointerpressed(2, fx + 100, fy)
         local mid = session.orbit.distance
@@ -384,7 +384,7 @@ function Tests:draw()
         self:check(session.orbit.distance < pinchBefore, 'a pinch zooms through the host')
         -- The wheel belongs to the UI over any interactable element; a branch with Interactable
         -- off takes no input, so the camera zooms there again.
-        local ui, button = session.scene.ui, session.hud.sitButton
+        local ui, button = session.scene.root:find('World3D/World2D'), session.hud.sitButton
         local bx, by = ui:position(button)
         local sx, sy = ui.offsetX + (bx + 6) * ui.scale, ui.offsetY + (by + 6) * ui.scale
         self:check(ui:blocksWorldClick(sx, sy, true), 'a visible HUD button blocks the camera zoom')
@@ -398,9 +398,9 @@ function Tests:draw()
         local seenStep
         local original = session.updateInBackground
         session.updateInBackground = function(_, dt) seenStep = dt end
-        host.world.root.timeScale = 5
+        host.world._node.timeScale = 5
         host:updateInBackground(0.1, 0.1)
-        host.world.root.timeScale = 1
+        host.world._node.timeScale = 1
         session.updateInBackground = original
         self:check(
             seenStep and math.abs(seenStep - 0.5) < 1e-9,

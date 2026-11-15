@@ -27,7 +27,7 @@ function Test:update()
             count = count + 1
             print('PASS live node catalog ' .. kind .. ' / ' .. zone)
         end
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
     end
     print('PASSED ' .. count .. ' live node catalog samples')
     katsa.event.quit()

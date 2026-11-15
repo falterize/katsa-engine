@@ -125,7 +125,7 @@ function T:update()
             mesh:isA('Node3D') and mesh:isA('Node') and not mesh:isA('Camera3D'),
             'Cached class membership preserves inheritance'
         )
-        local ui = scene.ui:create('Frame', { size = { 1, 5, 0, 20 } }, scene.ui.content)
+        local ui = scene.root:find('World3D/World2D'):create('Frame', { size = { 1, 5, 0, 20 } }, scene.root:find('World3D/World2D').content)
         ui.size = { 0.5, 10, 0, 30 }
         self:check(
             ui.size[1] == 0.5 and ui.size[2] == 10 and ui.size.ScaleX == 0.5,

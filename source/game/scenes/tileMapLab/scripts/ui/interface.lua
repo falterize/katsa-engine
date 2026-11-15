@@ -16,7 +16,7 @@ local BRUSHES = {
 }
 
 function Interface.create(state)
-    local ui = state.scene.ui
+    local ui = state.scene.root:find('World3D/World2D')
     local cell = Content.CELL
     state.map = ui:create('TileMap', {
         name = 'LabMap',

@@ -4,7 +4,7 @@ local Theme = require('source.engine.ui.theme')
 local Interface = {}
 
 function Interface.create(lab)
-    local scene, ui = lab.scene, lab.scene.ui
+    local scene, ui = lab.scene, lab.scene.root:find('World3D/World2D')
     lab.status = ui:text({
         _viewportAuthored = true,
         name = 'RunnerStatus',

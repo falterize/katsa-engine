@@ -52,12 +52,12 @@ function Tests.run(tester)
         world, ui, physics, body, release = tester:environment()
         local solver = world:createPhysics({ backend = backend, gravity = { 0, -120, 0 } })
         tester:check(
-            near(world.root.gravity, 120) and world.root.gravityDirection[2] == -1,
+            near(world._node.gravity, 120) and world._node.gravityDirection[2] == -1,
             backend .. ': World3D preserves existing vector gravity settings'
         )
         local object = world:create('Body3D', { position = { 0, 10, 0 }, linearDamping = 0 })
         object.physics.raw:sleep()
-        world.root.Gravity, world.root.GravityDirection = 120, { 2, 0, 0 }
+        world._node.Gravity, world._node.GravityDirection = 120, { 2, 0, 0 }
         solver:update(1 / 60)
         x, y = solver:getGravity()
         local velocity = object.physics:getVelocity()
@@ -67,10 +67,10 @@ function Tests.run(tester)
         )
         solver:setGravity({ 0, 0, -60 })
         tester:check(
-            near(world.root.gravity, 60) and near(world.root.gravityDirection[3], -1),
+            near(world._node.gravity, 60) and near(world._node.gravityDirection[3], -1),
             backend .. ': Direct gravity API keeps World3D properties synchronized'
         )
-        world.root.gravity = 0
+        world._node.gravity = 0
         solver:update(0)
         x, y = solver:getGravity()
         local _, _, z = solver:getGravity()

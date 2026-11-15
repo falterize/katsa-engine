@@ -6,7 +6,7 @@ local Interface = {}
 
 -- state: content state (scene, session, input). Returns the pieces the content updates.
 function Interface.create(state)
-    local scene, ui = state.scene, state.scene.ui
+    local scene, ui = state.scene, state.scene.root:find('World3D/World2D')
     state.hud = Hud.create(ui, state.session)
     state.chat = Chat.create(ui, {
         send = function(text)

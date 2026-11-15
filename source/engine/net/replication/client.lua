@@ -16,7 +16,7 @@ end
 
 -- The node an id stands for: 0 is the world itself.
 function ClientReplication:resolve(id)
-    return id == 0 and self.world.root or self.records[id]
+    return id == 0 and self.world._node or self.records[id]
 end
 
 local function setAttributes(node, attrs, removed)

@@ -74,14 +74,14 @@ function Module.run(self)
     local tagged = serverWorld:create('Folder', { name = 'Tagged' })
     tagged:addTag('#shader-fx')
     self:check(
-        tagged:hasTag('#shader-fx') and serverWorld.root:findByTag('#shader-fx', true) == tagged,
+        tagged:hasTag('#shader-fx') and serverWorld._node:findByTag('#shader-fx', true) == tagged,
         'A tag may start with # (engine-interpreted tags such as #shader-fx)'
     )
     tagged:removeTag('#shader-fx')
     self:check(not tagged:hasTag('#shader-fx'), 'Removing the tag unbinds it')
     tagged:destroy()
     local template = serverWorld:create('Mesh3D', { name = 'Template' }, storage)
-    local copy = template:clone({ name = 'TemplateCopy' }, serverWorld.root)
+    local copy = template:clone({ name = 'TemplateCopy' }, serverWorld._node)
     self:check(
         template:isStored() and not template:isVisible() and copy:isVisible() and not copy:isStored(),
         'Stored templates are hidden and a clone placed in the world is visible'
@@ -104,7 +104,7 @@ function Module.run(self)
     local client = connect(clientWorld, 'Ann')
     pump(server, { client })
 
-    local copy = child(clientWorld.root, 'Round')
+    local copy = child(clientWorld._node, 'Round')
     self:check(
         copy and copy.className == 'Folder' and copy:getAttribute('Timer') == 30 and copy.replica,
         'A marked server node and its attribute appear on the client'
@@ -115,7 +115,7 @@ function Module.run(self)
         'A listed property replicates and the child keeps its parent'
     )
     self:check(
-        child(clientWorld.root, 'Hidden') == nil
+        child(clientWorld._node, 'Hidden') == nil
             and child(client.replication.replicatedStorage, 'Prop') ~= nil
             and child(client.replication.replicatedStorage, 'Private') == nil,
         'Unmarked nodes and ServerStorage stay on the server; ReplicatedStorage replicates'
@@ -136,7 +136,7 @@ function Module.run(self)
     copy:setAttribute('Timer', 5)
     pump(server, { client })
     self:check(
-        child(serverWorld.root, 'LocalOnly') == nil
+        child(serverWorld._node, 'LocalOnly') == nil
             and round:getAttribute('Timer') == 28
             and local_:getAttribute('Mine') == true,
         'Client-side nodes and edits stay on the client'
@@ -153,7 +153,7 @@ function Module.run(self)
 
     local late = connect(lateWorld, 'Bob')
     pump(server, { client, late })
-    local lateRound = child(lateWorld.root, 'Round2')
+    local lateRound = child(lateWorld._node, 'Round2')
     self:check(
         lateRound ~= nil and child(late.replication.replicatedStorage, 'Prop') ~= nil,
         'A client that joins later receives the current replicated tree'
@@ -163,7 +163,7 @@ function Module.run(self)
     client:disconnect()
     server:stop()
     for _, world in ipairs({ serverWorld, clientWorld, lateWorld }) do
-        world.root:destroy()
+        world._node:destroy()
     end
 end
 

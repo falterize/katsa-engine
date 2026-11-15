@@ -36,7 +36,7 @@ function Tests.run(tester)
         'Node2D exposes position, rotation and Vector2 scale as a spatial group'
     )
     tester:check(
-        #group.scale == 2 and group.scale.x == 2 and #world.root.scale == 3,
+        #group.scale == 2 and group.scale.x == 2 and #world._node.scale == 3,
         '2D and 3D transform scales retain dimension-correct managed vectors'
     )
     ui:update(0)

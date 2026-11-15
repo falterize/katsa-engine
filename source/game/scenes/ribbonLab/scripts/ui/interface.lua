@@ -43,7 +43,7 @@ local function cycle(ui, parent, slot, text, node, key, values, apply)
 end
 
 function Interface.create(self)
-    local ui = self.scene.ui
+    local ui = self.scene.root:find('World3D/World2D')
     local controls = ui:container({
         _viewportAuthored = true,
         name = 'RibbonControls',

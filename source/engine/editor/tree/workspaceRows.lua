@@ -66,7 +66,7 @@ function WorkspaceRows.install(Workspace)
         if self.scene.root then
             roots[1] = self.scene.root
         else
-            roots[1] = self.scene.world.root
+            roots[1] = self.scene.world._node
             for _, container in ipairs(Storage.list(self.scene.world)) do
                 roots[#roots + 1] = container
             end

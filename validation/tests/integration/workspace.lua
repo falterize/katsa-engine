@@ -58,7 +58,7 @@ return function(test, scene)
         'Light and BillboardUI offsets inherit Attachment3D rotation and translation'
     )
     test:check(not pcall(function()
-        scene.ui:button({ width = 8, height = 8 }, child)
+        scene.root:find('World3D/World2D'):button({ width = 8, height = 8 }, child)
     end), 'Screen widgets cannot be parented to Attachment3D')
     parent.position[1] = parent.position[1] + 7
     camera:update(katsa.graphics.getDimensions())
@@ -70,16 +70,16 @@ return function(test, scene)
     )
     parent:destroy()
     test:check(
-        scene.world.objects[1].parent == scene.world.root
-            and scene.camera.parent == scene.world.root,
+        scene.world.objects[1].parent == scene.root:find('World3D')
+            and scene.camera.parent == scene.root:find('World3D'),
         'World3D nodes sit directly under the world root, without category folders'
     )
     scene.debugOverlay.visible = true
-    local bx, by = scene.ui:position(scene.debugButton)
-    bx = scene.ui.offsetX + (bx + 20) * scene.ui.scale
-    by = scene.ui.offsetY + (by + 20) * scene.ui.scale
+    local bx, by = scene.root:find('World3D/World2D'):position(scene.debugButton)
+    bx = scene.root:find('World3D/World2D').offsetX + (bx + 20) * scene.root:find('World3D/World2D').scale
+    by = scene.root:find('World3D/World2D').offsetY + (by + 20) * scene.root:find('World3D/World2D').scale
     test:check(
-        scene.ui:hit(bx, by) == scene.debugButton,
+        scene.root:find('World3D/World2D'):hit(bx, by) == scene.debugButton,
         'Debug toggle remains the topmost input target over the open menu'
     )
     scene.input:press('debug-toggle', bx, by)

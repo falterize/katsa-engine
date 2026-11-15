@@ -11,7 +11,7 @@ local buttonColor = { 0.085, 0.135, 0.19 }
 function Workspace.new(scene)
     local self = setmetatable({
         scene = scene,
-        ui = scene.ui,
+        ui = scene.root:find('World3D/World2D'),
         progress = 0,
         opened = false,
         query = '',

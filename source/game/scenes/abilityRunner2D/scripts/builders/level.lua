@@ -3,7 +3,7 @@ local Level = {}
 local TILE = 20 -- on-screen size of one tile (the tileset art is 16 px)
 
 function Level.create(state)
-    local ui = state.scene.ui
+    local ui = state.scene.root:find('World3D/World2D')
     local function box(name, x, y, w, h, color, trigger, tiles)
         local body = ui:create('Body2D', {
             name = name,

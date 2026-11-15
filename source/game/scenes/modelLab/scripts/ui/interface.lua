@@ -6,7 +6,7 @@ local Theme = require('source.engine.ui.theme')
 local Interface = {}
 
 function Interface.create(self)
-    local scene, ui = self.scene, self.scene.ui
+    local scene, ui = self.scene, self.scene.root:find('World3D/World2D')
     local panel = ui:container({
         _viewportAuthored = true,
         name = 'ModelControls',

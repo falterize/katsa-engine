@@ -21,7 +21,7 @@ end
 
 function PauseMenu:build()
     local scene = self.scene
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     self.root = ui:container({
         size = { 1, 0, 1, 0 },
         backgroundColor = { 0, 0, 0 },

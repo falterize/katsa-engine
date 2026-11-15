@@ -4,7 +4,7 @@ local pairs = require('source.engine.math.array').pairs
 local Controls = {}
 
 function Controls.build(lab)
-    local scene, ui = lab.scene, lab.scene.ui
+    local scene, ui = lab.scene, lab.scene.root:find('World3D/World2D')
     lab.panel = ui:container({
         _viewportAuthored = true,
         name = 'ParticleControls',
@@ -167,7 +167,7 @@ function Controls.build(lab)
 end
 
 function Controls.update(lab)
-    local ui, e = lab.scene.ui, lab.emitter
+    local ui, e = lab.scene.root:find('World3D/World2D'), lab.emitter
     lab.panel.size = { 0, math.min(310, ui.width - 24), 1, -206 }
     if
         lab.syncControls

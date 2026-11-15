@@ -101,7 +101,7 @@ function Tests.scenes(tester)
             name .. ': scene controls start inside the common collapsible panel'
         )
         tester:check(
-            scene.ui.autoUpdatePhysics == false and scene.systems:isEnabled('simulation'),
+            scene.root:find('World3D/World2D').autoUpdatePhysics == false and scene.systems:isEnabled('simulation'),
             name .. ': scene simulation system explicitly owns the 2D solver'
         )
         if name ~= 'physicsMixed' then
@@ -245,7 +245,7 @@ function Tests.scenes(tester)
         'Missing XML images use the complete checker instead of failing atlas-size validation'
     )
     scene:draw()
-    local empty = scene.ui:create('ImageRect', { size = { 0, 32, 0, 32 } }, scene.ui.content)
+    local empty = scene.root:find('World3D/World2D'):create('ImageRect', { size = { 0, 32, 0, 32 } }, scene.root:find('World3D/World2D').content)
     scene:draw()
     tester:check(empty._imageMissing, 'An ImageRect without image renders a diagnostic texture')
     empty.image = ''
@@ -253,7 +253,7 @@ function Tests.scenes(tester)
     tester:check(empty._imageMissing, 'An empty ImageRect path renders without crashing')
     empty:destroy()
     local emptyButton =
-        scene.ui:create('Button', { image = '', size = { 0, 32, 0, 32 } }, scene.ui.content)
+        scene.root:find('World3D/World2D'):create('Button', { image = '', size = { 0, 32, 0, 32 } }, scene.root:find('World3D/World2D').content)
     scene:draw()
     tester:check(
         emptyButton._imageMissing,
@@ -364,10 +364,10 @@ function Tests.scenes(tester)
         'Manifest path is hidden outside XML image mode'
     )
     state.sprite.imageMode = 'XML'
-    local button = scene.ui:create(
+    local button = scene.root:find('World3D/World2D'):create(
         'Button',
         { imageMode = 'XML', xml = state.sprite.xml, size = { 0, 16, 0, 16 } },
-        scene.ui.content
+        scene.root:find('World3D/World2D').content
     )
     scene:draw()
     tester:check(
@@ -482,7 +482,7 @@ function Tests.scenes(tester)
         image:getWidth() == 64 and image:getHeight() == 8 and state.sprite.pixelate,
         'Player atlas contains eight exact 8x8 frames with nearest sampling'
     )
-    scene.ui.timeScale = 0
+    scene.root:find('World3D/World2D').timeScale = 0
     frame = state.sprite.atlasFrame
     advance(scene, 4)
     tester:check(

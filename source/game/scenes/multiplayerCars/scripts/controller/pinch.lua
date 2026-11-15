@@ -31,7 +31,7 @@ local function distance(session, touches)
 end
 
 local function allowed(session, a, b)
-    local input, ui = session.scene.input, session.scene.ui
+    local input, ui = session.scene.input, session.scene.root:find('World3D/World2D')
     return session.client ~= nil
         and input
         and input:playing()
@@ -40,7 +40,7 @@ local function allowed(session, a, b)
 end
 
 function Pinch.pressed(session, id, x, y)
-    if id ~= 'mouse' and not session.scene.ui:blocksWorldClick(x, y, true) then
+    if id ~= 'mouse' and not session.scene.root:find('World3D/World2D'):blocksWorldClick(x, y, true) then
         session.touches = session.touches or {}
         session.touches[id] = { x, y }
         session.pinchLast = distance(session, session.touches)

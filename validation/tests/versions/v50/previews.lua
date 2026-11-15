@@ -53,8 +53,8 @@ function Preview:update()
         end
     elseif self.frame % 4 == 3 then
         if stages[self.index][1] == 'group' then
-            self.scene.ui:layout()
-            self.scene.ui:scrollBy(self.scene.demo.left, 470)
+            self.scene.root:find('World3D/World2D'):layout()
+            self.scene.root:find('World3D/World2D'):scrollBy(self.scene.demo.left, 470)
             self.scene.demo.opacityGroup.transparency = 0.001
         end
         self.capture = true

@@ -248,7 +248,7 @@ function S:update(dt)
     if self.dimension == 2 then
         camera = self.world.currentCamera
     else
-        camera = self.world.root.currentCamera
+        camera = self.world._node.currentCamera
     end
     self.visibilityCamera = camera
     if camera and self.dimension == 3 then

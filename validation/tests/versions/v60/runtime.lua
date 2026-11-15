@@ -68,10 +68,10 @@ function Test:update()
         ramp:stop()
         self:check(events.Started and events.Stopped and events.Resumed, 'Ramp lifecycle dispatch')
         ramp:play()
-        scene.world.root.timeScale = 0
+        scene.root:find('World3D').timeScale = 0
         scene:update(0.5, 0.5)
         self:check(scene.demo.body.position[1] == x, 'World TimeScale zero pauses simulation')
-        scene.world.root.timeScale = 1
+        scene.root:find('World3D').timeScale = 1
         scene:update(0.1, 0.1)
         scene.workspace:toggle(true)
         scene.workspace:select(ramp)
@@ -85,9 +85,9 @@ function Test:update()
         scene.workspace:openPopup(field)
         local graph = scene.workspace.popup.body.children[1]
         self:check(graph:isA('CurveEditor2D'), 'Workspace builds interactive curve widget')
-        scene.ui:layout()
-        local gx = (graph._x + graph._width * 0.5) * scene.ui.scale + scene.ui.offsetX
-        local gy = (graph._y + graph._height * 0.5) * scene.ui.scale + scene.ui.offsetY
+        scene.root:find('World3D/World2D'):layout()
+        local gx = (graph._x + graph._width * 0.5) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX
+        local gy = (graph._y + graph._height * 0.5) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetY
         scene.input:press('curve', gx, gy)
         scene.input:release('curve', gx, gy)
         self:check(#ramp.points == 3, 'Pointer inserts a serializable point on the Bezier curve')
@@ -120,7 +120,7 @@ function Test:update()
         local resolver = require('source.engine.graphics.shaders.materialResolver')
         local defaultScope =
             scene.world:create('Shader3D', { name = 'DefaultWorldScope', enabled = false })
-        self:check(defaultScope.parent == scene.world.root, 'Shader3D defaults to world scope')
+        self:check(defaultScope.parent == scene.root:find('World3D'), 'Shader3D defaults to world scope')
         resolver.resolve(scene.world, demo.cube)
         self:check(
             #demo.cube._activeShaders == 2,
@@ -153,7 +153,7 @@ function Test:update()
                 and emitter._resolvedMaterial.shader:hasUniform('multiplyMode'),
             'Shader3D material hooks compile for particle renderables'
         )
-        local ui = scene.ui
+        local ui = scene.root:find('World3D/World2D')
         self.testBackground = ui:container({
             _viewportAuthored = true,
             position = { 0, 330, 0, 440 },
@@ -260,7 +260,7 @@ function Test:update()
         local scene = self:load(zones[self.frame - 5])
         scene:update(0.016, 0.016)
         self:check(
-            scene.ui.parent == scene.world.root,
+            scene.root:find('World3D/World2D').parent == scene.root:find('World3D'),
             'Migrated scene ownership: ' .. zones[self.frame - 5]
         )
         self.capture = self.frame == 8 and 'night-player' or nil
@@ -268,7 +268,7 @@ function Test:update()
         local scene, err = self.manager:switch(require('source.game.runtime.menu').new)
         assert(scene, err)
         self:check(
-            scene.ui.parent == scene.world.root and scene.world.activeCamera == nil,
+            scene.root:find('World3D/World2D').parent == scene.root:find('World3D') and scene.world.activeCamera == nil,
             'Menu has camera-free World3D -> World2D'
         )
         self:check(

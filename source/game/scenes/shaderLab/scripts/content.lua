@@ -67,12 +67,12 @@ end
 
 function Lab:update(dt)
     self.scene.world:updateNodes(dt)
-    local ui = self.scene.ui
+    local ui = self.scene.root:find('World3D/World2D')
     local narrow = ui.width < 680
     self.controls.size = narrow and { 0.42, -8, 1, -16 } or { 0, 238, 1, -16 }
     self.views.position = narrow and { 0.42, 8, 0, 8 } or { 0, 254, 0, 8 }
     self.views.size = narrow and { 0.58, -16, 1, -16 } or { 1, -262, 1, -16 }
-    self.scene.ui:layout()
+    self.scene.root:find('World3D/World2D'):layout()
 end
 
 return Lab

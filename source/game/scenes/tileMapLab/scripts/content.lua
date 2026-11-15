@@ -6,11 +6,11 @@ Content.__index = Content
 Content.COLUMNS, Content.ROWS, Content.CELL = 30, 15, 32
 
 function Content.new(scene)
-    scene.ui.layoutMode = 'Viewport'
+    scene.root:find('World3D/World2D').layoutMode = 'Viewport'
     scene.showStats = false
     scene.camera.position = { 0, 30, -80 }
     -- A screen-space scene: no active 3D camera means no 3D render, joystick or UP/DOWN buttons.
-    scene.world.root.currentCamera = nil
+    scene.root:find('World3D').currentCamera = nil
     scene.world.environment.debug.gizmos.enabled = false
     return setmetatable({ scene = scene, brush = 'ground', overlay = {}, snapshot = nil }, Content)
 end
@@ -49,7 +49,7 @@ function Content:refreshOverlay()
     local rects = self.map:solidRects('Ground')
     self.rectCount = #rects
     for _, rect in ipairs(rects) do
-        self.overlay[#self.overlay + 1] = self.scene.ui:create('Frame', {
+        self.overlay[#self.overlay + 1] = self.scene.root:find('World3D/World2D'):create('Frame', {
             position = { 0, rect.x * cell, 0, rect.y * cell },
             size = { 0, rect.w * cell, 0, rect.h * cell },
             backgroundColor = { 1, 0.2, 0.2 },

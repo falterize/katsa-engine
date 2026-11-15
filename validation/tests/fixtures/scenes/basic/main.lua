@@ -11,17 +11,17 @@ function Scene.new(scene, context)
 end
 
 function Scene:buildUI()
-    self.scene.ui:create('ImageRect', {
+    self.scene.root:find('World3D/World2D'):create('ImageRect', {
         name = 'LocalImage',
         image = 'scene://textures/checker.png',
         size = { 0, 48, 0, 48 },
-    }, self.scene.ui.content)
-    self.scene.ui:create('ImageRect', {
+    }, self.scene.root:find('World3D/World2D').content)
+    self.scene.root:find('World3D/World2D'):create('ImageRect', {
         name = 'SharedImage',
         image = 'shared://textures/internal/white.png',
         position = { 0, 56, 0, 0 },
         size = { 0, 48, 0, 48 },
-    }, self.scene.ui.content)
+    }, self.scene.root:find('World3D/World2D').content)
 end
 
 function Scene:update(dt)

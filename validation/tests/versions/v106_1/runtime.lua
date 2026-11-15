@@ -108,7 +108,7 @@ function Tests:ui()
         self.manager:update(1 / 60)
         self.manager:draw()
     end
-    local panel, ui = scene.statistics.panel, scene.ui
+    local panel, ui = scene.statistics.panel, scene.root:find('World3D/World2D')
     panel:close()
     ui:layout()
     local passes, revision = ui.layoutPasses, ui.revision

@@ -4,10 +4,10 @@ View.__index = View
 
 function View.new(input)
     local self = setmetatable({ input = input }, View)
-    self.node = input.scene.ui:create(
+    self.node = input.scene.root:find('World3D/World2D'):create(
         'VirtualJoystick',
         { name = 'MobileJoystick', position = { 0, 0, 0, 0 }, size = { 0, 0, 0, 0 }, zIndex = -1 },
-        input.scene.ui.content
+        input.scene.root:find('World3D/World2D').content
     )
     self:update()
     return self

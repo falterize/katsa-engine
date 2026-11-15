@@ -12,7 +12,7 @@ function P.new(manager)
         P
     )
     self:resize()
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local original = ui.draw
     ui.draw = function(owner, ...)
         local t = katsa.timer.getTime()

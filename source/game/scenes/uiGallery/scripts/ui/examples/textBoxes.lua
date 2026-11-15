@@ -14,7 +14,7 @@ local function input(ui, parent, name, y, text, multiline)
 end
 
 function Examples.create(state, left)
-    local scene, ui = state.scene, state.scene.ui
+    local scene, ui = state.scene, state.scene.root:find('World3D/World2D')
     ui:text({
         position = { 0, 12, 0, 810 },
         size = { 1, -24, 0, 32 },

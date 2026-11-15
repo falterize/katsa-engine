@@ -2,7 +2,7 @@
 local Collapsible = {}
 
 function Collapsible.create(scene, panel, title, position)
-    local ui = panel.ui or scene.ui
+    local ui = panel.ui or scene.root:find('World3D/World2D')
     local parent = panel.parent
     local expanded = panel.visible ~= false
     local toggle

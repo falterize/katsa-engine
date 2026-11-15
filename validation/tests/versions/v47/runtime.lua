@@ -165,7 +165,7 @@ function Runtime:update()
         manager:switch(require('source.game.runtime.game').new, 'uiGallery')
     elseif self.frame == 16 then
         local demo = scene.demo
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
         self:check(demo.button._width > 100, 'UDim2 gallery resolves scale dimensions')
         demo.button:press()
         self:check(demo.presses == 1, 'Gallery button remains interactive')
@@ -175,9 +175,9 @@ function Runtime:update()
             { resizable = true, depth = 24, stencil = 8, highdpi = true, vsync = 0 }
         )
         scene:resize(katsa.graphics.getDimensions())
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
         self:check(
-            scene.ui.width == 1600 and scene.ui.height == 900 and scene.ui.scale == 1,
+            scene.root:find('World3D/World2D').width == 1600 and scene.root:find('World3D/World2D').height == 900 and scene.root:find('World3D/World2D').scale == 1,
             'Viewport UI follows full logical screen dimensions'
         )
         katsa.window.setMode(
@@ -186,7 +186,7 @@ function Runtime:update()
             { resizable = true, depth = 24, stencil = 8, highdpi = true, vsync = 0 }
         )
         scene:resize(katsa.graphics.getDimensions())
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
         self:capture('ui')
     elseif self.frame == 18 then
         manager:switch(require('source.game.runtime.game').new, 'combined')

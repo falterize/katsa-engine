@@ -87,7 +87,7 @@ end
 function C.mount(context, properties, parent)
     local plane = parent and parent:isA('World2D') and parent or nil
     assert(
-        parent and (plane or parent == context.root),
+        parent and (plane or parent == context._node),
         'Environment belongs directly to its world'
     )
     local owner = plane or context

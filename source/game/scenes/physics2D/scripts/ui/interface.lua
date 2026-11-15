@@ -2,7 +2,7 @@ local Interface = {}
 
 function Interface.create(state)
     local scene, physics = state.scene, state.physics
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     ui:text({
         name = 'Title',
         position = { 0, 24, 0, 60 },
@@ -60,7 +60,7 @@ function Interface.create(state)
         n.text = '2D time: ' .. ui.timeScale .. 'x'
     end)
     button('3D time', function(n)
-        local root = scene.world.root
+        local root = scene.root:find('World3D')
         root.timeScale = root.timeScale == 1 and 0.25 or root.timeScale == 0.25 and 0 or 1
         n.text = '3D time: ' .. root.timeScale .. 'x'
     end)

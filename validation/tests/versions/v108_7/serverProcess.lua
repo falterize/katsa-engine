@@ -86,7 +86,7 @@ function Module.run(self)
         'a stopped server removes its ready file'
     )
     server:release()
-    world.root:destroy()
+    world._node:destroy()
 
     -- The menu's Host button: the Session starts the process, joins it and ends it again.
     local session = scene.demo

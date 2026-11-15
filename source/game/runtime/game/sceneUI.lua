@@ -84,7 +84,7 @@ end
 
 function Methods:buildUI()
     self.buttons = {}
-    local ui = self.ui
+    local ui = self._ui
     local header = ui:container({
         _viewportAuthored = true,
         name = 'Navigation',
@@ -190,7 +190,7 @@ function Methods:buildUI()
     button('effects', 'Shaders', x, 78, 175, function()
         self:toggleEffects()
     end)
-    self.uiEffect = self.ui:create('Shader2D', {
+    self.uiEffect = self._ui:create('Shader2D', {
         name = 'UIPulse',
         position = { 0, 0, 0, 54 },
         size = { 1, 0, 1, -54 },
@@ -199,10 +199,10 @@ function Methods:buildUI()
         backgroundTransparency = 1,
         shaderPath = 'source/game/runtime/game/shaders/uiPulse.glsl',
         uniforms = { accent = { 0.25, 0.85, 1 } },
-    }, self.ui.content)
+    }, self._ui.content)
     self.cameraButtons = {}
     for i, label in ipairs({ 'UP', 'DOWN' }) do
-        local node = self.ui:button({
+        local node = self._ui:button({
             position = { 0, 1120, 0, 490 + (i - 1) * 80 },
             size = { 0, 130, 0, 62 },
 
@@ -215,7 +215,7 @@ function Methods:buildUI()
                 and self.zone ~= 'audioNodes'
                 and self.zone ~= 'surfaceGallery',
             fontSize = 24,
-        }, self.ui.content)
+        }, self._ui.content)
         node:connect('press', function()
             if i == 1 then
                 self.input.up = 1
@@ -250,7 +250,7 @@ function Methods:buildUI()
 end
 
 function Methods:buildMixer()
-    local ui = self.ui
+    local ui = self._ui
     self.mixerOverlay = ui:container({
         _viewportAuthored = true,
         name = 'AudioMixer',

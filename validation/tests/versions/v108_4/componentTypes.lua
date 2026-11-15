@@ -6,7 +6,7 @@ local Schema = require('source.engine.editor.inspectors.schema')
 local Module = {}
 
 local function fieldSet(scene, class)
-    local node = scene.ui:create(class, {}, scene.ui.content)
+    local node = scene.root:find('World3D/World2D'):create(class, {}, scene.root:find('World3D/World2D').content)
     local set = {}
     for _, key in ipairs(Schema.keys(node, {})) do
         set[key] = true
@@ -39,7 +39,7 @@ function Module.run(self)
     )
     self:check(button.image and button.text, 'Button lists image and text fields')
     local Properties = require('source.engine.editor.inspectors.properties')
-    local label = scene.ui:create('ImageRect', {}, scene.ui.content)
+    local label = scene.root:find('World3D/World2D'):create('ImageRect', {}, scene.root:find('World3D/World2D').content)
     local ok, message = Properties.set(scene, label, { key = 'text', kind = 'string' }, 'hello')
     self:check(ok == false and tostring(message):find('no property'), 'ImageRect rejects text')
     ok = Properties.set(scene, label, { key = 'imageMode', kind = 'string' }, 'Tiles')

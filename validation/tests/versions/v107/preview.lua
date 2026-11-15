@@ -8,7 +8,7 @@ function Preview.new(manager)
     local scene = assert(manager:switch(Application.new, name))
     if os.getenv('KATSA_PREVIEW_WORKSPACE') == '1' and scene.workspace then
         scene.workspace:toggle(true)
-        scene.workspace.selected = scene.ui
+        scene.workspace.selected = scene.root:find('World3D/World2D')
         name = name .. '-workspace'
     end
     return setmetatable({ scene = scene, name = name, frames = 0 }, Preview)

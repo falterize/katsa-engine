@@ -4,7 +4,7 @@ local Content = {}
 Content.__index = Content
 
 function Content.new(scene)
-    scene.ui.layoutMode = 'Viewport'
+    scene.root:find('World3D/World2D').layoutMode = 'Viewport'
     scene.showStats = false
     scene.camera.position = { 0, 30, -80 }
     scene.world.environment.debug.gizmos.enabled = false

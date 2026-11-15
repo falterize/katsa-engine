@@ -119,8 +119,8 @@ end
 function Demo:update(dt)
     if self.panel then
         self.panel.position = { 0.5, 0, 0.5, 44 }
-        self.panel.size = { 0, math.min(760, self.scene.ui.width - 24), 1, -166 }
-        local columns = self.scene.ui.width < 600 and 2 or 3
+        self.panel.size = { 0, math.min(760, self.scene.root:find('World3D/World2D').width - 24), 1, -166 }
+        local columns = self.scene.root:find('World3D/World2D').width < 600 and 2 or 3
         local base = math.ceil(#self.presetButtons / columns) * 54
         for i, node in ipairs(self.presetButtons) do
             node.position =

@@ -114,7 +114,7 @@ function T:update()
     end
     crt:release()
     local ui = require('source.engine.ui').new(1920, 1080, scene.resources):bindWorld(scene.world)
-    ui.parent = scene.world.root
+    ui.parent = scene.root:find('World3D')
     local effect = ui:create('Shader2D', {
         position = { 0.1, 0, 0.1, 0 },
         size = { 0.8, 0, 0.8, 0 },

@@ -141,13 +141,13 @@ function Tests:scenes()
         self.manager:update(1 / 60)
         self.manager:draw()
         local row = panel.rows[1]
-        scene.ui:scrollBy(panel.scroll, 70)
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):scrollBy(panel.scroll, 70)
+        scene.root:find('World3D/World2D'):layout()
         local x, y =
-            scene.ui.offsetX + (row._x + 30) * scene.ui.scale,
-            scene.ui.offsetY + (row._y + 12) * scene.ui.scale
+            scene.root:find('World3D/World2D').offsetX + (row._x + 30) * scene.root:find('World3D/World2D').scale,
+            scene.root:find('World3D/World2D').offsetY + (row._y + 12) * scene.root:find('World3D/World2D').scale
         self:check(
-            scene.ui:hit(x, y) == row,
+            scene.root:find('World3D/World2D'):hit(x, y) == row,
             'Numeric row hit testing follows scrolled DPI layout: ' .. backend
         )
         scene.input:press('stats-test', x, y)
@@ -164,16 +164,16 @@ function Tests:scenes()
             not panel.popup.visible and panel.scroll.scrollY > 70,
             'Dragging a numeric row scrolls without opening a chart: ' .. backend
         )
-        local custom = scene.ui:container(
+        local custom = scene.root:find('World3D/World2D'):container(
             { size = { 0, 10, 0, 10 }, canvasSize = { 0, 10, 0, 10 } },
-            scene.ui.content
+            scene.root:find('World3D/World2D').content
         )
-        scene.ui:layout()
-        local revision = scene.ui.revision
+        scene.root:find('World3D/World2D'):layout()
+        local revision = scene.root:find('World3D/World2D').revision
         custom.canvasSize[2] = 20
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
         self:check(
-            scene.ui.revision > revision,
+            scene.root:find('World3D/World2D').revision > revision,
             'Custom non-scroll canvas values retain mutable snapshot tracking: ' .. backend
         )
         panel:select(1)

@@ -4,7 +4,7 @@ local Mesh = require('source.engine.composition.mesh')
 local Preview = {}
 
 function Preview.create(scene, frame, name)
-    local root = scene.ui:create('World3D', { name = name }, frame)
+    local root = scene.root:find('World3D/World2D'):create('World3D', { name = name }, frame)
     local world = root._world
     local environment = world.environment
     environment.sky.enabled = false

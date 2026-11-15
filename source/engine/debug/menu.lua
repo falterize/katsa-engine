@@ -3,7 +3,7 @@ local ipairs = require('../math.array').ipairs
 local Debug = {}
 
 function Debug.new(scene)
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local overlay = ui:create('Frame', {
         position = { 0, 0, 0, 0 },
         size = { 0, 1280, 0, 720 },
@@ -87,7 +87,7 @@ function Debug.new(scene)
     end
     for _, setting in ipairs({ 'enabled', 'shapes', 'joints', 'centers', 'velocities', 'contacts' }) do
         local button = row('2D physics debug: ' .. setting, function(button)
-            local physics = scene.ui.physics2D
+            local physics = scene.root:find('World3D/World2D').physics2D
             if physics then
                 physics.debug[setting] = not physics.debug[setting]
                 button.text = '2D physics '
@@ -101,15 +101,15 @@ function Debug.new(scene)
         button._debug2DSetting = setting
     end
     toggle('Pause 2D physics', function()
-        return scene.ui.physics2D ~= nil and scene.ui.physics2D.paused == true
+        return scene.root:find('World3D/World2D').physics2D ~= nil and scene.root:find('World3D/World2D').physics2D.paused == true
     end, function()
-        local physics = scene.ui.physics2D
+        local physics = scene.root:find('World3D/World2D').physics2D
         if physics then
             physics.paused = not physics.paused
         end
     end)
     row('Single 2D physics step', function()
-        local physics = scene.ui.physics2D
+        local physics = scene.root:find('World3D/World2D').physics2D
         if physics then
             local paused = physics.paused
             physics.paused = false
@@ -120,8 +120,8 @@ function Debug.new(scene)
     section = 'Directions'
     for _, dimension in ipairs({ '2D', '3D' }) do
         local key = 'orientation' .. dimension
-        scene.ui.debug = scene.ui.debug or {}
-        local target = dimension == '2D' and scene.ui.debug or scene.world.debug
+        scene.root:find('World3D/World2D').debug = scene.root:find('World3D/World2D').debug or {}
+        local target = dimension == '2D' and scene.root:find('World3D/World2D').debug or scene.world.debug
         toggle(dimension .. ' orientation axes', function()
             return target[key] == true
         end, function()
@@ -522,7 +522,7 @@ function Debug.new(scene)
             overlay:setDebugSection(name)
         end)
     end
-    overlay:setDebugSection(scene.ui.physics2D and '2D Physics' or 'Rendering')
+    overlay:setDebugSection(scene.root:find('World3D/World2D').physics2D and '2D Physics' or 'Rendering')
     overlay._syncDebug = function()
         for _, refresh in ipairs(toggles) do
             refresh()
@@ -530,7 +530,7 @@ function Debug.new(scene)
         for _, item in ipairs(sections) do
             local setting = item.node._debug2DSetting
             if setting then
-                local physics = scene.ui.physics2D
+                local physics = scene.root:find('World3D/World2D').physics2D
                 item.node.text = physics
                         and (setting .. ': ' .. (physics.debug[setting] and 'ON' or 'OFF'))
                     or 'No Physics2D in this World2D'

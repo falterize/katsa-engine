@@ -3,7 +3,7 @@ local ipairs = require('source.engine.math.array').ipairs
 local Interface = {}
 
 function Interface.create(self)
-    self.focusButton = self.scene.ui:button({
+    self.focusButton = self.scene.root:find('World3D/World2D'):button({
         _viewportAuthored = true,
         position = { 0, 12, 0, 66 },
         size = { 0, 180, 0, 38 },
@@ -11,7 +11,7 @@ function Interface.create(self)
         textScaled = true,
         maxTextSize = 15,
         backgroundColor = { 0.09, 0.2, 0.29 },
-    }, self.scene.ui.content)
+    }, self.scene.root:find('World3D/World2D').content)
     self.focusButton:connect('press', function()
         local p = self.board.position
         self.scene.camera.position = { p[1], p[2], p[3] - 110 }

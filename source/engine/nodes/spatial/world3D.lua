@@ -26,24 +26,24 @@ function C.mount(context, properties, parent)
         require('source.engine.graphics.lighting.defaults').create()
     )
     world.hostWorld = context._world or context._sceneWorld
-    world.root.name = properties.name or 'ViewportWorld'
-    world.root.timeScale = properties.timeScale or properties.TimeScale or 1
+    world._node.name = properties.name or 'ViewportWorld'
+    world._node.timeScale = properties.timeScale or properties.TimeScale or 1
     if
         properties.gravity ~= nil
         or properties.Gravity ~= nil
         or properties.gravityDirection
         or properties.GravityDirection
     then
-        world.root.gravity = properties.gravity or properties.Gravity or world.root.gravity
-        world.root.gravityDirection = properties.gravityDirection
+        world._node.gravity = properties.gravity or properties.Gravity or world._node.gravity
+        world._node.gravityDirection = properties.gravityDirection
             or properties.GravityDirection
-            or world.root.gravityDirection
-        world.root._gravityConfigured = true
+            or world._node.gravityDirection
+        world._node._gravityConfigured = true
     end
-    world.root._worldBoundary = true
-    world.root.parent = parent
-    world.root._ownsScope = true
-    world.root:onDestroy(function()
+    world._node._worldBoundary = true
+    world._node.parent = parent
+    world._node._ownsScope = true
+    world._node:onDestroy(function()
         world.animations:release()
         world.nodeTree:release()
         if world.renderer then
@@ -52,7 +52,7 @@ function C.mount(context, properties, parent)
         end
         scope:release()
     end)
-    return world.root
+    return world._node
 end
 
 function C:create(name, properties, parent)

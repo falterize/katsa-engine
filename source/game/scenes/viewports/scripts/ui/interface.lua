@@ -5,7 +5,7 @@ local Mesh = require('source.engine.composition.mesh')
 local Interface = {}
 
 function Interface.create(self)
-    local scene, ui = self.scene, self.scene.ui
+    local scene, ui = self.scene, self.scene.root:find('World3D/World2D')
     for i = 1, 2 do
         local frame = ui:create('ViewportFrame', {
             _viewportAuthored = true,

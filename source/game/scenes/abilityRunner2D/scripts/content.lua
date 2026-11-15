@@ -10,10 +10,10 @@ function Content.create(scene)
         touchLeft = {},
         touchRight = {},
     }
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     ui.layoutMode, ui.autoUpdatePhysics = 'Fit', false
     state.physics = scene:createPhysics2D()
-    scene.world.root.currentCamera = nil
+    scene.root:find('World3D').currentCamera = nil
     scene.statsHelp = 'A/D or touch: move; Space: double jump; Shift: dash; C: slide; R: respawn.'
     scene.package:require('scripts.builders.level').create(state)
     state.player = ui:create('Body2D', {

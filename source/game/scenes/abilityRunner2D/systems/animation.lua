@@ -9,7 +9,7 @@ end
 
 function Animation:update2D(dt)
     local state = self.state
-    dt = Clock.delta(state.scene.ui, dt)
+    dt = Clock.delta(state.scene.root:find('World3D/World2D'), dt)
     if dt <= 0 then
         return
     end

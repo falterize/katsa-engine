@@ -154,7 +154,7 @@ function T:update()
         )
     elseif self.frame == 2 then
         local physicsScene = self.scene
-        local rolling = physicsScene.world.root:find('RollingBall1', true)
+        local rolling = physicsScene.world._node:find('RollingBall1', true)
         local startZ = rolling.position[3]
         for _ = 1, 120 do
             physicsScene:update(1 / 60)
@@ -256,7 +256,7 @@ function T:update()
         self.shaderScene.demo:sync()
     elseif self.frame == 7 then
         local scene = self.shaderScene
-        local data = scene.ui._sceneCanvas:newImageData()
+        local data = scene.root:find('World3D/World2D')._sceneCanvas:newImageData()
         local node = scene.demo.pixel
         local difference = 0
         local samples = 0
@@ -278,7 +278,7 @@ function T:update()
         scene.demo:sync()
     elseif self.frame == 8 then
         local scene = self.shaderScene
-        local data = scene.ui._sceneCanvas:newImageData()
+        local data = scene.root:find('World3D/World2D')._sceneCanvas:newImageData()
         local node = scene.demo.tv
         local difference, samples = 0, 0
         for y = math.floor(node._y) + 4, math.floor(node._y + node._height) - 4, 7 do

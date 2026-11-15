@@ -20,7 +20,7 @@ function Tests:draw()
     if self.frame == 30 then
         local ws = self.host.workspace or self.host.editor
         local Tree = require('source.engine.editor.tree.traversal')
-        local rows = Tree.rows({ self.host.world.root }, {}, nil, '')
+        local rows = Tree.rows({ self.host.world._node }, {}, nil, '')
         for _, row in ipairs(rows) do
             print(('ROW %s%s (%s)'):format(('  '):rep(row.depth), row.node.name or '?', row.node.className or '?'))
         end

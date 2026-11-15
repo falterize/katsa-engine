@@ -3,7 +3,7 @@ local ipairs = require('source.engine.math.array').ipairs
 local Interface = {}
 
 function Interface.create(self)
-    local ui = self.scene.ui
+    local ui = self.scene.root:find('World3D/World2D')
     local root = ui:container({
         name = 'UIGallery',
         _viewportAuthored = true,

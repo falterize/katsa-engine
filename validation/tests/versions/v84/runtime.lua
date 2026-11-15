@@ -40,9 +40,9 @@ local function smoke(test)
     popup:close(false)
     test:check(mesh.color[1] == red, 'Color popup cancellation restores its original value')
     scene.workspace:toggle(false)
-    scene.ui:layout()
+    scene.root:find('World3D/World2D'):layout()
     local j, c = scene.controls.joystick, scene.controls.camera
-    local scale, ox, oy = scene.ui.scale, scene.ui.offsetX, scene.ui.offsetY
+    local scale, ox, oy = scene.root:find('World3D/World2D').scale, scene.root:find('World3D/World2D').offsetX, scene.root:find('World3D/World2D').offsetY
     local jx, jy = ox + j.x * scale, oy + j.y * scale
     local cx, cy = ox + (c.x + c.width * 0.8) * scale, oy + (c.y + c.height * 0.7) * scale
     scene.input:press('move-finger', jx, jy)
@@ -68,7 +68,7 @@ local function smoke(test)
         scene = test.manager:switch(require('source.game.runtime.game').new, zone)
         scene:update(1 / 60, 1 / 60)
         scene.renderer:draw(scene.world, scene.camera, 1, true)
-        scene.ui:draw()
+        scene.root:find('World3D/World2D'):draw()
     end
     test:check(
         #test.manager.journal.entries == 0,

@@ -45,8 +45,8 @@ function R:update()
         )
         local widget = ws.properties.children[1]
         ws.properties.scrollY = 70
-        scene.ui:invalidate()
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):invalidate()
+        scene.root:find('World3D/World2D'):layout()
         local scroll = ws.properties.scrollY
         for i = 1, 6 do
             ws:update(0.016)
@@ -57,18 +57,18 @@ function R:update()
                 and ws.properties.scrollY == scroll,
             'Body3D inspector remains stable across updates and preserves scroll'
         )
-        scene.ui:pointer(ws.properties, 'press', 0, 80, 'body-finger')
-        scene.ui:pointer(ws.properties, 'move', 0, 40, 'body-finger')
+        scene.root:find('World3D/World2D'):pointer(ws.properties, 'press', 0, 80, 'body-finger')
+        scene.root:find('World3D/World2D'):pointer(ws.properties, 'move', 0, 40, 'body-finger')
         self:check(
             ws.properties._scrollPointer == 'body-finger' and ws.properties.scrollY >= scroll,
             'Body3D properties accept finger scrolling'
         )
-        scene.ui:pointer(ws.properties, 'cancel', 0, 0, 'body-finger')
-        scene.ui:scrollBy(ws.properties, -100000)
-        scene.ui:layout()
-        local x = (ws.properties._x + 10) * scene.ui.scale + scene.ui.offsetX
-        local y = (ws.properties._y + math.min(110, ws.properties._height - 10)) * scene.ui.scale
-            + scene.ui.offsetY
+        scene.root:find('World3D/World2D'):pointer(ws.properties, 'cancel', 0, 0, 'body-finger')
+        scene.root:find('World3D/World2D'):scrollBy(ws.properties, -100000)
+        scene.root:find('World3D/World2D'):layout()
+        local x = (ws.properties._x + 10) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX
+        local y = (ws.properties._y + math.min(110, ws.properties._height - 10)) * scene.root:find('World3D/World2D').scale
+            + scene.root:find('World3D/World2D').offsetY
         local initial = ws.properties.scrollY
         scene.input:press('actual-body', x, y)
         scene.input:move('actual-body', x, y - 30, 0, -30)

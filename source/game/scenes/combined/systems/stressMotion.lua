@@ -66,7 +66,7 @@ function Motion:update3D(dt)
 end
 
 function Motion:buildUI()
-    local ui = self.scene.ui
+    local ui = self.scene.root:find('World3D/World2D')
     self.panel = ui:container({
         name = 'StressMotionControls',
         _viewportAuthored = true,
@@ -98,7 +98,7 @@ function Motion:buildUI()
 end
 
 function Motion:resize()
-    self.panel.size = { 0, math.min(320, self.scene.ui.width - 20), 0, 30 }
+    self.panel.size = { 0, math.min(320, self.scene.root:find('World3D/World2D').width - 20), 0, 30 }
 end
 
 function Motion.create(state, scene)

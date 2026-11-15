@@ -1,4 +1,7 @@
--- Camera-free scenes still own their entire UI through World3D -> World2D.
+local RootNode = require('../scenes.rootNode')
+
+-- Camera-free scenes still own their entire UI through World3D -> World2D, under a Game node
+-- (`scene.root`) like every other scene.
 local Root = {}
 
 function Root.create(scene, width, height)
@@ -6,9 +9,10 @@ function Root.create(scene, width, height)
         scene.resources,
         require('source.engine.graphics.lighting.defaults').create()
     )
-    scene.world.root.currentCamera = nil
-    scene.ui = scene.world:create('World2D', { name = 'World2D', width = width, height = height })
-    return scene.ui
+    scene.root = RootNode.create(scene.world)
+    scene.world._node.currentCamera = nil
+    scene._ui = scene.world:create('World2D', { name = 'World2D', width = width, height = height })
+    return scene._ui
 end
 
 return Root

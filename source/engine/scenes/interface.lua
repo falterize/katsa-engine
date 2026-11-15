@@ -58,8 +58,8 @@ function Interface:updateInBackground(dt, realDt)
     local state = self.state
     if state and state.updateInBackground then
         local world = state.world
-        if world and world.root then
-            dt = require('source.engine.world.clock').delta(world.root, dt)
+        if world and world._node then
+            dt = require('source.engine.world.clock').delta(world._node, dt)
         end
         return state:updateInBackground(dt, realDt)
     end
@@ -77,7 +77,7 @@ function Interface:draw()
     if state.draw then
         state:draw()
     else
-        state.ui:draw()
+        state.root:find('World3D/World2D'):draw()
     end
 end
 

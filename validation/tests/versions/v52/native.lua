@@ -59,7 +59,7 @@ return function(test)
         body.physics.canCollide and body.physics.canQuery,
         'Collider3D re-enable restores authored body filters'
     )
-    local rows = Tree.rows({ world.root }, {}, nil, '')
+    local rows = Tree.rows({ world._node }, {}, nil, '')
     check(
         #rows < 30 and #Tree.children(body) == 1,
         'Independent body has real Collider3D children without recursive virtual Body3D rows'
@@ -78,7 +78,7 @@ return function(test)
     end
     check(virtual and #Tree.children(virtual) == 0, 'Legacy virtual Body3D inspector row is a leaf')
     check(
-        #Tree.rows({ world.root }, {}, nil, 'Body3D') < 30,
+        #Tree.rows({ world._node }, {}, nil, 'Body3D') < 30,
         'Body3D search terminates and preserves ancestors'
     )
     local parent = world:create('Node3D', { position = { 20, 0, 0 }, rotation = { 0, 0, 90 } })

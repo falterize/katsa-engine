@@ -19,8 +19,8 @@ local function capture(scene, name)
     local image = scene.renderer:draw(scene.world, scene.camera, scene.time, true)
     g.setColor(1, 1, 1, 1)
     g.draw(image)
-    scene.ui.backgroundCanvas = image
-    scene.ui:draw()
+    scene.root:find('World3D/World2D').backgroundCanvas = image
+    scene.root:find('World3D/World2D'):draw()
     g.pop()
     local pixels = canvas:newImageData()
     local encoded = pixels:encode('png')
@@ -234,10 +234,10 @@ function Tests.run(tester)
         )
         local button = input.menuButton
         local x, y, w, h =
-            button._x * scene.ui.scale + scene.ui.offsetX,
-            button._y * scene.ui.scale + scene.ui.offsetY,
-            button._width * scene.ui.scale,
-            button._height * scene.ui.scale
+            button._x * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX,
+            button._y * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetY,
+            button._width * scene.root:find('World3D/World2D').scale,
+            button._height * scene.root:find('World3D/World2D').scale
         scene:pointerpressed('phone-menu', x + w / 2, y + h / 2)
         scene:pointerreleased('phone-menu', x + w / 2, y + h / 2)
         tester:check(
@@ -245,10 +245,10 @@ function Tests.run(tester)
             'Touching the screen button opens the same engine navigation'
         )
         x, y, w, h =
-            button._x * scene.ui.scale + scene.ui.offsetX,
-            button._y * scene.ui.scale + scene.ui.offsetY,
-            button._width * scene.ui.scale,
-            button._height * scene.ui.scale
+            button._x * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX,
+            button._y * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetY,
+            button._width * scene.root:find('World3D/World2D').scale,
+            button._height * scene.root:find('World3D/World2D').scale
         scene:pointerpressed('phone-menu', x + w / 2, y + h / 2)
         scene:pointerreleased('phone-menu', x + w / 2, y + h / 2)
         tester:check(

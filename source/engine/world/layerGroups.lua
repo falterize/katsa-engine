@@ -5,10 +5,10 @@ local LayerGroups = {}
 function LayerGroups.install(World3D)
     function World3D:initializeLayerGroups()
         self.layerGroups = Groups.new(function(registry)
-            if not self.root then
+            if not self._node then
                 return
             end
-            for _, node in ipairs(self.root:getDescendants()) do
+            for _, node in ipairs(self._node:getDescendants()) do
                 if (node._world or node._sceneWorld) == self then
                     for _, key in ipairs({ 'layerGroup', 'shadowGroup' }) do
                         if registry.renamed and node[key] == registry.renamed[1] then

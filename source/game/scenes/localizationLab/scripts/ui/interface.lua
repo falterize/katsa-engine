@@ -4,7 +4,7 @@ local Theme = require('source.engine.ui.theme')
 local Interface = {}
 
 function Interface.create(state)
-    local ui, service = state.scene.ui, state.service
+    local ui, service = state.scene.root:find('World3D/World2D'), state.service
     -- Changing `count` in place updates the plural text: nodes with textParams re-translate.
     state.params = { count = state.items }
     local panel = ui:container({

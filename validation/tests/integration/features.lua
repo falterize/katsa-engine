@@ -9,14 +9,14 @@ return function(test, scene)
         if node.parent == scene.toolsPanel then
             scene.toolsPanel.visible = true
         end
-        scene.ui:layout()
+        scene.root:find('World3D/World2D'):layout()
         if node.parent == scene.toolsPanel then
             scene.toolsPanel.scrollY = math.max(0, node._y - scene.toolsPanel._y - 20)
-            scene.ui:layout()
+            scene.root:find('World3D/World2D'):layout()
         end
-        local x, y = scene.ui:position(node)
-        x = scene.ui.offsetX + (x + node._width / 2) * scene.ui.scale
-        y = scene.ui.offsetY + (y + node._height / 2) * scene.ui.scale
+        local x, y = scene.root:find('World3D/World2D'):position(node)
+        x = scene.root:find('World3D/World2D').offsetX + (x + node._width / 2) * scene.root:find('World3D/World2D').scale
+        y = scene.root:find('World3D/World2D').offsetY + (y + node._height / 2) * scene.root:find('World3D/World2D').scale
         scene.input:press('feature-button', x, y)
         test:check(scene.input.cameraId == nil, name .. ' button captures input before camera')
         scene.input:release('feature-button')
@@ -58,11 +58,11 @@ return function(test, scene)
     test:check(music:isPlaying(), 'Music button resumes the existing stream')
     press('mixer')
     local slider = scene.groupSliders.music
-    local x, y = scene.ui:position(slider)
+    local x, y = scene.root:find('World3D/World2D'):position(slider)
     local sx, sy =
-        scene.ui.offsetX + (x + 12) * scene.ui.scale, scene.ui.offsetY + (y + 24) * scene.ui.scale
+        scene.root:find('World3D/World2D').offsetX + (x + 12) * scene.root:find('World3D/World2D').scale, scene.root:find('World3D/World2D').offsetY + (y + 24) * scene.root:find('World3D/World2D').scale
     scene.input:press('slider', sx, sy)
-    scene.input:move('slider', sx + (slider._width - 24) * 0.25 * scene.ui.scale, sy, 10, 0)
+    scene.input:move('slider', sx + (slider._width - 24) * 0.25 * scene.root:find('World3D/World2D').scale, sy, 10, 0)
     test:check(
         close(scene.audio:getGroupVolume('music'), 0.25) and scene.input.cameraId == nil,
         'Mixer slider drags with captured touch and adjusts only music group'

@@ -3,7 +3,7 @@ local UI = require('source.engine.ui')
 local Interface = {}
 
 function Interface.create(self)
-    local scene, ui = self.scene, self.scene.ui
+    local scene, ui = self.scene, self.scene.root:find('World3D/World2D')
     self.toolbar = ui:scroll({
         _viewportAuthored = true,
         name = 'Lab controls',

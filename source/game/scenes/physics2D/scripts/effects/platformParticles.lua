@@ -1,7 +1,7 @@
 local Effects = {}
 
 function Effects.create(state, platform)
-    local ui = state.scene.ui
+    local ui = state.scene.root:find('World3D/World2D')
     local attached = ui:create('Attachment2D', {
         name = 'LocalParticlesAttachment2D',
         position = { -platform.size[1] / 2, 0 },

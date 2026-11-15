@@ -1,7 +1,7 @@
 local Interface = {}
 
 function Interface.create(state)
-    local ui = state.scene.ui
+    local ui = state.scene.root:find('World3D/World2D')
     local label = ui:text({
         position = { 0, 20, 0, 20 },
         size = { 1, -40, 0, 44 },

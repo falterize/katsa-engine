@@ -68,7 +68,7 @@ function Module.run(self)
     server:getConditions():set('off')
     client:disconnect()
     host:stop()
-    world.root:destroy()
+    world._node:destroy()
     scene:release()
 end
 

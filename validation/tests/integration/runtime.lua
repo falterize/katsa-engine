@@ -321,7 +321,7 @@ function Runtime:update()
         local oldWorld = s.world
         m:update(0)
         self:check(
-            m.stack[1].zone == 'physics' and oldWorld.root.destroyed,
+            m.stack[1].zone == 'physics' and oldWorld._node.destroyed,
             'Deferred contact transition releases the previous physics scene'
         )
     elseif self.frame == 114 then

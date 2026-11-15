@@ -154,7 +154,7 @@ end
 -- camera zooms only when the game owns the mouse.
 function Input:wheelmoved(x, y)
     if not katsa.mouse.getRelativeMode() then
-        local ui, mx, my = self.scene.ui, katsa.mouse.getX(), katsa.mouse.getY()
+        local ui, mx, my = self.scene.root:find('World3D/World2D'), katsa.mouse.getX(), katsa.mouse.getY()
         if ui:wheel(mx, my, y, x) or ui:blocksWorldClick(mx, my, true) then
             return true
         end

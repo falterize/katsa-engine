@@ -2,7 +2,7 @@ local T = {}
 
 local function extra(test)
     local scene = assert(test.manager:switch(require('source.game.runtime.game').new, 'combined'))
-    local ui, g = scene.ui, katsa.graphics
+    local ui, g = scene.root:find('World3D/World2D'), katsa.graphics
     for _, density in ipairs({ 1, 1.25, 1.5, 1.75, 2 }) do
         ui:setDensity(density)
         test:check(

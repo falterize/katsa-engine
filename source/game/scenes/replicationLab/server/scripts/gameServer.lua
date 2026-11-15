@@ -104,7 +104,7 @@ end
 
 function GameServer:stop()
     self.server:stop()
-    self.world.root:destroy()
+    self.world._node:destroy()
 end
 
 return GameServer

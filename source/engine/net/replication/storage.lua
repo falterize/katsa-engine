@@ -16,7 +16,7 @@ local function ensure(world, name)
     end
     -- A scene's world hangs from its Game node; the containers become its siblings. A headless
     -- world (a dedicated server, a test) has no Game node and keeps them as roots.
-    local top = world.root.parent
+    local top = world._node.parent
     local container = Node.create(
         'StorageFolder',
         { name = name, visible = false, storageContainer = true },

@@ -1,7 +1,7 @@
 local Particles = {}
 
 function Particles.create(state)
-    local ui = state.scene.ui
+    local ui = state.scene.root:find('World3D/World2D')
     -- Match the 3D runner's timings, budgets and emission rates. Sprite sizes
     -- and velocities are adapted to the 2D camera's logical pixel units.
     state.burst = ui:create('ParticleEmitter2D', {

@@ -58,7 +58,7 @@ function Scene.update3D(state, dt)
 end
 
 function Scene.update2D(state, dt, realDt)
-    state.ui:update(realDt or dt)
+    state.root:find('World3D/World2D'):update(realDt or dt)
     if state.update then
         state:update(dt, realDt)
     end

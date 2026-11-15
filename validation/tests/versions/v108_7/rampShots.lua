@@ -32,7 +32,7 @@ function Tests:draw()
             playbackTime = 4,
             bindings = { position = Sequence.linear({ -50, 0, 0 }, { 140, 0, 0 }) },
             goals = { position = { 140, 0, 0 } },
-        }, (scene.demo and scene.demo.body or scene.world.root))
+        }, (scene.demo and scene.demo.body or scene.root:find('World3D')))
         scene.workspace:toggle(true)
         scene.workspace:select(ramp)
         scene.workspace:openPopup(field(ramp, 'goals'))

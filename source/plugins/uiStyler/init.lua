@@ -1,7 +1,7 @@
 -- UI Styler plugin: style sheets for UI nodes.
 --
 --   local UIStyler = require('source.engine.plugins').require('uiStyler')
---   local styler = UIStyler.new(scene.ui)
+--   local styler = UIStyler.new(scene.root:find('World3D/World2D'))
 --   styler:defineTheme('dark', UIStyler.themes.dark)
 --   styler:defineTheme('light', UIStyler.themes.light)
 --   styler:rule('Button', { backgroundColor = '$button', textColor = '$text', corner = '$corner' })

@@ -100,7 +100,7 @@ function PopupValues.install(Popup)
             { label = modelSource and 'None (no geometry source)' or 'None (use spatial Parent)' },
         }
         local world = self.target._world or self.target._sceneWorld or self.workspace.scene.world
-        for _, node in ipairs(world.root:getDescendants()) do
+        for _, node in ipairs(world._node:getDescendants()) do
             local valid = self.field.attribute and node ~= self.target and (node._world or node._sceneWorld) == world
                 or require('source.engine.editor.inspectors.nodeReferences').accepts(
                 self.target,

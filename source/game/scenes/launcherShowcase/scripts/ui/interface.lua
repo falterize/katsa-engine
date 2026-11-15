@@ -37,7 +37,7 @@ end
 
 function Interface.create(state)
     local scene = state.scene
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     -- The style sheet is a node (theme and styles folder in the Inspector); code uses its styler.
     local stylerNode = scene.world:create('UIStyler', {
         name = 'UIStyler',

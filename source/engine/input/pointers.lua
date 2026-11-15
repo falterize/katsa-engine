@@ -22,7 +22,7 @@ function Pointers.install(Input)
         if self.captures[id] then
             self:cancel(id)
         end
-        local node = scene.ui and scene.ui:hit(x, y)
+        local node = scene.root:find('World3D/World2D') and scene.root:find('World3D/World2D'):hit(x, y)
         local focused = require('source.engine.ui.widgets.textFocus').current
         if focused and focused ~= node then
             focused:blur()
@@ -39,7 +39,7 @@ function Pointers.install(Input)
         end
         -- The joystick owns its region before any world UI panel behind it.
         if self.layout then
-            local ui, j = scene.ui, self.layout.joystick
+            local ui, j = scene.root:find('World3D/World2D'), self.layout.joystick
             local lx, ly = (x - ui.offsetX) / ui.scale, (y - ui.offsetY) / ui.scale
             if not j.blocked and (lx - j.x) ^ 2 + (ly - j.y) ^ 2 <= j.radius ^ 2 then
                 if not self.joystickId then
@@ -77,7 +77,7 @@ function Pointers.install(Input)
                 end
             end
         end
-        local covered = worldUICovered or scene.ui and scene.ui:blocksWorldClick(x, y)
+        local covered = worldUICovered or scene.root:find('World3D/World2D') and scene.root:find('World3D/World2D'):blocksWorldClick(x, y)
         local detectors = not covered
                 and hasWorldCamera(scene)
                 and require('source.engine.world.picking').detectors(scene.world, scene.camera, x, y)
@@ -90,9 +90,9 @@ function Pointers.install(Input)
             end
             return
         end
-        local s = scene.ui.scale
-        local lx = (x - scene.ui.offsetX) / s
-        local ly = (y - scene.ui.offsetY) / s
+        local s = scene.root:find('World3D/World2D').scale
+        local lx = (x - scene.root:find('World3D/World2D').offsetX) / s
+        local ly = (y - scene.root:find('World3D/World2D').offsetY) / s
         local j = self.layout.joystick
         if (lx - j.x) ^ 2 + (ly - j.y) ^ 2 <= j.radius ^ 2 then
             if not self.joystickId then
@@ -151,7 +151,7 @@ function Pointers.install(Input)
             return
         end
         if c.kind == 'joystick' then
-            local ui, j = self.scene.ui, self.layout.joystick
+            local ui, j = self.scene.root:find('World3D/World2D'), self.layout.joystick
             local ax = ((x - ui.offsetX) / ui.scale - j.x) / j.radius
             local ay = (j.y - (y - ui.offsetY) / ui.scale) / j.radius
             local n = math.sqrt(ax * ax + ay * ay)
@@ -160,7 +160,7 @@ function Pointers.install(Input)
                 self.axisX, self.axisY = 0, 0
             end
         elseif c.kind == 'camera' then
-            self.actions:look(dx / self.scene.ui.scale, dy / self.scene.ui.scale)
+            self.actions:look(dx / self.scene.root:find('World3D/World2D').scale, dy / self.scene.root:find('World3D/World2D').scale)
         end
     end
 
@@ -178,7 +178,7 @@ function Pointers.install(Input)
             and (x - pending.startX) ^ 2 + (y - pending.startY) ^ 2 <= 64
         then
             local scene = self.scene
-            local blocked = scene.ui and (scene.ui:hit(x, y) or scene.ui:blocksWorldClick(x, y))
+            local blocked = scene.root:find('World3D/World2D') and (scene.root:find('World3D/World2D'):hit(x, y) or scene.root:find('World3D/World2D'):blocksWorldClick(x, y))
             for _, list in ipairs({
                 scene.renderer and scene.renderer.top or {},
                 scene.renderer and scene.renderer.transparent or {},
@@ -237,7 +237,7 @@ function Pointers.install(Input)
 
     function Input:hover(x, y)
         local scene = self.scene
-        local node = scene.ui and scene.ui:hit(x, y)
+        local node = scene.root:find('World3D/World2D') and scene.root:find('World3D/World2D'):hit(x, y)
         local nx, ny = x, y
         if not node and hasWorldCamera(scene) and scene.renderer then
             for _, list in ipairs({ scene.renderer.top, scene.renderer.transparent }) do

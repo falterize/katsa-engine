@@ -93,8 +93,8 @@ function Movement.install(Input)
                     local scene = self.scene
                     local camera = scene.camera
                     local cx, cy = camera.width / 2, camera.height / 2
-                    local covered = scene.ui
-                        and (scene.ui:hit(cx, cy) or scene.ui:blocksWorldClick(cx, cy))
+                    local covered = scene.root:find('World3D/World2D')
+                        and (scene.root:find('World3D/World2D'):hit(cx, cy) or scene.root:find('World3D/World2D'):blocksWorldClick(cx, cy))
                     for _, list in ipairs({
                         scene.renderer and scene.renderer.top or {},
                         scene.renderer and scene.renderer.transparent or {},

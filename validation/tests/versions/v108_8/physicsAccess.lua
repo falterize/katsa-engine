@@ -48,7 +48,7 @@ function Module.run(self)
         hit and hit.node == floor and hit.node == floor,
         'world:raycast returns the hit node'
     )
-    self:check(world.root.physics == nil, 'Nodes without a body have no physics object')
+    self:check(world._node.physics == nil, 'Nodes without a body have no physics object')
     world:release()
     resources:release()
 

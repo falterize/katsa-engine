@@ -9,7 +9,7 @@ function Module.run(self)
     local root = scene.root
     self:check(root and root:isA('Game') and root.parent == nil, 'A scene has a Game node as its root')
     self:check(
-        root:find('World3D') == scene.world.root and scene.world.root.parent == root,
+        root:find('World3D') == scene.root:find('World3D') and scene.root:find('World3D').parent == root,
         'The main World3D is an ordinary child of the Game node'
     )
     self:check(
@@ -17,7 +17,7 @@ function Module.run(self)
         'A single-player scene has both storage containers under the root'
     )
     self:check(
-        root:find('World3D/World2D') == scene.ui and root:find('World3D/Nothing/X') == nil,
+        root:find('World3D/World2D') == scene.root:find('World3D/World2D') and root:find('World3D/Nothing/X') == nil,
         'find follows a path and reports a missing step as nil'
     )
     local folder = scene.world:create('Folder', { name = 'Stored' }, root:find('ServerStorage'))

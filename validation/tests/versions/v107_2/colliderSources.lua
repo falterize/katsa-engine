@@ -30,11 +30,11 @@ function Tests.run(tester)
         }, body)
         for _, filename in ipairs({ 'pyramid.obj', 'cubeTriangle.glb', 'skinRibbon.gltf' }) do
             local path = 'shared://models/examples/' .. filename
-            local count = #world.root:getDescendants()
+            local count = #world._node:getDescendants()
             collider.shape, collider.geometrySource = 'Geometry', path
             local points, indices = collider:getPointsFromModel()
             tester:check(
-                #points >= 3 and #indices >= 3 and #world.root:getDescendants() == count,
+                #points >= 3 and #indices >= 3 and #world._node:getDescendants() == count,
                 backend .. ': ' .. filename .. ' extracts without render nodes'
             )
             world:updateNodes(1 / 60)
@@ -139,7 +139,7 @@ function Tests.run(tester)
     scene:load()
     scene:update(1 / 60, 1 / 60)
     local fileCollider
-    for _, node in ipairs(scene.world.root:getDescendants()) do
+    for _, node in ipairs(scene.root:find('World3D'):getDescendants()) do
         if
             node:isA('Collider3D')
             and type(node.geometrySource) == 'string'

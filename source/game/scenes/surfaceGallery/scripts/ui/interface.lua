@@ -90,7 +90,7 @@ function Interface.create(self)
             self.attachmentTitle.text = 'Attachment3D / ' .. self.offsetMode .. ' offset'
         end)
     end
-    local ui = self.scene.ui
+    local ui = self.scene.root:find('World3D/World2D')
     local controls = ui:container({
         _viewportAuthored = true,
         name = 'SurfaceControls',
@@ -141,13 +141,13 @@ function Interface.create(self)
             board.rotation = board.rotation[1] == 0 and { 12, 20, 8 } or { 0, 0, 0 }
         end)
     end
-    self.status = self.scene.ui:text({
+    self.status = self.scene.root:find('World3D/World2D'):text({
         position = { 0.5, 0, 1, -35 },
         size = { 1, -24, 0, 48 },
         anchorPoint = { 0.5, 0.5 },
         text = 'Walk around the six local faces. Touch a panel.',
         fontSize = 20,
-    }, self.scene.ui.content)
+    }, self.scene.root:find('World3D/World2D').content)
 end
 
 return Interface

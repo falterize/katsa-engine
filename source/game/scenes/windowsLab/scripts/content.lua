@@ -55,7 +55,7 @@ function Lab.new(scene)
     world.environment.debug.gizmos.enabled = false
     scene.clearColor = { 0, 0, 0, 0 }
     katsa.window.setTransparent(true)
-    local ui = scene.ui
+    local ui = scene.root:find('World3D/World2D')
     local card = ui:container({
         position = { 0.5, -190, 0.5, -70 },
         size = { 0, 380, 0, 210 },

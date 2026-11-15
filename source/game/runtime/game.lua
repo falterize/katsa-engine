@@ -78,14 +78,14 @@ function Game:load()
     self.root = require('source.engine.scenes.rootNode').create(self.world)
     self.systems = Systems.new(self)
     self.world.audio = self.audio
-    self.audio.worldRoot = self.world.root
+    self.audio.worldRoot = self.world._node
     self.camera = self.world:addCamera()
     self.renderer = Renderer.new(self.resources)
-    self.ui = UI.new(1280, 720, self.resources):bindWorld(self.world)
-    self.ui.parent = self.world.root
-    self.ui.name = 'World2D'
+    self._ui = UI.new(1280, 720, self.resources):bindWorld(self.world)
+    self._ui.parent = self.world._node
+    self._ui.name = 'World2D'
     -- Reference layout is converted to viewport fractions after construction.
-    self.ui.layoutMode = 'Fit'
+    self._ui.layoutMode = 'Fit'
     -- Scene-owned mobile layout. One pointer stays assigned until release.
     self.controls = {
         joystick = { x = 125, y = 570, radius = 88 },
@@ -94,8 +94,8 @@ function Game:load()
         verticalSpeed = 50,
         sensitivity = 0.1,
     }
-    self.ui.content.name = 'GameHUD'
-    self.ui.overlays = self.ui:canvasGroup({
+    self._ui.content.name = 'GameHUD'
+    self._ui.overlays = self._ui:canvasGroup({
         position = { 0, 0, 0, 0 },
         size = { 0, 1280, 0, 720 },
         name = 'Overlays',
@@ -111,15 +111,15 @@ function Game:load()
     self.demo = Loader.create(self)
     profiler:markLoad('Scene create script')
     self.debugOverlay = require('source.engine.debug.menu').new(self)
-    local debugControls = self.ui:canvasGroup({
+    local debugControls = self._ui:canvasGroup({
         position = { 0, 0, 0, 0 },
         size = { 0, 1280, 0, 720 },
         name = 'DebugControls',
 
         zIndex = 200,
     })
-    self.console = require('source.engine.debug.consolePanel').new(self.ui, debugControls)
-    self.debugButton = self.ui:button({
+    self.console = require('source.engine.debug.consolePanel').new(self._ui, debugControls)
+    self.debugButton = self._ui:button({
         position = { 1, -12, 0, 64 },
         size = { 0, 110, 0, 34 },
         anchorPoint = { 1, 0 },
@@ -137,7 +137,7 @@ function Game:load()
     self.debugButton:connect('press', function()
         self.debugOverlay.visible = not self.debugOverlay.visible
     end)
-    self.ui:adaptReference(1280, 720)
+    self._ui:adaptReference(1280, 720)
     self.workspace = require('source.engine.editor.workspace').new(self)
     if self.settings.presentation and self.settings.presentation.navigation == false then
         self.workspace.tab.visible = false
@@ -166,9 +166,9 @@ function Game:enter()
 end
 
 function Game:resize(w, h)
-    self.ui:fit(w, h)
+    self._ui:fit(w, h)
     if self.controls then
-        local vw, vh = self.ui.width, self.ui.height
+        local vw, vh = self._ui.width, self._ui.height
         if not self.controls.joystick.custom and not self.controls.joystick.relocated then
             self.controls.joystick.x = vw * 125 / 1280
             self.controls.joystick.y = vh * 570 / 720
@@ -186,13 +186,13 @@ function Game:resize(w, h)
     end
     if self.mixerPanel then
         self.mixerPanel.size =
-            { 0, math.min(480, self.ui.width - 24), 0, math.min(380, self.ui.height - 24) }
+            { 0, math.min(480, self._ui.width - 24), 0, math.min(380, self._ui.height - 24) }
     end
     if self.toolsPanel then
-        self.toolsPanel.size = { 0, math.min(320, self.ui.width - 24), 1, -138 }
+        self.toolsPanel.size = { 0, math.min(320, self._ui.width - 24), 1, -138 }
     end
     if self.demo and self.demo.toolbar then
-        self.demo.toolbar.size = { 0, math.min(340, self.ui.width - 24), 0.45, -24 }
+        self.demo.toolbar.size = { 0, math.min(340, self._ui.width - 24), 0.45, -24 }
     end
     if self.workspace then
         self.workspace:resize()
@@ -345,7 +345,7 @@ function Game:wheelmoved(x, y)
     if self.input.wheelmoved and self.input:wheelmoved(x, y) then
         return
     end
-    if self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x) then
+    if self._ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x) then
         return
     end
     -- Orthographic free cameras have no dolly zoom (moving does not change scale), so the
@@ -390,7 +390,7 @@ function Game:release()
             self.audio:release()
         end,
         function()
-            self.ui:release()
+            self._ui:release()
         end,
         function()
             self.renderer:release()

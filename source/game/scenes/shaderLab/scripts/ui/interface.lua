@@ -6,7 +6,7 @@ local Preview = require('./previews.shader')
 local Interface = {}
 
 function Interface.create(self)
-    local scene, ui = self.scene, self.scene.ui
+    local scene, ui = self.scene, self.scene.root:find('World3D/World2D')
     self.root = ui:container({
         _viewportAuthored = true,
         name = 'ShaderShowcase',

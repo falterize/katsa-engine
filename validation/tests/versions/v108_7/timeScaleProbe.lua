@@ -36,7 +36,7 @@ function Tests:draw()
         for _ = 1, BOTS do
             server:hostCommand(server.hostPlayer, 'spawnBot')
         end
-        self.host.world.root.timeScale = SCALE
+        self.host.world._node.timeScale = SCALE
     elseif t == 60 then
         self.manager.profiler:startRecording({ scene = 'multiplayerCars' })
     elseif t == 360 then

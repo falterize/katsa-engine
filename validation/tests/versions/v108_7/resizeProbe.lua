@@ -13,7 +13,7 @@ end
 function Tests:report(tag)
     local scene = self.scene
     local w, h = katsa.graphics.getDimensions()
-    print('RESIZE', tag, 'window', w, h, 'ui', scene.ui.width, scene.ui.height, scene.ui.scale)
+    print('RESIZE', tag, 'window', w, h, 'ui', scene.root:find('World3D/World2D').width, scene.root:find('World3D/World2D').height, scene.root:find('World3D/World2D').scale)
 end
 
 function Tests:update()

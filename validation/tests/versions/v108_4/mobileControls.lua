@@ -14,7 +14,7 @@ function Tests.run(self)
                 manager:update(1 / 60)
             end
             manager:draw()
-            local layout, ui = scene.input.layout, scene.ui
+            local layout, ui = scene.input.layout, scene.root:find('World3D/World2D')
             local joystick = layout.joystick
             local x = joystick.x * ui.scale + ui.offsetX
             local y = joystick.y * ui.scale + ui.offsetY

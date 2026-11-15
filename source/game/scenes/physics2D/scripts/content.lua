@@ -1,15 +1,15 @@
 local Content = {}
 
 function Content.create(scene)
-    scene.ui:create('Camera2D', { name = 'Camera2D', position = { 640, -360 }, zoom = 1 })
+    scene.root:find('World3D/World2D'):create('Camera2D', { name = 'Camera2D', position = { 640, -360 }, zoom = 1 })
     local physics = scene:createPhysics2D()
-    scene.ui.autoUpdatePhysics = false
+    scene.root:find('World3D/World2D').autoUpdatePhysics = false
     scene.statsHelp = '2D shapes, joints and triggers. Use the on-screen controls; F3: Stats.'
-    scene.ui.layoutMode = 'Fit'
+    scene.root:find('World3D/World2D').layoutMode = 'Fit'
     local state = { scene = scene, physics = physics }
     scene.package:require('scripts.builders.playground').create(state)
-    scene.world.root.currentCamera = nil
-    state.emitter = scene.ui:create('ParticleEmitter2D', {
+    scene.root:find('World3D').currentCamera = nil
+    state.emitter = scene.root:find('World3D/World2D'):create('ParticleEmitter2D', {
         name = 'Physics2DParticleFountain',
         position = { 180, -380 },
         rate = 35,

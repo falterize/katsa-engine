@@ -41,8 +41,8 @@ function Preview:update()
                     node.thickness = { 0, 3 }
                 end
             end
-            self.scene.ui:layout()
-            self.scene.ui:scrollBy(self.scene.demo.left, 115)
+            self.scene.root:find('World3D/World2D'):layout()
+            self.scene.root:find('World3D/World2D'):scrollBy(self.scene.demo.left, 115)
         end
     elseif self.frame % 5 == 4 then
         self.capture = true

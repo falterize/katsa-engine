@@ -180,7 +180,7 @@ end
 -- only carry a few constraint kinds, so the others get this pair; a GearConstraint2D couples two
 -- hinges built the same way.
 local function constraint2D(scene, name)
-    local ui, count = scene.ui, 0
+    local ui, count = scene.root:find('World3D/World2D'), 0
     local function pair(kind, options)
         count = count + 1
         local function body(label, bodyType, x)
@@ -211,8 +211,8 @@ function Catalog.prepare(scene, name)
         scene.nodeSampleControls:destroy()
     end
     local node = scene.demo and scene.demo.root and exact(scene.demo.root, name)
-        or exact(scene.world.root, name)
-        or exact(scene.ui, name)
+        or exact(scene.root:find('World3D'), name)
+        or exact(scene.root:find('World3D/World2D'), name)
     if not node then
         if name:find('Constraint3D$') then
             local source = scene.demo.constraints[1]
@@ -220,7 +220,7 @@ function Catalog.prepare(scene, name)
                 name = 'Catalog' .. name,
                 attachment0 = source.attachment0,
                 attachment1 = source.attachment1,
-            }, scene.world.root)
+            }, scene.root:find('World3D'))
             if name == 'Constraint3D' then
                 node.kind = 'Spherical'
             end
@@ -229,13 +229,13 @@ function Catalog.prepare(scene, name)
         elseif name == 'Game' then
             node = scene.root
         elseif name == 'Node2D' then
-            node = scene.ui:create('Node2D', { name = 'CatalogNode2D', position = { 640, -300 } })
+            node = scene.root:find('World3D/World2D'):create('Node2D', { name = 'CatalogNode2D', position = { 640, -300 } })
         elseif name == 'VirtualJoystick' then
-            node = scene.ui:create('VirtualJoystick', {
+            node = scene.root:find('World3D/World2D'):create('VirtualJoystick', {
                 name = 'CatalogJoystick',
                 position = { 0, 140, 1, -220 },
                 size = { 0, 160, 0, 160 },
-            }, scene.ui.content)
+            }, scene.root:find('World3D/World2D').content)
         elseif name == 'AudioListener' or name == 'AudioSource' then
             node = scene.world:create(name, { name = 'Catalog' .. name })
         elseif name:find('Constraint2D$') then
@@ -247,27 +247,27 @@ function Catalog.prepare(scene, name)
                 scene.demo.sound
             )
         elseif name == 'UINode' then
-            node = scene.ui:create(
+            node = scene.root:find('World3D/World2D'):create(
                 name,
                 { name = 'BaseUINode', position = { 0, 16, 0, 140 }, size = { 0, 200, 0, 60 } },
-                scene.ui.content
+                scene.root:find('World3D/World2D').content
             )
-            scene.ui:text({ size = { 1, 0, 1, 0 }, text = 'Base UI node / child content' }, node)
+            scene.root:find('World3D/World2D'):text({ size = { 1, 0, 1, 0 }, text = 'Base UI node / child content' }, node)
         else
             error('Catalog sample missing for ' .. name)
         end
     end
     scene.nodeSample = node
-    local root = scene.ui:scroll({
+    local root = scene.root:find('World3D/World2D'):scroll({
         position = { 0, 12, 1, -96 },
-        size = { 0, math.min(480, scene.ui.width - 24), 0, 84 },
+        size = { 0, math.min(480, scene.root:find('World3D/World2D').width - 24), 0, 84 },
         anchorPoint = { 0, 0 },
         length = 120,
         backgroundColor = { 0.035, 0.065, 0.105 },
         name = 'Node sample controls',
-    }, scene.ui.content)
+    }, scene.root:find('World3D/World2D').content)
     scene.nodeSampleControls = root
-    local label = scene.ui:text({
+    local label = scene.root:find('World3D/World2D'):text({
         position = { 0, 8, 0, 4 },
         size = { 1, -16, 0, 50 },
         text = name
@@ -284,7 +284,7 @@ function Catalog.prepare(scene, name)
         maxTextSize = 13,
     }, root)
     do
-        local node = scene.ui:button({
+        local node = scene.root:find('World3D/World2D'):button({
             position = { 0, 8, 0, 58 },
             size = { 0.5, -12, 0, 38 },
             text = 'Select sample',
@@ -300,7 +300,7 @@ function Catalog.prepare(scene, name)
         end)
     end
     do
-        local node = scene.ui:button({
+        local node = scene.root:find('World3D/World2D'):button({
             position = { 0.5, 4, 0, 58 },
             size = { 0.5, -12, 0, 38 },
             text = 'Node catalog',
@@ -317,7 +317,7 @@ function Catalog.prepare(scene, name)
             label.text = 'Node sample event count: ' .. count
         end)
         do
-            local node = scene.ui:button({
+            local node = scene.root:find('World3D/World2D'):button({
                 position = { 0, 8, 0, 102 },
                 size = { 1, -16, 0, 38 },
                 text = 'Emit event',

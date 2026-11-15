@@ -18,16 +18,16 @@ function Menu:load()
     self.resources =
         self.manager.resources:scope(require('source.game.data.manifest'), self.package.paths)
     require('source.engine.ui.sceneRoot').create(self, 1280, 720)
-    self.ui.content.name = 'Menu'
+    self._ui.content.name = 'Menu'
     self.input = Input.new(self)
-    local panel = self.ui:container({
+    local panel = self._ui:container({
         position = { 0.5, 0, 0.5, 0 },
         size = { 1, -24, 1, -24 },
         anchorPoint = { 0.5, 0.5 },
         backgroundColor = { 0.035, 0.065, 0.105 },
-    }, self.ui.content)
-    self.ui:create('UICorner', { radius = { 0, 16 } }, panel)
-    self.ui:text({
+    }, self._ui.content)
+    self._ui:create('UICorner', { radius = { 0, 16 } }, panel)
+    self._ui:text({
         position = { 0, 20, 0, 10 },
         size = { 1, -40, 0, 40 },
         text = 'KATSA / 3D + 2D',
@@ -35,7 +35,7 @@ function Menu:load()
         maxTextSize = 30,
         align = 'left',
     }, panel)
-    self.ui:text({
+    self._ui:text({
         position = { 0, 20, 0, 52 },
         size = { 1, -40, 0, 24 },
         text = 'Katsa ' .. Version.value .. ' • Scenes and interactive labs',
@@ -55,7 +55,7 @@ function Menu:load()
     -- Filters: a search box (title, id or tag words) and a tag chooser (a scene needs every
     -- selected tag).
     self.selectedTags = {}
-    local searchBox = self.ui:create('TextBox', {
+    local searchBox = self._ui:create('TextBox', {
         name = 'SceneSearch',
         position = { 0, 16, 0, 88 },
         size = { 1, -204, 0, 36 },
@@ -67,7 +67,7 @@ function Menu:load()
         align = 'left',
     }, panel)
     self.searchBox = searchBox
-    local tagButton = self.ui:button({
+    local tagButton = self._ui:button({
         name = 'SceneTags',
         position = { 1, -180, 0, 88 },
         size = { 0, 164, 0, 36 },
@@ -77,7 +77,7 @@ function Menu:load()
         radius = 8,
     }, panel)
     self.tagButton = tagButton
-    local list = self.ui:scroll({
+    local list = self._ui:scroll({
         name = 'LevelList',
         position = { 0, 16, 0, 136 },
         size = { 1, -32, 1, -178 },
@@ -98,7 +98,7 @@ function Menu:load()
             if Tags.matches(entry, self.selectedTags, words) then
                 i = i + 1
                 local y = (i - 1) * ROW + 4
-                local button = self.ui:button({
+                local button = self._ui:button({
                     position = { 0, 8, 0, y },
                     size = { 1, -16, 0, ROW - 8 },
                     text = '',
@@ -109,7 +109,7 @@ function Menu:load()
                     self:choose(entry.title, entry.id)
                 end)
                 -- Title above, tags below; labels do not take input, the button stays pressable.
-                self.ui:text({
+                self._ui:text({
                     position = { 0, 14, 0, 5 },
                     size = { 1, -28, 0, 30 },
                     text = entry.title,
@@ -117,7 +117,7 @@ function Menu:load()
                     maxTextSize = 20,
                     align = 'left',
                 }, button)
-                self.ui:text({
+                self._ui:text({
                     position = { 0, 14, 0, 36 },
                     size = { 1, -28, 0, 20 },
                     text = table.concat(entry.tags, ',  '),
@@ -136,7 +136,7 @@ function Menu:load()
             count = count + 1
         end
         tagButton.text = (count > 0 and ('Tags (' .. count .. ')') or 'Tags') .. ' ▾'
-        self.ui:invalidate()
+        self._ui:invalidate()
     end
     self.rebuildList = rebuild
     rebuild()
@@ -144,7 +144,7 @@ function Menu:load()
         rebuild()
     end
 
-    local chooser = self.ui:scroll({
+    local chooser = self._ui:scroll({
         name = 'Tags',
         position = { 1, -280, 0, 128 },
         size = { 0, 264, 0, 320 },
@@ -164,7 +164,7 @@ function Menu:load()
         end
     end
     do
-        local node = self.ui:button({
+        local node = self._ui:button({
             position = { 0, 4, 0, 0 },
             size = { 1, -8, 0, 32 },
             text = 'Clear tags',
@@ -178,7 +178,7 @@ function Menu:load()
         end)
     end
     for i, item in ipairs(all) do
-        local chip = self.ui:button({
+        local chip = self._ui:button({
             position = { 0, 4, 0, i * 36 },
             size = { 1, -8, 0, 32 },
             text = item.tag,
@@ -209,7 +209,7 @@ function Menu:load()
         chooser.visible = not chooser.visible
     end)
 
-    self.ui:text({
+    self._ui:text({
         position = { 0, 20, 1, -34 },
         size = { 1, -40, 0, 24 },
         text = 'Scroll for more scenes • Touch or WASD + drag',
@@ -219,7 +219,7 @@ function Menu:load()
     }, panel)
     self.menuPanel = panel
     -- Building a large scene blocks the frame for a while, so the label is drawn first.
-    self.loadingLabel = self.ui:text({
+    self.loadingLabel = self._ui:text({
         position = { 0.5, 0, 0.5, 0 },
         size = { 1, -40, 0, 48 },
         anchorPoint = { 0.5, 0.5 },
@@ -240,7 +240,7 @@ function Menu:choose(title, id)
     self.loadingLabel.text = 'Loading ' .. title .. '...'
     self.loadingLabel.visible = true
     self.pending = { id = id, frames = 0 }
-    self.ui:invalidate()
+    self._ui:invalidate()
 end
 
 function Menu:update()
@@ -265,36 +265,36 @@ function Menu:update()
         local first = tostring(failure):match('[^\n]+') or 'unknown error'
         self.loadingLabel.text = ('Could not load %s: %s'):format(pending.id, first:sub(1, 160))
         self.loadingLabel.visible = true
-        self.ui:invalidate()
+        self._ui:invalidate()
     end
 end
 
 function Menu:draw()
     katsa.graphics.clear(0.025, 0.04, 0.065, 1)
-    self.ui:draw()
-    self._paintRevision = self.ui.revision
+    self._ui:draw()
+    self._paintRevision = self._ui.revision
 end
 
 function Menu:canReuseWindowFrame()
     -- Observe direct property edits as well as input-driven invalidation before
     -- reusing the presented image. Animated UI must continue rendering normally.
-    self.ui:layout()
-    return not self.ui.animated and self._paintRevision == self.ui.revision
+    self._ui:layout()
+    return not self._ui.animated and self._paintRevision == self._ui.revision
 end
 
 function Menu:resize(w, h)
-    self.ui:fit(w, h)
-    self.menuPanel.size = { 0, math.min(760, self.ui.width - 24), 1, -24 }
+    self._ui:fit(w, h)
+    self.menuPanel.size = { 0, math.min(760, self._ui.width - 24), 1, -24 }
     -- The scroll viewport must fit inside the panel's clipped area after rotation.
-    local width = math.min(264, self.ui.width - 56)
+    local width = math.min(264, self._ui.width - 56)
     self.tagChooser.size = {
         0,
         width,
         0,
-        math.max(1, math.min(320, self.ui.height - 24 - 128 - 42)),
+        math.max(1, math.min(320, self._ui.height - 24 - 128 - 42)),
     }
     self.tagChooser.position = { 1, -(width + 16), 0, 128 }
-    self.ui:invalidate()
+    self._ui:invalidate()
 end
 
 function Menu:pointerpressed(id, x, y)
@@ -310,7 +310,7 @@ function Menu:pointerreleased(id)
 end
 
 function Menu:wheelmoved(x, y)
-    self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
+    self._ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 function Menu:keypressed(key)

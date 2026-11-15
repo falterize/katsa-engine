@@ -5,7 +5,7 @@ local Tween = require('source.engine.animation.tween')
 local Interface = {}
 
 function Interface.create(self)
-    local ui = self.scene.ui
+    local ui = self.scene.root:find('World3D/World2D')
     self.panel = ui:container({
         _viewportAuthored = true,
         name = 'AnimationControls',
@@ -58,7 +58,7 @@ function Interface.create(self)
         self.scene.workspace:select(self.ramp)
     end)
     button('World TimeScale 1 / .25 / 0', function()
-        local root = self.scene.world.root
+        local root = self.scene.root:find('World3D')
         root.timeScale = root.timeScale == 1 and 0.25 or root.timeScale == 0.25 and 0 or 1
     end)
     self.fade = ui:container(

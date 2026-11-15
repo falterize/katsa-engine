@@ -35,7 +35,7 @@ end
 function Class:updateContents(dt)
     local world = self:getWorld()
     if world and self.autoUpdate then
-        world.root:update(dt)
+        world._node:update(dt)
     end
 end
 

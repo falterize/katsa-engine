@@ -267,7 +267,7 @@ function Manager:focus(focused)
     for _, scene in ipairs(self.stack) do
         if focused and scene.world then
             scene.world:invalidateRender()
-            for _, node in ipairs(scene.world.root:getDescendants()) do
+            for _, node in ipairs(scene.world._node:getDescendants()) do
                 if node._worldBoundary and node._world and node._world.invalidateRender then
                     node._world:invalidateRender()
                 end
@@ -298,13 +298,13 @@ function Manager:reportError(message)
     local scene = self.stack[#self.stack]
     if
         scene
-        and scene.ui
-        and not scene.ui.released
-        and scene.ui.overlays
-        and not scene.ui.overlays.destroyed
+        and scene.root:find('World3D/World2D')
+        and not scene.root:find('World3D/World2D').released
+        and scene.root:find('World3D/World2D').overlays
+        and not scene.root:find('World3D/World2D').overlays.destroyed
     then
         scene.sceneErrorLabel = scene.sceneErrorLabel
-            or scene.ui:text({
+            or scene.root:find('World3D/World2D'):text({
                 position = { 0, 12, 0, 58 },
                 size = { 1, -24, 0, 42 },
                 textScaled = true,
@@ -312,7 +312,7 @@ function Manager:reportError(message)
                 backgroundColor = { 0.3, 0.04, 0.04 },
                 textColor = { 1, 0.8, 0.7 },
                 zIndex = 500,
-            }, scene.ui.overlays)
+            }, scene.root:find('World3D/World2D').overlays)
         scene.sceneErrorLabel.text = self.lastSceneError
     end
 end

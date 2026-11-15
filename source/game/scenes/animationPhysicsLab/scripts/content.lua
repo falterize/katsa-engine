@@ -10,7 +10,7 @@ function Lab.new(scene)
     local self = Base.new(scene)
     setmetatable(self, Lab)
     scene.world.byName.ModelLabFloor:destroy()
-    scene.world.root:find('FloorPhysics', true):destroy()
+    scene.root:find('World3D'):find('FloorPhysics', true):destroy()
     self.track:stop(0)
     self.animator.debugEnabled = false
     scene.camera.position = { 0, 140, -230 }

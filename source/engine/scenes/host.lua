@@ -39,12 +39,12 @@ function Host:load()
     self.world = World.new(self.resources, lighting)
     self.root = RootNode.create(self.world)
     self.world.audio = self.audio
-    self.audio.worldRoot = self.world.root
+    self.audio.worldRoot = self.world._node
     self.camera = self.world:addCamera()
     self.renderer = Renderer.new(self.resources)
-    self.ui = UI.new(1280, 720, self.resources):bindWorld(self.world)
-    self.ui.parent = self.world.root
-    self.ui.layoutMode = 'Viewport'
+    self._ui = UI.new(1280, 720, self.resources):bindWorld(self.world)
+    self._ui.parent = self.world._node
+    self._ui.layoutMode = 'Viewport'
     self.input = Input.new(self)
     self.systems = Systems.new(self)
     profiler:markLoad('World, renderer and UI')
@@ -54,9 +54,9 @@ function Host:load()
     self.lifecycle = require('source.engine.scenes.layout').lifecycle(self.package)
     self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
     profiler:markLoad('Scene create script')
-    local layer = self.ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self.ui.content)
+    local layer = self._ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self._ui.content)
     self.statistics = Statistics.new(self, layer)
-    self.console = require('source.engine.debug.consolePanel').new(self.ui, layer)
+    self.console = require('source.engine.debug.consolePanel').new(self._ui, layer)
     self:resize(katsa.graphics.getDimensions())
     profiler:markLoad('Overlays and layout')
 end
@@ -81,7 +81,7 @@ function Host:update(dt, realDt)
     local started = katsa.timer.getTime()
     local sceneDt = dt
     self.world.frameRealDelta = realDt or sceneDt
-    dt = require('source.engine.world.clock').delta(self.world.root, dt)
+    dt = require('source.engine.world.clock').delta(self.world._node, dt)
     self.time = self.time + dt
     self.lifecycle.update2D(self.state, sceneDt, realDt or sceneDt)
     self.input:update(dt)
@@ -99,20 +99,20 @@ end
 function Host:draw()
     if self.world.activeCamera then
         self.renderer:draw(self.world, self.camera, self.time)
-        self.ui.backgroundCanvas = self.renderer.canvas
+        self._ui.backgroundCanvas = self.renderer.canvas
     else
         katsa.graphics.clear(0.03, 0.04, 0.06, 1)
-        self.ui.backgroundCanvas = nil
+        self._ui.backgroundCanvas = nil
     end
     self.statistics:sample()
     local started = katsa.timer.getTime()
-    self.ui:draw()
+    self._ui:draw()
     require('source.engine.graphics.debug.orientation').draw(self)
     self.uiMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 
 function Host:resize(width, height)
-    self.ui:fit(width, height)
+    self._ui:fit(width, height)
     self.camera:update(width, height)
     if self.statistics then
         self.statistics.panel:resize()
@@ -165,7 +165,7 @@ end
 
 function Host:wheelmoved(x, y)
     self.input:mapWheel(x, y)
-    self.ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
+    self._ui:wheel(katsa.mouse.getX(), katsa.mouse.getY(), y, x)
 end
 
 function Host:release()
@@ -210,8 +210,8 @@ function Host:release()
             end
         end,
         function()
-            if self.ui then
-                self.ui:release()
+            if self._ui then
+                self._ui:release()
             end
         end,
         function()

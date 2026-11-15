@@ -2,7 +2,7 @@
 -- Explorer and Inspector. The scene needs `plugins = { 'uiStyler' }`.
 --
 --   local node = world:create('UIStyler', { theme = 'dark', stylesFolder = 'scene://styles' })
---   node:bind(scene.ui, scene.resources) -- the UI the sheet styles and the scope that resolves scene://
+--   node:bind(scene.root:find('World3D/World2D'), scene.resources) -- the UI the sheet styles and the scope that resolves scene://
 --   node:getStyler():style('Button', { backgroundColor = '$button' })   -- code rules still work
 --
 -- Editing `theme` restyles every bound root; editing `stylesFolder` reloads the `*.lua` style files

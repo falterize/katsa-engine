@@ -120,7 +120,7 @@ function T:update()
         end
         self:check(true, 'Avatar faces movement in all eight horizontal directions')
         self:check(
-            #demo.pickups == 8 and scene.world.root:find('FinishIsland', true),
+            #demo.pickups == 8 and scene.root:find('World3D'):find('FinishIsland', true),
             'Extended course and practice islands exist'
         )
 
@@ -133,8 +133,8 @@ function T:update()
         for _, size in ipairs({ { 960, 540 }, { 640, 360 }, { 390, 844 } }) do
             katsa.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
             scene:resize(size[1], size[2])
-            scene.ui:layout()
-            local toggle = scene.ui:find('Runner / systemsToggle', true)
+            scene.root:find('World3D/World2D'):layout()
+            local toggle = scene.root:find('World3D/World2D'):find('Runner / systemsToggle', true)
             assert(toggle, 'Runner toggle missing')
             assert(not overlaps(demo.status, toggle), 'Status overlaps systems toggle')
             assert(not overlaps(demo.status, scene.debugButton), 'Status overlaps Debug button')
@@ -187,7 +187,7 @@ function T:update()
             katsa.window.setMode(size[1], size[2], { vsync = 0, depth = 24, stencil = 8 })
             scene:resize(size[1], size[2])
             scene:update(1 / 60, 1 / 60)
-            scene.ui:layout()
+            scene.root:find('World3D/World2D'):layout()
             if route == 'shaderLab' then
                 assert(
                     scene.demo.clean._width > 0 and scene.demo.clean._height > 0,
@@ -198,7 +198,7 @@ function T:update()
                     'Shader controls overlap previews'
                 )
             else
-                local panel = route == 'modelLab' and scene.ui:find('ModelControls', true)
+                local panel = route == 'modelLab' and scene.root:find('World3D/World2D'):find('ModelControls', true)
                     or scene.demo.panel
                 local joystick = scene.controls.joystick
                 assert(

@@ -7,7 +7,7 @@ function Simulation.create(state)
 end
 
 function Simulation:update2D(dt)
-    local state, ui = self.state, self.state.scene.ui
+    local state, ui = self.state, self.state.scene.root:find('World3D/World2D')
     state.controller:update(Clock.delta(ui, dt))
     ui:updatePhysics(dt)
     if ui.currentCamera then
@@ -20,7 +20,7 @@ function Simulation:update3D(dt)
 end
 
 function Simulation:release()
-    self.state.scene.ui.autoUpdatePhysics = false
+    self.state.scene.root:find('World3D/World2D').autoUpdatePhysics = false
 end
 
 return Simulation

@@ -9,7 +9,7 @@ function Game:updateInBackground(dt, realDt)
     if demo and demo.updateInBackground then
         -- The world's TimeScale applies exactly as in a focused update: a hosted server keeps
         -- its pace when the window loses focus.
-        local scaled = require('source.engine.world.clock').delta(self.world.root, dt)
+        local scaled = require('source.engine.world.clock').delta(self.world._node, dt)
         return demo:updateInBackground(scaled, realDt)
     end
 end
@@ -18,7 +18,7 @@ end
 -- over the default corner). Runs once, on the second frame, when the scene UI exists.
 function Game:clearJoystickSpot()
     local joystick = self.controls and self.controls.joystick
-    local ui = self.ui
+    local ui = self._ui
     if not joystick or joystick.custom then
         return
     end
@@ -79,11 +79,11 @@ function Game:update(dt, realDt)
     local uiDt = realDt or dt
     -- Wall-clock frame time for throttles (Animator.poseRate) that must not slow with TimeScale.
     self.world.frameRealDelta = uiDt
-    dt = require('source.engine.world.clock').delta(self.world.root, dt)
+    dt = require('source.engine.world.clock').delta(self.world._node, dt)
     if self.lifecycle then
         self.lifecycle.update2D(self.demo, sceneDt, realDt or uiDt)
     else
-        self.ui:update(uiDt, sceneDt)
+        self._ui:update(uiDt, sceneDt)
         for _, board in ipairs(self.world.billboards) do
             board.ui:update(realDt or dt)
         end

@@ -264,7 +264,7 @@ function T:draw()
         scene.world.environment.shadows.maxUpdateFaces = 195
         scene.renderer:draw(scene.world, scene.camera, 1, true)
         if zone == 'viewports' then
-            scene.ui:draw()
+            scene.root:find('World3D/World2D'):draw()
         end
         if zone == 'shadows' then
             scene.demo.directionalShadow.enabled = true

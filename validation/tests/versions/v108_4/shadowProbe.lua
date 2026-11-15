@@ -56,9 +56,9 @@ function Tests:draw()
     if self.frame == 30 and os.getenv('KATSA_DENSITY') and scene and scene.world then
         scene.world.environment.render.renderDensity = tonumber(os.getenv('KATSA_DENSITY'))
     end
-    if self.frame == 30 and os.getenv('KATSA_ADJUST2D') and scene and scene.ui then
+    if self.frame == 30 and os.getenv('KATSA_ADJUST2D') and scene and scene.root:find('World3D/World2D') then
         -- KATSA_ADJUST2D="brightness,contrast,saturation": World2D Adjustments for the capture.
-        local v, adjust = {}, scene.ui.environment.adjustments
+        local v, adjust = {}, scene.root:find('World3D/World2D').environment.adjustments
         for n in os.getenv('KATSA_ADJUST2D'):gmatch('[^,]+') do v[#v + 1] = tonumber(n) end
         adjust.enabled, adjust.brightness, adjust.contrast, adjust.saturation = true, v[1], v[2], v[3]
     end
@@ -129,7 +129,7 @@ function Tests:draw()
                 end
             end
         end
-        local button = find(scene.ui.content)
+        local button = find(scene.root:find('World3D/World2D').content)
         if button then
             button:press()
         end

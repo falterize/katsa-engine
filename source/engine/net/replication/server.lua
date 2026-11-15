@@ -30,7 +30,7 @@ function ServerReplication.new(endpoint, world, options)
         nextId = Storage.REPLICATED_ID + 1,
     }, ServerReplication)
     self.replicatedStorage, self.serverStorage = Storage.install(world, true)
-    self.roots = self.roots or { world.root, self.replicatedStorage }
+    self.roots = self.roots or { world._node, self.replicatedStorage }
     self.replicatedStorage.replicatedContainer = true
     self.records[Storage.REPLICATED_ID] = { node = self.replicatedStorage }
     return self

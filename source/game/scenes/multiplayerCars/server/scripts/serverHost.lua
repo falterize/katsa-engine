@@ -52,7 +52,7 @@ end
 
 function ServerHost:stop()
     self.game:stop()
-    self.world.root:destroy()
+    self.world._node:destroy()
 end
 
 return ServerHost

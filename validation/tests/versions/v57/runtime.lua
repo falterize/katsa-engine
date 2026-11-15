@@ -22,7 +22,7 @@ function R:update()
         local e = scene.demo.emitters[1]
         local system = world.particles
         self:check(
-            world.root.className == 'World3D'
+            world._node.className == 'World3D'
                 and require('source.engine.nodes').getClass('RigidBody').name == 'Body3D',
             'Canonical 3D node names and migration aliases resolve'
         )

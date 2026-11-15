@@ -8,7 +8,7 @@ function Editor.open(workspace)
     if workspace.popup then
         workspace.popup:close(true)
     end
-    workspace.selected = workspace.selected or workspace.scene.world.root
+    workspace.selected = workspace.selected or workspace.scene.world._node
     local popup =
         Popup.new(workspace, { key = 'ShaderLayers', kind = 'string', value = '', readOnly = true })
     workspace.popup = popup

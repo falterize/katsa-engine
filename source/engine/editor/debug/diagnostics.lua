@@ -7,7 +7,7 @@ function D.open(workspace)
     if workspace.popup then
         workspace.popup:close(true)
     end
-    workspace.selected = workspace.selected or workspace.scene.world.root
+    workspace.selected = workspace.selected or workspace.scene.world._node
     local popup = require('source.engine.editor.panels.popup').new(
         workspace,
         { key = 'Diagnostics', kind = 'string', value = '', readOnly = true }
