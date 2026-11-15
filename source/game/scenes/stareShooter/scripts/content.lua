@@ -19,6 +19,8 @@ function Content.new(scene)
     local player = Builder.create(scene)
     scene.destare = Destare.create(scene)
     local orbit = Orbit.new(scene, player)
+    -- Third person by default; the wheel still zooms into first person.
+    orbit.distance = 8
     scene.character = player
     scene.input = Input.new(scene, player, orbit)
     scene.input.keyHandler = function(key)

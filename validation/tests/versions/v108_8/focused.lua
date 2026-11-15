@@ -31,6 +31,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_8.nodePaths').run(self)
     require('validation.tests.versions.v108_8.shaderTags').run(self)
     require('validation.tests.versions.v108_8.noOpProperties').run(self)
+    require('validation.tests.versions.v108_8.stareCamera').run(self)
     print('PASSED ' .. self.count .. ' v108.8 focused checks')
     katsa.event.quit()
 end
