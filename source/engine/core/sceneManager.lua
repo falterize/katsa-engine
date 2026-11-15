@@ -298,6 +298,7 @@ function Manager:reportError(message)
     local scene = self.stack[#self.stack]
     if
         scene
+        and scene.root
         and scene.root:find('World3D/World2D')
         and not scene.root:find('World3D/World2D').released
         and scene.root:find('World3D/World2D').overlays

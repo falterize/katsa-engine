@@ -43,7 +43,7 @@ function R:update(dt)
         elseif name == 'nightPlayer' then
             self.scene.camera = self.scene.world:setCamera(self.scene.demo.third, 0.2)
             local old = self.scene.camera
-            local p = { unpack(old.position) }
+            local p = { old.position[1], old.position[2], old.position[3] }
             local debug = require('source.engine.cameras.debugCamera')
             debug.toggle(self.scene)
             self.scene.input:update(0.01)

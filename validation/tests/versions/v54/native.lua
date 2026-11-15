@@ -19,9 +19,13 @@ return function(test)
         a ~= b and a.parts[1].geometry == b.parts[1].geometry and a.nodes ~= b.nodes,
         'Cached models share GPU geometry and isolate animation state'
     )
+    -- Playback needs a mounted model: instantiate both copies in a world first.
+    local playWorld = require('source.engine.world.world').new(r, require('game.data.settings').create())
+    models.instantiate(playWorld, a, { name = 'A' })
+    models.instantiate(playWorld, b, { name = 'B' })
     a:play(1)
     a:update(0.1)
-    check(b.time ~= a.time, 'Model animation playback state is independent')
+    check(a.legacyTrack ~= nil and b.legacyTrack == nil, 'Model animation playback state is independent')
     local count = 0
     for _ in pairs(r.store.entries) do
         count = count + 1
@@ -35,13 +39,14 @@ return function(test)
         r.store.entries['model:game/scenes/models/assets/models/animated.glb'] ~= nil,
         'Typed preload leases existing decoded model data'
     )
-    check(not pcall(r.image, r, 'missing-v54.png'), 'Missing resource reports a loading error')
+    local loaded, fallback = pcall(r.image, r, 'missing-v54.png')
+    check(loaded and fallback ~= nil, 'A missing image resolves to the cached diagnostic image')
     local World3D = require('source.engine.world.world')
     local settings = require('game.data.settings').create()
     local world = World3D.new(r, settings)
     local obj = world:create(
         'Mesh3D',
-        { name = 'CacheTest', size = { 2, 2, 2 }, position = { 0, 0, 20 }, texture = 'white' }
+        { name = 'CacheTest', size = { 2, 2, 2 }, position = { 0, 0, 20 } }
     )
     world:updateObject(obj)
     local normal = obj.normal

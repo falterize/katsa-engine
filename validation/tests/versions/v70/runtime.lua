@@ -161,7 +161,7 @@ function T:update()
         end
         self:check(rolling.position[3] > startZ + 1, 'Objects roll down the inclined physical ramp')
         for _, body in ipairs(physicsScene.physics.bodies) do
-            for _, v in ipairs(body.object.position:toArray()) do
+            for _, v in ipairs(body.node.position:toArray()) do
                 assert(v == v and math.abs(v) < 100000, 'Unstable body pose')
             end
         end
@@ -174,6 +174,7 @@ function T:update()
         emitter:clear()
         scene.world.particles:update(1 / 60)
         self:check(emitter.liveCount <= 500, 'Rate and MaxParticles directly control births')
+        emitter.castShadow = true -- shadowGroup is listed only while the node takes part in shadows
         local fields = require('source.engine.editor.inspectors.properties').list(emitter)
         local keys = {}
         for _, field in ipairs(fields) do
@@ -300,7 +301,9 @@ function T:update()
             'CRT and suppression effects render without errors'
         )
         local menu = assert(self.manager:switch(require('game.runtime.menu').new))
-        menu.rebuildCategory('Physics')
+        local state = menu.state or menu
+        state.selectedTags = { physics = true }
+        state.rebuildList()
         local list = menu.root:find('World3D/World2D'):find('LevelList', true)
         self:check(#list.children > 0 and #list.children < 10, 'Menu category filters scene list')
         local scroll = menu.root:find('World3D/World2D'):scroll({
