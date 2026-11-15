@@ -131,6 +131,13 @@ function Content:updateNetwork(dt)
     end
 end
 
+-- With the window unfocused the lab still hosts: the server and the client connection keep
+-- ticking (a frozen server would let the client time out and drop every replicated node).
+function Content:updateInBackground(dt)
+    self.host:update(dt)
+    self.session:update(dt)
+end
+
 function Content:release()
     self.scene.physics.beforeStep = nil
     katsa.mouse.setRelativeMode(false)

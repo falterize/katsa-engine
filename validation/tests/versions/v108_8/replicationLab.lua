@@ -26,6 +26,15 @@ function Module.run(self)
         players and #players.children >= 4,
         'Every player and bot has a Players node (nickname and score attributes)'
     )
+    -- Unfocused: the hosted server and the connection keep ticking (the window is in the background).
+    local clockBefore, platformBefore0 = state.host.rounds.clock, session:node('Platform').position[1]
+    for _ = 1, 120 do
+        scene:updateInBackground(1 / 60, 1 / 60)
+    end
+    self:check(
+        state.host.rounds.clock < clockBefore and session:node('Platform').position[1] ~= platformBefore0,
+        'The server keeps running and the client keeps receiving while the window is unfocused'
+    )
     local x0 = session:node('Platform').position[1]
     frames(scene, 60)
     self:check(session:node('Platform').position[1] ~= x0, 'A property the server moves follows on the client')

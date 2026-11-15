@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- replicationLab keeps its hosted server and connection running while the window is unfocused (`updateInBackground`); before, a long alt-tab froze the server and the client lost every replicated node. Replicas list the properties the server sends; crouch holds on the spot and walking backward plays reversed.
 - replicationLab: coins and bots now use the arena's real surface height (they sat 1 unit low), and the walk cycle plays at the stareShooter rate (`HeroTree.stride`: 2.5x walking, 3.5x running).
 - The Explorer shows Debug / Input under the `Root` node, the root of everything. Client copies of replicated nodes read `replicated = true` (read-only), so they can be found in the Explorer.
 - Values of replicated properties are read-only in the inspector on client replicas. Guide snippets use a local for the main `World2D`. New `imgui` workflow builds the Windows and Android ImGui libraries.
