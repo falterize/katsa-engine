@@ -51,19 +51,23 @@ end
 -- `scene.root:find('World3D/Map/House')`. A name may contain '/' itself: the path is matched
 -- against the real children, so a node named "Test/" with a child "test2" is 'Test//test2' (the
 -- slash of the name, then the separator). Empty steps are ignored.
-local function resolve(node, rest)
-    rest = rest:gsub('^/+', '')
-    if rest == '' then
+-- Matches without allocating: it runs on every `scene.root:find('World3D/World2D')`.
+local function resolve(node, rest, start)
+    while rest:byte(start) == 47 do -- skip empty steps
+        start = start + 1
+    end
+    if start > #rest then
         return node
     end
     for _, child in ipairs(node.children) do
         local name = child.name
-        if type(name) == 'string' and name ~= '' then
-            if rest == name then
+        if type(name) == 'string' and name ~= '' and rest:find(name, start, true) == start then
+            local after = start + #name
+            if after > #rest then
                 return child
             end
-            if rest:sub(1, #name + 1) == name .. '/' then
-                local found = resolve(child, rest:sub(#name + 2))
+            if rest:byte(after) == 47 then
+                local found = resolve(child, rest, after + 1)
                 if found then
                     return found
                 end
@@ -89,17 +93,19 @@ function Hierarchy.find(self, name, recursive)
         end
         return nil
     end
+    if not recursive then
+        local found = resolve(self, name, 1)
+        return found ~= self and found or nil
+    end
     local function search(node)
-        local found = resolve(node, name)
+        local found = resolve(node, name, 1)
         if found and found ~= node then
             return found
         end
-        if recursive then
-            for _, child in ipairs(node.children) do
-                found = search(child)
-                if found then
-                    return found
-                end
+        for _, child in ipairs(node.children) do
+            found = search(child)
+            if found then
+                return found
             end
         end
     end
