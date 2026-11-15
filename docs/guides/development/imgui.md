@@ -57,8 +57,8 @@ A tool is a file in `source/plugins/imgui/tools/` listed in `tools/init.lua`:
 `{ id, title, key?, new(), draw(ig, scene, state, host) }`. `new` returns the tool's private
 state, `key` is the hotkey, `draw` runs every frame while the tool is open (`host:close(id)` closes
 it). `stats.lua` and `sceneTools.lua` are the references. Tools read the scene through its public
-methods (`toggleMusic`, `setTimeScale`, `resetView`, ...), so the legacy buttons and the windows
-share one implementation.
+methods (`toggleMusic`, `playSound`, `toggleBillboards`, ...) and fields (`scene.manager.time`,
+`scene.camera`); the legacy buttons and the windows each keep their own few lines for the rest.
 
 </details>
 

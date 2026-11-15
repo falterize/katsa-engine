@@ -6,7 +6,7 @@ function Scene.new(scene, context)
     self.counter = scene.world:create('Counter', { name = 'SceneCounter' })
     local Counter = context:require('systems.counter')
     self.system = scene.systems:add('counter', Counter.new(self.counter), true)
-    scene:createPhysics()
+    scene:createPhysics3D()
     return self
 end
 

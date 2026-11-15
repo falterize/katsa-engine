@@ -131,7 +131,7 @@ a layout version retain the earlier compatibility loader. New scenes use version
 `unknown`) for a launcher to show. Projects declare the same in `source/game/data/project.lua`
 (`version`). A mismatch never blocks loading.
 
-World settings apply before creation. `scene:createPhysics()` merges call-site
+World settings apply before creation. `scene:createPhysics3D()` merges call-site
 defaults, scene settings, then explicit launch options. `physicsBackend` overrides
 `options.physics.backend`; `auto` uses the engine default with normal fallback.
 Stats reports the actual solver. `kind = 'interface'` selects the camera-free host.
@@ -291,8 +291,7 @@ that uses the UI often keeps it in a local: `local ui = scene.root:find('World3D
 
 Lifecycle: `load`, `enter`, `exit`, `pause`, `resume`, `release`; frame: `update(dt, realDt)`,
 `draw`; input: `pointerpressed/moved/released`, `keypressed/keyreleased`, `textinput`,
-`wheelmoved`, `gamepadpressed/released`. The common runtime adds `toggleLightLimit`,
-`resetView`, `setTimeScale`, `cycleTimeScale`, `toggleEffects`.
+`wheelmoved`, `gamepadpressed/released`.
 
 </details>
 

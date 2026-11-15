@@ -65,7 +65,7 @@ function Host:createPhysics2D(options, ui)
     return require('source.engine.scenes.physics2D').create(self, options, ui)
 end
 
-function Host:createPhysics(options)
+function Host:createPhysics3D(options)
     assert(not self.physics, 'Scene physics is already configured')
     local merged = Loader.configure(options or {}, self.settings.physics)
     merged = Loader.configure(merged, self.options.physics)
@@ -73,7 +73,7 @@ function Host:createPhysics(options)
     if merged.backend == 'auto' then
         merged.backend = nil
     end
-    self.physics = self.world:createPhysics(merged)
+    self.physics = self.world:createPhysics3D(merged)
     return self.physics
 end
 

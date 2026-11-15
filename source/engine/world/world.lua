@@ -94,12 +94,12 @@ function World3D.new(resources, lighting, options)
     resources:own(self.geometry.cube.mesh)
     resources:own(self.geometry.plane.mesh)
     if options and options.physics then
-        self:createPhysics(options.physics)
+        self:createPhysics3D(options.physics)
     end
     return self
 end
 
-function World3D:createPhysics(settings)
+function World3D:createPhysics3D(settings)
     assert(not self.physics, 'World physics is already configured')
     self.physics = require('source.engine.physics').new(settings)
     return self.physics

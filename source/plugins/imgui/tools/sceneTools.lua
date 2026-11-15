@@ -30,7 +30,12 @@ function SceneTools.draw(ig, scene, _, host)
         local effects
         effects, _ = ig.checkbox('Shader effects', scene.effectsEnabled)
         if effects then
-            scene:toggleEffects()
+            scene.effectsEnabled = not scene.effectsEnabled
+            if scene.objectEffect then
+                scene.objectEffect.enabled = scene.effectsEnabled
+            end
+            scene.uiEffect.enabled = scene.effectsEnabled
+            scene:syncButtons()
         end
         ig.separator()
         if ig.button('Play sound') then
@@ -43,7 +48,8 @@ function SceneTools.draw(ig, scene, _, host)
         end
         ig.sameLine()
         if ig.button('Reset view') then
-            scene:resetView()
+            scene.camera.position = { 0, 0, 0 }
+            scene.camera.rotation = { 0, 0, 0 }
         end
         local settings = scene.world.environment.lightSettings
         local limits = { '12 lights', '32 lights' }
@@ -55,7 +61,9 @@ function SceneTools.draw(ig, scene, _, host)
         local scale = scene.manager.time.scale
         local moved, value = ig.sliderFloat('Time scale', scale, 0, 2)
         if moved then
-            scene:setTimeScale(value)
+            scene.manager.time:setScale(value)
+            scene.audio:update(scene.camera)
+            scene:syncButtons()
         end
         if ig.collapsingHeader('Audio mixer', true) then
             for _, name in ipairs(GROUPS) do

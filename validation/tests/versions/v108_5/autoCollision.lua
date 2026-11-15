@@ -15,7 +15,7 @@ function Module.run(self)
     for _, backend in ipairs({ 'oimo', 'jolt' }) do
         local resources = self.manager.resources:scope()
         local world = World.new(resources)
-        world:createPhysics({ backend = backend, gravity = { 0, 0, 0 } })
+        world:createPhysics3D({ backend = backend, gravity = { 0, 0, 0 } })
         local path = 'validation/tests/fixtures/models/autoCollision.glb'
         local model = Models.load(path, resources)
         local objects, root = Models.instantiate(world, model, { name = 'Level' })

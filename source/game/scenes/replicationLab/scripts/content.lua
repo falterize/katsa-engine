@@ -28,7 +28,7 @@ local function buildTree(scene, player)
 end
 
 function Content.new(scene)
-    scene:createPhysics({
+    scene:createPhysics3D({
         unitsPerMeter = 1,
         gravity = { 0, -24.5, 0 },
         fixedDelta = 1 / 60,

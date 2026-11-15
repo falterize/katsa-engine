@@ -36,7 +36,7 @@ function Game.new(manager, zone, sampleType, options)
     }, Game)
 end
 
-function Game:createPhysics(settings)
+function Game:createPhysics3D(settings)
     assert(not self.physics, 'Scene physics is already configured')
     local merged = {}
     for key, value in pairs(settings or {}) do
@@ -52,7 +52,7 @@ function Game:createPhysics(settings)
     if merged.backend == 'auto' then
         merged.backend = nil
     end
-    self.physics = self.world:createPhysics(merged)
+    self.physics = self.world:createPhysics3D(merged)
     return self.physics
 end
 

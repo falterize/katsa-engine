@@ -97,7 +97,7 @@ function Lab.new(scene)
     world.environment.ambient = { 150, 165, 185 }
     world.environment.shadows.enabled = true
     -- Baking samples the physics world; the walkers are dynamic bodies with real gravity.
-    scene:createPhysics({ gravity = { 0, -24.5, 0 }, unitsPerMeter = 1 })
+    scene:createPhysics3D({ gravity = { 0, -24.5, 0 }, unitsPerMeter = 1 })
     world:create('DirectionalLight3D', {
         name = 'Sun',
         rotation = { 55, 35, 0 },

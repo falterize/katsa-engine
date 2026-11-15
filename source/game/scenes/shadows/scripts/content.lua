@@ -12,7 +12,7 @@ function Demo.new(scene)
         zone = zone,
         velocity = {},
     }, Demo)
-    scene:createPhysics({ unitsPerMeter = 20 })
+    scene:createPhysics3D({ unitsPerMeter = 20 })
     scene.world.physics = scene.physics
     scene.camera.position = { 0, 65, -160 }
     scene.camera.rotation = { -12, 0, 0 }

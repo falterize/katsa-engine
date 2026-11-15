@@ -21,7 +21,7 @@ function Tests.run(tester)
     local b = other:create('Body2D', { position = { 100, 100 }, linearDamping = 0 })
     a.physics:setVelocity({ 60, 0 })
     b.physics:setVelocity({ 60, 0 })
-    world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
+    world:createPhysics3D({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local spatial = world:create('Body3D', { position = { 0, 0, 0 }, linearDamping = 0 })
     spatial.physics:setVelocity({ 1, 0, 0 })
     world:registerNodeType('ClockScript2D', {

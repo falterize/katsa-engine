@@ -18,7 +18,7 @@ manager:switch(Game.new, 'animationPhysicsLab', {
 overrides example defaults such as units or worker policy; `physicsBackend` takes
 precedence over `physics.backend`. Legacy third-argument sample-type strings still
 work; options can then be passed as the fourth argument. Examples use
-`scene:createPhysics(settings)` so scene options reach every physics example.
+`scene:createPhysics3D(settings)` so scene options reach every physics example.
 Only scenes creating physics instantiate a solver. Backend choices for successive
 scenes are independent. Command-line/environment defaults remain effective when
 the scene does not provide a backend.
@@ -28,11 +28,11 @@ For an engine-only world, create physics before adding Body3D nodes:
 ```lua
 local World = require('source.engine.world.world')
 local world = World.new(resources, nil, { physics = { backend = 'oimo' } })
--- Or: local world = World.new(resources); world:createPhysics({ backend = 'jolt' })
+-- Or: local world = World.new(resources); world:createPhysics3D({ backend = 'jolt' })
 ```
 
 Existing `World.new(resources, lighting)` and direct `world.physics = Physics.new(...)`
-remain supported. `createPhysics` rejects replacing an already configured world;
+remain supported. `createPhysics3D` rejects replacing an already configured world;
 destroy/recreate a world to select another solver. Stats shows the actual backend
 and any auto-fallback status; see [Stats history](../development/statistics.md).
 

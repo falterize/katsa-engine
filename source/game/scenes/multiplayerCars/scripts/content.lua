@@ -63,7 +63,7 @@ function Session.new(scene)
         }, Session)
     local profiler = scene.manager.profiler
     -- Meters, real gravity: the terrain and walls are static bodies the vehicles will drive on.
-    scene:createPhysics({
+    scene:createPhysics3D({
         unitsPerMeter = 1,
         gravity = { 0, -9.81, 0 },
         backend = 'jolt',

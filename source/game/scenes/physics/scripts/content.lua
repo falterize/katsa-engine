@@ -11,7 +11,7 @@ function Demo.new(scene)
         scene = scene,
         zone = zone,
     }, Demo)
-    scene:createPhysics({ unitsPerMeter = 20 })
+    scene:createPhysics3D({ unitsPerMeter = 20 })
     scene.world.physics = scene.physics
     scene.physics:setInterpolation(true)
     scene.camera.position = { 0, 65, -160 }

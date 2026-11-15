@@ -10,7 +10,7 @@ function Demo.new(scene)
         Demo
     )
     scene.showStats = false
-    scene:createPhysics()
+    scene:createPhysics3D()
     scene.camera.position = { 0, 100, -200 }
     scene.camera.rotation = { -18, 0, 0 }
     scene.camera.drawDistance = 1000

@@ -13,7 +13,7 @@ function Demo.new(scene)
         velocity = {},
         orbitTime = 0,
     }, Demo)
-    scene:createPhysics({ unitsPerMeter = 20, interpolate = true })
+    scene:createPhysics3D({ unitsPerMeter = 20, interpolate = true })
     scene.world.physics = scene.physics
     scene.camera.position = { 0, 65, -160 }
     scene.camera.rotation = { -12, 0, 0 }

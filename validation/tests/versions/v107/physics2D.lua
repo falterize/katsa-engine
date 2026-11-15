@@ -422,7 +422,7 @@ function Tests:cameraAndMixed()
         near(px, 200) and near(py, 200),
         'Solver world pose converts back to local hierarchy coordinates'
     )
-    world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
+    world:createPhysics3D({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local spatial = world:create('Body3D', { position = { 0, 10, 0 }, size = { 1, 1, 1 } })
     spatial.physics:setVelocity({ 1, 0, 0 })
     target.physics:setVelocity({ 10, 0 })

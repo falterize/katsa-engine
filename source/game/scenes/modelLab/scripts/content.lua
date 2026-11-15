@@ -13,7 +13,7 @@ function Lab.new(scene)
     scene.world.environment.ambient = { 160, 175, 190 }
     require('scene.scripts.lighting.directional').create(scene.world).enabled = true
     scene.world.environment.shadows.enabled = true
-    scene:createPhysics({ unitsPerMeter = 20 })
+    scene:createPhysics3D({ unitsPerMeter = 20 })
     scene.world.physics = scene.physics
     scene.camera.position = { 0, 65, -105 }
     scene.camera.rotation = { -10, 0, 0 }

@@ -4,7 +4,7 @@ local Spatial = {}
 
 function Spatial.create(state)
     local scene = state.scene
-    local physics = scene:createPhysics({ unitsPerMeter = 2, gravity = { 0, -19.62, 0 } })
+    local physics = scene:createPhysics3D({ unitsPerMeter = 2, gravity = { 0, -19.62, 0 } })
     scene.camera.position = { 0, 5, -14 }
     scene.camera.rotation = { -12, 0, 0 }
     local function box(name, position, size, kind)

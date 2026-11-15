@@ -87,7 +87,7 @@ The generated game's bootstrap loads its configured scene directly. Add another
 scene by copying its folder/categories and changing `source/game/data/project.lua.startScene`, or
 use `katsa . --scene source/game/scenes/another-scene`. Scene ZIP packages use the
 same layout. Set `physics.backend` to `jolt`, `oimo` or `auto`; call
-`scene:createPhysics()` in scene creation when physics is actually needed.
+`scene:createPhysics3D()` in scene creation when physics is actually needed.
 The example cube does not create a physics world unnecessarily.
 
 Image/audio/model references can use `scene://...` and `shared://...`; the latter

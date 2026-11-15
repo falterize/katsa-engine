@@ -10,7 +10,7 @@ end
 function Module.run(self)
     local resources = self.manager.resources:scope()
     local world = World.new(resources)
-    world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
+    world:createPhysics3D({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local box = world:create('Body3D', { position = { 0, 10, 0 }, size = { 2, 2, 2 } })
     local body = box.physics
     self:check(

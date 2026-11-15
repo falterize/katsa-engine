@@ -50,7 +50,7 @@ function Tests.run(tester)
     release()
     for _, backend in ipairs({ 'oimo', 'jolt' }) do
         world, ui, physics, body, release = tester:environment()
-        local solver = world:createPhysics({ backend = backend, gravity = { 0, -120, 0 } })
+        local solver = world:createPhysics3D({ backend = backend, gravity = { 0, -120, 0 } })
         tester:check(
             near(world._node.gravity, 120) and world._node.gravityDirection[2] == -1,
             backend .. ': World3D preserves existing vector gravity settings'

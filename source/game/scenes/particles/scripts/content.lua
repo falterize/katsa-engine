@@ -111,7 +111,7 @@ function Lab.new(scene)
     scene.world.environment.debug.gizmos.enabled = false
     scene.world.environment.fog.enabled = false
     scene.world.environment.shadows.enabled = false
-    scene:createPhysics({ unitsPerMeter = 20 })
+    scene:createPhysics3D({ unitsPerMeter = 20 })
     scene.world.physics = scene.physics
     Mesh.create(scene.world, {
         name = 'ParticleFloor',

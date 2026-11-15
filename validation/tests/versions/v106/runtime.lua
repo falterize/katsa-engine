@@ -72,7 +72,7 @@ function Tests:scenes()
         'World creation accepts explicit physics settings'
     )
     self:check(
-        not pcall(world.createPhysics, world, { backend = 'jolt' }),
+        not pcall(world.createPhysics3D, world, { backend = 'jolt' }),
         'Configured world cannot silently replace a live solver'
     )
     world:release()

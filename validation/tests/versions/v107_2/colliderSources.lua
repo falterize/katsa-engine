@@ -21,7 +21,7 @@ function Tests.run(tester)
     for _, backend in ipairs({ 'oimo', 'jolt' }) do
         local resources = tester.manager.resources:scope()
         local world = World.new(resources)
-        world:createPhysics({ backend = backend, gravity = { 0, 0, 0 } })
+        world:createPhysics3D({ backend = backend, gravity = { 0, 0, 0 } })
         local body = world:create('Body3D', { bodyType = 'Static', position = { 20, 30, 40 } })
         local collider = world:create('Collider3D', {
             shape = 'Geometry',

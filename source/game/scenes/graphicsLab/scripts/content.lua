@@ -6,7 +6,7 @@ Lab.__index = Lab
 function Lab.new(scene)
     local self = setmetatable({ scene = scene }, Lab)
     local w = scene.world
-    scene:createPhysics({ unitsPerMeter = 20, interpolate = true })
+    scene:createPhysics3D({ unitsPerMeter = 20, interpolate = true })
     w.physics = scene.physics
     scene.camera.position = { 0, 80, -165 }
     scene.camera.rotation = { -12, 0, 0 }

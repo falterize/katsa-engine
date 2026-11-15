@@ -43,7 +43,7 @@ function Tests.run(tester)
     local World = require('source.engine.world.world')
     local resources = tester.manager.resources:scope()
     local world = World.new(resources)
-    world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
+    world:createPhysics3D({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local body = world:create('Body3D', { bodyType = 'Dynamic' })
     local collider = world:create('Collider3D', {
         shape = 'Geometry',

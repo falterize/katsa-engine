@@ -11,7 +11,7 @@ function Lab.new(scene)
     scene.world.environment.debug.gizmos.enabled = false
     scene.camera.position = { 0, 40, -120 }
     scene.camera.rotation = { -12, 0, 0 }
-    scene:createPhysics({ unitsPerMeter = 20 })
+    scene:createPhysics3D({ unitsPerMeter = 20 })
     scene.world.physics = scene.physics
     self.body = scene.world:create(
         'Body3D',

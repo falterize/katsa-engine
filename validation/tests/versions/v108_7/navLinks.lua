@@ -6,7 +6,7 @@ local Tests = {}
 
 local function build()
     local world = World.new(Tests.manager.resources:scope())
-    world:createPhysics({ backend = 'oimo', gravity = { 0, 0, 0 } })
+    world:createPhysics3D({ backend = 'oimo', gravity = { 0, 0, 0 } })
     Plugins.activate(world, { 'pathfinding' })
     world:create('Body3D', { bodyType = 'Static', size = { 40, 1, 40 }, position = { 0, -0.5, 0 } })
     return world

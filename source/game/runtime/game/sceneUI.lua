@@ -172,10 +172,12 @@ function Methods:buildUI()
     end)
     x = 16
     x = button('lights', '12 / 32 lights', x, 78, 170, function()
-        self:toggleLightLimit()
+        local settings = self.world.environment.lightSettings
+        settings.maxActiveLights = settings.maxActiveLights == 12 and 32 or 12
     end)
     x = button('reset', 'Reset view', x, 78, 160, function()
-        self:resetView()
+        self.camera.position = { 0, 0, 0 }
+        self.camera.rotation = { 0, 0, 0 }
     end)
     x = button('motion', 'Motion', x, 78, 170, function()
         self.billboardMotion = not self.billboardMotion
@@ -185,10 +187,18 @@ function Methods:buildUI()
         self.mixerOverlay.visible = not self.mixerOverlay.visible
     end)
     x = button('time', 'time', x, 78, 140, function()
-        self:cycleTimeScale()
+        local scale = self.manager.time.scale
+        self.manager.time:setScale(scale == 1 and 0.5 or scale == 0.5 and 0 or 1)
+        self.audio:update(self.camera)
+        self:syncButtons()
     end)
     button('effects', 'Shaders', x, 78, 175, function()
-        self:toggleEffects()
+        self.effectsEnabled = not self.effectsEnabled
+        if self.objectEffect then
+            self.objectEffect.enabled = self.effectsEnabled
+        end
+        self.uiEffect.enabled = self.effectsEnabled
+        self:syncButtons()
     end)
     self.uiEffect = self._ui:create('Shader2D', {
         name = 'UIPulse',
@@ -319,41 +329,6 @@ function Methods:buildMixer()
         fontSize = 15,
         align = 'left',
     }, body)
-end
-
--- Scene actions shared by the Tools panel and the ImGui scene tools window.
-function Methods:toggleLightLimit()
-    local settings = self.world.environment.lightSettings
-    settings.maxActiveLights = settings.maxActiveLights == 12 and 32 or 12
-end
-
-function Methods:resetView()
-    self.camera.position = { 0, 0, 0 }
-    self.camera.rotation = { 0, 0, 0 }
-end
-
-function Methods:setTimeScale(scale)
-    self.manager.time:setScale(scale)
-    self.audio:update(self.camera)
-    if self.syncButtons and self.buttons then
-        self:syncButtons()
-    end
-end
-
-function Methods:cycleTimeScale()
-    local scale = self.manager.time.scale
-    self:setTimeScale(scale == 1 and 0.5 or scale == 0.5 and 0 or 1)
-end
-
-function Methods:toggleEffects()
-    self.effectsEnabled = not self.effectsEnabled
-    if self.objectEffect then
-        self.objectEffect.enabled = self.effectsEnabled
-    end
-    self.uiEffect.enabled = self.effectsEnabled
-    if self.buttons then
-        self:syncButtons()
-    end
 end
 
 function Methods:playSound()
