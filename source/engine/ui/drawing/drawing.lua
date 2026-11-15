@@ -1,5 +1,6 @@
 local ipairs = require('../../math.array').ipairs
 local PixelGrid = require('./pixelGrid')
+local Tags = require('../../graphics.shaders.tags')
 local Drawing = {}
 
 function Drawing.install(UI)
@@ -206,8 +207,11 @@ function Drawing.install(UI)
             n:drawScrollBar(self)
         end
         require('source.engine.ui.drawing.modifiers').drawBorders(n)
-        if n:isA('Shader2D') then
+        if n:isA('Shader2D') and not (rawget(n, '_tags') and Tags.has(n)) then
             require('source.engine.ui.drawing.compositor').apply(self, n)
+        end
+        if rawget(n, '_tags') then
+            require('source.engine.ui.drawing.compositor').applyTagged(self, n)
         end
         if n.material then
             g.pop()

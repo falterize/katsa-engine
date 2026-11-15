@@ -239,6 +239,27 @@ function PropertyRead.install(Properties)
                 reason = 'Controlled by the server; a client copy cannot change what is replicated.',
             }
         end
+        if target._node and target.getTags then
+            -- Tags the engine interprets (`#shader-<group>`) are listed apart from the free ones.
+            local free, engine = {}, {}
+            local Tags = require('source.engine.graphics.shaders.tags')
+            for _, tag in ipairs(target:getTags()) do
+                local list = Tags.is(tag) and engine or free
+                list[#list + 1] = tag
+            end
+            result[#result + 1] = {
+                key = 'tags',
+                kind = 'string',
+                value = table.concat(free, ', '),
+                hint = 'Free tags for finding nodes (Node:findByTag). Separate them with commas.',
+            }
+            result[#result + 1] = {
+                key = 'engineTags',
+                kind = 'string',
+                value = table.concat(engine, ', '),
+                hint = 'Tags the engine interprets: #shader-<group> binds a Shader3D/Shader2D to the nodes that carry the same tag.',
+            }
+        end
         if target._node and target.getAttributeNames then
             local view = target:attributeView()
             for _, name in ipairs(target:getAttributeNames()) do

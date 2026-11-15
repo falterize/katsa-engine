@@ -217,13 +217,18 @@ function Hierarchy.addTag(self, tag)
     assert(not self.destroyed and not self._destroying, 'Tags require a live node')
     assert(type(tag) == 'string' and tag ~= '', 'Tag must be a nonempty string')
     self._tags = self._tags or {}
+    local added = not self._tags[tag]
     self._tags[tag] = true
+    if added then
+        require('source.engine.graphics.shaders.tags').changed(self, tag)
+    end
     return self
 end
 
 function Hierarchy.removeTag(self, tag)
-    if self._tags then
+    if self._tags and self._tags[tag] then
         self._tags[tag] = nil
+        require('source.engine.graphics.shaders.tags').changed(self, tag)
     end
     return self
 end

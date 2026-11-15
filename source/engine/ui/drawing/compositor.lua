@@ -2,6 +2,7 @@ local unpack = require('../../math.array').unpack
 local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Programs = require('../../graphics.shaders.programs')
+local Tags = require('../../graphics.shaders.tags')
 -- Screen-space post effects operate on a snapshot, never read their draw target.
 local Compositor = {}
 
@@ -16,7 +17,9 @@ local function active(node)
         and node.shaderTransparency < 1
 end
 
-local function collect(list, out)
+-- Collects the visible effects of the frame. A tagged Shader2D lands in `tagged` (and in `out`, for
+-- the layer masks); any other UI node that carries a `#shader-` tag lands in `targets`.
+local function collect(list, out, tagged, targets)
     for _, node in ipairs(list) do
         if
             node:isA('UINode')
@@ -24,10 +27,17 @@ local function collect(list, out)
             and not node._layoutCollapsed
             and (not node.ui or node.ui:layerVisible(node))
         then
+            local shaderTagged = rawget(node, '_tags') and Tags.has(node)
             if active(node) then
                 out[#out + 1] = node
+                if shaderTagged then
+                    tagged[#tagged + 1] = node
+                end
             end
-            collect(node.children, out)
+            if shaderTagged and not node:isA('Shader2D') then
+                targets[#targets + 1] = node
+            end
+            collect(node.children, out, tagged, targets)
         end
     end
 end
@@ -91,7 +101,28 @@ function Compositor.draw(ui, draw)
     for i = #effects, 1, -1 do
         effects[i] = nil
     end
-    collect(ui.children, effects)
+    local tagged = ui._taggedEffects or {}
+    local targets = ui._taggedTargets or {}
+    ui._taggedEffects, ui._taggedTargets = tagged, targets
+    for i = #tagged, 1, -1 do
+        tagged[i] = nil
+    end
+    for i = #targets, 1, -1 do
+        targets[i] = nil
+    end
+    collect(ui.children, effects, tagged, targets)
+    local layerWorld = ui._sceneWorld or ui.owner and ui.owner._world
+    if #tagged > 1 and layerWorld then
+        -- Tagged effects sharing a tag stack by shader layer priority, then zIndex.
+        table.sort(tagged, function(a, b)
+            local pa = layerWorld.shaderLayers:priority(a.shaderLayer)
+            local pb = layerWorld.shaderLayers:priority(b.shaderLayer)
+            if pa ~= pb then
+                return pa < pb
+            end
+            return (a.zIndex or 0) < (b.zIndex or 0)
+        end)
+    end
     local alpha = 1 - math.max(0, math.min(1, ui.transparency or 0))
     if alpha <= 0 or ui.visible == false then
         return
@@ -191,15 +222,18 @@ local function shader(ui, node)
     return s
 end
 
-function Compositor.apply(ui, node)
+-- Runs `node`'s effect over `region`'s rectangle (the node itself unless it is tagged: then the
+-- effect runs over each target that carries its tag, see `Compositor.applyTagged`).
+function Compositor.apply(ui, node, region)
     if not ui._sceneColor or not active(node) then
         return
     end
+    region = region or node
     local g = katsa.graphics
     local scene = ui._sceneColor
     local w, h = scene:getDimensions()
-    local x, y = g.transformPoint(node._x, node._y)
-    local x2, y2 = g.transformPoint(node._x + node._width, node._y + node._height)
+    local x, y = g.transformPoint(region._x, region._y)
+    local x2, y2 = g.transformPoint(region._x + region._width, region._y + region._height)
     if x2 <= x or y2 <= y then
         return
     end
@@ -246,7 +280,16 @@ function Compositor.apply(ui, node)
     local masks = {}
     for _, upper in ipairs(ui._postEffects) do
         if upper ~= node and world.shaderLayers:suppresses(upper.shaderLayer, node.shaderLayer) then
-            masks[#masks + 1] = upper
+            if rawget(upper, '_tags') and Tags.has(upper) then
+                -- A tagged effect masks only where its targets are.
+                for _, target in ipairs(ui._taggedTargets) do
+                    if Tags.shares(upper, target) then
+                        masks[#masks + 1] = target
+                    end
+                end
+            else
+                masks[#masks + 1] = upper
+            end
         end
     end
     local regions = { { x, y, x2 - x, y2 - y } }
@@ -258,12 +301,12 @@ function Compositor.apply(ui, node)
             upper._height * ui.scale,
         })
     end
-    for _, region in ipairs(regions) do
+    for _, cut in ipairs(regions) do
         g.setScissor()
         if cx then
             g.setScissor(cx, cy, cw, ch)
         end
-        g.intersectScissor(unpack(region))
+        g.intersectScissor(unpack(cut))
         g.draw(snapshot, node._effectQuad, x, y)
     end
     g.flushBatch()
@@ -271,6 +314,20 @@ function Compositor.apply(ui, node)
     g.setScissor()
     if cx then
         g.setScissor(cx, cy, cw, ch)
+    end
+end
+
+-- Called after `target` and its children are drawn: every tagged effect that shares a `#shader-`
+-- tag with it processes the target's rectangle, in layer priority order.
+function Compositor.applyTagged(ui, target)
+    local tagged = ui._taggedEffects
+    if not ui._sceneColor or not tagged or target:isA('Shader2D') then
+        return
+    end
+    for _, effect in ipairs(tagged) do
+        if effect ~= target and Tags.shares(effect, target) then
+            Compositor.apply(ui, effect, target)
+        end
     end
 end
 

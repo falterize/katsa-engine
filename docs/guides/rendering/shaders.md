@@ -396,6 +396,27 @@ sampling/evaluation on affected meshes. This does not reorder shadow-map generat
 depth passes or opaque/transparency dependencies. Maps can still serve other objects.
 Cached stacks are released with their world resource scope.
 
+## Shader tags
+
+Tag a `Shader3D` or `Shader2D` with `#shader-<group>` and it acts only on the nodes
+that carry the same tag, wherever they are in the tree.
+
+```lua
+local glow = scene.world:create('Shader3D', { shaderPath = 'shared://shaders/glow.glsl' })
+glow:addTag('#shader-glow')
+mesh:addTag('#shader-glow')     -- receives the shader
+mesh:removeTag('#shader-glow')  -- unbinds it again
+```
+
+- Shaders of one group stack by their layer priority; shader layers and the
+  interaction matrix apply as usual, in 2D and 3D.
+- A shader without the tag keeps the subtree scope.
+- Tag the nodes themselves: children do not inherit the tag. `Shader2D` filters the
+  rectangle of each tagged UI node.
+- A shader binds only nodes of its own world kind; 2D and 3D groups never mix.
+- Environment, sky and fog shaders are not tag-bound.
+- The inspector lists these tags in `engineTags`, apart from the free `tags` row.
+
 ## Errors
 
 <details><summary>Error messages and how they are reported</summary><br>

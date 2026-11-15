@@ -3,6 +3,7 @@ local pairs = require('../../math.array').pairs
 local Material = require('../materials.material')
 local Programs = require('./programs')
 local EnvironmentShaders = require('./environmentShaders')
+local Tags = require('./tags')
 
 local Resolver = {}
 
@@ -47,6 +48,13 @@ function Resolver.resolve(world, object)
             and EnvironmentShaders.kind(world, shader) == 'spatial'
         then
             local ancestor = object
+            if Tags.has(shader) then
+                -- A tagged shader acts on the nodes that carry its tag, wherever they are.
+                if Tags.shares(shader, object) then
+                    nodes[#nodes + 1] = shader
+                end
+                ancestor = nil
+            end
             while ancestor do
                 if
                     ancestor:isA('World2D')
