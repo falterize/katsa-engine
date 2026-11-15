@@ -6,17 +6,8 @@ actual location on other platforms. Stats CSV files live in `stats-logs/`;
 verified native libraries live in content-addressed `native-cache/` directories.
 Project source, assets and vendor files stay inside the project or archive.
 
-`source/engine/core/saveData.lua` performs a one-time migration from the previous
-`katsa-sbox-v73` identity before scene services create caches. It copies only
-entries belonging to the legacy save mount, excludes project assets and symlinks,
-and preserves existing destination files. The previous folder remains available
-to older releases. Successful completion writes `.legacy-save-migrated` in the
-new folder; later launches do not copy the old folder again.
-
-A failed read/write restores the current identity and leaves migration retryable.
-The old files remain untouched. Startup prints a migration failure to the console;
-check folder permissions if it appears. New logs and caches always use the new
-identity. Migration never uploads or deletes user data.
+The identity is `SaveData.identity` in `source/engine/core/saveData.lua`; a project passes it as
+`identity` in `project.lua`. Saves kept under an older identity are not migrated.
 
 ## Example
 

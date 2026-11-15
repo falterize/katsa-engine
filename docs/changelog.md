@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- The obsolete project name is gone from the engine: the window title is `Katsa Engine <version>`, the internal sound effect name is `KatsaEffect`, and the one-time migration of the old save folder was removed with `SaveData.migrate`.
 - `source/game` moved to `game/` in the repository root (`characters`, `runtime`, `data`, `scenes`, `sceneCatalog`, `sceneTags`); `source/` holds only the engine (`engine`, `katsa`, `plugins`). Modules are required as `game.*`; there are no aliases for the old `source.game.*` names.
 - README has a Credits section (libraries, the default font, the Teletubby model by @falterize under CC BY 4.0). A read-only text row in the inspector (for example `replicatedProperties` on a client copy) always opens its value, one entry per line, even when empty.
 - Engine version is `1.0.8b` (beta; `Version.release` in `source/engine/core/version.lua`). `version` in a scene's `settings.lua` and in `project.lua` declares the engine it was made for; a difference warns in the console (`Version.check`), nothing blocks. Test: `v108_8/engineVersion.lua`.
