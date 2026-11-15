@@ -95,20 +95,18 @@ function PropertyWrite.install(Properties)
     end
 
     function Properties.set(scene, target, field, text, component)
-        if (field.key == 'tags' or field.key == 'engineTags') and not field.attribute then
+        if field.key == 'tags' and not field.attribute then
             local Tags = require('source.engine.graphics.shaders.tags')
-            local wanted, engine = {}, field.key == 'engineTags'
+            local wanted = {}
             for tag in tostring(text):gmatch('[^,%s]+') do
-                if engine and not Tags.is(tag) then
+                -- A leading # marks an engine tag: a malformed one would silently bind nothing.
+                if tag:sub(1, 1) == '#' and not Tags.is(tag) then
                     return false, 'Engine tags look like #shader-<group>: ' .. tag
-                end
-                if not engine and Tags.is(tag) then
-                    return false, tag .. ' is an engine tag: enter it under engineTags'
                 end
                 wanted[tag] = true
             end
             for _, tag in ipairs(target:getTags()) do
-                if Tags.is(tag) == engine and not wanted[tag] then
+                if not wanted[tag] then
                     target:removeTag(tag)
                 end
             end

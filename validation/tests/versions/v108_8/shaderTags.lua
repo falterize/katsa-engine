@@ -172,21 +172,20 @@ local function inspector(self)
         end
     end
     local mesh = world:create('Mesh3D', { name = 'Tagged' })
-    local free, engine = rowOf(mesh, 'tags'), rowOf(mesh, 'engineTags')
-    self:check(free and engine, 'The inspector lists free tags and engine tags in separate rows')
+    local row = rowOf(mesh, 'tags')
+    self:check(row ~= nil, 'The inspector lists the tags in one row')
     self:check(
-        Properties.set(nil, mesh, engine, '#shader-fx') and mesh:hasTag('#shader-fx'),
-        'An engine tag is added from the inspector'
+        Properties.set(nil, mesh, row, 'enemy, #shader-fx') and mesh:hasTag('#shader-fx') and mesh:hasTag('enemy'),
+        'Free and engine tags are edited together'
     )
     self:check(
-        not Properties.set(nil, mesh, engine, 'plain') and not Properties.set(nil, mesh, free, '#shader-a'),
-        'Free and engine tags are validated against their own row'
+        not Properties.set(nil, mesh, row, '#shader_fx') and mesh:hasTag('enemy'),
+        'A malformed engine tag is rejected and nothing changes'
     )
-    Properties.set(nil, mesh, free, 'enemy, boss')
-    Properties.set(nil, mesh, engine, '')
+    Properties.set(nil, mesh, row, 'boss')
     self:check(
-        mesh:hasTag('enemy') and mesh:hasTag('boss') and not mesh:hasTag('#shader-fx'),
-        'Clearing the engine row removes only engine tags'
+        mesh:hasTag('boss') and not mesh:hasTag('enemy') and not mesh:hasTag('#shader-fx'),
+        'Tags missing from the row are removed'
     )
     world:release()
 end

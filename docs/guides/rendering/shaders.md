@@ -415,7 +415,7 @@ mesh:removeTag('#shader-glow')  -- unbinds it again
   rectangle of each tagged UI node.
 - A shader binds only nodes of its own world kind; 2D and 3D groups never mix.
 - Environment, sky and fog shaders are not tag-bound.
-- The inspector lists these tags in `engineTags`, apart from the free `tags` row.
+- The inspector edits them in the ordinary `tags` row; a tag starting with `#` must look like `#shader-<group>`.
 
 ## Errors
 
