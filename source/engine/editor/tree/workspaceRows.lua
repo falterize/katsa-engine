@@ -64,7 +64,7 @@ function WorkspaceRows.install(Workspace)
     function Workspace:refreshTree()
         local roots, extras = {}, nil
         if self.scene.root then
-            -- Game is the root of everything, the editor's Debug / Input settings included.
+            -- Root is the root of everything, the editor's Debug / Input settings included.
             roots[1] = self.scene.root
             extras = { [self.scene.root] = { self.settingsRoot } }
         else

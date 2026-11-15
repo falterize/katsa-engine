@@ -1,4 +1,4 @@
--- scene.root: the Game node holding the main World3D and the storage containers.
+-- scene.root: the Root node holding the main World3D and the storage containers.
 local Application = require('source.game.runtime.application')
 
 local Module = {}
@@ -7,10 +7,10 @@ function Module.run(self)
     local scene = Application.new(self.manager, 'lights')
     scene:load()
     local root = scene.root
-    self:check(root and root:isA('Game') and root.parent == nil, 'A scene has a Game node as its root')
+    self:check(root and root:isA('Root') and root.parent == nil, 'A scene has a Root node as its root')
     self:check(
         root:find('World3D') == scene.root:find('World3D') and scene.root:find('World3D').parent == root,
-        'The main World3D is an ordinary child of the Game node'
+        'The main World3D is an ordinary child of the Root node'
     )
     self:check(
         root:find('ReplicatedStorage') ~= nil and root:find('ServerStorage') ~= nil,
@@ -40,11 +40,11 @@ function Module.run(self)
         end
         self:check(
             depthOf[root] == 0 and depthOf[workspace.settingsRoot] == 1,
-            'Debug / Input sits under the Game row in the Explorer'
+            'Debug / Input sits under the Root row in the Explorer'
         )
     end
     scene:release()
-    self:check(root.destroyed, 'Releasing the scene destroys the Game node')
+    self:check(root.destroyed, 'Releasing the scene destroys the Root node')
 end
 
 return Module

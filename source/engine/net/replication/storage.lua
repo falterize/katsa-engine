@@ -14,13 +14,13 @@ local function ensure(world, name)
     if found and not found.destroyed then
         return found
     end
-    -- A scene's world hangs from its Game node; the containers become its siblings. A headless
-    -- world (a dedicated server, a test) has no Game node and keeps them as roots.
+    -- A scene's world hangs from its Root node; the containers become its siblings. A headless
+    -- world (a dedicated server, a test) has no Root node and keeps them as roots.
     local top = world._node.parent
     local container = Node.create(
         'StorageFolder',
         { name = name, visible = false, storageContainer = true },
-        top and top:isA('Game') and top or nil,
+        top and top:isA('Root') and top or nil,
         world
     )
     container._world, container._sceneWorld = world, world

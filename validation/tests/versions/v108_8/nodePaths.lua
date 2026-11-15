@@ -8,7 +8,7 @@ local function make(name, parent)
 end
 
 function Module.run(self)
-    local root = Node.create('Game', { name = 'Game' })
+    local root = Node.create('Root', { name = 'Root' })
     local map = make('Map', make('World3D', root))
     local house = make('House', map)
     local odd = make('Test/odd', map)
@@ -32,13 +32,13 @@ function Module.run(self)
         'The last of several slashes separates the steps (a name may end with a slash)'
     )
     self:check(
-        inner:getFullName() == 'Game/World3D/Map/Test/odd/Room'
+        inner:getFullName() == 'Root/World3D/Map/Test/odd/Room'
             and root:find(inner:getFullName(root)) == inner,
         'getFullName gives a path that find accepts (relative to an ancestor)'
     )
     self:check(
         inner:findAncestor('Map') == map
-            and inner:findAncestor({ className = 'Game' }) == root
+            and inner:findAncestor({ className = 'Root' }) == root
             and inner:findAncestor('Room') == nil,
         'findAncestor matches a name or a filter'
     )

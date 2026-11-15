@@ -221,7 +221,7 @@ SceneManager's deferred transitions from physics contact/query callbacks.
 ## The scene object, its root and its world
 
 Scene scripts get the running scene as `scene` (`context.scene`, `self` in a system). Start from
-`scene.root`, a `Game` node that holds everything as ordinary nodes, like `game` in Roblox:
+`scene.root`, a `Root` node that holds everything as ordinary nodes, like `game` in Roblox:
 
 ```
 Game                      scene.root
@@ -282,7 +282,7 @@ that uses the UI often keeps it in a local: `local ui = scene.root:find('World3D
 
 | Field | What it is |
 | --- | --- |
-| `root` | the `Game` node described above |
+| `root` | the `Root` node described above |
 | `world` | the world service (see above) |
 | `camera` | the default 3D camera |
 | `physics`, `audio`, `resources`, `renderer` | services owned by the scene |

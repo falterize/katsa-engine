@@ -17,10 +17,10 @@ local function validateSubtree(node, parent, world, screenHierarchy, uiAnchor)
     assert(not node.destroyed and not node._destroying, 'Cannot move a destroying subtree')
     if node:isA('World3D') and node._worldBoundary then
         assert(
-            parent and (parent:isA('ViewportFrame') or parent:isA('Game')),
-            'An independent World3D must belong to ViewportFrame or the Game node'
+            parent and (parent:isA('ViewportFrame') or parent:isA('Root')),
+            'An independent World3D must belong to ViewportFrame or the Root node'
         )
-        if parent:isA('Game') then
+        if parent:isA('Root') then
             return
         end
         assert(
@@ -178,8 +178,8 @@ function Parenting.validate(node, parent)
     assert(
         not node:isA('World3D')
             or parent == nil
-            or node._worldBoundary and (parent:isA('ViewportFrame') or parent:isA('Game')),
-        'World3D is a root, a ViewportFrame child or a child of the Game node'
+            or node._worldBoundary and (parent:isA('ViewportFrame') or parent:isA('Root')),
+        'World3D is a root, a ViewportFrame child or a child of the Root node'
     )
     local owner = parent
     while owner do

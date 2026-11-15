@@ -12,7 +12,7 @@ local expected = {
     AudioListener = { 'transparency', 'scale', 'inheritScale' },
     AudioSource = { 'transparency', 'scale', 'inheritScale' },
     StorageFolder = { 'replicated' },
-    Game = { 'visible', 'replicated' },
+    Root = { 'visible', 'replicated' },
 }
 
 function Module.run(self)

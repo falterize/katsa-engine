@@ -91,7 +91,7 @@ local omit = {
     AudioListener = { 'transparency', 'scale', 'inheritScale' },
     AudioSource = { 'transparency', 'scale', 'inheritScale' },
     StorageFolder = { 'replicated' },
-    Game = { 'visible', 'replicated' },
+    Root = { 'visible', 'replicated' },
 }
 
 local cache = setmetatable({}, { __mode = 'k' })

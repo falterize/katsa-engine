@@ -1,6 +1,6 @@
 local RootNode = require('../scenes.rootNode')
 
--- Camera-free scenes still own their entire UI through World3D -> World2D, under a Game node
+-- Camera-free scenes still own their entire UI through World3D -> World2D, under a Root node
 -- (`scene.root`) like every other scene.
 local Root = {}
 
