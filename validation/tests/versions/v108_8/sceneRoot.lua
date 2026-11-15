@@ -31,6 +31,18 @@ function Module.run(self)
         shared == root:find('ReplicatedStorage') and server == nil and root:find('ServerStorage') == nil,
         'A client of a remote server has no ServerStorage'
     )
+    local workspace = scene.workspace
+    if workspace then
+        workspace:refreshTree()
+        local depthOf = {}
+        for _, row in ipairs(workspace.rows) do
+            depthOf[row.node] = row.depth
+        end
+        self:check(
+            depthOf[root] == 0 and depthOf[workspace.settingsRoot] == 1,
+            'Debug / Input sits under the Game row in the Explorer'
+        )
+    end
     scene:release()
     self:check(root.destroyed, 'Releasing the scene destroys the Game node')
 end

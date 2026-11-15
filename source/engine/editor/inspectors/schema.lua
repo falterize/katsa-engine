@@ -261,6 +261,9 @@ function Schema.reason(target, key)
     if key == 'parent' then
         return 'Use the hierarchy API to reparent nodes.'
     end
+    if target.replica == true and key == 'replicated' then
+        return 'A client copy; the server owns this flag.'
+    end
     if target.replica == true then
         for _, name in ipairs(rawget(target, 'replicatedProperties') or {}) do
             if name == key then

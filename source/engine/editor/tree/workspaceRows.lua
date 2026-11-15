@@ -62,22 +62,19 @@ end
 
 function WorkspaceRows.install(Workspace)
     function Workspace:refreshTree()
-        local roots = {}
+        local roots, extras = {}, nil
         if self.scene.root then
+            -- Game is the root of everything, the editor's Debug / Input settings included.
             roots[1] = self.scene.root
+            extras = { [self.scene.root] = { self.settingsRoot } }
         else
             roots[1] = self.scene.world._node
             for _, container in ipairs(Storage.list(self.scene.world)) do
                 roots[#roots + 1] = container
             end
+            roots[#roots + 1] = self.settingsRoot
         end
-        roots[#roots + 1] = self.settingsRoot
-        self.rows = Tree.rows(
-            roots,
-            self.collapsed,
-            self.group,
-            self.query
-        )
+        self.rows = Tree.rows(roots, self.collapsed, self.group, self.query, extras)
         -- Content width: the deepest indent plus its name and class text.
         local widest = 0
         for _, row in ipairs(self.rows) do

@@ -159,7 +159,8 @@ local function children(node)
 end
 Tree.children = children
 
-function Tree.rows(roots, collapsed, excluded, query)
+-- `extras` maps a node to editor-only rows listed after its real children (Debug / Input settings).
+function Tree.rows(roots, collapsed, excluded, query, extras)
     local rows, matches = {}, {}
     query = (query or ''):lower()
     local seen, stack, order = {}, {}, {}
@@ -173,6 +174,9 @@ function Tree.rows(roots, collapsed, excluded, query)
             seen[node] = true
             order[#order + 1] = item
             item.children = children(node)
+            for _, extra in ipairs(extras and extras[node] or {}) do
+                item.children[#item.children + 1] = extra
+            end
             for i = #item.children, 1, -1 do
                 stack[#stack + 1] =
                     { node = item.children[i], depth = item.depth + 1, owner = item }

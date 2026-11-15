@@ -44,6 +44,8 @@ function ClientReplication:create(op)
     end
     setAttributes(node, op.attrs)
     node.replica = true
+    -- The server's flag is not sent; a replica shows it so the Explorer reads like the server tree.
+    node.replicated = true
     self.records[op.id] = node
     self.endpoint.nodeCreated:fire(node)
 end

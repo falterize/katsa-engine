@@ -3,6 +3,8 @@
 local Net = require('source.engine.net')
 local World3D = require('source.engine.world.world')
 
+local Properties = require('source.engine.editor.inspectors.properties')
+
 local Module = {}
 
 local function pump(server, clients, frames)
@@ -119,6 +121,16 @@ function Module.run(self)
     self:check(
         copy and copy.className == 'Folder' and copy:getAttribute('Timer') == 30 and copy.replica,
         'A marked server node and its attribute appear on the client'
+    )
+    local replicaRow
+    for _, row in ipairs(Properties.list(copy)) do
+        if row.key == 'replicated' then
+            replicaRow = row
+        end
+    end
+    self:check(
+        copy.replicated == true and replicaRow and replicaRow.value == true and replicaRow.readOnly,
+        'A client copy reads replicated = true in the inspector, read-only'
     )
     local copiedPad = copy and child(copy, 'Pad')
     self:check(
