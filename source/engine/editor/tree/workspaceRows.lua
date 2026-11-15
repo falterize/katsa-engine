@@ -62,9 +62,14 @@ end
 
 function WorkspaceRows.install(Workspace)
     function Workspace:refreshTree()
-        local roots = { self.scene.world.root }
-        for _, container in ipairs(Storage.list(self.scene.world)) do
-            roots[#roots + 1] = container
+        local roots = {}
+        if self.scene.root then
+            roots[1] = self.scene.root
+        else
+            roots[1] = self.scene.world.root
+            for _, container in ipairs(Storage.list(self.scene.world)) do
+                roots[#roots + 1] = container
+            end
         end
         roots[#roots + 1] = self.settingsRoot
         self.rows = Tree.rows(

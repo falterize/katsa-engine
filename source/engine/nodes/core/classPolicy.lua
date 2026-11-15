@@ -88,6 +88,7 @@ local omit = {
     Attachment2D = { 'transparency' },
     InverseKinematics3D = { 'visible' },
     StorageFolder = { 'replicated' },
+    Game = { 'visible', 'replicated' },
 }
 
 local cache = setmetatable({}, { __mode = 'k' })

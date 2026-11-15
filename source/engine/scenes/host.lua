@@ -1,5 +1,6 @@
 local Loader = require('./loader')
 local Systems = require('./systems')
+local RootNode = require('./rootNode')
 local Cleanup = require('../core.cleanup')
 local World = require('../world.world')
 local Renderer = require('../graphics.pipeline.renderer')
@@ -36,6 +37,7 @@ function Host:load()
     local lighting =
         Loader.configure(require('source.engine.graphics.lighting.defaults').create(), self.settings.world)
     self.world = World.new(self.resources, lighting)
+    self.root = RootNode.create(self.world)
     self.world.audio = self.audio
     self.audio.worldRoot = self.world.root
     self.camera = self.world:addCamera()
@@ -198,6 +200,9 @@ function Host:release()
             if self.world then
                 self.world:release()
             end
+        end,
+        function()
+            RootNode.release(self.root)
         end,
         function()
             if self.audio then

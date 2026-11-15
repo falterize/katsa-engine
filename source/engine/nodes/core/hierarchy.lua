@@ -47,6 +47,20 @@ function Hierarchy.findAll(self, filter, recursive)
     return result
 end
 
+-- Follows child names separated by '/', like `game.Workspace.Map.House` in Roblox:
+-- `scene.root:findPath('World3D/Map/House')`. Returns nil when a step is missing.
+function Hierarchy.findPath(self, path)
+    assert(type(path) == 'string', 'findPath expects a path such as "World3D/Map/House"')
+    local node = self
+    for name in path:gmatch('[^/]+') do
+        node = node:find(name)
+        if not node then
+            return nil
+        end
+    end
+    return node
+end
+
 function Hierarchy.findByType(self, className, recursive)
     return self:findAll({ className = className }, recursive)[1]
 end

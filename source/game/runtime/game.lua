@@ -74,6 +74,8 @@ function Game:load()
     local environment =
         Loader.configure(require('source.game.data.settings').create(), self.settings.world)
     self.world = World3D.new(self.resources, environment)
+    -- The top node: the main World3D (World2D inside it) and the storage containers hang from it.
+    self.root = require('source.engine.scenes.rootNode').create(self.world)
     self.systems = Systems.new(self)
     self.world.audio = self.audio
     self.audio.worldRoot = self.world.root
@@ -380,6 +382,9 @@ function Game:release()
         end,
         function()
             self.world:release()
+        end,
+        function()
+            require('source.engine.scenes.rootNode').release(self.root)
         end,
         function()
             self.audio:release()

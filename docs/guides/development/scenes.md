@@ -218,6 +218,54 @@ All registered instances, including disabled ones, release in reverse order
 before world teardown. Registration belongs outside update callbacks. Use
 SceneManager's deferred transitions from physics contact/query callbacks.
 
+## The scene object, its root and its world
+
+Scene scripts get the running scene as `scene` (`context.scene`, `self` in a system). Start from
+`scene.root`, a `Game` node that holds everything as ordinary nodes, like `game` in Roblox:
+
+```
+Game                      scene.root
+├─ World3D                the main 3D world (a node like any other)
+│  ├─ Map, Player ...     what the scene creates
+│  └─ World2D             the screen UI (also reachable as scene.ui)
+├─ ReplicatedStorage      always there; its content replicates
+└─ ServerStorage          there in single-player and on a server; a client of a remote server has none
+```
+
+```lua
+local house = scene.root:findPath('World3D/Map/House')   -- nil when a step is missing
+local stored = scene.root:findPath('ServerStorage/Maps')
+scene.root:find('World3D'):create('Mesh3D', { name = 'Box' })
+```
+
+`node:findPath('A/B/C')` follows child names separated by `/` on any node. A nested `World3D`
+(inside a `ViewportFrame`) is the same kind of node: its descendants are its own inner world, and
+`node:create` / `node:find` on it work as on the main one.
+
+`scene.world` is not a node. It is the service object of the main world: `create`, `raycast`,
+`loadModel`, layers, quality profile, lights, audio and physics access. `scene.world.root` is the
+`World3D` node and equals `scene.root:find('World3D')`.
+
+<details><summary>Fields and methods of `scene`<br>
+</summary>
+
+| Field | What it is |
+| --- | --- |
+| `root` | the `Game` node described above |
+| `world` | the world service (see above) |
+| `ui` | the main `World2D`, UI under `ui.content` |
+| `camera` | the default 3D camera |
+| `physics`, `audio`, `resources`, `renderer` | services owned by the scene |
+| `settings`, `package` | the scene's `settings.lua` and archive/folder package |
+| `demo` | what the scene's `create` returned |
+
+Lifecycle: `load`, `enter`, `exit`, `pause`, `resume`, `release`; frame: `update(dt, realDt)`,
+`draw`; input: `pointerpressed/moved/released`, `keypressed/keyreleased`, `textinput`,
+`wheelmoved`, `gamepadpressed/released`. The common runtime adds `toggleLightLimit`,
+`resetView`, `setTimeScale`, `cycleTimeScale`, `toggleEffects`.
+
+</details>
+
 ## Private module imports
 
 `context:require('scripts.content')` imports from the current scene root.

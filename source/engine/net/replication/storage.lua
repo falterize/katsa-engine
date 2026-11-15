@@ -14,17 +14,37 @@ local function ensure(world, name)
     if found and not found.destroyed then
         return found
     end
-    local container = Node.create('StorageFolder', { name = name, visible = false, storageContainer = true }, nil, world)
+    -- A scene's world hangs from its Game node; the containers become its siblings. A headless
+    -- world (a dedicated server, a test) has no Game node and keeps them as roots.
+    local top = world.root.parent
+    local container = Node.create(
+        'StorageFolder',
+        { name = name, visible = false, storageContainer = true },
+        top and top:isA('Game') and top or nil,
+        world
+    )
     container._world, container._sceneWorld = world, world
     world.storage[name] = container
     return container
 end
 
--- Returns replicatedStorage and, on the server, serverStorage.
+-- Returns replicatedStorage and, on the server, serverStorage. A single-player scene installs both
+-- (it is its own server); a client that joins a remote server drops its ServerStorage, which only
+-- the server has.
 function Storage.install(world, isServer)
     world.storage = world.storage or {}
     local shared = ensure(world, 'ReplicatedStorage')
-    return shared, isServer and ensure(world, 'ServerStorage') or nil
+    if isServer then
+        return shared, ensure(world, 'ServerStorage')
+    end
+    local server = world.storage.ServerStorage
+    if server then
+        world.storage.ServerStorage = nil
+        if not server.destroyed then
+            server:destroy()
+        end
+    end
+    return shared
 end
 
 -- The containers of a world, for the Explorer.
