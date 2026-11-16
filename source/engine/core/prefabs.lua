@@ -53,7 +53,8 @@ local function locate(source, paths)
 end
 
 -- options.name: the name the scene's assets answer to everywhere in this world, as
--- `name://textures/x.png` (default: the packed scene's id; two different scenes cannot share one).
+-- `name://textures/x.png` (default: the packed scene's id, kept by the first scene that has it; an explicit name that is
+-- reserved, invalid or taken by another scene is an error).
 -- options.paths: the asset roots that resolve `source` and the name (default: this world's).
 function Prefabs:load(source, options)
     options = options or {}
@@ -68,7 +69,12 @@ function Prefabs:load(source, options)
     -- Names live in the world's own roots: its resource scope reads every node's strings.
     local roots = self.world.resources.paths
     if roots then
-        Paths.name(roots, options.name or packed.package.id, packed.package.paths.scene)
+        Paths.name(
+            roots,
+            options.name or packed.package.id,
+            packed.package.paths.scene,
+            options.name ~= nil
+        )
     end
     return setmetatable({ packed = packed, world = self.world }, Handle)
 end

@@ -75,9 +75,12 @@ world.prefabs:load('scene://prefabs/apple', { name = 'fruit' })  -- or a name of
 node.colorMap = 'apple://textures/ripe.png'                       -- same file from anywhere
 ```
 
-Names are letters, digits, `_` and `-` (not `scene` or `shared`). They are registered in the
-world's asset roots, so any node and any script of that world reads them; one name cannot stand for
-two different scenes (give them different `name`s). `scene.resources:canonical('scene://x.png')`
+Names are letters, digits, `_` and `-`; `scene` and `shared` are reserved. They are registered in
+the world's asset roots, so any node and any script of that world reads them. A name you give in
+`{ name = ... }` must be valid and free, otherwise `load` raises an error. The default name (the
+scene id) goes to the first scene that has it: a scene whose id is not a valid name (`my prefab`,
+`shared`) or is taken still loads, it just has no `<id>://`, so give such scenes a `name`.
+`scene.resources:canonical('scene://x.png')`
 also turns a prefab's own path into the real one.
 
 ## What is copied

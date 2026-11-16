@@ -54,16 +54,20 @@ local function named(roots, scheme)
 end
 
 -- Registers `scheme://x` as an asset of the scene rooted at `root` in `roots` (a loaded prefab).
-function Paths.name(roots, scheme, root)
-    assert(scheme:match('^[%a_][%w_%-]*$'), 'Invalid scene name: ' .. tostring(scheme))
-    assert(scheme ~= 'scene' and scheme ~= 'shared', 'Reserved scene name: ' .. scheme)
+-- A name the caller chose (`strict`) must be valid, not reserved (`scene`, `shared`) and free; a
+-- default name (the scene id) is only registered when it can be: the first scene with an id gets it.
+function Paths.name(roots, scheme, root, strict)
+    local problem = not scheme:match('^[%a_][%w_%-]*$') and 'is not a valid name'
+        or (scheme == 'scene' or scheme == 'shared') and 'is reserved'
     roots.named = roots.named or {}
     local existing = roots.named[scheme]
-    assert(
-        not existing or existing == root,
-        'Scene name "' .. scheme .. '" is already used by another scene'
-    )
+    problem = problem or existing and existing ~= root and 'is already used by another scene'
+    if problem then
+        assert(not strict, 'Scene name "' .. tostring(scheme) .. '" ' .. problem)
+        return false
+    end
     roots.named[scheme] = root
+    return true
 end
 
 -- `roots`: { scene, shared, parent, named }, where `parent` is the roots of the scene that loaded

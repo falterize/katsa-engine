@@ -136,11 +136,14 @@ function Module.run(self)
         'A loaded prefab answers to "<id>://" for its assets from anywhere in the world'
     )
     prefabs:load(FOLDER, { name = 'box' })
-    local clash = pcall(prefabs.load, prefabs, 'validation/tests/fixtures/prefabs/outer', { name = 'box' })
+    local outerPath = 'validation/tests/fixtures/prefabs/outer'
+    local clash = pcall(prefabs.load, prefabs, outerPath, { name = 'box' })
+    local reserved = pcall(prefabs.load, prefabs, outerPath, { name = 'shared' })
+        or pcall(prefabs.load, prefabs, outerPath, { name = 'scene' })
     self:check(
         world.resources:canonical('box://textures/dot.png') == world.resources:canonical('crate://textures/dot.png')
-            and not clash,
-        'A prefab may take its own name; one name cannot stand for two scenes'
+            and not clash and not reserved,
+        'A prefab may take its own name; reserved names and one name for two scenes are errors'
     )
     local outer = prefabs:instantiate('validation/tests/fixtures/prefabs/outer', { name = 'Outer' })
     self:check(
@@ -149,7 +152,7 @@ function Module.run(self)
         'Nested prefabs: "../scene://" points at the scene that loaded the prefab'
     )
     outer:destroy()
-    local fromArchive = prefabs:instantiate(ARCHIVE, { name = 'C' }, nil, { name = 'crateZip' })
+    local fromArchive = prefabs:instantiate(ARCHIVE, { name = 'C' })
     self:check(
         fromArchive:find('Crate/Lid') ~= nil,
         'An archive works like a folder'
