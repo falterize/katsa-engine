@@ -105,3 +105,7 @@ A World2D may be a child of any node, not only of its World3D: `world:create('Wo
 holder)`. It belongs to the first World3D above it, covers the screen like before (its position in
 the tree has no spatial meaning), is listed in `world.uis` and leaves with its parent. It cannot
 sit inside a widget, another World2D or a different World3D.
+
+Inside a `ViewportFrame` it is the interface of that viewport: a prefab copy placed in the
+viewport's World3D keeps its World2D there (drawn into the viewport, clickable in it), and the
+viewport world loads packed scenes with the scene manager of the world that holds the frame.

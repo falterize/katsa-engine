@@ -265,10 +265,12 @@ function Drawing.install(UI)
     end
 
     function UI:draw()
-        assert(
-            self.owner or self.parent and self.parent:isA('World3D'),
-            'Screen UI must belong to World3D -> World2D'
-        )
+        -- A World2D may sit inside any node; it must still have a World3D above it.
+        local holder = self.parent
+        while not self.owner and holder and not holder:isA('World3D') do
+            holder = holder.parent
+        end
+        assert(self.owner or holder, 'Screen UI must belong to World3D -> World2D')
         self:layout()
         return require('source.engine.ui.drawing.compositor').draw(self, drawLaidOut)
     end

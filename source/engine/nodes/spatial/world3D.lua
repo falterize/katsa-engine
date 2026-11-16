@@ -26,6 +26,11 @@ function C.mount(context, properties, parent)
         require('source.engine.graphics.lighting.defaults').create()
     )
     world.hostWorld = context._world or context._sceneWorld
+    -- The viewport loads packed scenes with the same scene manager as the world that holds it.
+    local hostScene = world.hostWorld and world.hostWorld.prefabs
+    if hostScene and hostScene.manager then
+        world.prefabs.manager, world.prefabs.scene = hostScene.manager, hostScene.scene
+    end
     world._node.name = properties.name or 'ViewportWorld'
     world._node.timeScale = properties.timeScale or properties.TimeScale or 1
     if
@@ -44,6 +49,7 @@ function C.mount(context, properties, parent)
     world._node.parent = parent
     world._node._ownsScope = true
     world._node:onDestroy(function()
+        world.prefabs:release()
         world.animations:release()
         world.nodeTree:release()
         if world.renderer then
