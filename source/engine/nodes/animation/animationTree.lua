@@ -12,6 +12,7 @@
 -- Workspace; `rebuild()` reads them again after an edit. The inspector shows `active`, the
 -- Animator it drives and the current state.
 local Node = require('../core.baseNode')
+local Animator = require('./animator')
 local Tree = require('../../animation.tree')
 local FromNodes = require('../../animation.tree.fromNodes')
 
@@ -37,20 +38,6 @@ function Class.initialize(self)
     self.liveEdit = self.liveEdit ~= false
 end
 
-local function animatorOf(node)
-    if node.animator then
-        return node.animator
-    end
-    local parent = node.parent
-    while parent do
-        local animator = parent.model and parent.model.animator
-        if animator then
-            return animator
-        end
-        parent = parent.parent
-    end
-end
-
 function Class.mount(world, properties, parent)
     local node = Node.new('AnimationTree', properties, parent)
     node._world = world
@@ -63,7 +50,7 @@ function Class:connect()
     if self.tree then
         return true
     end
-    local animator = animatorOf(self)
+    local animator = Animator.of(self)
     if not animator or animator.destroyed then
         return false
     end

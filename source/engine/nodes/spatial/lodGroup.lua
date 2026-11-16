@@ -1,6 +1,9 @@
 local Node = require('../core.baseNode')
 local Math = require('../../math.math3d')
 local LodSelect = require('../../components.rendering.lodSelect')
+local LodLevel = require('../../components.rendering.lodLevel')
+local LodBillboard = require('../../components.rendering.lodBillboard')
+local Animator = require('../animation.animator')
 
 -- LODGroup: shows one of its children at a time, by distance or by size on screen.
 --
@@ -14,13 +17,34 @@ local LodSelect = require('../../components.rendering.lodSelect')
 -- starts: level k+1 begins at the k-th number, and one more number hides the group beyond it. A
 -- missing number comes from the size of the group (`radius`, 0 = measured from level 0). Skinned
 -- levels that share one skeleton keep playing the same animation whichever is shown. A model file
--- whose nodes are named `<name>`, `<name>-lod1`, `<name>-lod2` is grouped on import (import/autoLod).
+-- whose nodes are named `<name>-lod0`, `<name>-lod1`, `<name>-lod2` is grouped on import
+-- (import/autoLod).
+--
+-- Besides the choice of level:
+--   bias            > 1 lowers the detail sooner; the world's quality profile (Low/Medium/High,
+--                   Environment.render.lodBias) multiplies it
+--   referenceFov    the lens `distances` were set for; a zoomed-in camera counts as nearer (0 = off)
+--   fadeTime        seconds the old and the new level cross-fade (0 = switch at once)
+--   animationRates  Animator.poseRate per level, e.g. '60, 30, 10' (empty = leave it alone)
+--   shadowLevel     the last level that casts shadows (-1 = every level as authored)
+--   billboardImage  an image: adds a last level, a flat quad that always faces the camera
 local Class = Node.define('LODGroup', 'Node3D')
 Class.propertySchema = {
     mode = { options = LodSelect.modes },
     distances = { visibleWhen = { key = 'mode', equals = 'Distance' } },
     screenSizes = { visibleWhen = { key = 'mode', equals = 'ScreenSize' } },
     bias = { min = 0.1, max = 10 },
+    referenceFov = { min = 0, max = 179, visibleWhen = { key = 'mode', equals = 'Distance' } },
+    fadeTime = { min = 0, max = 5 },
+    animationRates = {},
+    shadowLevel = { min = -1, integer = true },
+    billboardImage = {},
+    billboardWidth = { min = 0, visibleWhen = { key = 'billboardImage', present = true } },
+    billboardHeight = { min = 0, visibleWhen = { key = 'billboardImage', present = true } },
+    billboardPivot = {
+        options = { 'Bottom', 'Center' },
+        visibleWhen = { key = 'billboardImage', present = true },
+    },
     hysteresis = { min = 0, max = 0.5 },
     radius = { min = 0 },
     forceLevel = { min = -1 },
@@ -53,6 +77,15 @@ function Class.initialize(self)
     self.distances = LodSelect.format(LodSelect.parse(self.distances, 'distances'))
     self.screenSizes = LodSelect.format(LodSelect.parse(self.screenSizes, 'screenSizes'))
     self.bias = self.bias or 1
+    -- The default lens of Camera3D, so a camera that is not zoomed changes nothing.
+    self.referenceFov = self.referenceFov or LodSelect.defaultFov
+    self.fadeTime = self.fadeTime or 0
+    self.animationRates = LodSelect.format(LodSelect.parse(self.animationRates, 'animationRates'))
+    self.shadowLevel = self.shadowLevel or -1
+    self.billboardImage = self.billboardImage or ''
+    self.billboardWidth = self.billboardWidth or 0
+    self.billboardHeight = self.billboardHeight or 0
+    self.billboardPivot = self.billboardPivot or 'Bottom'
     self.hysteresis = self.hysteresis or 0.1
     self.radius = self.radius or 0
     self.forceLevel = self.forceLevel or -1
@@ -92,7 +125,7 @@ local function levelsOf(self)
             levels[#levels + 1] = child
         end
     end
-    self._thresholdKey = nil
+    self._thresholdKey, self._appliedShadow = nil, nil
     return levels
 end
 
@@ -148,6 +181,12 @@ local function thresholdsOf(self, count, radius)
     return self._thresholds
 end
 
+-- The quality profile's share of the bias (Environment.render.lodBias, 1 without one).
+local function qualityBias(self)
+    local environment = self._sceneWorld and self._sceneWorld.lighting
+    return environment and environment.render and environment.render.lodBias or 1
+end
+
 -- 1-based level for the camera, or count + 1 when hidden; nil while the camera has no view yet.
 local function chooseLevel(self, camera, levels, dt)
     local m = self:getWorldMatrix()
@@ -159,6 +198,9 @@ local function chooseLevel(self, camera, levels, dt)
     CENTER[1], CENTER[2], CENTER[3] = x, y, z
     local radius = radiusOf(self, levels, dt)
     local away = distance(camera.worldPosition or camera.position, CENTER)
+    if camera.projectionMode ~= 'Orthographic' then
+        away = away * LodSelect.fovScale(camera.fov, self.referenceFov)
+    end
     local pixels = 0
     if self.mode == 'ScreenSize' then
         local _, _, depth = Math.transform(view, x, y, z)
@@ -169,25 +211,132 @@ local function chooseLevel(self, camera, levels, dt)
         away,
         pixels,
         camera.height or camera.referenceHeight or FALLBACK_HEIGHT,
-        self.bias
+        self.bias * qualityBias(self)
     )
     local thresholds = thresholdsOf(self, #levels, radius)
     return LodSelect.level(self.mode, value, thresholds, self._current, self.hysteresis)
 end
 
--- Shows level `index` (1-based; past the last = none) and hides the others.
+-- Ends a running cross-fade at once: the old level goes away, both show as authored.
+local function finishFade(self)
+    local fade = self._fade
+    if not fade then
+        return
+    end
+    self._fade = nil
+    LodLevel.restoreAlpha(fade.fromMeshes)
+    LodLevel.restoreAlpha(fade.toMeshes)
+    if fade.from and fade.from ~= fade.to then
+        fade.from.visible = false
+    end
+end
+
+local EMPTY = {}
+
+local function beginFade(self, from, to)
+    self._fade = {
+        from = from,
+        to = to,
+        time = 0,
+        fromMeshes = from and LodLevel.meshes(from) or EMPTY,
+        toMeshes = to and LodLevel.meshes(to) or EMPTY,
+    }
+    LodLevel.setAlpha(self._fade.toMeshes, 0)
+end
+
+local function stepFade(self, dt)
+    local fade = self._fade
+    fade.time = fade.time + dt
+    local alpha = math.min(1, fade.time / self.fadeTime)
+    if alpha >= 1 then
+        finishFade(self)
+        return
+    end
+    LodLevel.setAlpha(fade.toMeshes, alpha)
+    LodLevel.setAlpha(fade.fromMeshes, 1 - alpha)
+end
+
+-- Gives the Animator behind level 1 the rate of the shown level; the authored rate comes back
+-- once `animationRates` is empty.
+local function applyAnimationRate(self, levels, index)
+    local animator = self._animator
+    if not animator or animator.destroyed then
+        animator = levels[1] and Animator.of(levels[1])
+        self._animator = animator
+    end
+    if not animator then
+        return
+    end
+    local rates = LodSelect.parse(self.animationRates, 'animationRates')
+    local rate = LodSelect.entry(rates, index)
+    if rate then
+        animator._lodPoseRate = animator._lodPoseRate or animator.poseRate
+        animator.poseRate = math.min(240, math.max(1, rate))
+    elseif animator._lodPoseRate then
+        animator.poseRate, animator._lodPoseRate = animator._lodPoseRate, nil
+    end
+end
+
+local function applyShadows(self, levels)
+    for position, node in ipairs(levels) do
+        local allowed = self.shadowLevel < 0 or position - 1 <= self.shadowLevel
+        LodLevel.setShadows(LodLevel.meshes(node), allowed)
+    end
+    self._appliedShadow = self.shadowLevel
+end
+
+-- Shows level `index` (1-based; past the last = none) and hides the others. With `fadeTime` the
+-- old level stays until the new one is fully drawn.
 local function show(self, levels, index)
     if self._current == index then
         return
     end
+    local previous = self._current
+    finishFade(self)
     self._current = index
     self._level = index <= #levels and index - 1 or -1
+    local fading = self.fadeTime > 0 and previous ~= nil
     for position, node in ipairs(levels) do
-        node.visible = position == index
+        node.visible = position == index or fading and position == previous
+    end
+    if fading then
+        beginFade(self, levels[previous], levels[index])
+    end
+    applyAnimationRate(self, levels, index)
+    self._appliedRates = self.animationRates
+end
+
+-- Keeps the billboard level in step with its properties: built when an image is set, removed when
+-- it is cleared, sized and turned to the camera while it is shown.
+local function updateBillboard(self, camera)
+    local image = self.billboardImage
+    if self._billboardImage ~= image then
+        if self._billboard then
+            self._billboard:destroy()
+            self._billboard = nil
+        end
+        self._billboardImage = image
+        if image ~= '' and self._sceneWorld then
+            self._billboard = LodBillboard.create(self._sceneWorld, self, image)
+        end
+        self._levels = nil
+    end
+    local quad = self._billboard
+    if quad and quad.visible and camera then
+        local radius = self._radius or 1
+        local width, height =
+            LodBillboard.size(self.billboardWidth, self.billboardHeight, radius, self.billboardPivot)
+        LodBillboard.place(quad, width, height, self.billboardPivot)
+        local position = camera.worldPosition or camera.position
+        LodBillboard.face(quad, self, position[1], position[3])
     end
 end
 
 function Class:update(dt)
+    local camera = self._sceneWorld and self._sceneWorld.activeCamera
+    if self.billboardImage ~= self._billboardImage then
+        updateBillboard(self, camera)
+    end
     local levels = levelsOf(self)
     if #levels == 0 then
         return
@@ -196,11 +345,22 @@ function Class:update(dt)
     if self.forceLevel >= 0 then
         index = math.min(self.forceLevel + 1, #levels)
     else
-        local world = self._sceneWorld
-        local camera = world and world.activeCamera
         index = camera and chooseLevel(self, camera, levels, dt or 0) or self._current or 1
     end
     show(self, levels, index)
+    if self._appliedShadow ~= self.shadowLevel then
+        applyShadows(self, levels)
+    end
+    if self._appliedRates ~= self.animationRates then
+        applyAnimationRate(self, levels, self._current)
+        self._appliedRates = self.animationRates
+    end
+    if self._fade then
+        stepFade(self, dt or 0)
+    end
+    if self._billboard then
+        updateBillboard(self, camera)
+    end
 end
 
 return Class

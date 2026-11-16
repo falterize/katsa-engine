@@ -18,6 +18,9 @@ LodSelect.defaults = {
     screenShrink = 0.4, -- each next one at 40% of the previous
 }
 
+-- Vertical field of view of a Camera3D with the default focalLength 400 on a 720 high reference.
+LodSelect.defaultFov = math.deg(2 * math.atan(720 / (2 * 400)))
+
 -- A list of numbers from a table or a comma separated text ('25, 60, 150'); other values are errors.
 function LodSelect.parse(value, name)
     if value == nil or value == '' then
@@ -35,6 +38,21 @@ function LodSelect.parse(value, name)
         end
     end
     return result
+end
+
+-- The entry for 1-based `index` in a per-level list; levels past its end use the last entry, an
+-- empty list gives nil.
+function LodSelect.entry(list, index)
+    return list[math.min(index, #list)]
+end
+
+-- How much a lens narrower than `reference` (zoomed in) makes things look closer: the distance
+-- is multiplied by it, so a zoomed camera keeps the detail a nearer one would. 1 when disabled.
+function LodSelect.fovScale(fov, reference)
+    if not fov or not reference or reference <= 0 then
+        return 1
+    end
+    return math.tan(math.rad(fov) / 2) / math.tan(math.rad(reference) / 2)
 end
 
 -- The text form of a list (what the inspector shows and edits).

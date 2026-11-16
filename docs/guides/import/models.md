@@ -47,10 +47,12 @@ in `model.collisionBodies`. Works for GLB, glTF, OBJ object names and `.blend`.
 
 ## Level of detail from node names
 
-Objects named `tree`, `tree-lod1`, `tree-lod2` ... become one `LODGroup` (`treeLOD`) that shows a level
-by camera distance or by size on screen. `settings.lod` sets its properties, `lod = false` turns the
-grouping off. Skinned levels on one armature keep playing the same animation. See
-`docs/guides/rendering/lod.md`.
+Objects named `tree-lod0`, `tree-lod1`, `tree-lod2` ... (a plain `tree` is level 0 too, but not both)
+become one `LODGroup` (`treeLOD`) that shows a level by camera distance or by size on screen. The levels
+may have different parents. `-col` / `-colonly` may stand before or after the LOD suffix; only level 0
+gets a collider. `settings.lod` sets the group properties, `settings.lod.groups = { tree = {...} }`
+overrides them per group, `lod = false` turns the grouping off. Skinned levels on one armature keep
+playing the same animation. See `docs/guides/rendering/lod.md`.
 
 ## Node3D.Transparency
 

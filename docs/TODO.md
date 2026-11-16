@@ -35,7 +35,7 @@ fix, say plainly what only real hardware can confirm, and the launcher UI is the
 - `tools/project/newGame.py` to scaffold a game.
 - A CI job that runs `tools/dev/testChanged.lua --since <base> --run` and the full suites.
 - Input action map follow-ups.
-- **LOD follow-ups** (LODGroup itself is done): automatic mesh simplification at import (pure Lua, static meshes first, cached next to the model; skinned meshes and shape keys later); "cheap" levels (no shadows or a lower animation update rate at a distance, billboards for trees); per-group `lod` settings by name; a fade/dither between levels; a `shadowLevel` so shadows use a coarser mesh.
+- **LOD follow-ups** (LODGroup with names, quality bias, zoom compensation, cross-fade, animation rates, shadow level and billboard level is done): automatic mesh simplification at import (pure Lua, static meshes first, cached next to the model; skinned meshes and shape keys later); choosing the level for several cameras (split screen); switching physics by distance; a dithered fade (screen-door) instead of the transparency fade; shadows from a coarser mesh instead of no shadow; billboards from several angles (impostors).
 - README screenshots.
 - Lag at high TimeScale (5): inherent (five fixed steps per frame); only mitigation ideas remain.
 

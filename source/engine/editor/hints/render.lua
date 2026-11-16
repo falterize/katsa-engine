@@ -26,6 +26,17 @@ return {
             .. 'falling (for example 0.3, 0.1, 0.02); one more entry hides the group below it. '
             .. 'Empty or 0 entries use defaults.',
         bias = 'Above 1 lowers the detail sooner (weak devices), below 1 keeps it longer.',
+        referenceFov = 'The field of view the distances were set for. A zoomed-in camera '
+            .. 'counts as nearer, so zoom keeps its detail. 0 turns this off.',
+        fadeTime = 'Seconds the old and the new level cross-fade; 0 switches at once.',
+        animationRates = 'Animator pose rate (per second) for each level, comma separated '
+            .. '(for example 60, 30, 10). Empty leaves the animation rate alone.',
+        shadowLevel = 'The last level that casts shadows; -1 keeps every level as authored.',
+        billboardImage = 'An image (with transparency) that becomes a last, flat level which '
+            .. 'turns to face the camera.',
+        billboardWidth = 'Billboard width in world units; 0 uses the group radius.',
+        billboardHeight = 'Billboard height in world units; 0 uses the group radius.',
+        billboardPivot = 'Bottom puts the group position at the lower edge (trees), Center in the middle.',
         hysteresis = 'A finer level returns only after passing its switch point by this '
             .. 'fraction, so a group on the border does not flicker.',
         radius = 'Size of the group for the defaults and for ScreenSize; 0 measures level 0.',

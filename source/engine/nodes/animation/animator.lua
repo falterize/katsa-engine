@@ -18,6 +18,22 @@ function Animator.initialize(self)
     self.rootMotionEnabled = self.rootMotionEnabled == true
 end
 
+-- The Animator that drives the skeleton a node belongs to: its own `animator`, or the one of the
+-- nearest ancestor that is a model root.
+function Animator.of(node)
+    if node.animator then
+        return node.animator
+    end
+    local parent = node.parent
+    while parent do
+        local animator = parent.model and parent.model.animator
+        if animator then
+            return animator
+        end
+        parent = parent.parent
+    end
+end
+
 function Animator.mount(world, properties, parent)
     local node = Node.new('Animator', properties, parent)
     node._world = world

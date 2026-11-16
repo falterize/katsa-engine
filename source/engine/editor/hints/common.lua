@@ -59,6 +59,7 @@ local keys = {
         .. 'remain eligible for shadows and other Viewports. CPU cost depends on scene layout.',
     occlusionMaxOccluders = 'Maximum convex coverage polygons tested. Lower budgets reduce '
         .. 'culling opportunities without hiding additional objects.',
+    lodBias = 'Multiplies every LODGroup bias; above 1 lowers detail sooner (set by quality profiles).',
     occlusionMinArea = 'Minimum projected candidate AABB area in logical pixels squared.',
     occlusionTriangleBudget = 'Maximum actual occluder triangles inspected for coverage per '
         .. 'rendered frame. No GPU depth readback or previous-frame visibility.',
