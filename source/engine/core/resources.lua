@@ -161,7 +161,12 @@ function Resources:image(name)
     return self:imageVariant(name, nil)
 end
 
-function Resources:imageVariant(name, pixel)
+-- `wrap` is 'repeat' (default) or 'clamp'. A clamped image is a texture of its own, so the
+-- shared repeating copy that other users sample is never changed.
+function Resources:imageVariant(name, pixel, wrap)
+    wrap = wrap or 'repeat'
+    local suffix = wrap == 'repeat' and '' or '|' .. wrap
+    local lookupKey = name == nil and '' or name .. suffix
     if name == nil or name == '' then
         name = missingImage
     end
@@ -172,7 +177,7 @@ function Resources:imageVariant(name, pixel)
     end
     local filter = pixel == nil and (entry and entry.filter or 'linear')
         or (pixel and 'nearest' or 'linear')
-    local lookup = self.imageLookups[name]
+    local lookup = self.imageLookups[lookupKey]
     if
         lookup
         and lookup.path == authored
@@ -182,7 +187,7 @@ function Resources:imageVariant(name, pixel)
         return lookup.image
     end
     local path = self:canonical(authored)
-    local image = self:cached('image', path .. '|' .. filter, function(owner)
+    local image = self:cached('image', path .. '|' .. filter .. suffix, function(owner)
         local value
         if path == whiteImage then
             local data = katsa.image.newImageData(1, 1)
@@ -205,15 +210,17 @@ function Resources:imageVariant(name, pixel)
         elseif sampler == 'nearest' then
             value:setMipmapFilter()
         end
-        value:setWrap('repeat', 'repeat')
+        value:setWrap(wrap, wrap)
         return value
     end)
-    local cache = pixel and self.imageVariants or self.images
-    cache[name] = image
+    if wrap == 'repeat' then
+        local cache = pixel and self.imageVariants or self.images
+        cache[name] = image
+    end
     lookup = lookup or {}
-    self.imageLookups[name] = lookup
+    self.imageLookups[lookupKey] = lookup
     lookup.path, lookup.filter, lookup.image = authored, filter, image
-    lookup.id = 'image:' .. path .. '|' .. filter
+    lookup.id = 'image:' .. path .. '|' .. filter .. suffix
     return image
 end
 

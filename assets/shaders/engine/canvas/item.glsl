@@ -9,6 +9,20 @@ uniform highp vec2 canvasSize;
 uniform highp vec2 regionOrigin;
 uniform highp vec2 regionExtent;
 uniform float shaderAmount;
+// Camera terms of the 3D render under the effect (projection[11], projection[12]) for linear_depth.
+uniform highp vec2 depthRange;
+uniform bool orthographic;
+
+#ifdef STAGE_PIXEL
+// View distance along the camera axis for a raw hint_depth_texture value (0..1).
+highp float linear_depth(highp float raw) {
+    highp float ndc = raw * 2.0 - 1.0;
+    if (orthographic) {
+        return (ndc - depthRange.y) / depthRange.x;
+    }
+    return depthRange.y / (ndc - depthRange.x);
+}
+#endif
 
 #user_code
 

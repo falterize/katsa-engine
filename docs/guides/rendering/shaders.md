@@ -83,7 +83,7 @@ parameters: the built-in variables below are in scope.
 * `sampler2D` uniforms take a texture path or manifest name (`uniforms = { tex = 'shared://textures/surfaces/stone.png' }`),
   a node that offers `getTexture()` (a `ViewportFrame` gives the 3D render it draws, so a mesh can show
   another world) or a texture object. `filter_nearest` / `filter_linear` after the colon choose the
-  sampler filter for path values. Nothing is sent while a node has no texture yet.
+  sampler filter for path values; `repeat_enable` (default) and `repeat_disable` choose wrapping (`repeat_disable` clamps to the edge pixel). Nothing is sent while a node has no texture yet.
 * Several nodes may use the same file: every use gets its own uniforms and helper functions, so
   stacked shaders never collide on names.
 * GLSL ES forbids uniform initializers; Katsa removes `= default` from the compiled text on every target.
@@ -305,7 +305,9 @@ Mesh pipelines ignore sky and fog files; a sky file cannot be used as a mesh sha
 | `TEXTURE` | `sampler2D` | in | the snapshot being processed |
 
 `uniform sampler2D name : hint_screen_texture;` gives the same snapshot as `TEXTURE` under your own
-name (sample it with `UV`).
+name (sample it with `UV`). `hint_depth_texture` gives the opaque depth of the 3D render under the
+interface (read it with `linear_depth(texture(d, UV).r)`); it needs a Shader2D layer that interacts with
+`Default3D`, otherwise the depth reads as far away (1.0).
 
 `vertex()` receives `VERTEX` (screen pixels), `UV`, `COLOR`, `CANVAS_VERTEX`, `TIME`. `shaderTransparency` mixes
 the result with the untouched pixel after `fragment()`.

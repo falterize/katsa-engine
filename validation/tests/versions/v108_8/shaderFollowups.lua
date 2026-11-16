@@ -54,6 +54,10 @@ local function threeD(self)
     self:check(white > 0.95 and dirt < 0.9, 'A sampler2D uniform takes a texture path or name')
 
     local ui = UI.new(WIDTH, HEIGHT, world.resources):bindWorld(world)
+    shader.shaderPath = fixtures .. 'clampTexture.glsl'
+    shader.uniforms.tex, shader.uniforms.tiled = 'dirt', 'stone'
+    self:check(pcall(shot), 'repeat_disable and repeat_enable hints compile and render')
+    shader.shaderPath = fixtures .. 'samplerTexture.glsl'
     local frame = ui:create('ViewportFrame', { name = 'Frame', size = { 0, 40, 0, 40 } }, ui.content)
     self:check(frame.getTexture and frame:getTexture() == nil, 'A ViewportFrame offers its texture once it has drawn')
     shader.uniforms.tex = frame
@@ -66,6 +70,20 @@ local function threeD(self)
     local red, green = shot():getPixel(WIDTH / 2, HEIGHT / 2)
     self:check(red > 0.9 and green < 0.1, 'A node that offers getTexture() feeds its live texture to the sampler')
     self:check(ok, 'A node without a texture yet leaves the sampler unset instead of failing')
+end
+
+local function wrapping(self)
+    local _, _, _, resources = newWorld()
+    local shared = resources:image('dirt')
+    local clamped = resources:imageVariant('dirt', nil, 'clamp')
+    self:check(
+        clamped ~= shared and clamped:getWrap() == 'clamp' and shared:getWrap() == 'repeat',
+        'repeat_disable samples a clamped copy and leaves the shared repeating texture alone'
+    )
+    self:check(
+        resources:imageVariant('dirt', nil, 'clamp') == clamped,
+        'The clamped copy is cached'
+    )
 end
 
 local function editor(self)
@@ -106,10 +124,50 @@ local function twoD(self)
     self:check(b > 0.8 and r < 0.2, 'hint_screen_texture in a canvas_item shader reads the snapshot being processed')
 end
 
+local function depth2D(self)
+    local world, camera, renderer, resources = newWorld()
+    world:create('Mesh3D', { name = 'Wall', position = { 0, 5, 40 }, size = { 200, 100, 2 }, color = { 1, 1, 1, 1 } })
+    local ui = UI.new(WIDTH, HEIGHT, resources):bindWorld(world)
+    ui.parent = world._node
+    ui.layoutMode = 'Fit'
+    world.shaderLayers:setInteracts('Default2D', 'Default3D', true)
+    local effect = ui:create('Shader2D', {
+        name = 'Depth',
+        shaderPath = fixtures .. 'depth2D.glsl',
+        position = { 0, 0, 0, 0 },
+        size = { 1, 0, 1, 0 },
+    }, ui.content)
+    local canvas = katsa.graphics.newCanvas(WIDTH, HEIGHT)
+    local frame = 0
+    local function shot()
+        frame = frame + 1
+        renderer:draw(world, camera, frame, true)
+        ui.backgroundRenderer, ui.backgroundCanvas = renderer, renderer.canvas
+        katsa.graphics.setCanvas(canvas)
+        katsa.graphics.clear(0, 0, 0, 1)
+        ui:draw()
+        katsa.graphics.setCanvas()
+        return canvas:newImageData()
+    end
+    shot()
+    local data = shot()
+    local value = data:getPixel(WIDTH / 2, HEIGHT / 2)
+    self:check(
+        math.abs(value * 100 - 39) < 1.5,
+        ('hint_depth_texture in a canvas_item shader reads the 3D depth (%.1f, wall front at 39)'):format(value * 100)
+    )
+    world.shaderLayers:setInteracts('Default2D', 'Default3D', false)
+    shot()
+    value = shot():getPixel(WIDTH / 2, HEIGHT / 2)
+    self:check(value > 0.9, 'Without a layer that reaches the 3D render the depth reads as far away')
+end
+
 function Module.run(self)
     threeD(self)
+    wrapping(self)
     editor(self)
     twoD(self)
+    depth2D(self)
 end
 
 return Module

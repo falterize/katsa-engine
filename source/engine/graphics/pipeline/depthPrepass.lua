@@ -36,6 +36,9 @@ local function drawGroups(renderer, shader, depth, stats, onlyEligible)
     g.clear(0, 0, 0, 0, 0, 1)
     g.setColorMask(false, false, false, false)
     g.setDepthMode('less', true)
+    -- Same winding as the main pass: depth drawn outside a frame (a UI shader asking for the
+    -- scene depth) must not inherit another pass's winding and keep the back faces.
+    g.setFrontFaceWinding('cw')
     g.setShader(shader)
     shader:send('viewProjection', 'row', renderer.camera.viewProjection)
     shader:send('instanced', true)

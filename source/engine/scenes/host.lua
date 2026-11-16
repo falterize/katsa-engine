@@ -100,9 +100,11 @@ function Host:draw()
     if self.world.activeCamera then
         self.renderer:draw(self.world, self.camera, self.time)
         self._ui.backgroundCanvas = self.renderer.canvas
+        self._ui.backgroundRenderer = self.renderer
     else
         katsa.graphics.clear(0.03, 0.04, 0.06, 1)
         self._ui.backgroundCanvas = nil
+        self._ui.backgroundRenderer = nil
     end
     self.statistics:sample()
     local started = katsa.timer.getTime()

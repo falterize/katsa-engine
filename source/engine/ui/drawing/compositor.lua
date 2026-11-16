@@ -4,6 +4,7 @@ local pairs = require('../../math.array').pairs
 local Programs = require('../../graphics.shaders.programs')
 local Tags = require('../../graphics.shaders.tags')
 local Samplers = require('../../graphics.shaders.samplers')
+local SceneTextures = require('../../graphics.pipeline.sceneTextures')
 -- Screen-space post effects operate on a snapshot, never read their draw target.
 local Compositor = {}
 
@@ -198,10 +199,12 @@ local function shader(ui, node)
         end
         node._postShader = ui.resources:own(compiled)
         node._postProgram = program
-        node._postScreenUniform = nil
+        node._postScreenUniform, node._postDepthUniform = nil, nil
         for name, meta in pairs(program.uniforms) do
             if meta.info.hints.hint_screen_texture then
                 node._postScreenUniform = name
+            elseif meta.info.hints.hint_depth_texture then
+                node._postDepthUniform = name
             end
         end
         node._shaderPath = node.shaderPath
@@ -296,6 +299,24 @@ function Compositor.apply(ui, node, region)
     local screenUniform = node._postScreenUniform
     if screenUniform and effect:hasUniform(screenUniform) then
         effect:send(screenUniform, snapshot)
+    end
+    -- `hint_depth_texture`: the opaque depth of the 3D render under the interface, when the
+    -- shader layer interacts with Default3D and a 3D render exists; otherwise "infinitely far".
+    local depthUniform = node._postDepthUniform
+    if depthUniform and effect:hasUniform(depthUniform) then
+        local renderer = allowed and ui.backgroundRenderer
+        local camera = renderer and renderer.camera
+        if camera then
+            effect:send(depthUniform, SceneTextures.depth(renderer))
+            if effect:hasUniform('depthRange') then
+                effect:send('depthRange', { camera.projection[11], camera.projection[12] })
+            end
+            if effect:hasUniform('orthographic') then
+                effect:send('orthographic', camera.orthographic == true)
+            end
+        else
+            effect:send(depthUniform, ui.resources:image('white'))
+        end
     end
     -- Built-in region uniforms describe this actual canvas/draw, including resize and nesting.
     if effect:hasUniform('canvasSize') then
