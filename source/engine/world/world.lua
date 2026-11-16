@@ -266,6 +266,7 @@ end
 
 function World3D:release()
     self.animations:release()
+    self.prefabs:release()
     local ok, message = pcall(self._node.destroy, self._node)
     self.nodeTree:release()
     self.nodeTypes, self.interactionSource = {}, nil

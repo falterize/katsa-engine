@@ -51,7 +51,7 @@ end
 
 -- Worlds register meshes and other named objects by unique name, so a copy of 'Wheel' becomes
 -- 'Wheel_2' (then 'Wheel_3'...) while the original is alive. Unregistered names stay unchanged.
-local function uniqueName(world, name)
+function Clone.uniqueName(world, name)
     local registry = world and world.byName
     if not registry or not name or not registry[name] then
         return name
@@ -66,7 +66,7 @@ end
 
 local function build(node, overrides, parent)
     local properties = Clone.collect(node)
-    properties.name = uniqueName(node._sceneWorld, properties.name)
+    properties.name = Clone.uniqueName(node._sceneWorld, properties.name)
     for key, value in pairs(overrides or {}) do
         -- Roblox-style capitalised names are accepted for the common identity fields.
         if key == 'Name' then

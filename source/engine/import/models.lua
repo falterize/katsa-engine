@@ -90,7 +90,19 @@ function Models.load(path, resources)
     local started = katsa.timer.getTime()
     local instance = copy(asset)
     instance.cloneSeconds = katsa.timer.getTime() - started
+    instance.source = instance.source or path -- lets a scene pack know what to re-import
     return instance
+end
+
+-- The importer options that rebuild the same model (the parent is chosen by whoever instantiates).
+local function importSettings(settings)
+    local result = {}
+    for key, value in pairs(settings) do
+        if key ~= 'parent' then
+            result[key] = value
+        end
+    end
+    return result
 end
 
 function Models.instantiate(world, model, settings)
@@ -254,6 +266,12 @@ function Models.instantiate(world, model, settings)
         objects,
         settings
     )
+    -- A packed scene (scenes/packed) re-imports the model instead of copying these nodes: they carry
+    -- skins and animation state that properties cannot describe.
+    root._modelSource = { path = model.source, settings = importSettings(settings) }
+    for _, node in ipairs(root:getDescendants()) do
+        node._importerOwned = true
+    end
     return objects, root
 end
 

@@ -380,8 +380,9 @@ function PropertyWrite.install(Properties)
                 if index[value] and index[value] ~= target then
                     return false, 'Object name already exists'
                 end
-                local old = target.name
+                local old = target._registryName or target.name
                 index[old], index[value] = nil, target
+                target._registryName = value
                 for _, board in ipairs(target._world.billboards) do
                     if board.adornee == old then
                         board.adornee = value

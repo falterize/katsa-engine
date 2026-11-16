@@ -15,8 +15,10 @@ local GameServer = {}
 GameServer.__index = GameServer
 
 -- resources: a scope that outlives the server. options: port, bots, simulate, maxPlayers.
-function GameServer.new(resources, options)
+-- manager: the scene manager that loads the map prefabs.
+function GameServer.new(resources, options, manager)
     local world = World3D.new(resources)
+    world.prefabs.manager = manager
     local root = RootNode.create(world)
     local server = Net.Server.new({}, {
         port = options.port,
@@ -31,7 +33,7 @@ function GameServer.new(resources, options)
         return player.name
     end)
     self.teleportRemote = server:remote('Teleport')
-    self.maps = Maps.new(world, server.replication.serverStorage, root:find('World3D'))
+    self.maps = Maps.new(world, root:find('World3D'))
     self.rounds = Rounds.new(world, self.roster, function(avatar, position)
         self:teleport(avatar, position)
     end, function(text)

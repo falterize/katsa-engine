@@ -1,0 +1,10 @@
+return require('source.engine.scenes.packed.scene').define(function(scene)
+    local world = scene.world
+    local crate = world:create('Mesh3D', { name = 'Crate', size = { 1, 1, 1 } })
+    world:create('SurfaceAppearance3D', { name = 'Skin', colorMap = 'stone' }, crate)
+    local lid = world:create('Mesh3D', { name = 'Lid', position = { 0, 0.6, 0 }, size = { 1, 0.2, 1 } }, crate)
+    crate:setAttribute('Weight', 12)
+    crate:setAttributeReference('Lid', lid)
+    lid:addTag('Openable')
+    world:create('Spinner', { name = 'Turntable', speed = 60 }, crate)
+end)

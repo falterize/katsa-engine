@@ -21,6 +21,16 @@ function Graph.setRate(tree, walkScale, speed)
     tree:set('crouchRate', walkScale)
 end
 
+-- The parameters of a character standing still on the ground.
+function Graph.init(tree)
+    tree:set('speed', 0)
+    tree:set('stride', 1)
+    tree:set('crouchRate', 0)
+    tree:set('stance', 'Stand')
+    tree:set('squat', 0)
+    tree:set('grounded', true)
+end
+
 function Graph.stride(speed)
     if speed <= WALK_SPEED then
         return 1 + 1.5 * math.max(0, speed) / WALK_SPEED

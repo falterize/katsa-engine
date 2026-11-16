@@ -45,10 +45,10 @@ function Layout.validate(root, settings)
 end
 
 -- The scene's lifecycle module: main.lua, or the `settings.server` module when the process runs
--- as a headless dedicated server (`--server`).
-function Layout.lifecycle(package)
-    local name = 'main'
-    if require('source.engine.core.runtime').headless then
+-- as a headless dedicated server (`--server`). `forced` names the module instead (prefab loads).
+function Layout.lifecycle(package, forced)
+    local name = forced or 'main'
+    if not forced and require('source.engine.core.runtime').headless then
         name = assert(
             package.settings.server,
             'This scene has no server entry (settings.server) to run with --server'

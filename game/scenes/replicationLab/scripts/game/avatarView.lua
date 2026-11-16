@@ -1,12 +1,11 @@
-local Models = require('source.engine.import.models')
 local HeroTree = require('game.characters.heroTree')
 
--- What another player looks like here: the character model driven by its own AnimationTree from the
--- replicated pose, with the nickname over its head. The local player's own view is the controller's.
+-- What another player looks like here: the avatar prefab (the character model with its own AnimationTree)
+-- driven from the replicated pose, with the nickname over its head. The local player's own view is the controller's.
 local AvatarView = {}
 AvatarView.__index = AvatarView
 
-local CHARACTER = 'assets/models/characters/player.glb'
+local PREFAB = 'scene://prefabs/avatar'
 local WALK_SPEED = 5
 
 local function nameplate(world, parent, text)
@@ -31,22 +30,11 @@ end
 
 -- object: the replicated Avatar entity (x, y, z, heading, speed, air, name).
 function AvatarView.new(scene, object)
-    local world = scene.world
-    local model = Models.load(CHARACTER, scene.resources)
-    local _, root = Models.instantiate(world, model, {
-        name = object.name,
-        scale = { 0.65, 0.65, 0.65 },
-    })
-    local tree = world:create('AnimationTree', { name = 'Tree' }, root)
-    HeroTree.build(world, tree)
-    tree:set('speed', 0)
-    tree:set('stride', 1)
-    tree:set('crouchRate', 0)
-    tree:set('stance', 'Stand')
-    tree:set('squat', 0)
-    tree:set('grounded', true)
+    local root = scene.world.prefabs:instantiate(PREFAB, { name = object.name })
+    local tree = root:find('Character/Tree')
+    HeroTree.init(tree)
     local self = setmetatable({ object = object, root = root, tree = tree }, AvatarView)
-    self.nameplate = nameplate(world, root, object.name)
+    self.nameplate = nameplate(scene.world, root, object.name)
     return self
 end
 

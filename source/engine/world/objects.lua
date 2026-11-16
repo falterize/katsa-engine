@@ -23,7 +23,7 @@ function Objects.install(World3D)
         o._world = self
         o.layers = o.layers or 1
         o:onDestroy(function()
-            self:removeObject(o.name)
+            self:removeObject(o._registryName or o.name)
         end)
         assert(
             o.name and not self.byName[o.name],
@@ -58,6 +58,8 @@ function Objects.install(World3D)
         o.radius = 1
         self.objects[#self.objects + 1] = o
         self.byName[o.name] = o
+        -- The registry key is unique per world; `name` may later repeat (copies of a prefab).
+        o._registryName = o.name
         self:updateObject(o)
         return o
     end

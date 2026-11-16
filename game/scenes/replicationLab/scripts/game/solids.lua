@@ -25,16 +25,22 @@ local function meshesUnder(root, list)
     return list
 end
 
+-- Map pieces sit under the map prefab's node, so their position in the world is not `position`.
+local function worldPosition(mesh)
+    local m = mesh:getWorldMatrix()
+    return { m[4], m[8], m[12] }
+end
+
 function Solids:add(mesh)
     local moving = mesh:getAttribute('Moving') == true
     self.count = self.count + 1
-    local p, size = mesh.position, mesh.size
+    local p, size = worldPosition(mesh), mesh.size
     self.proxies[mesh] = {
         moving = moving,
         body = self.scene.world:create('Body3D', {
             name = 'SolidProxy' .. self.count,
             bodyType = moving and 'Kinematic' or 'Static',
-            position = { p[1], p[2], p[3] },
+            position = p,
             size = { size[1], size[2], size[3] },
             friction = 0.8,
             restitution = 0,
@@ -73,7 +79,7 @@ function Solids:update(dt)
     end
     for mesh, proxy in pairs(self.proxies) do
         if proxy.moving and not mesh.destroyed then
-            local target, at = mesh.position, proxy.body.position
+            local target, at = worldPosition(mesh), proxy.body.position
             proxy.body.physics:setVelocity({
                 (target[1] - at[1]) * FOLLOW,
                 (target[2] - at[2]) * FOLLOW,

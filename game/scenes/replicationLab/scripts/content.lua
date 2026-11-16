@@ -1,5 +1,5 @@
 local Level = require('./builders.level')
-local Body = require('game.characters.playerBody')
+local PlayerBody = require('./builders.player')
 local Orbit = require('game.characters.orbit')
 local Input = require('game.characters.thirdPersonInput')
 local HeroTree = require('game.characters.heroTree')
@@ -15,19 +15,6 @@ Content.__index = Content
 
 local WALK_SPEED = 5
 
--- The animation graph of the local character; the same HeroTree every avatar uses.
-local function buildTree(scene, player)
-    local tree = scene.world:create('AnimationTree', { name = 'HeroTree' }, player.model.root)
-    HeroTree.build(scene.world, tree)
-    tree:set('speed', 0)
-    tree:set('stride', 1)
-    tree:set('crouchRate', 0)
-    tree:set('stance', 'Stand')
-    tree:set('squat', 0)
-    tree:set('grounded', true)
-    return tree
-end
-
 function Content.new(scene)
     scene:createPhysics3D({
         unitsPerMeter = 1,
@@ -36,7 +23,7 @@ function Content.new(scene)
         interpolate = true,
     })
     Level.create(scene)
-    local player = Body.create(scene)
+    local player = PlayerBody.create(scene)
     local orbit = Orbit.new(scene, player)
     scene.character = player
     scene.input = Input.new(scene, player, orbit)
@@ -54,10 +41,10 @@ function Content.new(scene)
         scene = scene,
         player = player,
         orbit = orbit,
-        tree = buildTree(scene, player),
+        tree = player.tree,
         views = {},
     }, Content)
-    self.host = GameServer.new(scene.resources, settings):start()
+    self.host = GameServer.new(scene.resources, settings, scene.manager):start()
     self.nickname = 'Player' .. math.random(100, 999)
     self.session = Session.new(scene.world, {
         parent = scene.root:find('World3D'),

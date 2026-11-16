@@ -65,14 +65,15 @@ function Module.run(self)
     local title = round:getAttribute('Map')
     self:check(
         title and title ~= '' and session:node('Map') ~= nil and #session:node('Map').children > 3,
-        'Each round clones a random map from ServerStorage/Maps and replicates it'
+        'Each round places a random map prefab and replicates it'
     )
     -- Coins and bots stand on the map's real surface (the arena is not at y = 0).
     local function surfaceAt(x, z)
         local top = 0
         for _, node in ipairs(state.host.maps.current:getDescendants()) do
             if node.className == 'Mesh3D' then
-                local p, size = node.position, node.size
+                local m, size = node:getWorldMatrix(), node.size
+                local p = { m[4], m[8], m[12] }
                 if math.abs(x - p[1]) <= size[1] / 2 and math.abs(z - p[3]) <= size[3] / 2 then
                     top = math.max(top, p[2] + size[2] / 2)
                 end

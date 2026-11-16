@@ -25,40 +25,64 @@ function Host.new(manager, package, options)
     }, Host)
 end
 
+-- options.prefab: the scene is loaded only to be packed (source/engine/scenes/packed): nothing is
+-- drawn, so it gets no renderer or overlays, and `baseline` remembers what the host itself put into
+-- the world before the scene's create script ran.
 function Host:load()
+    local prefab = self.options.prefab
     local profiler = self.manager.profiler
-    profiler:beginLoad(self.package.id)
+    local function mark(stage)
+        if not prefab then
+            profiler:markLoad(stage)
+        end
+    end
+    if not prefab then
+        profiler:beginLoad(self.package.id)
+    end
     self.settings = self.package.settings
     self.zone = self.package.id
     self.resources =
         self.manager.resources:scope(Loader.manifest({}, self.settings.assets), self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
-    profiler:markLoad('Resources and audio')
+    mark('Resources and audio')
     local lighting =
         Loader.configure(require('source.engine.graphics.lighting.defaults').create(), self.settings.world)
     self.world = World.new(self.resources, lighting)
+    self.world.prefabs.manager = self.manager
     self.root = RootNode.create(self.world)
     self.world.audio = self.audio
     self.audio.worldRoot = self.world._node
     self.camera = self.world:addCamera()
-    self.renderer = Renderer.new(self.resources)
+    self.renderer = not prefab and Renderer.new(self.resources) or nil
     self._ui = UI.new(1280, 720, self.resources):bindWorld(self.world)
     self._ui.parent = self.world._node
     self._ui.layoutMode = 'Viewport'
     self.input = Input.new(self)
     self.systems = Systems.new(self)
-    profiler:markLoad('World, renderer and UI')
+    mark('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
     require('source.engine.plugins').activate(self.world, self.settings.plugins)
-    profiler:markLoad('Node types and plugins')
-    self.lifecycle = require('source.engine.scenes.layout').lifecycle(self.package)
+    mark('Node types and plugins')
+    -- A prefab runs the scene's own `main`, never the dedicated-server entry.
+    self.lifecycle = require('source.engine.scenes.layout').lifecycle(
+        self.package,
+        prefab and 'main' or nil
+    )
+    if prefab then
+        self.baseline = {}
+        for _, node in ipairs(self.world._node:getDescendants()) do
+            self.baseline[node] = true
+        end
+    end
     self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
-    profiler:markLoad('Scene create script')
-    local layer = self._ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self._ui.content)
-    self.statistics = Statistics.new(self, layer)
-    self.console = require('source.engine.debug.consolePanel').new(self._ui, layer)
+    mark('Scene create script')
+    if not prefab then
+        local layer = self._ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self._ui.content)
+        self.statistics = Statistics.new(self, layer)
+        self.console = require('source.engine.debug.consolePanel').new(self._ui, layer)
+    end
     self:resize(katsa.graphics.getDimensions())
-    profiler:markLoad('Overlays and layout')
+    mark('Overlays and layout')
 end
 
 function Host:createPhysics2D(options, ui)
