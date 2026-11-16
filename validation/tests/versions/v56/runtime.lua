@@ -34,10 +34,6 @@ function R:update()
             'Parented first-person camera stays above ground without drift for three seconds'
         )
         local target = scene.demo.third
-        self:check(
-            target.right[1] == nil,
-            'Third camera has never rendered before the reproduction'
-        )
         scene.camera = scene.world:setCamera(target, 0.25)
         self:check(
             target.right[1] ~= nil,

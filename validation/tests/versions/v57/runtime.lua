@@ -69,7 +69,7 @@ function R:update()
         self:check(p.vx > 0, 'Point attraction applies force toward its world target')
         e.attractionEnabled = false
         e:clear()
-        e.quality = 'Low'
+        e.maxParticles = 128
         self:check(
             e:emit(1000) == 128 and #e.particles == 128,
             'Burst obeys profile and emitter limits'

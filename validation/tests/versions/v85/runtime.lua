@@ -5,6 +5,7 @@ local function extra(test)
     local w, r, c = scene.world, scene.renderer, scene.camera
     local e = w.environment
     e.render.frameCache = false
+    e.render.msaa = 0 -- the early depth pass is skipped on MSAA targets
     e.shadows.enabled = false
     e.debug.gizmos.enabled = false
     local board = w:create('BillboardUI', {
@@ -49,6 +50,8 @@ local function extra(test)
         'Billboard UI preserves prepared data for all 401 unchanged meshes'
     )
     test:check(r.lights.poseUpdates == 0, 'Unchanged light transforms are reused')
+    -- One more frame: the depth pass caches after the frame that first sees stable meshes.
+    capture(false):release()
     test:check(
         r.depthPrepassActive and r.stats.depthPrepassReused and r.stats.depthPrepassDrawCalls == 0,
         'Unchanged opaque depth is reused while world UI remains live'

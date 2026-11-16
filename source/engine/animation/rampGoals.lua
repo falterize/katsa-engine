@@ -65,7 +65,8 @@ function Goals.add(ramp, key, value)
     value = Copy(value or current)
     assert(numeric(value), 'Ramp goal must be a finite number or vector')
     assert(
-        type(value) == type(current) and (not Array.is(value) or #value == #current),
+        (type(value) == 'number' and type(current) == 'number')
+            or (Array.is(value) and Array.is(current) and #value == #current),
         'Ramp goal dimensions do not match target'
     )
     ramp.goals[key] = value

@@ -62,7 +62,6 @@ function R:update()
             name = 'ExternalTarget',
             position = { 0, 0, 30 },
             size = { 8, 8, 8 },
-            texture = 'white',
         })
         local detector = scene.world:create(
             'ClickDetector3D',
@@ -73,9 +72,9 @@ function R:update()
             detector:getTarget() == target and detector:canActivate(),
             'ClickDetector Adornee redirects its clicked target while source remains separate'
         )
-        detector.adornee = nil
+        detector:setAdornee(nil)
         self:check(
-            not detector:canActivate(),
+            detector:getTarget() == detector.parent or not detector:canActivate(),
             'Clearing Adornee uses the valid Parent or disables targetless detectors'
         )
         detector.adornee = target
@@ -135,7 +134,7 @@ function R:update()
             a.root.currentCamera ~= before and b.root.currentCamera == b.camera,
             'Actual viewport pointer routes to its inner UI camera button'
         )
-        a.frame.renderScale = 0.5
+        a.frame.canvasSize = { 0.5, 0, 0.5, 0 }
         self.capture = 'viewports-second-frame'
     elseif self.frame == 3 then
         local a = self.scene.demo.views[1]

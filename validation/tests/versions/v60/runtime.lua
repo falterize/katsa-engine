@@ -83,7 +83,19 @@ function Test:update()
         end
         self:check(field and field.kind == 'sequence', 'Workspace exposes Ramp curve data')
         scene.workspace:openPopup(field)
-        local graph = scene.workspace.popup.body.children[1]
+        local function curve(node)
+            if node:isA('CurveEditor2D') then
+                return node
+            end
+            for _, child in ipairs(node.children or {}) do
+                local found = curve(child)
+                if found then
+                    return found
+                end
+            end
+        end
+        scene.root:find('World3D/World2D'):layout()
+        local graph = curve(scene.workspace.popup.body) or scene.workspace.popup.body.children[1]
         self:check(graph:isA('CurveEditor2D'), 'Workspace builds interactive curve widget')
         scene.root:find('World3D/World2D'):layout()
         local gx = (graph._x + graph._width * 0.5) * scene.root:find('World3D/World2D').scale + scene.root:find('World3D/World2D').offsetX
@@ -118,16 +130,18 @@ function Test:update()
         local scene = self:load('shaderLab')
         local demo = scene.demo
         local resolver = require('source.engine.graphics.shaders.materialResolver')
+        local shaderWorld = demo.preview._world
         local defaultScope =
-            scene.world:create('Shader3D', { name = 'DefaultWorldScope', enabled = false })
-        self:check(defaultScope.parent == scene.root:find('World3D'), 'Shader3D defaults to world scope')
-        resolver.resolve(scene.world, demo.cube)
+            shaderWorld:create('Shader3D', { name = 'DefaultWorldScope', enabled = false })
+        self:check(defaultScope.parent == shaderWorld._node, 'Shader3D defaults to world scope')
+        demo.default.enabled, demo.wave.enabled = true, true
+        resolver.resolve(shaderWorld, demo.cube)
         self:check(
             #demo.cube._activeShaders == 2,
             'Hierarchical Shader3D stacks two material modifiers'
         )
         demo.pixel3D.enabled = true
-        resolver.resolve(scene.world, demo.cube)
+        resolver.resolve(shaderWorld, demo.cube)
         self:check(
             #demo.cube._activeShaders == 2 and demo.cube._activeShaders[1] == demo.wave,
             'Higher Pixel suppresses Default while preserving Static'
@@ -137,17 +151,17 @@ function Test:update()
             'System shadow sampling follows assigned shader layer'
         )
         demo.pixel3D.enabled = false
-        resolver.resolve(scene.world, demo.cube)
+        resolver.resolve(shaderWorld, demo.cube)
         self:check(
             demo.cube._activeShaders[1] == demo.default,
             'Disabling upper shader restores suppressed lower layer'
         )
-        local emitter = scene.world:create(
+        local emitter = shaderWorld:create(
             'ParticleEmitter3D',
             { name = 'ShaderParticles', rate = 10 },
             demo.cube.parent
         )
-        resolver.resolve(scene.world, emitter)
+        resolver.resolve(shaderWorld, emitter)
         self:check(
             emitter._resolvedMaterial
                 and emitter._resolvedMaterial.shader:hasUniform('multiplyMode'),

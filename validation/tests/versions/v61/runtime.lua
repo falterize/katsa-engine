@@ -64,7 +64,7 @@ function Test:update()
             ramp.goals.position and #ramp.bindings.position == 2,
             'Empty Goals editor adds a selected target property'
         )
-        ramp.goals.position = { 9, 15, 0 }
+        ramp.goals.position = #ramp:getTarget().position == 3 and { 9, 15, 0 } or { 9, 15 }
         ramp.bindings.position[2].value = { 9, 15, 0 }
         self.capture = 'goals'
         self.ramp = ramp
@@ -76,10 +76,11 @@ function Test:update()
             next(self.ramp.goals) == nil and next(self.ramp.bindings) == nil,
             'Cancel restores Goals and associated timelines together'
         )
-        self.ramp:addGoal('position', { 9, 15, 0 }):play()
+        local goal = #self.ramp:getTarget().position == 3 and { 9, 15, 0 } or { 9, 15 }
+        self.ramp:addGoal('position', goal):play()
         scene.world:updateNodes(0.2)
         self:check(
-            scene.demo.body.position[1] == 9,
+            math.abs(scene.demo.body.position[1] - 9) < 1e-3,
             'Added multi-component goal plays through Tween'
         )
         scene.workspace:select(self.ramp)

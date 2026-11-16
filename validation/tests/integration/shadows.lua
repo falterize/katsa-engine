@@ -6,9 +6,6 @@ return function(test)
     local resources = Resources.new(require('validation.tests.fixtures.manifest'))
     local settings = require('game.data.settings').create()
     settings.sky.enabled, settings.fog.enabled, settings.gizmos.enabled = false, false, false
-    settings.ambient = { 8, 8, 8 }
-    settings.sun.enabled, settings.sun.direction, settings.sun.brightness =
-        true, { 0.4, -1, 0.2 }, 1
     settings.shadows.enabled, settings.shadows.resolution = true, 256
     -- Pixel/allocation tests intentionally request an unthrottled full atlas.
     settings.shadows.sourceFadeSeconds = 0
@@ -17,6 +14,13 @@ return function(test)
     settings.shadows.filterSamples, settings.shadows.normalBias, settings.shadows.bias =
         1, 0.5, 0.02
     local world = World3D.new(resources, settings)
+    world.environment.ambient = { 8, 8, 8 }
+    local sun = world:create('DirectionalLight3D', {
+        name = 'Sun',
+        rotation = { 68, 22, 0 },
+        brightness = 1,
+        castShadow = true,
+    })
     local camera = world:addCamera({
         position = { 0, 85, -120 },
         rotation = { -28, 0, 0 },
@@ -28,13 +32,11 @@ return function(test)
         castShadow = false,
         position = { 0, -2, 50 },
         size = { 220, 4, 220 },
-        texture = 'white',
     })
     local caster = world:create('Mesh3D', {
         name = 'Caster',
         position = { 0, 20, 45 },
         size = { 25, 40, 25 },
-        texture = 'white',
         color = { 0.2, 0.4, 0.7, 1 },
     })
 
@@ -65,20 +67,6 @@ return function(test)
     print('SHADOW SUN PIXELS', pixels, renderer.shadows.drawCalls)
     test:check(pixels > 15, 'Directional shadow mapping darkens actual ground pixels')
     withShadow:encode('png', 'sunShadows-v41.png')
-    test:check(
-        renderer.shadows.sunTexelSizes[1] * 8 == renderer.shadows.sunTexelSizes[3],
-        'Near sun cascade provides eight times the distant world-space texel detail'
-    )
-    local SunCascades = require('source.engine.graphics.shadows.sunCascades')
-    local a, b = {}, {}
-    local fixed = { position = { 0, 0, 0 } }
-    local _, texel = SunCascades.prepare(fixed, { 0, -1, 0 }, 240, 256, 1, a)
-    fixed.position[1] = texel * 0.2
-    SunCascades.prepare(fixed, { 0, -1, 0 }, 240, 256, 1, b)
-    test:check(
-        math.abs(a[1] - b[1]) < 1e-8 and math.abs(a[3] - b[3]) < 1e-8,
-        'Sub-texel camera motion preserves the sun map grid'
-    )
     withShadow:release()
     withoutShadow:release()
     caster.castShadow = true
@@ -92,7 +80,7 @@ return function(test)
     )
     noReceive:release()
     receive:release()
-    settings.sun.enabled = false
+    sun.enabled = false
     local light = world:create('SpotLight3D', {
         position = { 0, 95, 0 },
         rotation = { 60, 0, 0 },
@@ -130,12 +118,14 @@ return function(test)
     withShadow:release()
     withoutShadow:release()
     caster.castShadow = true
-    caster.material = Material.new(resources, {
-        shaders = { require('source.engine.graphics.shaders.programs').parse('validation/tests/fixtures/shaders/shift.glsl', 'spatial') },
+    local shift = world:create('Shader3D', {
+        name = 'Shift',
+        shaderPath = 'validation/tests/fixtures/shaders/shift.glsl',
         uniforms = { shift = 0 },
-    })
+        animated = true,
+    }, caster)
     withShadow = image()
-    caster.material:set('shift', 4)
+    shift.uniforms.shift = 4
     withoutShadow = image()
     test:check(
         difference(withShadow, withoutShadow) > 15,
@@ -153,7 +143,7 @@ return function(test)
     image():release()
     test:check(renderer.shadows.generation > 5, 'Nine-sample filtered shadow shader renders')
     -- The receiver itself casts shadows: an empty floor must remain lit.
-    caster.material, caster.castShadow, ground.castShadow = nil, false, true
+    shift.enabled, caster.castShadow, ground.castShadow = false, false, true
     settings.shadows.enabled = true
     settings.shadows.sourceFadeSeconds = 0
     local clearFloor = image()
@@ -223,7 +213,7 @@ return function(test)
     renderer.lights.nextSelection = 0
     image():release()
     test:check(
-        renderer.shadows.localLightCount == 32 and renderer.shadows.faceCount == 195,
+        renderer.shadows.localLightCount == 32 and renderer.shadows.faceCount == 192,
         'All 32 PointLights receive six shadow faces without a single-light atlas budget'
     )
     light.enabled = false

@@ -160,9 +160,13 @@ function T:update()
         local wire = self.scene.renderer.wireMeshes
         assert(wire and next(wire), 'Shader wireframe did not create edge geometry')
         local skinned = false
-        for geometry, mesh in pairs(wire) do
+        for geometry, cached in pairs(wire) do
+            local mesh = cached.mesh
             local format = mesh:getVertexFormat()
-            assert(format[#format][1] == 'wireBarycentric', 'Missing barycentric coordinates')
+            assert(
+                format[2][1] == 'edgeEnd' and format[3][1] == 'edgeCorner',
+                'Missing edge coordinates'
+            )
             for _, attribute in ipairs(format) do
                 if attribute[1] == 'skinWeights' then
                     skinned = true
