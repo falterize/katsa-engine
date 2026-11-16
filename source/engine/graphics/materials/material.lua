@@ -2,6 +2,7 @@ local readValue = require('../../math.managedValue').read
 local pairs = require('../../math.array').pairs
 local ipairs = require('../../math.array').ipairs
 local Programs = require('../shaders.programs')
+local Samplers = require('../shaders.samplers')
 
 -- A material is a template program with user shaders spliced in (see graphics/shaders/composer).
 --   kind = 'world': options.template (default the spatial world program) plus options.shaders,
@@ -68,6 +69,7 @@ function Material.new(resources, options)
         vertexModified = modifiesVertex,
         vertexAnimated = options.animated == true and modifiesVertex,
         kind = kind,
+        resources = resources,
         shader = shader,
         shadowShader = shadowShader,
         program = program,
@@ -96,18 +98,30 @@ function Material.new(resources, options)
 end
 
 -- Sends every material uniform the compiler kept. Uniforms a driver optimised away (declared
--- but never read by the stage) are skipped instead of reported.
-local function send(shader, uniforms)
-    for name, value in pairs(uniforms) do
+-- but never read by the stage) are skipped instead of reported. Sampler uniforms hold a path, a
+-- node that offers a texture or a texture (see shaders/samplers.lua).
+local function send(self, shader)
+    local meta = self.program and self.program.uniforms
+    for name, value in pairs(self.uniforms) do
         if shader:hasUniform(name) then
-            shader:send(name, readValue(value))
+            local info = meta and meta[name] and meta[name].info
+            if info and info.sampler then
+                if not (info.hints.hint_screen_texture or info.hints.hint_depth_texture) then
+                    local texture = Samplers.resolve(self.resources, value, info)
+                    if texture then
+                        shader:send(name, texture)
+                    end
+                end
+            else
+                shader:send(name, readValue(value))
+            end
         end
     end
 end
 
 function Material:bindShadow()
     if self.shadowShader then
-        send(self.shadowShader, self.uniforms)
+        send(self, self.shadowShader)
     end
 end
 
@@ -126,7 +140,7 @@ function Material:bind(time)
     if time and self.shader:hasUniform('time') then
         self.shader:send('time', time)
     end
-    send(self.shader, self.uniforms)
+    send(self, self.shader)
 end
 
 return Material

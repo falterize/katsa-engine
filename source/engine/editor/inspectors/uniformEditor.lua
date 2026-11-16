@@ -8,7 +8,9 @@ local EnvironmentShaders = require('../../graphics.shaders.environmentShaders')
 --   source_color                   vec3 / vec4 channels are 0..1 and a swatch shows the colour
 --   hint_enum("A", "B")            an int chosen by name or index
 --   bool                           true / false
---   hint_screen_texture, hint_depth_texture, samplers: fed by the engine or from code, not listed
+--   sampler2D                      a texture path or manifest name (a node-assigned texture is set
+--                                  from code and shown as the node's name)
+--   hint_screen_texture, hint_depth_texture: fed by the engine, not listed
 -- Values left alone stay at the file's default; an edit writes the entry into `uniforms`.
 local UniformEditor = {}
 
@@ -26,11 +28,13 @@ end
 
 local function editable(info)
     local hints = info.hints
-    return not info.sampler
-        and not info.array
-        and not hints.hint_screen_texture
-        and not hints.hint_depth_texture
-        and (info.type == 'float' or info.type == 'int' or info.type == 'bool' or components[info.type])
+    if info.array or hints.hint_screen_texture or hints.hint_depth_texture then
+        return false
+    end
+    if info.sampler then
+        return info.type == 'sampler2D'
+    end
+    return info.type == 'float' or info.type == 'int' or info.type == 'bool' or components[info.type]
 end
 
 local function current(node, info)
@@ -91,7 +95,17 @@ function UniformEditor.open(popup)
             local function write(value)
                 node.uniforms[name] = value
             end
-            if components[kind] then
+            if kind == 'sampler2D' then
+                local value = node.uniforms[name]
+                local text = type(value) == 'string' and value
+                    or type(value) == 'table' and tostring(value.name or 'node')
+                    or ''
+                popup:input(name .. ' (texture path)', text, row * ROW, function(entry)
+                    write(entry ~= '' and entry or nil)
+                    return true
+                end)
+                row = row + 1
+            elseif components[kind] then
                 local value = current(node, uniform) or {}
                 local swatch
                 if uniform.hints.source_color then

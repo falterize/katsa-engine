@@ -80,6 +80,10 @@ parameters: the built-in variables below are in scope.
 * A `Shader3D`/`Shader2D` node sets values through `uniforms = { name = value }`. A name the file
   does not declare is an error, not a silent no-op. A value may be a number, boolean, a vector table
   or a managed value (animated values are read every frame).
+* `sampler2D` uniforms take a texture path or manifest name (`uniforms = { tex = 'shared://textures/surfaces/stone.png' }`),
+  a node that offers `getTexture()` (a `ViewportFrame` gives the 3D render it draws, so a mesh can show
+  another world) or a texture object. `filter_nearest` / `filter_linear` after the colon choose the
+  sampler filter for path values. Nothing is sent while a node has no texture yet.
 * Several nodes may use the same file: every use gets its own uniforms and helper functions, so
   stacked shaders never collide on names.
 * GLSL ES forbids uniform initializers; Katsa removes `= default` from the compiled text on every target.
@@ -234,6 +238,10 @@ uniform sampler2D depth_tex  : hint_depth_texture;   // the opaque scene depth
 void fragment() { ALBEDO = texture(screen_tex, SCREEN_UV).rgb; }
 ```
 
+`linear_depth(float raw)` turns a depth sample into view distance along the camera axis
+(`linear_depth(texture(depth_tex, SCREEN_UV).r)`); it works for perspective and orthographic cameras.
+Do not declare a function of that name in your own shader.
+
 `SCREEN_UV` is the fragment position over the viewport (0..1, top left origin). A material that
 declares one of these samplers is drawn in the transparent pass, after the opaque scene, and the
 engine binds the textures itself (the copy is made on first use each frame, so scenes without such
@@ -295,6 +303,9 @@ Mesh pipelines ignore sky and fog files; a sky file cannot be used as a mesh sha
 | `FRAGCOORD` | `vec4` | in | `gl_FragCoord` |
 | `TIME` | `float` | in | UI clock |
 | `TEXTURE` | `sampler2D` | in | the snapshot being processed |
+
+`uniform sampler2D name : hint_screen_texture;` gives the same snapshot as `TEXTURE` under your own
+name (sample it with `UV`).
 
 `vertex()` receives `VERTEX` (screen pixels), `UV`, `COLOR`, `CANVAS_VERTEX`, `TIME`. `shaderTransparency` mixes
 the result with the untouched pixel after `fragment()`.

@@ -3,6 +3,7 @@ local ipairs = require('../../math.array').ipairs
 local pairs = require('../../math.array').pairs
 local Programs = require('../../graphics.shaders.programs')
 local Tags = require('../../graphics.shaders.tags')
+local Samplers = require('../../graphics.shaders.samplers')
 -- Screen-space post effects operate on a snapshot, never read their draw target.
 local Compositor = {}
 
@@ -197,6 +198,12 @@ local function shader(ui, node)
         end
         node._postShader = ui.resources:own(compiled)
         node._postProgram = program
+        node._postScreenUniform = nil
+        for name, meta in pairs(program.uniforms) do
+            if meta.info.hints.hint_screen_texture then
+                node._postScreenUniform = name
+            end
+        end
         node._shaderPath = node.shaderPath
         node:onDestroy(function()
             release(ui, node)
@@ -216,7 +223,12 @@ local function shader(ui, node)
             value = program.defaults[compiled]
         end
         if value ~= nil and s:hasUniform(compiled) then
-            s:send(compiled, value)
+            if meta.info.sampler then
+                value = Samplers.resolve(ui.resources, value, meta.info)
+            end
+            if value ~= nil then
+                s:send(compiled, value)
+            end
         end
     end
     return s
@@ -279,6 +291,12 @@ function Compositor.apply(ui, node, region)
     require('source.engine.graphics.state').restoreUIStencil(ui)
     node._effectQuad:setViewport(x, y, x2 - x, y2 - y, w, h)
     local effect = shader(ui, node)
+    -- `hint_screen_texture` in a canvas_item shader: the snapshot being processed (the interface
+    -- plus, when the shader layer allows it, the 3D render); address it with UV like TEXTURE.
+    local screenUniform = node._postScreenUniform
+    if screenUniform and effect:hasUniform(screenUniform) then
+        effect:send(screenUniform, snapshot)
+    end
     -- Built-in region uniforms describe this actual canvas/draw, including resize and nesting.
     if effect:hasUniform('canvasSize') then
         effect:send('canvasSize', { w, h })

@@ -32,6 +32,12 @@ function Class:getWorld()
     end
 end
 
+-- The canvas the 3D world rendered into last frame (nil before the first draw or without a
+-- camera); a Shader3D / Shader2D `sampler2D` uniform can take this node as its value.
+function Class:getTexture()
+    return self._renderCanvas
+end
+
 function Class:updateContents(dt)
     local world = self:getWorld()
     if world and self.autoUpdate then
@@ -68,6 +74,7 @@ function Class:drawSelf(ui)
         world.renderer.targetWidth, world.renderer.targetHeight = w, h
         canvas = world.renderer:draw(world, world.activeCamera, world.viewportTime or 0, true)
     end
+    self._renderCanvas = canvas
     local g = katsa.graphics
     -- UI density follows the displayed frame independently of the 3D render resolution.
     local density = math.max(

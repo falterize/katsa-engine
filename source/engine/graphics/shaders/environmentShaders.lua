@@ -3,6 +3,7 @@ local pairs = require('../../math.array').pairs
 local readValue = require('../../math.managedValue').read
 local Programs = require('./programs')
 local Composer = require('./composer')
+local Samplers = require('./samplers')
 
 -- Shader3D nodes whose file says `shader_type sky` or `shader_type fog` do not style meshes: they
 -- replace the world background and reshape the volumetric fog (the Godot 4 shader types of the
@@ -77,7 +78,14 @@ function EnvironmentShaders.send(shader, program, node)
             value = program.defaults[compiled]
         end
         if value ~= nil and shader:hasUniform(compiled) then
-            shader:send(compiled, readValue(value))
+            if meta.info.sampler then
+                value = Samplers.resolve((node._world or node._sceneWorld).resources, value, meta.info)
+                if value then
+                    shader:send(compiled, value)
+                end
+            else
+                shader:send(compiled, readValue(value))
+            end
         end
     end
 end
