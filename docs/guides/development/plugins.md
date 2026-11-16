@@ -30,6 +30,7 @@ project: they are packed into `.katsa` archives and fused executables with every
 | --- | --- |
 | `pathfinding` | A* on grids, graphs and multi-floor maps, a baked NavMesh with obstacles and crowds, the `NavMap3D`, `NavAgent3D` and `NavObstacle3D` nodes, a debug view |
 | `uiStyler` | UI style sheets and `assets/styles` files, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
+| `ragdoll` | `Ragdoll3D` node: physical capsule bodies and joints for a humanoid model (`docs/guides/animation/ragdoll.md`) |
 | `ik` | `InverseKinematics3D` node with TwoBone, CCD, FABRIK, Jacobian, Spline, LookAt and FK types (`docs/guides/animation/ik.md`) |
 | `imgui` | Dear ImGui through the LuaJIT FFI: the `ImGuiLayer` node and the engine's Stats and Scene tools windows; a template for binding native libraries (`docs/guides/development/imgui.md`) |
 

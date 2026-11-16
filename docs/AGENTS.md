@@ -28,7 +28,7 @@ Sections: 1 Working with the owner · 2 Repository map · 3 Code style · 4 Modu
 | `source/engine/graphics/{materials,shaders,lighting}` | Material resolution, shader layers and shader source loading, light orientation defaults |
 | `source/katsa/` | The runtime layer: graphics on GL, window, audio, filesystem, net, platform |
 | `game/` | The project that ships with the repo, outside `source/`: scenes (`scenes/<name>`), the common collection runtime (`runtime/`), shared characters (`characters/`), game data (`data/project.lua`), `sceneCatalog.lua`, `sceneTags.lua`. Required as `game.*` |
-| `source/plugins/<name>/` | Optional features: `ads`, `ik`, `pathfinding`, `uiStyler` |
+| `source/plugins/<name>/` | Optional features: `ads`, `ik`, `pathfinding`, `ragdoll`, `uiStyler` |
 | `assets/` | Shared models, textures, shaders (`assets/shaders/engine/*.glsl`), audio, fonts |
 | `validation/tests/` | **All** tests; versioned suites in `validation/tests/versions/vNNN/`, registry in `validation/tests/registry.lua` |
 | `native/`, `vendor/` | Project C/C++ sources / pinned third-party code (never hand-format vendor code) |
@@ -140,6 +140,9 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 - `Animator` (`engine/nodes/animation/animator.lua`): `evaluate pose → modifiers → model:update(0)`. `Animator:update` rewrites **all** node TRS every pose evaluation, so anything that adjusts bones must run as a modifier (`addModifier/removeModifier`, priority-sorted, called with `process(self, step)` just before the matrix rebuild). Poses are model-space relative to `model.root`; convert with `root:getWorldMatrix()` for world targets.
 - Skeleton data: `model.nodes` 1-based, children 0-based indices, `translation/rotation{x,y,z,w}/scale`, row-major matrices with translation at 4,8,12.
 - Flipbook/sprite animation: clips live in XML (`assets/animations/player.xml` for the runner) loaded through `engine/animation/formats/flipbookXml.lua`; never duplicate frames/fps in Lua; validate manifests once at scene creation.
+
+### Ragdoll plugin (`source/plugins/ragdoll`)
+- `Ragdoll3D` node (`active`, `source`, joint/body settings). `humanoid.lua` maps bones to 11 segments by name, `rig.lua` builds world-space capsule `Body3D` + `RagdollConstraint3D` (never parent bodies to the scaled model), `pose.lua` converts body poses to bone rotations; the node is an Animator modifier via `ik/modelNode.lua`. stareShooter: `scripts/behaviors/ragdoll.lua` (key R + button) pauses the controller and moves the capsule to the pelvis. Verified in the sandbox by screenshots only; joint feel needs the owner's check.
 
 ### IK plugin (`source/plugins/ik`)
 - Core: `quat.lua` (Hamilton quaternions, shortest-arc `fromTo`), `skeleton.lua` (bone access and local/model/world rotation, `aim`, `chain`, `limitLocal`, `snapshot/blend`), `modifier.lua` (`SkeletonModifier` base: `influence`, `priority`, `debug`, `process` with influence blending, `drawDebug`).

@@ -166,6 +166,20 @@ local function write(self, node, q)
     self.version = self.version + 1
 end
 
+-- Moves a bone to a model-space position (the parent's pose is read first, so call it before
+-- the children are edited).
+function Skeleton:setPosition(bone, x, y, z)
+    local node = self:resolve(bone)
+    assert(not node.matrix, 'IK cannot drive node ' .. tostring(node.name) .. ': authored as a matrix')
+    local parent = node.parent and global(self, node.parent)
+    if parent then
+        x, y, z = M.transform(invertAffine(parent.matrix, {}), x, y, z)
+    end
+    local t = node.translation
+    t[1], t[2], t[3] = x, y, z
+    self.version = self.version + 1
+end
+
 function Skeleton:setLocalRotation(bone, q)
     local node = self:resolve(bone)
     write(self, node, Quat.normalize(q, {}))

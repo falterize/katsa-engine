@@ -10,11 +10,14 @@ function Simulation:update3D(dt)
     -- Install only while this system runs; disabling it freezes the FSM and solver.
     if not self.beforeStep then
         self.beforeStep = function(_, step)
-            state.player:step(step)
+            if not state.ragdoll:isActive() then
+                state.player:step(step)
+            end
         end
         state.scene.physics.beforeStep = self.beforeStep
     end
     state.scene.physics:update(dt)
+    state.ragdoll:follow()
     state.animation:update(dt)
     state.scene.world:updateNodes(dt)
     state.orbit:update()

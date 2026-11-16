@@ -12,6 +12,7 @@
 -- the node's Node3D children), LookAt (heads, turrets) and FK (angles instead of a target).
 -- The node plugs into the model's Animator and runs after animation sampling every pose evaluation.
 local Plugins = require('source.engine.plugins')
+local ModelNode = require('../modelNode')
 
 local TYPES = { 'TwoBone', 'CCD', 'FABRIK', 'Jacobian', 'Spline', 'LookAt', 'FK' }
 
@@ -19,18 +20,8 @@ local function only(...)
     return { key = 'type', oneOf = { ... } }
 end
 
-local function modelOf(node)
-    local parent = node.parent
-    while parent do
-        if parent.model and parent.model.nodes then
-            return parent.model
-        end
-        parent = parent.parent
-    end
-end
-
 local function boneNames(node)
-    local model = modelOf(node)
+    local model = ModelNode.modelOf(node)
     if not model then
         return nil
     end
@@ -219,27 +210,8 @@ function Definition.initialize(self)
     self._solvers = {}
 end
 
--- Finds the Animator of the model this node sits under and registers with it.
 function Definition:_connect()
-    if self.animator and not self.animator.destroyed then
-        return true
-    end
-    local model = modelOf(self)
-    local animator = model and (model.animator or model.controller)
-    if animator and animator.addModifier then
-        animator:addModifier(self)
-        self.animator = animator
-        if not self._connected then
-            self._connected = true
-            self:onDestroy(function()
-                if self.animator then
-                    self.animator:removeModifier(self)
-                end
-            end)
-        end
-        return true
-    end
-    return false
+    return ModelNode.connect(self)
 end
 
 function Definition:update()

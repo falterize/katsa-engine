@@ -1,5 +1,6 @@
 local Settings = {
     layoutVersion = 3,
+    plugins = { 'ragdoll' },
     physics = { backend = 'auto' },
     presentation = { navigation = false, menuKey = 'tab', menuButton = true },
     player = {
