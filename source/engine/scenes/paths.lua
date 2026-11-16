@@ -37,11 +37,37 @@ function Paths.parse(path)
         end
         rest = tail
     end
-    local scheme, relative = rest:match('^(%a+)://(.*)$')
+    local scheme, relative = rest:match('^([%a_][%w_%-]*)://(.*)$')
     return scheme, relative, ups
 end
 
--- `roots`: { scene, shared, parent }, where `parent` is the roots of the scene that loaded this one.
+-- The root of a scheme a scene registered by name (`roots.named`, see Paths.name); the scenes that
+-- loaded this one are searched too.
+local function named(roots, scheme)
+    while roots do
+        local root = roots.named and roots.named[scheme]
+        if root then
+            return root
+        end
+        roots = roots.parent
+    end
+end
+
+-- Registers `scheme://x` as an asset of the scene rooted at `root` in `roots` (a loaded prefab).
+function Paths.name(roots, scheme, root)
+    assert(scheme:match('^[%a_][%w_%-]*$'), 'Invalid scene name: ' .. tostring(scheme))
+    assert(scheme ~= 'scene' and scheme ~= 'shared', 'Reserved scene name: ' .. scheme)
+    roots.named = roots.named or {}
+    local existing = roots.named[scheme]
+    assert(
+        not existing or existing == root,
+        'Scene name "' .. scheme .. '" is already used by another scene'
+    )
+    roots.named[scheme] = root
+end
+
+-- `roots`: { scene, shared, parent, named }, where `parent` is the roots of the scene that loaded
+-- this one.
 function Paths.resolve(path, roots)
     local scheme, relative, ups = Paths.parse(path)
     if not scheme then
@@ -52,6 +78,7 @@ function Paths.resolve(path, roots)
     end
     local root = scheme == 'shared' and (roots and roots.shared or 'assets')
         or scheme == 'scene' and roots and roots.scene
+        or named(roots, scheme)
     assert(root, 'Unknown or unavailable asset namespace: ' .. scheme)
     return Paths.normalize(root) .. '/' .. Paths.normalize(relative)
 end

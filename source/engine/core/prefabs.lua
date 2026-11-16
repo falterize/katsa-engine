@@ -52,8 +52,12 @@ local function locate(source, paths)
     return Paths.normalize(source)
 end
 
-function Prefabs:load(source, paths)
-    paths = paths or self.world.resources.paths
+-- options.name: the name the scene's assets answer to everywhere in this world, as
+-- `name://textures/x.png` (default: the packed scene's id; two different scenes cannot share one).
+-- options.paths: the asset roots that resolve `source` and the name (default: this world's).
+function Prefabs:load(source, options)
+    options = options or {}
+    local paths = options.paths or self.world.resources.paths
     local key = locate(source, paths)
     local packed = self.packed[key]
     if not packed then
@@ -61,12 +65,17 @@ function Prefabs:load(source, paths)
         packed = require('source.engine.scenes.packed').load(key, manager, paths and paths.shared, paths)
         self.packed[key] = packed
     end
+    -- Names live in the world's own roots: its resource scope reads every node's strings.
+    local roots = self.world.resources.paths
+    if roots then
+        Paths.name(roots, options.name or packed.package.id, packed.package.paths.scene)
+    end
     return setmetatable({ packed = packed, world = self.world }, Handle)
 end
 
 -- load + instantiate in one call.
-function Prefabs:instantiate(source, properties, parent, paths)
-    return self:load(source, paths):instantiate(properties, parent)
+function Prefabs:instantiate(source, properties, parent, options)
+    return self:load(source, options):instantiate(properties, parent)
 end
 
 function Prefabs:setScene(scene)

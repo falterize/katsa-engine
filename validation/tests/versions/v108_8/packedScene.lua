@@ -1,5 +1,6 @@
 -- A scene used as a prefab: loaded from a folder or an archive, instantiated many times.
 local Application = require('game.runtime.application')
+local Paths = require('source.engine.scenes.paths')
 
 local Module = {}
 
@@ -127,6 +128,20 @@ function Module.run(self)
         a:getAttribute('Icon') == 'validation/tests/fixtures/prefabs/crate/assets/textures/dot.png',
         'A script resolves a prefab path it assigns later with scene.resources:canonical'
     )
+    local paths = world.resources.paths
+    self:check(
+        world.resources:canonical('crate://textures/dot.png')
+            == 'validation/tests/fixtures/prefabs/crate/assets/textures/dot.png'
+            and Paths.parse('my-scene_2://x') == 'my-scene_2',
+        'A loaded prefab answers to "<id>://" for its assets from anywhere in the world'
+    )
+    prefabs:load(FOLDER, { name = 'box' })
+    local clash = pcall(prefabs.load, prefabs, 'validation/tests/fixtures/prefabs/outer', { name = 'box' })
+    self:check(
+        world.resources:canonical('box://textures/dot.png') == world.resources:canonical('crate://textures/dot.png')
+            and not clash,
+        'A prefab may take its own name; one name cannot stand for two scenes'
+    )
     local outer = prefabs:instantiate('validation/tests/fixtures/prefabs/outer', { name = 'Outer' })
     self:check(
         outer:find('Inner/Tile/Skin').colorMap
@@ -134,7 +149,7 @@ function Module.run(self)
         'Nested prefabs: "../scene://" points at the scene that loaded the prefab'
     )
     outer:destroy()
-    local fromArchive = prefabs:instantiate(ARCHIVE, { name = 'C' })
+    local fromArchive = prefabs:instantiate(ARCHIVE, { name = 'C' }, nil, { name = 'crateZip' })
     self:check(
         fromArchive:find('Crate/Lid') ~= nil,
         'An archive works like a folder'

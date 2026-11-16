@@ -64,9 +64,21 @@ loaded by `'../scene://prefabs/avatar'` from the player prefab. Manifest aliases
 `settings.assets` work too.
 
 Paths are rewritten when a node is built (the `build` hook, `scene.world:create`). A string a
-script assigns to an existing node later (`node.colorMap = './scene://x.png'`) is not rewritten,
-because the node does not know which scene wrote it; resolve it first:
-`node.colorMap = scene.resources:canonical('./scene://x.png')`.
+script assigns to an existing node later (`node.colorMap = 'scene://x.png'`) is not rewritten,
+because the node does not know which scene wrote it, and `scene://` then means the scene that holds
+the world. For that, and for using a prefab's assets from outside it, every loaded prefab answers
+to its own name as a scheme:
+
+```lua
+world.prefabs:load('scene://prefabs/apple')                      -- the name is the scene id: 'apple'
+world.prefabs:load('scene://prefabs/apple', { name = 'fruit' })  -- or a name of your choice
+node.colorMap = 'apple://textures/ripe.png'                       -- same file from anywhere
+```
+
+Names are letters, digits, `_` and `-` (not `scene` or `shared`). They are registered in the
+world's asset roots, so any node and any script of that world reads them; one name cannot stand for
+two different scenes (give them different `name`s). `scene.resources:canonical('scene://x.png')`
+also turns a prefab's own path into the real one.
 
 ## What is copied
 

@@ -38,11 +38,13 @@ function WorldView.new(world, scope)
 
     local prefabs = world.prefabs
     view.prefabs = {
-        load = function(_, source)
-            return prefabs:load(source, scope.paths)
+        load = function(_, source, options)
+            return prefabs:load(source, { name = options and options.name, paths = scope.paths })
         end,
-        instantiate = function(_, source, properties, parent)
-            return prefabs:load(source, scope.paths):instantiate(properties, parent or scope.node)
+        instantiate = function(_, source, properties, parent, options)
+            return prefabs
+                :load(source, { name = options and options.name, paths = scope.paths })
+                :instantiate(properties, parent or scope.node)
         end,
     }
 
