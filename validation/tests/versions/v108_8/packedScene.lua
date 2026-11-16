@@ -67,17 +67,35 @@ function Module.run(self)
             and a:find('Crate/Plate/PlateText') ~= copy:find('Crate/Plate/PlateText'),
         'BillboardUI and SurfaceUI keep their UI children in every copy'
     )
-    local overlay = world.uis[1].content
-    local buttons = 0
-    for _, node in ipairs(overlay.children) do
-        buttons = buttons + (node.name == 'CrateButton' and 1 or 0)
+    local function copies()
+        local count, names = 0, {}
+        for _, ui in ipairs(world.uis) do
+            for _, node in ipairs(ui.content.children) do
+                if node.name == 'CrateButton' then
+                    count, names[ui.name] = count + 1, true
+                end
+            end
+        end
+        return count, names
     end
+    local ownUi
+    for _, ui in ipairs(world.uis) do
+        ownUi = ownUi or (ui.name == 'A' and ui)
+    end
+    local marker = ownUi and ownUi:find('Marker')
+    self:check(
+        marker and marker.className == 'Node2D' and marker.position[1] == 3
+            and ownUi.content:find('Hello') ~= nil,
+        'The copied World2D keeps its Node2D children, and UI a script creates lands in it'
+    )
+    local before, names = copies()
+    local own = copy:find('Crate') and world.uis[#world.uis]
     copy:destroy()
-    local left = 0
-    for _, node in ipairs(overlay.children) do
-        left = left + (node.name == 'CrateButton' and 1 or 0)
-    end
-    self:check(buttons == 3 and left == 2, 'The scene overlay (World2D) is shown on the world\'s and leaves with the copy')
+    local after = copies()
+    self:check(
+        before == 3 and after == 2 and names.A and names.B and names.D and own.destroyed,
+        'The scene\'s World2D is copied as a World2D of the world, named like its copy, and leaves with it'
+    )
     self:check(
         a:getAttribute('Created') == true and a:find('Made') ~= nil,
         'The prefab scene\'s create hook runs for each copy and builds into it'

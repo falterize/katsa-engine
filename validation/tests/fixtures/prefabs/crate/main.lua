@@ -17,6 +17,7 @@ local function build(scene)
     local surface = world:create('SurfaceUI', { name = 'Screen' }, crate)
     world:create('Label', { name = 'ScreenText', text = 'screen' }, surface)
     local ui = scene.root:find('World3D/World2D')
+    world:create('Node2D', { name = 'Marker', position = { 3, 4 } })
     ui:button({ name = 'CrateButton', text = 'Crate', size = { 0, 80, 0, 30 } }, ui.content)
 end
 
@@ -25,6 +26,7 @@ return Prefab.define(build, {
     create = function(scene)
         scene.node:setAttribute('Created', true)
         scene.world:create('Mesh3D', { name = 'Made', size = { 1, 1, 1 } }) -- lands under the copy
+        scene.world:create('Label', { name = 'Hello', text = 'hi' }) -- lands in the copy's World2D
         return { frames = 0 }
     end,
     update = function(state, dt)

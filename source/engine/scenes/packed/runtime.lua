@@ -14,13 +14,26 @@ Runtime.__index = Runtime
 
 -- Starts the scripts for the copy `node` (packed.scripted: the scene has a `build` hook and something to run).
 -- host: the scene that holds the copy (may be nil, e.g. a headless server world).
-function Runtime.start(packed, world, node, host)
+-- ui: the copy's World2D when the prefab has one; scripts get one on first use otherwise.
+function Runtime.start(packed, world, node, host, ui)
     local package = packed.package
     local lifecycle = package:require('main')
     local resources =
         world.resources:scope(Loader.manifest({}, package.settings.assets), package.paths)
-    local scope = {
+    local scope
+    scope = {
         node = node,
+        world2d = function()
+            if not ui or ui.destroyed then
+                ui = world:create('World2D', { name = node.name })
+                node:onDestroy(function()
+                    if not ui.destroyed then
+                        ui:destroy()
+                    end
+                end)
+            end
+            return ui
+        end,
         paths = package.paths,
         context = { resources = resources, id = package.id, aliases = {} },
     }
@@ -32,6 +45,10 @@ function Runtime.start(packed, world, node, host)
         node = node,
         host = host,
     }, { __index = host or {} })
+    -- `scene:world2d()`: the copy's own World2D (HUD and 2D nodes), made on first use.
+    scene.world2d = function()
+        return scope.world2d()
+    end
     scene.systems = Systems.new(scene)
     local self = setmetatable({ scene = scene, lifecycle = lifecycle, resources = resources }, Runtime)
     self.state = lifecycle.create(scene, package) or {}

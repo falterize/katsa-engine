@@ -42,12 +42,12 @@ return Prefab.define(build, {                    -- the hooks are optional
 })
 ```
 
-`build` builds the content (everything under the scene's `World3D` and on its `World2D` overlay).
+`build` builds the content (everything under the scene's `World3D` and in its `World2D`).
 The hooks are the usual scene lifecycle (`create`, `update2D`, `update`, `update3D`, `destroy`) and
 run for **every copy**, inside the scene that holds it ("a scene in a scene"): `scene` is the host
 scene with its own `scene.world`, `scene.resources`, `scene.settings`, `scene.package` and
 `scene.node` (the copy's Node3D); everything else (`scene.physics`, `scene.input` ...) is the host's.
-`scene.world:create` puts spatial nodes under the copy and understands the prefab's own resource
+`scene.world:create` puts spatial nodes under the copy, UI and 2D nodes into the copy's own World2D (`scene:world2d()`, made on first use) and understands the prefab's own resource
 names, and `scene.world.prefabs` resolves paths against the prefab. The modules of the scene's
 `systems/` folder are created per copy (`create(state, scene, context)`) and updated with it
 (order through `define(build, { systems = { name = { order = 20 } } })`). Copies are updated by
@@ -68,12 +68,16 @@ loaded by `'../scene://prefabs/avatar'` from the player prefab. Manifest aliases
 - Every node under the scene's World3D with its inspector properties, attributes and tags, in
   order. Node references between copied nodes (properties and attributes) are rebuilt; a reference
   to anything outside the prefab is dropped.
-- Cameras are copied but never become the current camera. The scene's own Environment and
-  overlay container are not copied (a prefab is only content); what the scene put on its World2D
-  overlay is shown on the overlay of the receiving world and goes away with the copy. Nodes with
-  their own UI (BillboardUI, SurfaceUI ...) keep their UI children. Neither are the nodes an
-  imported model creates copied: the model file is imported again, so skeletons,
-  skins and animation work. Nodes the scene added under an imported bone attach to the model root.
+- Cameras are copied but never become the current camera. The scene's own Environment is not
+  copied (a prefab is only content). Its **World2D is copied as a World2D node**: a copy is a
+  Node3D and a World2D must belong to a World3D, so each copy gets its own World2D of the receiving
+  world (named like the copy) with the scene's HUD content, Node2D/Camera2D children and World2D
+  properties (`timeScale`, `gravity`, `transparency`, `layerGroup`, `currentCamera`). It works
+  like any interface of that world and is destroyed with the copy. Other World2D nodes the scene
+  created are copied the same way. Nodes with their own UI (BillboardUI, SurfaceUI ...) keep their
+  UI children. Neither are the nodes an imported model creates copied: the model file is
+  imported again, so skeletons, skins and animation work. Nodes the scene added under an imported
+  bone attach to the model root.
 - The scene's resource names (`scene://...`, manifest aliases such as `stone`) are rewritten so the
   importing world finds them; aliases are registered in its manifest as `<sceneId>:<alias>`.
 - A world registers meshes by a unique name; a copy of a mesh whose name is taken is registered

@@ -88,12 +88,20 @@ end
 
 -- container: the node whose children are packed. `baseline`: nodes that exist without the scene
 -- (what the host created) and are never packed. `resources` and `id` belong to the packed scene.
--- `huds`: containers of the scene's own overlay (World2D content); what the scene added there is
--- packed apart, as `hud`, and is shown on the overlay of the world that receives a copy.
-function Describe.children(container, baseline, resources, id, huds)
+-- Every World2D of the scene is packed as an entry of `world2d`: its own properties, the children
+-- of its HUD container (`content`) and its other children (`children`: Node2D, Camera2D ...).
+-- The scene's own World2D (made by the host) is packed only when the scene put something in it.
+function Describe.children(container, baseline, resources, id)
     local context = { ids = {}, count = 0, aliases = {}, resources = resources, id = id }
+    local worlds, contents = {}, {}
+    for _, node in ipairs(container.children) do
+        if not node.destroyed and node:isA('World2D') then
+            worlds[#worlds + 1] = node
+            contents[node.content] = true
+        end
+    end
     local function kind(node)
-        if baseline[node] or node.destroyed then
+        if baseline[node] or node.destroyed or contents[node] or node:isA('World2D') then
             return 'skip'
         end
         return node._importerOwned and 'imported' or nil
@@ -104,7 +112,6 @@ function Describe.children(container, baseline, resources, id, huds)
         ids[node], context.ids[node] = context.count, context.count
         return ids
     end
-    local nodes, hud = {}, {}
     local function describe(node, into)
         local entry = describeNode(node, context, ids)
         into[#into + 1] = entry
@@ -112,14 +119,24 @@ function Describe.children(container, baseline, resources, id, huds)
     end
     -- Ids first, so a reference may point at a node that comes later.
     walk(container, kind, number, ids)
-    for _, hudContainer in ipairs(huds or {}) do
-        walk(hudContainer, kind, number, ids)
+    for _, ui in ipairs(worlds) do
+        number(ui)
+        walk(ui, kind, number, ids)
+        walk(ui.content, kind, number, ids)
     end
+    local nodes, world2d = {}, {}
     walk(container, kind, describe, nodes)
-    for _, hudContainer in ipairs(huds or {}) do
-        walk(hudContainer, kind, describe, hud)
+    for _, ui in ipairs(worlds) do
+        local entry = describeNode(ui, context, ids)
+        entry.main = baseline[ui] or nil
+        walk(ui, kind, describe, entry.children)
+        entry.content = {}
+        walk(ui.content, kind, describe, entry.content)
+        if not entry.main or #entry.children > 0 or #entry.content > 0 then
+            world2d[#world2d + 1] = entry
+        end
     end
-    return { nodes = nodes, hud = hud, aliases = context.aliases }
+    return { nodes = nodes, world2d = world2d, aliases = context.aliases }
 end
 
 return Describe

@@ -29,13 +29,8 @@ function Packed.load(source, manager, shared, parent)
     end
     -- Keep the package (its modules and archive mount) alive for the template's lifetime.
     package:retain()
-    local template = Describe.children(
-        host.world._node,
-        host.baseline,
-        host.resources,
-        package.id,
-        { host._ui.content }
-    )
+    local template =
+        Describe.children(host.world._node, host.baseline, host.resources, package.id)
     local lifecycle = package:require('main')
     local scripted = lifecycle.build ~= nil
         and (lifecycle.scripted or katsa.filesystem.getInfo(package.root .. '/systems', 'directory') ~= nil)
@@ -64,8 +59,8 @@ end
 -- Creates a copy of the content under a new Node3D and returns it. `properties` are the Node3D's
 -- (name, position, rotation, scale ...); `overrides = { ['Body/Head'] = { color = ... } }` sets
 -- properties of nodes inside the copy by their path. `parent` defaults to the world. Cameras are
--- copied but never become the current camera. What the scene put on its own overlay (World2D) is
--- shown on the overlay of the world, and goes away with the copy. When the scene has scripts
+-- copied but never become the current camera. The scene's World2D nodes are copied as World2D nodes
+-- of the world (a copy is a Node3D, a World2D must belong to a World3D) and go away with the copy. When the scene has scripts
 -- (see runtime.lua) they start here and run for as long as the copy lives.
 function Packed:instantiate(world, properties, parent)
     assert(not self.released, 'Packed scene is released')
@@ -82,15 +77,20 @@ function Packed:instantiate(world, properties, parent)
     local root = world:create('Node3D', values, parent or properties.parent or world._node)
     root:setAttribute('ScenePath', tostring(self.package.root))
     local camera = world.activeCamera
-    local overlay = world.uis[1]
-    local _, hud = Build.nodes(world, self.template, root, overlay and overlay.content)
+    local _, worlds = Build.nodes(world, self.template, root)
     world.activeCamera = camera
-    for _, node in ipairs(hud) do
+    -- A World2D belongs to the world, not to the wrapper: it goes away with the copy.
+    local main
+    for _, item in ipairs(worlds) do
+        main = main or (item.main and item.node)
         root:onDestroy(function()
-            if not node.destroyed then
-                node:destroy()
+            if not item.node.destroyed then
+                item.node:destroy()
             end
         end)
+    end
+    if main then
+        main.name = values.name
     end
     for path, changes in pairs(overrides or {}) do
         local target = assert(root:find(path), 'Override path not found: ' .. path)
@@ -98,7 +98,7 @@ function Packed:instantiate(world, properties, parent)
             target[key] = value
         end
     end
-    local runtime = self.scripted and Runtime.start(self, world, root, world.prefabs.scene)
+    local runtime = self.scripted and Runtime.start(self, world, root, world.prefabs.scene, main)
     if runtime then
         world.prefabs:run(runtime)
     end

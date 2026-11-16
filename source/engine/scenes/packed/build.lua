@@ -118,21 +118,20 @@ local function buildList(world, list, parent, nodes, later, automatic)
     end
 end
 
--- Creates the template's nodes under `parent` and its overlay nodes under `hud` (the world's
--- World2D content, may be nil); returns all of them by id, and the overlay roots.
-function Build.nodes(world, template, parent, hud)
+-- Creates the template's nodes under `parent` and its World2D nodes (each directly under the
+-- world, with its own HUD content and children); returns every node by id and the World2D nodes.
+function Build.nodes(world, template, parent)
     Resource.register(world, template.aliases)
     local nodes, later, automatic = {}, {}, {}
     buildList(world, template.nodes, parent, nodes, later, automatic)
-    local roots = {}
-    if hud then
-        local first = #later
-        buildList(world, template.hud, hud, nodes, later, automatic)
-        for index = first + 1, #later do
-            if later[index].node.parent == hud then
-                roots[#roots + 1] = later[index].node
-            end
-        end
+    local worlds = {}
+    for _, entry in ipairs(template.world2d) do
+        local node, deferred = createNode(world, entry, world._node, automatic)
+        nodes[entry.id] = node
+        later[#later + 1] = { node = node, entry = entry, deferred = deferred }
+        buildList(world, entry.content, node.content, nodes, later, automatic)
+        buildList(world, entry.children, node, nodes, later, automatic)
+        worlds[#worlds + 1] = { node = node, main = entry.main }
     end
     for _, item in ipairs(later) do
         local node, entry = item.node, item.entry
@@ -151,7 +150,7 @@ function Build.nodes(world, template, parent, hud)
             node:addTag(tag)
         end
     end
-    return nodes, roots
+    return nodes, worlds
 end
 
 return Build
