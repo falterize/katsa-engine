@@ -21,7 +21,18 @@ function C.initialize(self)
 end
 
 function C.mount(world, properties, parent)
-    assert(parent == world._node, 'World2D belongs directly to its World3D')
+    -- Any node of the world may hold a World2D (a prefab copy keeps its own inside its Node3D);
+    -- it belongs to the first World3D above it, which must be this world's.
+    parent = parent or world._node
+    local owner = parent
+    while owner and owner ~= world._node do
+        assert(
+            not owner:isA('UINode') and not owner:isA('World2D') and not owner:isA('World3D'),
+            'World2D cannot belong to a widget, another World2D or another World3D'
+        )
+        owner = owner.parent
+    end
+    assert(owner, 'World2D must be inside the World3D it belongs to')
     local ui = require('source.engine.ui')
         .new(properties.width or 640, properties.height or 360, world.resources)
         :bindWorld(world)

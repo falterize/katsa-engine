@@ -27,6 +27,7 @@ return Prefab.define(build, {
         scene.node:setAttribute('Created', true)
         scene.world:create('Mesh3D', { name = 'Made', size = { 1, 1, 1 } }) -- lands under the copy
         scene.world:create('Label', { name = 'Hello', text = 'hi' }) -- lands in the copy's World2D
+        scene.node:setAttribute('Icon', scene.resources:canonical('./scene://textures/dot.png'))
         return { frames = 0 }
     end,
     update = function(state, dt)

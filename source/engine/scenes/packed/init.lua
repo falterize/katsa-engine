@@ -60,7 +60,7 @@ end
 -- (name, position, rotation, scale ...); `overrides = { ['Body/Head'] = { color = ... } }` sets
 -- properties of nodes inside the copy by their path. `parent` defaults to the world. Cameras are
 -- copied but never become the current camera. The scene's World2D nodes are copied as World2D nodes
--- of the world (a copy is a Node3D, a World2D must belong to a World3D) and go away with the copy. When the scene has scripts
+-- inside the copy's Node3D (they belong to the world above it) and go away with the copy. When the scene has scripts
 -- (see runtime.lua) they start here and run for as long as the copy lives.
 function Packed:instantiate(world, properties, parent)
     assert(not self.released, 'Packed scene is released')
@@ -79,18 +79,9 @@ function Packed:instantiate(world, properties, parent)
     local camera = world.activeCamera
     local _, worlds = Build.nodes(world, self.template, root)
     world.activeCamera = camera
-    -- A World2D belongs to the world, not to the wrapper: it goes away with the copy.
     local main
     for _, item in ipairs(worlds) do
         main = main or (item.main and item.node)
-        root:onDestroy(function()
-            if not item.node.destroyed then
-                item.node:destroy()
-            end
-        end)
-    end
-    if main then
-        main.name = values.name
     end
     for path, changes in pairs(overrides or {}) do
         local target = assert(root:find(path), 'Override path not found: ' .. path)

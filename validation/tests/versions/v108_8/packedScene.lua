@@ -28,8 +28,8 @@ function Module.run(self)
     )
     self:check(
         a:getAttribute('ScenePath') ~= nil
-            and not a:find('Environment') and not a:find('World2D') and a:find('Crate') ~= nil,
-        'The scene\'s own Environment and overlay container are not copied (only what it put in them)'
+            and not a:find('Environment') and a:find('World2D') ~= nil and a:find('Crate') ~= nil,
+        'The scene\'s own Environment is not copied; its World2D is, inside the copy'
     )
     local crateNode = a:find('Crate')
     self:check(
@@ -72,7 +72,7 @@ function Module.run(self)
         for _, ui in ipairs(world.uis) do
             for _, node in ipairs(ui.content.children) do
                 if node.name == 'CrateButton' then
-                    count, names[ui.name] = count + 1, true
+                    count, names[ui.parent.name] = count + 1, true
                 end
             end
         end
@@ -80,7 +80,7 @@ function Module.run(self)
     end
     local ownUi
     for _, ui in ipairs(world.uis) do
-        ownUi = ownUi or (ui.name == 'A' and ui)
+        ownUi = ownUi or (ui.parent == a and ui)
     end
     local marker = ownUi and ownUi:find('Marker')
     self:check(
@@ -88,13 +88,26 @@ function Module.run(self)
             and ownUi.content:find('Hello') ~= nil,
         'The copied World2D keeps its Node2D children, and UI a script creates lands in it'
     )
+    local holder = world:create('Node3D', { name = 'Holder' })
+    local inside = world:create('World2D', { name = 'Inside' }, holder)
+    local listed = world.uis[#world.uis] == inside
+    local rejected = not pcall(world.create, world, 'World2D', {}, inside.content)
+    holder:destroy()
+    local gone = true
+    for _, ui in ipairs(world.uis) do
+        gone = gone and ui ~= inside
+    end
+    self:check(
+        inside.parent ~= world._node and listed and rejected and inside.destroyed and gone,
+        'A World2D can sit inside any node of its World3D (not inside a widget) and leaves with it'
+    )
     local before, names = copies()
     local own = copy:find('Crate') and world.uis[#world.uis]
     copy:destroy()
     local after = copies()
     self:check(
         before == 3 and after == 2 and names.A and names.B and names.D and own.destroyed,
-        'The scene\'s World2D is copied as a World2D of the world, named like its copy, and leaves with it'
+        'The scene\'s World2D is copied as a World2D inside each copy and leaves with it'
     )
     self:check(
         a:getAttribute('Created') == true and a:find('Made') ~= nil,
@@ -109,6 +122,10 @@ function Module.run(self)
     self:check(
         a:find('Crate/Dot').colorMap == 'validation/tests/fixtures/prefabs/crate/assets/textures/dot.png',
         'A "./scene://" path points at the prefab scene\'s own assets'
+    )
+    self:check(
+        a:getAttribute('Icon') == 'validation/tests/fixtures/prefabs/crate/assets/textures/dot.png',
+        'A script resolves a prefab path it assigns later with scene.resources:canonical'
     )
     local outer = prefabs:instantiate('validation/tests/fixtures/prefabs/outer', { name = 'Outer' })
     self:check(

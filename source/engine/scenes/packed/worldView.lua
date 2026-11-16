@@ -13,7 +13,7 @@ local WorldView = {}
 -- the copy's own World2D (made on first use), the world's own classes where they always go.
 local function defaultParent(world, scope, className)
     local types = Node.getClass(className, world)._types
-    if types.World2D or types.Environment then
+    if types.Environment then
         return nil
     elseif types.UINode then
         return scope.world2d().content

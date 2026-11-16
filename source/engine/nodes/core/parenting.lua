@@ -113,11 +113,17 @@ local function validateSubtree(node, parent, world, screenHierarchy, uiAnchor)
             'UI descendants must retain their UI owner in the proposed hierarchy'
         )
     end
-    if node:isA('World2D') then
-        assert(
-            parent and parent:isA('World3D') or node.owner and parent == node.owner,
-            'World2D requires a World3D owner'
-        )
+    if node:isA('World2D') and not (node.owner and parent == node.owner) then
+        -- Any node may hold a World2D; it belongs to the first World3D above it.
+        local owner = parent
+        while owner and not owner:isA('World3D') do
+            assert(
+                not owner:isA('UINode') and not owner:isA('World2D'),
+                'World2D cannot belong to a widget or to another World2D'
+            )
+            owner = owner.parent
+        end
+        assert(owner, 'World2D requires a World3D above it')
     end
     if node:isA('Node3D') and not node:isA('BillboardUI') then
         assert(not screenHierarchy, 'Spatial nodes cannot belong to a screen widget hierarchy')

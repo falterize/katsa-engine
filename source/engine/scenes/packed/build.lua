@@ -118,15 +118,15 @@ local function buildList(world, list, parent, nodes, later, automatic)
     end
 end
 
--- Creates the template's nodes under `parent` and its World2D nodes (each directly under the
--- world, with its own HUD content and children); returns every node by id and the World2D nodes.
+-- Creates the template's nodes under `parent` and its World2D nodes (also under `parent`, each
+-- with its own HUD content and children); returns every node by id and the World2D nodes.
 function Build.nodes(world, template, parent)
     Resource.register(world, template.aliases)
     local nodes, later, automatic = {}, {}, {}
     buildList(world, template.nodes, parent, nodes, later, automatic)
     local worlds = {}
     for _, entry in ipairs(template.world2d) do
-        local node, deferred = createNode(world, entry, world._node, automatic)
+        local node, deferred = createNode(world, entry, parent, automatic)
         nodes[entry.id] = node
         later[#later + 1] = { node = node, entry = entry, deferred = deferred }
         buildList(world, entry.content, node.content, nodes, later, automatic)

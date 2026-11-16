@@ -25,12 +25,7 @@ function Runtime.start(packed, world, node, host, ui)
         node = node,
         world2d = function()
             if not ui or ui.destroyed then
-                ui = world:create('World2D', { name = node.name })
-                node:onDestroy(function()
-                    if not ui.destroyed then
-                        ui:destroy()
-                    end
-                end)
+                ui = world:create('World2D', {}, node)
             end
             return ui
         end,

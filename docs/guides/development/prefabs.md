@@ -63,18 +63,22 @@ ignored: as with Lua module paths). A prefab inside a prefab uses the same: the 
 loaded by `'../scene://prefabs/avatar'` from the player prefab. Manifest aliases of the prefab's
 `settings.assets` work too.
 
+Paths are rewritten when a node is built (the `build` hook, `scene.world:create`). A string a
+script assigns to an existing node later (`node.colorMap = './scene://x.png'`) is not rewritten,
+because the node does not know which scene wrote it; resolve it first:
+`node.colorMap = scene.resources:canonical('./scene://x.png')`.
+
 ## What is copied
 
 - Every node under the scene's World3D with its inspector properties, attributes and tags, in
   order. Node references between copied nodes (properties and attributes) are rebuilt; a reference
   to anything outside the prefab is dropped.
 - Cameras are copied but never become the current camera. The scene's own Environment is not
-  copied (a prefab is only content). Its **World2D is copied as a World2D node**: a copy is a
-  Node3D and a World2D must belong to a World3D, so each copy gets its own World2D of the receiving
-  world (named like the copy) with the scene's HUD content, Node2D/Camera2D children and World2D
-  properties (`timeScale`, `gravity`, `transparency`, `layerGroup`, `currentCamera`). It works
-  like any interface of that world and is destroyed with the copy. Other World2D nodes the scene
-  created are copied the same way. Nodes with their own UI (BillboardUI, SurfaceUI ...) keep their
+  copied (a prefab is only content). Its **World2D is copied as a World2D node** inside the copy's Node3D
+  (`Crate/World2D`): each copy has its own interface with the scene's HUD content, Node2D/Camera2D
+  children and World2D properties (`timeScale`, `gravity`, `transparency`, `layerGroup`,
+  `currentCamera`). It works like any interface of the world above it and is destroyed with the
+  copy. Other World2D nodes the scene created are copied the same way. Nodes with their own UI (BillboardUI, SurfaceUI ...) keep their
   UI children. Neither are the nodes an imported model creates copied: the model file is
   imported again, so skeletons, skins and animation work. Nodes the scene added under an imported
   bone attach to the model root.
@@ -94,3 +98,10 @@ replicationLab uses prefabs for all three kinds: `assets/prefabs/avatar` (the ch
 animation tree, one per remote player and bot), `assets/prefabs/player` (the local capsule body
 wearing the avatar prefab) and `assets/prefabs/maps/*` (the map of a round; the server places one at
 the arena and reads its `scripts/data.lua` for coins and ground height).
+
+## World2D inside any node
+
+A World2D may be a child of any node, not only of its World3D: `world:create('World2D', props,
+holder)`. It belongs to the first World3D above it, covers the screen like before (its position in
+the tree has no spatial meaning), is listed in `world.uis` and leaves with its parent. It cannot
+sit inside a widget, another World2D or a different World3D.
