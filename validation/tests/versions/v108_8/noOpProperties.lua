@@ -29,6 +29,12 @@ function Module.run(self)
         self:check(row.key ~= 'transparency', 'Bone3D shows no transparency row')
     end
     self:check(bone.transparency == nil, 'Bone3D has no transparency value')
+    -- The 3D constraint reads `enabled` every step, like Constraint2D, so both list it.
+    self:check(
+        Nodes.classes.Constraint3D.propertySchema.enabled ~= nil
+            and Nodes.classes.Constraint2D.propertySchema.enabled ~= nil,
+        'Constraint2D and Constraint3D both list enabled'
+    )
     world:release()
 end
 

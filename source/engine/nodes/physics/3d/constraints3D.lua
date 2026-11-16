@@ -26,6 +26,7 @@ C.propertySchema = {
     attachment0 = { kind = 'node' },
     attachment1 = { kind = 'node' },
     status = { readOnly = true },
+    enabled = {},
     length = { min = 0 },
     stiffness = { min = 0 },
     damping = { min = 0 },
@@ -56,6 +57,7 @@ for _, key in ipairs({ 'translationLower', 'translationUpper', 'rotationLower', 
 end
 
 function C.initialize(self)
+    self.enabled = self.enabled ~= false
     self.length = self.length or 30
     self.stiffness = self.stiffness or 15
     self.damping = self.damping or 2
