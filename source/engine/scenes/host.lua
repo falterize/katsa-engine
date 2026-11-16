@@ -48,7 +48,7 @@ function Host:load()
     local lighting =
         Loader.configure(require('source.engine.graphics.lighting.defaults').create(), self.settings.world)
     self.world = World.new(self.resources, lighting)
-    self.world.prefabs.manager = self.manager
+    self.world.prefabs:setScene(self)
     self.root = RootNode.create(self.world)
     self.world.audio = self.audio
     self.audio.worldRoot = self.world._node
@@ -74,7 +74,12 @@ function Host:load()
             self.baseline[node] = true
         end
     end
-    self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
+    if prefab and self.lifecycle.build then
+        -- A prefab scene with scripts keeps `create` for every copy and builds its content in `build`.
+        self.state = self.lifecycle.build(self, self.package) or {}
+    else
+        self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
+    end
     mark('Scene create script')
     if not prefab then
         local layer = self._ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self._ui.content)
@@ -213,7 +218,8 @@ function Host:release()
         end,
         function()
             local state = self.state or self.package.instance
-            if state and self.lifecycle then
+            local builds = self.options.prefab and self.lifecycle and self.lifecycle.build
+            if state and self.lifecycle and not builds then
                 self.lifecycle.destroy(state)
             end
         end,

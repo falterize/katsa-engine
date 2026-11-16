@@ -19,6 +19,43 @@ function Systems:add(name, system, enabled)
     return system
 end
 
+-- Registers every module in `<scene root>/systems` once, at creation: `settings` maps a system name to
+-- { order, enabled } (default order 100, enabled), the rest is alphabetical. A system module exports
+-- create(state, scene, context, settings) returning the system.
+function Systems.discover(scene, context, state, settings)
+    settings = settings or {}
+    local entries = {}
+    local folder = context.root .. '/systems'
+    for _, filename in ipairs(katsa.filesystem.getDirectoryItems(folder)) do
+        if
+            filename:match('%.lua$')
+            and katsa.filesystem.getInfo(folder .. '/' .. filename, 'file')
+        then
+            local name = assert(filename:match('^([%w_]+)%.lua$'), 'Invalid system module: ' .. filename)
+            local own = settings[name] or { order = 100, enabled = true }
+            entries[#entries + 1] = { name = name, settings = own, order = own.order or 100 }
+        end
+    end
+    table.sort(entries, function(a, b)
+        if a.order == b.order then
+            return a.name < b.name
+        end
+        return a.order < b.order
+    end)
+    for _, entry in ipairs(entries) do
+        local Module = context:require('systems.' .. entry.name)
+        assert(
+            type(Module.create) == 'function',
+            'System must export create(state, scene, context)'
+        )
+        scene.systems:add(
+            entry.name,
+            Module.create(state, scene, context, entry.settings),
+            entry.settings.enabled
+        )
+    end
+end
+
 function Systems:setEnabled(name, enabled)
     local entry = assert(self.named[name], 'Unknown system: ' .. tostring(name))
     assert(type(enabled) == 'boolean', 'System enabled must be a boolean')

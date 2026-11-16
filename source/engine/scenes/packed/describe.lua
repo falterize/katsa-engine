@@ -1,4 +1,5 @@
 local Clone = require('source.engine.nodes.core.clone')
+local Resource = require('./resource')
 
 -- Turns the content a scene built into plain data (a template) that can be rebuilt in any world.
 -- Nothing here keeps a node: references between nodes become `Ref` markers, resource names that
@@ -14,41 +15,20 @@ local function isNode(value)
     return type(value) == 'table' and rawget(value, '_node') == true
 end
 
--- Rewrites one string that names a resource of the packed scene. `context.aliases` collects the
--- manifest entries the rewritten names stand for; the world that builds the template registers them.
-local function resource(value, context)
-    local resources = context.resources
-    local entry = resources.manifest[value]
-    if entry then
-        local name = context.id .. ':' .. value
-        local path = type(entry) == 'string' and entry or entry.path
-        context.aliases[name] = type(entry) == 'string' and { path = resources:canonical(value) }
-            or setmetatable({ path = resources:canonical(path) }, { __index = entry })
-        return name
-    end
-    if value:sub(1, 8) == 'scene://' then
-        return resources:canonical(value)
-    end
-    return value
-end
-
--- A deep copy of a property value for the template.
+-- A deep copy of a property value for the template: resource names are rewritten, references to
+-- nodes of the template become Refs (a reference to anything else has no meaning in another world).
 local function convert(value, context)
-    local kind = type(value)
-    if kind == 'string' then
-        return resource(value, context)
-    elseif isNode(value) then
+    if isNode(value) then
         local id = context.ids[value]
-        -- A reference to something outside the packed content has no meaning in another world.
         return id and setmetatable({ id = id }, Ref) or nil
-    elseif kind == 'table' and not getmetatable(value) then
+    elseif type(value) == 'table' and not getmetatable(value) then
         local result = {}
         for key, item in pairs(value) do
             result[key] = convert(item, context)
         end
         return result
     end
-    return value
+    return Resource.deep(value, context)
 end
 
 local function describeAttributes(node, context)
@@ -78,6 +58,7 @@ local function describeNode(node, context, ids)
         properties = properties,
         attributes = describeAttributes(node, context),
         tags = node:getTags(),
+        viewportAuthored = node._viewportAuthored,
         children = {},
     }
     local source = node._modelSource
@@ -107,7 +88,9 @@ end
 
 -- container: the node whose children are packed. `baseline`: nodes that exist without the scene
 -- (what the host created) and are never packed. `resources` and `id` belong to the packed scene.
-function Describe.children(container, baseline, resources, id)
+-- `huds`: containers of the scene's own overlay (World2D content); what the scene added there is
+-- packed apart, as `hud`, and is shown on the overlay of the world that receives a copy.
+function Describe.children(container, baseline, resources, id, huds)
     local context = { ids = {}, count = 0, aliases = {}, resources = resources, id = id }
     local function kind(node)
         if baseline[node] or node.destroyed then
@@ -116,18 +99,27 @@ function Describe.children(container, baseline, resources, id)
         return node._importerOwned and 'imported' or nil
     end
     local ids = {}
-    walk(container, kind, function(node)
+    local function number(node)
         context.count = context.count + 1
         ids[node], context.ids[node] = context.count, context.count
         return ids
-    end, ids)
-    local nodes = {}
-    walk(container, kind, function(node, into)
+    end
+    local nodes, hud = {}, {}
+    local function describe(node, into)
         local entry = describeNode(node, context, ids)
         into[#into + 1] = entry
         return entry.children
-    end, nodes)
-    return { nodes = nodes, aliases = context.aliases }
+    end
+    -- Ids first, so a reference may point at a node that comes later.
+    walk(container, kind, number, ids)
+    for _, hudContainer in ipairs(huds or {}) do
+        walk(hudContainer, kind, number, ids)
+    end
+    walk(container, kind, describe, nodes)
+    for _, hudContainer in ipairs(huds or {}) do
+        walk(hudContainer, kind, describe, hud)
+    end
+    return { nodes = nodes, hud = hud, aliases = context.aliases }
 end
 
 return Describe

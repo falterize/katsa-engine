@@ -1,6 +1,7 @@
 local Clone = require('source.engine.nodes.core.clone')
 local Node = require('source.engine.nodes')
 local Ref = require('./describe').Ref
+local Resource = require('./resource')
 
 -- Builds a template (describe.lua) into a world: the reverse of packing.
 local Build = {}
@@ -40,8 +41,8 @@ end
 
 -- A world keeps its meshes in one registry by name, so a mesh is created under a free name and
 -- then shown under its own: the paths inside every copy stay the same.
-local function registryName(world, entry, name)
-    if Node.getClass(entry.className, world)._types.Mesh3D then
+local function registryName(world, className, name)
+    if name and Node.getClass(className, world)._types.Mesh3D then
         return Clone.uniqueName(world, name)
     end
     return name
@@ -56,11 +57,34 @@ local function importName(world, name)
     return used[name] == 1 and name or (name .. '_' .. used[name])
 end
 
-local function createNode(world, entry, parent)
+-- Some classes create required children themselves (the UI of a BillboardUI, an Environment inside
+-- a World); the copy of such a child is not created again but takes the packed properties.
+-- Creates a node whose name may repeat (see registryName); returns it.
+function Build.create(world, className, properties, parent)
+    local name = properties.name
+    properties.name = registryName(world, className, name)
+    local node = world:create(className, properties, parent)
+    node.name = name or node.name
+    return node
+end
+
+local function adopt(entry, parent, automatic)
+    local existing = entry.properties.name and parent:find(entry.properties.name)
+    if existing and automatic[existing] and existing.className == entry.className then
+        return existing
+    end
+end
+
+local function createNode(world, entry, parent, automatic)
     local properties, deferred = plain(entry.properties)
     local name = properties.name
-    properties.name = registryName(world, entry, name)
-    local node
+    local node = adopt(entry, parent, automatic)
+    if node then
+        for key, value in pairs(properties) do
+            node[key] = value
+        end
+        return node, deferred
+    end
     if entry.model then
         local Models = require('source.engine.import.models')
         local settings = {}
@@ -76,36 +100,43 @@ local function createNode(world, entry, parent)
         end
         node.name = name or node.name
     else
-        node = world:create(entry.className, properties, parent)
-        node.name = name or node.name
+        node = Build.create(world, entry.className, properties, parent)
+    end
+    -- What the class made by itself (required children), remembered for `adopt`.
+    for _, child in ipairs(node.children) do
+        automatic[child] = true
     end
     return node, deferred
 end
 
-local function buildList(world, list, parent, nodes, later)
+local function buildList(world, list, parent, nodes, later, automatic)
     for _, entry in ipairs(list) do
-        local node, deferred = createNode(world, entry, parent)
+        local node, deferred = createNode(world, entry, parent, automatic)
         nodes[entry.id] = node
         later[#later + 1] = { node = node, entry = entry, deferred = deferred }
-        buildList(world, entry.children, node, nodes, later)
+        buildList(world, entry.children, node, nodes, later, automatic)
     end
 end
 
--- Registers the resource names the template introduced (see Describe) in the world's manifest.
-local function registerAliases(world, aliases)
-    local manifest = world.resources.manifest
-    for name, entry in pairs(aliases) do
-        manifest[name] = manifest[name] or entry
+-- Creates the template's nodes under `parent` and its overlay nodes under `hud` (the world's
+-- World2D content, may be nil); returns all of them by id, and the overlay roots.
+function Build.nodes(world, template, parent, hud)
+    Resource.register(world, template.aliases)
+    local nodes, later, automatic = {}, {}, {}
+    buildList(world, template.nodes, parent, nodes, later, automatic)
+    local roots = {}
+    if hud then
+        local first = #later
+        buildList(world, template.hud, hud, nodes, later, automatic)
+        for index = first + 1, #later do
+            if later[index].node.parent == hud then
+                roots[#roots + 1] = later[index].node
+            end
+        end
     end
-end
-
--- Creates the template's nodes under `parent`; returns them by id.
-function Build.nodes(world, template, parent)
-    registerAliases(world, template.aliases)
-    local nodes, later = {}, {}
-    buildList(world, template.nodes, parent, nodes, later)
     for _, item in ipairs(later) do
         local node, entry = item.node, item.entry
+        node._viewportAuthored = entry.viewportAuthored
         for key, value in pairs(item.deferred) do
             node[key] = (resolve(value, nodes))
         end
@@ -120,7 +151,7 @@ function Build.nodes(world, template, parent)
             node:addTag(tag)
         end
     end
-    return nodes
+    return nodes, roots
 end
 
 return Build

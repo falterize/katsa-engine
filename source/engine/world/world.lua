@@ -251,6 +251,7 @@ function World3D:updateNodes(dt)
     self.simulationTime = (self.simulationTime or 0) + dt
     self.animations:update(dt)
     self.nodeTree:update(dt)
+    self.prefabs:update(dt)
     for _, controller in ipairs(self.rigidControllers or {}) do
         controller:update(dt)
     end
@@ -266,8 +267,8 @@ end
 
 function World3D:release()
     self.animations:release()
-    self.prefabs:release()
     local ok, message = pcall(self._node.destroy, self._node)
+    self.prefabs:release()
     self.nodeTree:release()
     self.nodeTypes, self.interactionSource = {}, nil
     if not ok then

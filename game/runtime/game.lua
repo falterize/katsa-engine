@@ -74,7 +74,7 @@ function Game:load()
     local environment =
         Loader.configure(require('game.data.settings').create(), self.settings.world)
     self.world = World3D.new(self.resources, environment)
-    self.world.prefabs.manager = self.manager
+    self.world.prefabs:setScene(self)
     -- The top node: the main World3D (World2D inside it) and the storage containers hang from it.
     self.root = require('source.engine.scenes.rootNode').create(self.world)
     self.systems = Systems.new(self)

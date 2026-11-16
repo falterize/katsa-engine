@@ -12,39 +12,8 @@ function Scene.create(scene, context)
     context.instance = state
     scene:preparePresentation()
     context:require('scripts.ui.interface').create(state)
-    local systems = state.scene.systems
-    -- Discover once at creation; order and startup are controlled by this scene.
-    local entries = {}
-    for _, filename in ipairs(katsa.filesystem.getDirectoryItems(context.root .. '/systems')) do
-        if
-            filename:match('%.lua$')
-            and katsa.filesystem.getInfo(context.root .. '/systems/' .. filename, 'file')
-        then
-            local name =
-                assert(filename:match('^([%w_]+)%.lua$'), 'Invalid system module: ' .. filename)
-            local settings = systemSettings[name] or { order = 100, enabled = true }
-            entries[#entries + 1] =
-                { name = name, settings = settings, order = settings.order or 100 }
-        end
-    end
-    table.sort(entries, function(a, b)
-        if a.order == b.order then
-            return a.name < b.name
-        end
-        return a.order < b.order
-    end)
-    for _, entry in ipairs(entries) do
-        local Module = context:require('systems.' .. entry.name)
-        assert(
-            type(Module.create) == 'function',
-            'System must export create(state, scene, context)'
-        )
-        systems:add(
-            entry.name,
-            Module.create(state, scene, context, entry.settings),
-            entry.settings.enabled
-        )
-    end
+    -- Discovered once at creation; order and startup are controlled by this scene.
+    require('source.engine.scenes.systems').discover(scene, context, state, systemSettings)
     return state
 end
 

@@ -2,6 +2,7 @@ local Loader = require('../loader')
 local Host = require('../host')
 local Describe = require('./describe')
 local Build = require('./build')
+local Runtime = require('./runtime')
 
 -- A scene used as a prefab (like a Godot PackedScene). The scene is run once, in a private world;
 -- what it built under its World3D (everything but the world's own Environment, camera and
@@ -15,9 +16,11 @@ local Packed = {}
 Packed.__index = Packed
 
 -- source: a scene directory, archive path or FileData. manager: the scene manager (the packed
--- scene is loaded by the same machinery as any scene); shared: the shared assets root.
-function Packed.load(source, manager, shared)
+-- scene is loaded by the same machinery as any scene); shared: the shared assets root; parent: the
+-- asset roots of the scene that loads this one (what `../scene://x` points at).
+function Packed.load(source, manager, shared, parent)
     local package = Loader.open(source, nil, shared)
+    package.paths.parent = parent
     local host = Host.new(manager, package, { prefab = true })
     local ok, message = pcall(host.load, host)
     if not ok then
@@ -26,9 +29,21 @@ function Packed.load(source, manager, shared)
     end
     -- Keep the package (its modules and archive mount) alive for the template's lifetime.
     package:retain()
-    local template = Describe.children(host.world._node, host.baseline, host.resources, package.id)
+    local template = Describe.children(
+        host.world._node,
+        host.baseline,
+        host.resources,
+        package.id,
+        { host._ui.content }
+    )
+    local lifecycle = package:require('main')
+    local scripted = lifecycle.build ~= nil
+        and (lifecycle.scripted or katsa.filesystem.getInfo(package.root .. '/systems', 'directory') ~= nil)
     host:release()
-    return setmetatable({ package = package, template = template, source = source }, Packed)
+    return setmetatable(
+        { package = package, template = template, source = source, scripted = scripted },
+        Packed
+    )
 end
 
 -- The node types and plugins the scene declares (`settings.nodes`, `settings.plugins`) must exist in
@@ -48,11 +63,14 @@ end
 
 -- Creates a copy of the content under a new Node3D and returns it. `properties` are the Node3D's
 -- (name, position, rotation, scale ...); `overrides = { ['Body/Head'] = { color = ... } }` sets
--- properties of nodes inside the copy by their path. `parent` defaults to the world.
+-- properties of nodes inside the copy by their path. `parent` defaults to the world. Cameras are
+-- copied but never become the current camera. What the scene put on its own overlay (World2D) is
+-- shown on the overlay of the world, and goes away with the copy. When the scene has scripts
+-- (see runtime.lua) they start here and run for as long as the copy lives.
 function Packed:instantiate(world, properties, parent)
     assert(not self.released, 'Packed scene is released')
-    properties = properties or {}
     self:prepare(world)
+    properties = properties or {}
     local overrides = properties.overrides
     local values = {}
     for key, value in pairs(properties) do
@@ -63,12 +81,26 @@ function Packed:instantiate(world, properties, parent)
     values.name = values.name or self.package.id
     local root = world:create('Node3D', values, parent or properties.parent or world._node)
     root:setAttribute('ScenePath', tostring(self.package.root))
-    Build.nodes(world, self.template, root)
+    local camera = world.activeCamera
+    local overlay = world.uis[1]
+    local _, hud = Build.nodes(world, self.template, root, overlay and overlay.content)
+    world.activeCamera = camera
+    for _, node in ipairs(hud) do
+        root:onDestroy(function()
+            if not node.destroyed then
+                node:destroy()
+            end
+        end)
+    end
     for path, changes in pairs(overrides or {}) do
         local target = assert(root:find(path), 'Override path not found: ' .. path)
         for key, value in pairs(changes) do
             target[key] = value
         end
+    end
+    local runtime = self.scripted and Runtime.start(self, world, root, world.prefabs.scene)
+    if runtime then
+        world.prefabs:run(runtime)
     end
     return root
 end

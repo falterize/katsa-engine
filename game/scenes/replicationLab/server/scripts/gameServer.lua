@@ -18,7 +18,7 @@ GameServer.__index = GameServer
 -- manager: the scene manager that loads the map prefabs.
 function GameServer.new(resources, options, manager)
     local world = World3D.new(resources)
-    world.prefabs.manager = manager
+    world.prefabs.manager = manager -- no scene holds this headless world
     local root = RootNode.create(world)
     local server = Net.Server.new({}, {
         port = options.port,
