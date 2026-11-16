@@ -280,7 +280,7 @@ function Compositor.apply(ui, node, region)
     local layerWorld = ui._sceneWorld or ui.owner and ui.owner._world
     local allowed = layerWorld
         and layerWorld.shaderLayers
-        and layerWorld.shaderLayers:affects3D(node.shaderLayer)
+        and layerWorld.shaderLayers:affects3D(node.shaderLayer, layerWorld.shaderNodes)
     local background = allowed and ui._sceneBackground
     if background then
         g.draw(background, 0, 0, 0, w / background:getWidth(), h / background:getHeight())

@@ -160,6 +160,24 @@ local function depth2D(self)
     shot()
     value = shot():getPixel(WIDTH / 2, HEIGHT / 2)
     self:check(value > 0.9, 'Without a layer that reaches the 3D render the depth reads as far away')
+    local layers = world.shaderLayers
+    layers:add('Water', 10)
+    layers:add('Pixel', 20)
+    layers:setInteracts('Pixel', 'Default3D', false)
+    layers:setInteracts('Pixel', 'Default2D', true)
+    layers:setInteracts('Pixel', 'Water', false)
+    effect.shaderLayer = 'Pixel'
+    world:create('Shader3D', { name = 'WaterShader', shaderPath = fixtures .. 'samplerTexture.glsl', shaderLayer = 'Water' })
+    shot()
+    value = shot():getPixel(WIDTH / 2, HEIGHT / 2)
+    self:check(value > 0.9, 'A layer that interacts with no 3D layer does not see the 3D render')
+    layers:setInteracts('Pixel', 'Water', true)
+    shot()
+    value = shot():getPixel(WIDTH / 2, HEIGHT / 2)
+    self:check(
+        math.abs(value * 100 - 39) < 1.5,
+        'A 2D shader layer that interacts with the layer of a 3D shader reaches the 3D render'
+    )
 end
 
 function Module.run(self)

@@ -339,6 +339,9 @@ at first. New layers interact with every existing layer. Priority (Default layer
 orders effects. Two enabled effects whose layers do not interact cannot combine on the same object or
 region: the higher-priority one wins and the lower one is suppressed until it is disabled.
 The Workspace's Shaders button opens the matrix editor (add, rename, delete, priority, table or list).
+A `Shader2D` also sees the 3D render under it (background, `hint_screen_texture`, `hint_depth_texture`) when its layer
+interacts with `Default3D` or with the layer of an enabled `Shader3D`; it always gets the whole 3D render, not only the
+parts a particular layer affects.
 Camera/object visibility and physics collision groups remain separate systems.
 
 ## Shader2D

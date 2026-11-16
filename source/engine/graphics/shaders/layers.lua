@@ -120,9 +120,18 @@ function Layers:suppresses(upper, lower)
     return self:priority(upper) > self:priority(lower) and not self:interacts(upper, lower)
 end
 
--- Whether effects in `name` may process the 3D render.
-function Layers:affects3D(name)
-    return self:interacts(name, 'Default3D')
+-- Whether effects in `name` may process the 3D render: the layer interacts with Default3D or
+-- with the layer of an enabled 3D shader (`shaderNodes`, the world's Shader3D nodes).
+function Layers:affects3D(name, shaderNodes)
+    if self:interacts(name, 'Default3D') then
+        return true
+    end
+    for _, node in ipairs(shaderNodes or {}) do
+        if node.enabled ~= false and not node.destroyed and self:interacts(name, node.shaderLayer) then
+            return true
+        end
+    end
+    return false
 end
 
 function Layers:resolve(nodes, out)
