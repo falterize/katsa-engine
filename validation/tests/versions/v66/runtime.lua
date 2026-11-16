@@ -28,7 +28,7 @@ function T.new(manager)
     katsa.errorhandler = function(message)
         print('FAILED v66 ' .. tostring(message))
         return function()
-            katsa.event.quit(1)
+            return 1
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
@@ -110,13 +110,7 @@ function T:draw()
     end
     self.capture = false
     katsa.graphics.captureScreenshot(function(image)
-        local bytes = image:encode('png')
-        local f = assert(
-            io.open(katsa.filesystem.getSource() .. '/docs/previews/v66/material-fallback.png', 'wb')
-        )
-        f:write(bytes:getString())
-        f:close()
-        bytes:release()
+        image:encode('png', 'tmp/previews/v66/material-fallback.png')
         image:release()
     end)
 end

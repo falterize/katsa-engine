@@ -147,14 +147,7 @@ function R:draw()
     local name = self.capture
     self.capture = nil
     katsa.graphics.captureScreenshot(function(image)
-        local data = image:encode('png')
-        local file =
-            io.open(katsa.filesystem.getSource() .. '/docs/previews/v56/' .. name .. '.png', 'wb')
-        if file then
-            file:write(data:getString())
-            file:close()
-        end
-        data:release()
+        image:encode('png', 'tmp/previews/v56/' .. name .. '.png')
         image:release()
     end)
 end

@@ -5,7 +5,7 @@ function T.new(manager)
     katsa.errorhandler = function(message)
         print('FAILED v65 ' .. tostring(message))
         return function()
-            katsa.event.quit(1)
+            return 1
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
@@ -64,9 +64,9 @@ function T:update()
         local Properties = require('source.engine.editor.inspectors.properties')
         local field = { key = 'texture', kind = 'string' }
         self:check(
-            not Properties.set(scene, sky, field, 'assets/missing-sky.png')
-                and sky.texture == 'assets/textures/engine/sky/dayCross.png',
-            'Missing sky path is rejected without changing texture'
+            Properties.set(scene, sky, field, 'assets/missing-sky.png')
+                and scene.resources:isMissingImage(sky.texture),
+            'Missing sky path is accepted and renders the checker fallback'
         )
         self:check(not Properties.set(scene, sky, field, 'white'), 'Non-cross texture is rejected')
         self:check(
@@ -95,11 +95,7 @@ function T:draw()
     end
     self.capture = false
     katsa.graphics.captureScreenshot(function(image)
-        local bytes = image:encode('png')
-        local f = assert(io.open(katsa.filesystem.getSource() .. '/docs/previews/v65/sky.png', 'wb'))
-        f:write(bytes:getString())
-        f:close()
-        bytes:release()
+        image:encode('png', 'tmp/previews/v65/sky.png')
         image:release()
     end)
 end

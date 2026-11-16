@@ -5,7 +5,7 @@ function T.new(manager)
     katsa.errorhandler = function(message)
         print('FAILED v68 ' .. tostring(message))
         return function()
-            katsa.event.quit(1)
+            return 1
         end
     end
     return setmetatable({ manager = manager, frame = 0, count = 0 }, T)
@@ -227,13 +227,7 @@ function T:draw()
     local name = self.capture
     self.capture = nil
     katsa.graphics.captureScreenshot(function(image)
-        local b = image:encode('png')
-        local f = assert(
-            io.open(katsa.filesystem.getSource() .. '/docs/previews/v68/' .. name .. '.png', 'wb')
-        )
-        f:write(b:getString())
-        f:close()
-        b:release()
+        image:encode('png', 'tmp/previews/v68/' .. name .. '.png')
         image:release()
     end)
 end

@@ -193,14 +193,7 @@ function R:draw()
                 'Bottom-anchored viewport UI is visible after offscreen scissor restoration'
             )
         end
-        local data = image:encode('png')
-        local f =
-            io.open(katsa.filesystem.getSource() .. '/docs/previews/v59/' .. name .. '.png', 'wb')
-        if f then
-            f:write(data:getString())
-            f:close()
-        end
-        data:release()
+        image:encode('png', 'tmp/previews/v59/' .. name .. '.png')
         image:release()
     end)
 end

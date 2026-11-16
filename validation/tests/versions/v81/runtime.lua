@@ -6,7 +6,7 @@ function T.new(manager)
     katsa.errorhandler = function(message)
         print('FAILED v81 ' .. tostring(message))
         return function()
-            katsa.event.quit(1)
+            return 1
         end
     end
     return setmetatable({ manager = manager, count = 0 }, T)
