@@ -34,7 +34,8 @@ fix, say plainly what only real hardware can confirm, and the launcher UI is the
 - Pick a single `*.katsa` automatically when the launcher finds only one.
 - `tools/project/newGame.py` to scaffold a game.
 - A CI job that runs `tools/dev/testChanged.lua --since <base> --run` and the full suites.
-- Input action map follow-ups and LOD ideas.
+- Input action map follow-ups.
+- **LOD follow-ups** (LODGroup itself is done): automatic mesh simplification at import (pure Lua, static meshes first, cached next to the model; skinned meshes and shape keys later); "cheap" levels (no shadows or a lower animation update rate at a distance, billboards for trees); per-group `lod` settings by name; a fade/dither between levels; a `shadowLevel` so shadows use a coarser mesh.
 - README screenshots.
 - Lag at high TimeScale (5): inherent (five fixed steps per frame); only mitigation ideas remain.
 

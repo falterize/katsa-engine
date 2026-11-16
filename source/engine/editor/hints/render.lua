@@ -16,6 +16,22 @@ return {
         lightInfluence = Common.shared.lightInfluence,
         maxDistance = Common.shared.renderRange,
     },
+    LODGroup = {
+        mode = 'Distance switches by camera distance in world units; ScreenSize by how tall the '
+            .. 'group looks (fraction of the screen height).',
+        distances = 'Where each next level starts, comma separated (for example 25, 60, 150): '
+            .. 'level 1 from 25, level 2 from 60, hidden beyond 150. Empty or 0 entries use '
+            .. 'defaults from the group radius.',
+        screenSizes = 'Screen height fraction below which each next level starts, comma separated, '
+            .. 'falling (for example 0.3, 0.1, 0.02); one more entry hides the group below it. '
+            .. 'Empty or 0 entries use defaults.',
+        bias = 'Above 1 lowers the detail sooner (weak devices), below 1 keeps it longer.',
+        hysteresis = 'A finer level returns only after passing its switch point by this '
+            .. 'fraction, so a group on the border does not flicker.',
+        radius = 'Size of the group for the defaults and for ScreenSize; 0 measures level 0.',
+        forceLevel = 'Pins one level (0 = most detailed); -1 chooses by the camera.',
+        level = 'The level shown now; -1 when the whole group is hidden.',
+    },
     Mesh3D = {
         bonePaletteLimit = 'Requested bones per draw (1..32). Triangles keep all required '
             .. 'joints; smaller palettes may add draws.',

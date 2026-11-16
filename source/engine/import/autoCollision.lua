@@ -6,6 +6,7 @@
 -- (so it moves with it); otherwise it is an invisible collision object at its own place.
 -- Blender's ".001" duplicate suffix is ignored. Needs World3D.physics; without it nothing is created.
 local ipairs = require('../math.array').ipairs
+local ModelNodes = require('./modelNodes')
 
 local AutoCollision = {}
 
@@ -16,7 +17,7 @@ function AutoCollision.parse(name)
     if type(name) ~= 'string' then
         return nil
     end
-    local clean = name:gsub('%.%d+$', '')
+    local clean = ModelNodes.stripCopy(name)
     local lower = clean:lower()
     for _, entry in ipairs(SUFFIXES) do
         local suffix = entry[1]
@@ -27,56 +28,21 @@ function AutoCollision.parse(name)
     return nil
 end
 
-local function stripCopy(name)
-    return (name:gsub('%.%d+$', ''))
-end
-
--- entries: list of { name = string, instance = node }
-local function candidates(model, objects)
-    local list = {}
-    if model.nodes then
-        for _, n in ipairs(model.nodes) do
-            if n.instance and not n.isBone then
-                list[#list + 1] = { name = n.name, instance = n.instance }
-            end
-        end
-    else
-        for i, part in ipairs(model.parts) do
-            local object = objects[i]
-            if object and part.name then
-                list[#list + 1] = { name = part.name, instance = object }
-            end
-        end
-    end
-    return list
-end
-
-local function hasMesh(instance)
-    if instance:isA('Mesh3D') then
-        return true
-    end
-    for _, child in ipairs(instance.children or {}) do
-        if child:isA('Mesh3D') then
-            return true
-        end
-    end
-    return false
-end
-
 -- Creates the bodies; returns the list of created Body3D nodes.
 function AutoCollision.apply(world, model, objects, settings)
     settings = settings or {}
     if settings.autoCollision == false or not world.physics then
         return {}
     end
-    local list = candidates(model, objects)
+    local list = ModelNodes.candidates(model, objects)
     local byName = {}
     for _, entry in ipairs(list) do
         entry.base, entry.kind = AutoCollision.parse(entry.name)
-        entry.mesh = entry.instance and hasMesh(entry.instance)
+        entry.mesh = entry.instance and ModelNodes.hasMesh(entry.instance)
         if not entry.kind and entry.mesh then
+            local clean = ModelNodes.stripCopy(entry.name)
             byName[entry.name] = byName[entry.name] or entry
-            byName[stripCopy(entry.name)] = byName[stripCopy(entry.name)] or entry
+            byName[clean] = byName[clean] or entry
         end
     end
     local bodies = {}

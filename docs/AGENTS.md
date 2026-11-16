@@ -85,6 +85,7 @@ One README in the repository root. Screenshots go to `docs/images`, never the ro
 ## 7. Rendering and GL
 
 - The GL state layer (`source/katsa/graphics/renderState.lua`) caches "applied" state. **A cache that claims state the driver does not have is the worst bug class here.** Example (fixed in v108.4): with culling off the front-face winding was never sent, `gl_FrontFacing` flipped intermittently and double-sided skinned meshes lost lighting. `applyCull()` now sets `glFrontFace` for every cull mode before any early return. When a rendering symptom is intermittent, suspect cached state first.
+- **LODGroup** (`nodes/spatial/lodGroup.lua`, logic in `components/rendering/lodSelect.lua`, import in `import/autoLod.lua`, guide `docs/guides/rendering/lod.md`): a Node3D that shows one Node3D child at a time by `Distance` or `ScreenSize` and owns the children's `visible`; thresholds are text lists (inspector-friendly, tables are converted), missing ones default from the group radius. A model's `-lodN` nodes become groups on import. Levels of a character must share one skeleton.
 - Skinned meshes derive the normal matrix in the vertex shader from the same model matrix as positions (`chunks/mesh.glsl`, included by `world.glsl`).
 - Debug views: F4 > *Shadow view* (green lit, red shadowed, blue not evaluated; brightness = cascade) and *Normal view* (normals as colour). Use them before theorising about shadows.
 - Shaders are written in one dialect and translated to GLSL 330 core (desktop) / GLSL ES 300 (mobile). All engine shaders must compile on both targets.

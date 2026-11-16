@@ -45,6 +45,13 @@ with it (`apple` + `apple-colonly`); with no such node it is an invisible collis
 place. Matching ignores letter case and Blender's `.001` copy suffix. The created bodies are listed
 in `model.collisionBodies`. Works for GLB, glTF, OBJ object names and `.blend`.
 
+## Level of detail from node names
+
+Objects named `tree`, `tree-lod1`, `tree-lod2` ... become one `LODGroup` (`treeLOD`) that shows a level
+by camera distance or by size on screen. `settings.lod` sets its properties, `lod = false` turns the
+grouping off. Skinned levels on one armature keep playing the same animation. See
+`docs/guides/rendering/lod.md`.
+
 ## Node3D.Transparency
 
 Range 0..1, default 0. Opacity is the product of `1-Transparency` over a node and

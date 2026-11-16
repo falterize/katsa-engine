@@ -6,7 +6,7 @@ Read this first after a context reset; read `AGENTS.md` for anything it does not
 ## Now
 
 - Branch `v108.8` (line continues `v108.7`; `v108.4` is the last known-good release, never touch it). No push to `main`.
-- Just done: prefab scenes (`source/engine/scenes/packed/`, `world.prefabs:load/instantiate`): scripts per copy, cameras copied but never current, the scene's World2D copied into each copy (a World2D may sit in any node), `scene://` / `../scene://` paths, `<name>://` for a loaded prefab's assets, prefabs inside a ViewportFrame world. Dev tooling: `tools/dev/testChanged.lua`, `v108_8/uiFrames.lua` (pixel test).
+- Just done: `LODGroup` (distance / screen size, defaults, `-lodN` import; `docs/guides/rendering/lod.md`). Before that: prefab scenes (`source/engine/scenes/packed/`, `world.prefabs:load/instantiate`): scripts per copy, cameras copied but never current, the scene's World2D copied into each copy (a World2D may sit in any node), `scene://` / `../scene://` paths, `<name>://` for a loaded prefab's assets, prefabs inside a ViewportFrame world. Dev tooling: `tools/dev/testChanged.lua`, `v108_8/uiFrames.lua` (pixel test).
 - Next (owner's call): car lag while seated, then the items in `docs/TODO.md`.
 
 ## The owner
