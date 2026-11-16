@@ -23,7 +23,7 @@ passes run.
 | Section | Properties |
 | --- | --- |
 | `glow` | `intensity` 0.8, `strength` 1, `mix` 0.05, `bloom` 0, `blendMode` (Additive, Screen, Softlight, Replace, Mix), `hdrThreshold` 0.8, `hdrScale` 2, `levels` 5 |
-| `ssao` | `quality` (Low 8, Medium 12, High 20 samples), `radius` 1, `intensity` 2, `power` 1.5 |
+| `ssao` | `quality` (Low 8, Medium 12, High 20 samples), `radius` 1, `intensity` 2, `power` 1.5. `intensity` 1 or less fades the occlusion linearly; above 1 the curve deepens it without clipping to black (full occlusion stays 1). The half-resolution occlusion is upsampled with weights by depth similarity, so it does not bleed over silhouettes |
 | `depthOfField` | `farEnabled`, `farDistance`, `farTransition`, `nearEnabled`, `nearDistance`, `nearTransition`, `amount` 0.1, `quality` (Low 8, Medium 16, High 32 samples) |
 | `adjustments` | `brightness`, `contrast`, `saturation`, `colorCorrection` (lookup-table image), `colorCorrectionStrength` |
 | `fog` | Plain fog: `enabled`, `color`, `density`, `mode`, `offset`, `endDistance`, `maxOpacity`. Volumetric mode: `volumetric` (replaces the plain blend), `quality` (Low 16 steps / Medium 32 steps, both half resolution; High 48 steps at full resolution), `volumetricDistance` 120, `heightFalloff`, `baseHeight`, `anisotropy` 0.6, `lightEnergy` 1, `lightClearing` (on by default: point and spot lights thin the fog they shine through, each by its own `fogClearing`, default 0.5), `ambient` 0.3, `shadows`, `skyAffect` |
