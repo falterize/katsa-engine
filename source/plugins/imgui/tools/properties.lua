@@ -1,4 +1,5 @@
 local Editors = require('../editors')
+local unpack = require('source.engine.math.array').unpack
 local Inspector = require('source.engine.editor.inspectors.inspector')
 local NodeChoices = require('source.engine.editor.inspectors.nodeChoices')
 local Properties = require('source.engine.editor.inspectors.properties')
@@ -199,6 +200,43 @@ local function readOnlyText(value, field)
     return tostring(field.value)
 end
 
+-- Tags: one button per tag (click removes it) and an input that adds the typed tags on Enter and
+-- clears itself, so the list shows what the node carries right away.
+local function tagsRow(ig, scene, state, target, field)
+    local tags = target:getTags()
+    for index, tag in ipairs(tags) do
+        if index > 1 then
+            ig.sameLine()
+        end
+        if ig.smallButton(tag .. ' x##tag' .. index) then
+            local kept = {}
+            for _, other in ipairs(tags) do
+                if other ~= tag then
+                    kept[#kept + 1] = other
+                end
+            end
+            apply(scene, state, target, field, table.concat(kept, ', '))
+        end
+    end
+    ig.setNextItemWidth(-1)
+    local changed, text = ig.inputText('##newTag', state.edits.newTag or '')
+    if changed then
+        state.edits.newTag = text
+    end
+    if ig.hovered() then
+        ig.tooltip(field.hint)
+    end
+    if ig.deactivatedAfterEdit() and (state.edits.newTag or '') ~= '' then
+        local all = { unpack(tags) }
+        for tag in state.edits.newTag:gmatch('[^,%s]+') do
+            all[#all + 1] = tag
+        end
+        if apply(scene, state, target, field, table.concat(all, ', ')) then
+            state.edits.newTag = nil
+        end
+    end
+end
+
 local function fieldRow(ig, scene, state, host, node, target, field)
     local blocker = field.key == 'interactable' and Inspector.interactableBlocker(node)
     local labelColor = blocker and { 1, 0.72, 0.2 } or nil
@@ -247,6 +285,8 @@ local function fieldRow(ig, scene, state, host, node, target, field)
     elseif kind == 'number' then
         ig.setNextItemWidth(-1)
         numberRow(ig, scene, state, target, field, value, nil, label)
+    elseif field.key == 'tags' and not field.attribute and target.getTags then
+        tagsRow(ig, scene, state, target, field)
     elseif kind == 'string' then
         textRow(ig, scene, state, target, field, value, label)
     elseif kind == 'vector' then

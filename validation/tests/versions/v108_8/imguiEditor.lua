@@ -99,6 +99,13 @@ function Module.run(self)
     local text = require('source.plugins.imgui.tools.properties').readOnlyText
     self:check(text({ 1, 2.5, 0 }, {}) == '1.000, 2.500, 0.000', 'Read-only vectors such as velocity show their numbers')
 
+    host.selection = light
+    frames(host, 2)
+    self:check(
+        host.state.properties.status == '' and light:hasTag('alpha'),
+        'A node with tags draws the tag buttons and input'
+    )
+
     -- Every node of the tree draws in Properties without errors.
     local roots, extras = scene.workspace:treeRoots()
     local rows = Tree.rows(roots, {}, nil, '', extras)
