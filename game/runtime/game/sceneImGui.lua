@@ -72,6 +72,19 @@ function Methods:inspect(node)
     end
 end
 
+-- Opens the interaction-groups or shader-layers editor (ImGui window, or the legacy popup
+-- without ImGui).
+function Methods:openEditor(name)
+    if self.imgui then
+        self.imgui:openDialog(name)
+    elseif name == 'groups' then
+        require('source.engine.editor.panels.groupEditor').open(self.workspace)
+    elseif name == 'shaderLayers' then
+        self.workspace.selected = self.pixel or self.workspace.selected
+        require('source.engine.editor.panels.shaderLayers').open(self.workspace)
+    end
+end
+
 -- F2: opens or closes the editor windows.
 function Methods:toggleEditor()
     if self.imgui then

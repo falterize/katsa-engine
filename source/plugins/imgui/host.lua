@@ -1,6 +1,7 @@
 local Backend = require('./backend')
 local Layers = require('./layers')
 local ControlPanels = require('./controlPanels')
+local Editors = require('./editors')
 local Toolbar = require('./toolbar')
 local Tools = require('./tools')
 
@@ -24,6 +25,7 @@ function Host.attach(scene, options)
         open = {},
         state = {},
         menuVisible = false,
+        dialogs = {},
     }, Host)
     for _, tool in ipairs(Tools) do
         self.state[tool.id] = tool.new()
@@ -63,9 +65,16 @@ function Host:close(id)
     end
 end
 
+-- Opens a property dialog (sequence, goals, uniforms, gradient, groups, shaderLayers ...) as its
+-- own window; opening the same kind again replaces it.
+function Host:openDialog(name, request)
+    return Editors.open(self, name, request)
+end
+
 function Host:build(ig)
     Toolbar.draw(ig, self.scene, self)
     ControlPanels.draw(ig, self.scene, self)
+    Editors.draw(ig, self.scene, self)
     if self.menuVisible and ig.beginMainMenuBar() then
         if ig.beginMenu('Tools') then
             for _, tool in ipairs(Tools) do

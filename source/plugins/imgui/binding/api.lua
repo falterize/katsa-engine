@@ -156,6 +156,9 @@ local function create(library)
         local changed = C.igInputText(label, textBuffer, 256, 0, nil, nil)
         return changed, ffi.string(textBuffer)
     end
+    function ig.radio(label, active)
+        return C.igRadioButton_Bool(label, active == true)
+    end
     function ig.selectable(label, selected)
         return C.igSelectable_Bool(label, selected == true, 0, vec2())
     end
@@ -266,6 +269,66 @@ local function create(library)
     end
     function ig.endCombo()
         C.igEndCombo()
+    end
+
+    -- Custom drawing: `local canvas = ig.canvas()` draws into the current window with colours
+    -- as { r, g, b, a } (0..1) and screen coordinates.
+    local function packed(color)
+        local function byte(v)
+            return math.floor(math.max(0, math.min(1, v or 1)) * 255 + 0.5)
+        end
+        return bit.bor(
+            bit.lshift(byte(color[4]), 24),
+            bit.lshift(byte(color[3]), 16),
+            bit.lshift(byte(color[2]), 8),
+            byte(color[1])
+        ) % 4294967296
+    end
+    function ig.canvas()
+        local list = C.igGetWindowDrawList()
+        local canvas = {}
+        function canvas.rect(x0, y0, x1, y1, color, thickness)
+            C.ImDrawList_AddRect(list, vec2(x0, y0), vec2(x1, y1), packed(color), 0, thickness or 1, 0)
+        end
+        function canvas.fill(x0, y0, x1, y1, color, rounding)
+            C.ImDrawList_AddRectFilled(list, vec2(x0, y0), vec2(x1, y1), packed(color), rounding or 0, 0)
+        end
+        function canvas.line(x0, y0, x1, y1, color, thickness)
+            C.ImDrawList_AddLine(list, vec2(x0, y0), vec2(x1, y1), packed(color), thickness or 1, 0)
+        end
+        function canvas.circle(x, y, radius, color)
+            C.ImDrawList_AddCircleFilled(list, vec2(x, y), radius, packed(color), 16)
+        end
+        function canvas.text(x, y, color, text)
+            C.ImDrawList_AddText_Vec2(list, vec2(x, y), packed(color), text, nil)
+        end
+        -- points = { x1, y1, x2, y2, ... }
+        local polyline = ffi.new('ImVec2_c[?]', 512)
+        function canvas.polyline(points, color, thickness)
+            local count = math.min(512, math.floor(#points / 2))
+            for i = 0, count - 1 do
+                polyline[i].x, polyline[i].y = points[i * 2 + 1], points[i * 2 + 2]
+            end
+            C.ImDrawList_AddPolyline(list, polyline, count, packed(color), thickness or 1, 0)
+        end
+        return canvas
+    end
+    function ig.cursorScreen()
+        local position = C.igGetCursorScreenPos()
+        return position.x, position.y
+    end
+    function ig.mouse()
+        local position = C.igGetMousePos()
+        return position.x, position.y
+    end
+    function ig.mouseDown(button)
+        return C.igIsMouseDown_Nil(button or 0)
+    end
+    function ig.itemActive()
+        return C.igIsItemActive()
+    end
+    function ig.invisibleButton(id, w, h)
+        return C.igInvisibleButton(id, vec2(w, h), 0)
     end
 
     -- Tabs: `if ig.beginTabBar('id') then if ig.beginTabItem('A') then ... ig.endTabItem() end

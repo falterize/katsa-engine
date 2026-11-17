@@ -107,6 +107,59 @@ function Module.run(self)
     frames(physical.imgui, 2)
     self:check(not physical.imgui:keypressed('w'), 'A Tab press does not make ImGui swallow later game keys')
     physical:release()
+    Module.dialogs(self)
+end
+
+-- The property dialogs open as ImGui windows and edit the real data.
+function Module.dialogs(self)
+    local ImGui = require('source.engine.plugins').require('imgui')
+    if not ImGui.available() then
+        return
+    end
+    local scene = Application.new(self.manager, 'animationLab')
+    scene:load()
+    local host = scene.imgui
+    local ramp
+    local function search(node)
+        for _, child in ipairs(node.children or {}) do
+            if child.className == 'Ramp' and child.points and not ramp then
+                ramp = child
+            end
+            search(child)
+        end
+    end
+    search(scene.root)
+    self:check(ramp ~= nil, 'The animation lab has a Ramp to edit')
+
+    local Editors = require('source.plugins.imgui.editors')
+    local name, request = Editors.forField(ramp, { kind = 'sequence', key = 'points' })
+    local dialog = host:openDialog(name, request)
+    frames(host, 3)
+    local points = ramp.points
+    local count = #points
+    dialog.newTime = 0.5
+    self:check(#host.dialogs == 1 and dialog.status == '', 'The sequence dialog draws for a Ramp')
+    require('source.engine.editor.curves.sequenceModel').insert(points, 0.5, 'Linear')
+    dialog.selected = 2
+    frames(host, 2)
+    self:check(#ramp.points == count + 1, 'The sequence data stays valid after edits')
+
+    local goalName, goalRequest = Editors.forField(ramp, { kind = 'bindings', key = 'bindings' })
+    self:check(goalName == 'goals', 'A Ramp bindings field opens the goals dialog')
+    host:openDialog(goalName, goalRequest)
+    host:openDialog('groups')
+    host:openDialog('shaderLayers')
+    frames(host, 3)
+    self:check(#host.dialogs == 4 and host.open ~= nil, 'Goals, groups and shader layers draw without errors')
+
+    local stops = { { time = 0, color = { 1, 0, 0 } }, { time = 1, color = { 0, 0, 1 } } }
+    local holder = { className = 'UIGradient', colorStops = stops, destroyed = false }
+    host:openDialog('gradient', { target = holder, field = { key = 'colorStops' } })
+    frames(host, 3)
+    self:check(#stops == 2 and #host.dialogs == 5, 'The gradient dialog draws stops')
+
+    host.dialogs = {}
+    scene:release()
 end
 
 return Module

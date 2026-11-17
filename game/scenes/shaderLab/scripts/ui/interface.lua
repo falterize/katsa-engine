@@ -252,7 +252,7 @@ function Interface.create(self)
     end)
     button('Layers', 'Shader layer matrix', function()
         scene.workspace.selected = self.pixel
-        require('source.engine.editor.panels.shaderLayers').open(scene.workspace)
+        scene:openEditor('shaderLayers')
     end)
     button('Inspect', 'Inspect processed world', function()
         scene:inspect(self.preview)

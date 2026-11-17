@@ -70,11 +70,11 @@ function Explorer.draw(ig, scene, state, host)
             state.refreshed = -1
         end
         if ig.button('Groups') then
-            require('source.engine.editor.panels.groupEditor').open(workspace)
+            host:openDialog('groups')
         end
         ig.sameLine()
         if ig.button('Shaders') then
-            require('source.engine.editor.panels.shaderLayers').open(workspace)
+            host:openDialog('shaderLayers')
         end
         ig.sameLine()
         ig.textDisabled('%d rows', #state.rows)

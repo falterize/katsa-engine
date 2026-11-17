@@ -1,3 +1,4 @@
+local Editors = require('../editors')
 local Inspector = require('source.engine.editor.inspectors.inspector')
 local NodeChoices = require('source.engine.editor.inspectors.nodeChoices')
 local Properties = require('source.engine.editor.inspectors.properties')
@@ -6,7 +7,7 @@ local Schema = require('source.engine.editor.inspectors.schema')
 -- Properties: the selected node's properties as their own movable window, grouped like the
 -- legacy inspector (Identity, Layout / Transform, ...). Every edit goes through
 -- `Properties.set`, so validation and ranges are the same as everywhere else. The curve-like
--- editors (sequence, bindings, gradient) still open the engine's own dialog.
+-- editors (sequence, goals, gradient, uniforms ...) open as their own windows (editors/).
 local PropertiesTool = { id = 'properties', title = 'Properties' }
 
 local CHECK = 0.3 -- seconds between structure checks (schema signature, parent path)
@@ -167,12 +168,11 @@ local function vectorRow(ig, scene, state, target, field, value, label)
     end
 end
 
--- Bridges to the engine's own dialogs for kinds that have no ImGui editor yet.
-local function dialogRow(ig, scene, host, node, field, text)
+-- Kinds without an inline widget open their own dialog window (editors/).
+local function dialogRow(ig, host, target, field, text)
     if ig.button(text .. '##dialog') then
-        local workspace = scene.workspace
-        workspace.selected = node
-        workspace:openPopup(field)
+        local name, request = Editors.forField(target, field)
+        host:openDialog(name, request)
     end
 end
 
@@ -231,11 +231,11 @@ local function fieldRow(ig, scene, state, host, node, target, field)
     elseif kind == 'node' then
         nodeRow(ig, scene, state, target, field, value, label)
     elseif kind == 'sequence' then
-        dialogRow(ig, scene, host, node, field, #value .. ' points - edit')
+        dialogRow(ig, host, target, field, #value .. ' points - edit')
     elseif kind == 'bindings' then
-        dialogRow(ig, scene, host, node, field, 'Edit entries')
+        dialogRow(ig, host, target, field, 'Edit entries')
     elseif kind == 'gradient' then
-        dialogRow(ig, scene, host, node, field, 'Edit gradient')
+        dialogRow(ig, host, target, field, 'Edit gradient')
     else
         ig.textDisabled(tostring(value))
     end

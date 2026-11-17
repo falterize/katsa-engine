@@ -136,7 +136,7 @@ The plugin is the pattern for any C library:
 
 ## Toolbar, Explorer and Properties
 
-The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after `scene:setNavigationVisible(false)`. Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, bindings and gradient fields, and the Groups / Shaders buttons, open the engine's own dialogs for now.
+The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after `scene:setNavigationVisible(false)`. Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, goals, gradient, uniforms, bone mask and value-table fields, and the Groups / Shaders buttons, open their own ImGui windows (`editors/`); drag points and green handles in the curve graph, or type exact values.
 
 ## Scene control panels
 
