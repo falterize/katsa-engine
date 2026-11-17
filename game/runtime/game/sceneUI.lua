@@ -4,12 +4,19 @@ local Models = require('source.engine.import.models')
 local Methods = {}
 
 function Methods:setNavigationVisible(visible)
-    self.navigation.visible = visible
-    if self.debugButton then
-        self.debugButton.visible = visible
+    self.navigationVisible = visible
+    if self.imgui then
+        self:syncLegacyNavigation()
+    else
+        self.navigation.visible = visible
+        if self.debugButton then
+            self.debugButton.visible = visible
+        end
+        if self.workspace then
+            self.workspace.tab.visible = visible
+        end
     end
     if self.workspace then
-        self.workspace.tab.visible = visible
         if not visible then
             self.workspace:toggle(false)
         end

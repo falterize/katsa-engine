@@ -133,3 +133,7 @@ The plugin is the pattern for any C library:
 - **No Stats window**: F3 toggles it; check `scene.imguiReason` when the library failed to load.
 
 </details>
+
+## Toolbar, Explorer and Properties
+
+The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Scene tools, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after `scene:setNavigationVisible(false)`. Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, bindings and gradient fields, and the Groups / Shaders buttons, open the engine's own dialogs for now.

@@ -61,7 +61,8 @@ local function label(row)
 end
 
 function WorkspaceRows.install(Workspace)
-    function Workspace:refreshTree()
+    -- The Explorer's roots and editor-only extra rows (shared by the legacy panel and ImGui).
+    function Workspace:treeRoots()
         local roots, extras = {}, nil
         if self.scene.root then
             -- Root is the root of everything, the editor's Debug / Input settings included.
@@ -74,6 +75,11 @@ function WorkspaceRows.install(Workspace)
             end
             roots[#roots + 1] = self.settingsRoot
         end
+        return roots, extras
+    end
+
+    function Workspace:refreshTree()
+        local roots, extras = self:treeRoots()
         self.rows = Tree.rows(roots, self.collapsed, self.group, self.query, extras)
         -- Content width: the deepest indent plus its name and class text.
         local widest = 0

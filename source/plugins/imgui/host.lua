@@ -1,5 +1,6 @@
 local Backend = require('./backend')
 local Layers = require('./layers')
+local Toolbar = require('./toolbar')
 local Tools = require('./tools')
 
 -- The ImGui side of a scene: owns the context, draws the engine's tool windows and every
@@ -37,6 +38,14 @@ local function isOpen(self, tool)
     return self.open[tool.id] == true
 end
 
+-- Whether a tool window is open (Stats shares the scene's own switch).
+function Host:isOpen(id)
+    if id == 'stats' then
+        return self.scene.showStats == true
+    end
+    return self.open[id] == true
+end
+
 function Host:toggle(id)
     if id == 'stats' then
         self.scene.showStats = not self.scene.showStats
@@ -54,6 +63,7 @@ function Host:close(id)
 end
 
 function Host:build(ig)
+    Toolbar.draw(ig, self.scene, self)
     if self.menuVisible and ig.beginMainMenuBar() then
         if ig.beginMenu('Tools') then
             for _, tool in ipairs(Tools) do

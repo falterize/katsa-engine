@@ -68,6 +68,32 @@ local function category(key)
 end
 local Inspector = {}
 
+Inspector.categories = {
+    'Identity',
+    'Layout / Transform',
+    'Appearance',
+    'Shadows',
+    'Settings',
+    'Attributes',
+}
+
+-- Splits listed fields into the named categories: { { name = 'Identity', fields = {...} }, ... }
+-- in display order, skipping empty ones.
+function Inspector.group(fields)
+    local groups, result = {}, {}
+    for _, field in ipairs(fields) do
+        local name = field.attribute and 'Attributes' or category(field.key)
+        groups[name] = groups[name] or {}
+        groups[name][#groups[name] + 1] = field
+    end
+    for _, name in ipairs(Inspector.categories) do
+        if groups[name] then
+            result[#result + 1] = { name = name, fields = groups[name] }
+        end
+    end
+    return result
+end
+
 -- The nearest ancestor with Interactable off, if any. Such an ancestor disables input for the
 -- whole branch below it, so the node's own Interactable setting has no effect.
 function Inspector.interactableBlocker(node)
@@ -99,22 +125,10 @@ function Inspector.install(Workspace)
         self.fields = Properties.list(node._editorTarget or node)
         self.schemaSignature =
             require('source.engine.editor.inspectors.schema').signature(node._editorTarget or node)
-        local groups = {}
-        for _, field in ipairs(self.fields) do
-            local name = field.attribute and 'Attributes' or category(field.key)
-            groups[name] = groups[name] or {}
-            groups[name][#groups[name] + 1] = field
-        end
         local y = 0
-        for _, name in ipairs({
-            'Identity',
-            'Layout / Transform',
-            'Appearance',
-            'Shadows',
-            'Settings',
-            'Attributes',
-        }) do
-            if groups[name] then
+        for _, group in ipairs(Inspector.group(self.fields)) do
+            local name, groupFields = group.name, group.fields
+            do
                 do
                     local node = self.ui:button({
                         position = { 0, 6, 0, y },
@@ -131,7 +145,7 @@ function Inspector.install(Workspace)
                 end
                 y = y + 34
                 if not self.categoryCollapsed[name] then
-                    for _, field in ipairs(groups[name]) do
+                    for _, field in ipairs(groupFields) do
                         if field.key == 'parent' then
                             self.parentPathValue = field.value
                             self.parentPathText = self.ui:text({
@@ -273,25 +287,7 @@ function Inspector.install(Workspace)
     end
 
     function Workspace:value(field, component)
-        local target = self.selected._editorTarget or self.selected
-        if field.attribute then
-            local attribute = field.container[field.key]
-            if attribute == nil then
-                attribute = field.value
-            end
-            return component and attribute[component] or attribute
-        end
-        local getter =
-            require('source.engine.editor.inspectors.schema').descriptor(target, field.key).get
-        if getter then
-            return getter(target)
-        end
-        local value = field.key == 'parent' and Properties.parentPath(target)
-            or (field.container or target)[field.storageKey or field.key]
-        if value == nil then
-            value = field.value
-        end
-        return component and value[component] or value
+        return Properties.read(self.selected._editorTarget or self.selected, field, component)
     end
 
     function Workspace:updateValues()

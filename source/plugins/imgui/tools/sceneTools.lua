@@ -10,7 +10,7 @@ end
 
 function SceneTools.draw(ig, scene, _, host)
     local width, height = katsa.graphics.getDimensions()
-    ig.setNextWindowPos(math.max(10, width - 350), 60)
+    ig.setNextWindowPos(360, 50)
     ig.setNextWindowSize(math.min(340, width * 0.4), math.min(520, height * 0.5))
     local visible, open = ig.begin('Scene tools', true)
     if visible then

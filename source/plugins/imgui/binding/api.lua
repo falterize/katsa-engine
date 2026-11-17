@@ -53,6 +53,14 @@ local function create(library)
         C.igEndChild()
     end
 
+    -- Style colours: pushColor('Button', r, g, b, a) ... popColor(count).
+    function ig.pushColor(name, r, g, b, a)
+        C.igPushStyleColor_Vec4(C['ImGuiCol_' .. name], vec4(r, g, b, a or 1))
+    end
+    function ig.popColor(count)
+        C.igPopStyleColor(count or 1)
+    end
+
     -- Text -------------------------------------------------------------------------------
     function ig.text(format, ...)
         C.igText('%s', select('#', ...) > 0 and format:format(...) or format)
@@ -224,6 +232,40 @@ local function create(library)
     end
     function ig.scrollToEnd()
         C.igSetScrollHereY(1)
+    end
+
+    -- Small helpers used by the editor windows.
+    function ig.smallButton(label)
+        return C.igSmallButton(label)
+    end
+    function ig.tooltip(text)
+        C.igSetTooltip('%s', text)
+    end
+    function ig.hovered()
+        return C.igIsItemHovered(0)
+    end
+    function ig.deactivatedAfterEdit()
+        return C.igIsItemDeactivatedAfterEdit()
+    end
+    function ig.setCursorX(x)
+        C.igSetCursorPosX(x)
+    end
+    function ig.lineHeight()
+        return C.igGetTextLineHeightWithSpacing()
+    end
+    function ig.dummy(w, h)
+        C.igDummy(vec2(w, h))
+    end
+    function ig.available()
+        local size = C.igGetContentRegionAvail()
+        return size.x, size.y
+    end
+    -- beginCombo(label, preview) -> open; call endCombo() only when it returned true.
+    function ig.beginCombo(label, preview)
+        return C.igBeginCombo(label, preview, 0)
+    end
+    function ig.endCombo()
+        C.igEndCombo()
     end
 
     -- Tabs: `if ig.beginTabBar('id') then if ig.beginTabItem('A') then ... ig.endTabItem() end

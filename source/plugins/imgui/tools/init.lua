@@ -6,4 +6,6 @@ return {
     require('./debug'),
     require('./profiler'),
     require('./console'),
+    require('./explorer'),
+    require('./properties'),
 }

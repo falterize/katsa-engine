@@ -27,6 +27,27 @@ function PropertyRead.install(Properties)
         return #parts > 0 and table.concat(parts, ' / ') or 'nil (root)'
     end
 
+    -- The live value of a listed field (or one component of a vector field).
+    function Properties.read(target, field, component)
+        if field.attribute then
+            local attribute = field.container[field.key]
+            if attribute == nil then
+                attribute = field.value
+            end
+            return component and attribute[component] or attribute
+        end
+        local getter = Schema.descriptor(target, field.key).get
+        if getter then
+            return getter(target)
+        end
+        local value = field.key == 'parent' and Properties.parentPath(target)
+            or (field.container or target)[field.storageKey or field.key]
+        if value == nil then
+            value = field.value
+        end
+        return component and value[component] or value
+    end
+
     function Properties.list(target)
         local result = {}
         if target.uniforms and target.shader then

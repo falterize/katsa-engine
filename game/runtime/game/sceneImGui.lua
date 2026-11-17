@@ -13,8 +13,22 @@ function Methods:attachImGui()
     -- The old Tools panel is replaced by the Scene tools window (F8, F10 menu bar).
     self.toolsPanel.visible = false
     self.toolsButton.visible = false
-    self:layoutNavigation()
+    -- The ImGui toolbar replaces the whole Navigation header, the Debug button and the WS tab.
+    self.navigationVisible = self.navigation.visible
+    self:syncLegacyNavigation()
     return true
+end
+
+-- With ImGui the legacy header, Debug button and WS tab stay hidden; the toolbar reads
+-- `navigationVisible` instead.
+function Methods:syncLegacyNavigation()
+    self.navigation.visible = false
+    if self.debugButton then
+        self.debugButton.visible = false
+    end
+    if self.workspace then
+        self.workspace.tab.visible = false
+    end
 end
 
 -- Runs the ImGui frame after the scene and its UI have been drawn.

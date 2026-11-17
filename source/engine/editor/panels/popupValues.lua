@@ -1,5 +1,6 @@
 local ipairs = require('../../math.array').ipairs
 local Style = require('./popupStyle')
+local NodeChoices = require('../inspectors.nodeChoices')
 local palette, copy = Style.palette, Style.copy
 local PopupValues = {}
 
@@ -78,7 +79,6 @@ function PopupValues.install(Popup)
     end
 
     function Popup:nodeEditor()
-        local support = require('source.engine.world.surfaces.support')
         local modelSource = self.field.key == 'geometrySource' and self.target:isA('Collider3D')
         local offset = modelSource and 44 or 0
         if modelSource then
@@ -96,36 +96,7 @@ function PopupValues.install(Popup)
                 end
             )
         end
-        local rows = {
-            { label = modelSource and 'None (no geometry source)' or 'None (use spatial Parent)' },
-        }
-        local world = self.target._world or self.target._sceneWorld or self.workspace.scene.world
-        for _, node in ipairs(world._node:getDescendants()) do
-            local valid = self.field.attribute and node ~= self.target and (node._world or node._sceneWorld) == world
-                or require('source.engine.editor.inspectors.nodeReferences').accepts(
-                self.target,
-                self.field.key,
-                node
-            ) or self.field.key == 'currentCamera' and node:isA('Camera3D') and node._world == world or self.field.key == 'positionSource' and node:isA(
-                'Node3D'
-            ) and (node._world or node._sceneWorld) == world or self.field.key == 'adornee' and self.target:isA(
-                'Ramp'
-            ) and node ~= self.target and (node._world or node._sceneWorld) == world or self.field.key == 'adornee' and not self.target:isA(
-                'Ramp'
-            ) and support.valid(self.target, node) and (not self.target:isA(
-                'ClickDetector3D'
-            ) or node:isA('Mesh3D'))
-            if valid then
-                rows[#rows + 1] = {
-                    node = node,
-                    label = node.name
-                        .. ' ['
-                        .. node.className
-                        .. '] / '
-                        .. require('source.engine.editor.inspectors.properties').parentPath(node),
-                }
-            end
-        end
+        local rows = NodeChoices.list(self.workspace.scene, self.target, self.field)
         self.body.length = offset + #rows * 44
         for i, row in ipairs(rows) do
             do
