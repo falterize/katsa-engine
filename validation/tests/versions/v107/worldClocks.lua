@@ -146,8 +146,13 @@ function Tests.run(tester)
         tester:check(scene.workspace.opened, name .. ': F2 opens Workspace')
         scene:keypressed('f2')
         scene:keypressed('f4')
-        tester:check(scene.debugOverlay.visible, name .. ': F4 opens the shared Debug menu')
+        -- The ImGui Debug window takes over F4 when the library loads; the overlay is the fallback.
+        local opened = scene.imgui and scene.imgui.open.debug or scene.debugOverlay.visible
+        tester:check(opened, name .. ': F4 opens the shared Debug menu')
         scene.debugOverlay.visible = false
+        if scene.imgui then
+            scene.imgui:close('debug')
+        end
         scene.root:find('World3D').timeScale = 0
         scene.root:find('World3D/World2D').timeScale = 1
         local ball = scene.demo.ball

@@ -3,12 +3,17 @@
 `imgui` puts [Dear ImGui](https://github.com/ocornut/imgui) (docking branch, 1.93) into scenes. It
 is a plugin that stays inside `source/plugins/imgui`: the sources, the binaries, the LuaJIT FFI
 binding and the katsa backend live there, and the core never requires it. The engine's own tools
-(Stats, Scene tools) are ImGui windows when the library loads; without it the old Stats panel
-and Tools button remain.
+(Stats, Scene tools, Debug, Profiler, Console) are ImGui windows when the library loads; without it
+the old panels (Stats, Tools, the Debug menu, the console) remain. Only the Workspace and the
+Inspector stay on the engine's own UI.
 
 ## Using it
 
-Hotkeys in every collection scene: **F3** Stats, **F9** Scene tools, **F10** a *Tools* menu bar.
+Hotkeys in every scene: **F1** Console, **F3** Stats, **F4** Debug, **F9** Scene tools, **F10** a
+*Tools* menu bar (it also opens the Profiler). **Debug** has a tab per area (2D Physics, 3D Physics,
+Rendering, Directions, Diagnostics) with the switches of the old Debug menu; **Profiler** shows the
+CPU stage timings, frame graph, recording/export and the error journal; **Console** tails
+`katsa.log` with level and text filters, export and Clear.
 Windows can be dragged, resized and scrolled. The mouse and touch are captured only over a window,
 so the game keeps receiving everything else.
 
@@ -120,6 +125,7 @@ The plugin is the pattern for any C library:
 
 <details><summary>Troubleshooting</summary><br>
 
+- **`?` instead of letters**: ImGui's built-in font is Latin only; the backend loads DejaVu Sans (`options.font` picks another TTF).
 - **`Missing ImGui native library`**: no binary for this platform, build it (above).
 - **Process aborts with `imgui.cpp: Assertion ...`**: ImGui asserts on API misuse (unbalanced
   `begin`/`finish`, sized table columns without a sizing policy). The message names the window.

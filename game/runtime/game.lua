@@ -136,7 +136,11 @@ function Game:load()
         backgroundTransparency = 1 - 0.95,
     }, debugControls)
     self.debugButton:connect('press', function()
-        self.debugOverlay.visible = not self.debugOverlay.visible
+        if self.imgui then
+            self.imgui:toggle('debug')
+        else
+            self.debugOverlay.visible = not self.debugOverlay.visible
+        end
     end)
     self._ui:adaptReference(1280, 720)
     self.workspace = require('source.engine.editor.workspace').new(self)

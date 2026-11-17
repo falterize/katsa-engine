@@ -191,6 +191,57 @@ local function create(library)
         )
     end
 
+    -- plotHistogram has the arguments of plotLines.
+    function ig.plotHistogram(label, values, overlay, min, max, w, h, count)
+        local cdata = values
+        local size = count
+        if type(values) == 'table' then
+            size = #values
+            cdata = ffi.new('float[?]', math.max(size, 1))
+            for i = 1, size do
+                cdata[i - 1] = values[i]
+            end
+        end
+        C.igPlotHistogram_FloatPtr(
+            label,
+            cdata,
+            size,
+            0,
+            overlay,
+            min or C.igGET_FLT_MAX(),
+            max or C.igGET_FLT_MAX(),
+            vec2(w, h),
+            ffi.sizeof('float')
+        )
+    end
+
+    -- Scrolling of the current window or child.
+    function ig.scrollY()
+        return C.igGetScrollY()
+    end
+    function ig.scrollMaxY()
+        return C.igGetScrollMaxY()
+    end
+    function ig.scrollToEnd()
+        C.igSetScrollHereY(1)
+    end
+
+    -- Tabs: `if ig.beginTabBar('id') then if ig.beginTabItem('A') then ... ig.endTabItem() end
+    -- ig.endTabBar() end`.
+    function ig.beginTabBar(id)
+        return C.igBeginTabBar(id, 0)
+    end
+    function ig.endTabBar()
+        C.igEndTabBar()
+    end
+    -- `select` switches to the tab on this frame (otherwise the user's choice stays).
+    function ig.beginTabItem(label, select)
+        return C.igBeginTabItem(label, nil, select and C.ImGuiTabItemFlags_SetSelected or 0)
+    end
+    function ig.endTabItem()
+        C.igEndTabItem()
+    end
+
     -- Tables -----------------------------------------------------------------------------
     function ig.beginTable(id, columns, flags, w, h)
         -- Fixed-fit columns by default: sized columns need an explicit policy (ImGui asserts otherwise).

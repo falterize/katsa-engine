@@ -3,4 +3,7 @@
 return {
     require('./stats'),
     require('./sceneTools'),
+    require('./debug'),
+    require('./profiler'),
+    require('./console'),
 }
