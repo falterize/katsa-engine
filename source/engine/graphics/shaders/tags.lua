@@ -6,7 +6,7 @@ local pairs = require('../../math.array').pairs
 --   #noshader-<group>  on a node: the group's shaders skip this node and its descendants
 --
 -- How far a tag reaches is counted in tree levels, the tagged node being level 0. The include depth
--- is the node's `shaderDepth.<group>` attribute, else the shader's `tagDepth`; -1 or nothing is unlimited; the
+-- is the node's `shaderDepth.<group>` attribute; -1 or nothing is unlimited; the
 -- exclude depth is the node's `noShaderDepth.<group>` attribute, else unlimited. For an object the
 -- nearest ancestor (the object itself counts) whose tag reaches it decides, and at one node an
 -- exclusion beats an inclusion. A shader without a `#shader-` tag keeps its subtree scope; tagged
@@ -51,12 +51,9 @@ function Tags.any(node)
     return false
 end
 
-local function depthOf(node, name, fallback)
+local function depthOf(node, name)
     local attributes = rawget(node, '_attributes')
     local value = attributes and attributes[name]
-    if type(value) ~= 'number' then
-        value = fallback
-    end
     -- A missing or negative depth reaches the whole subtree.
     return type(value) == 'number' and value >= 0 and value or math.huge
 end
@@ -71,10 +68,7 @@ local function decide(shader, node, group, distance)
     if tags[EXCLUDE .. group] and distance <= depthOf(node, EXCLUDE_DEPTH .. group) then
         return false
     end
-    if
-        tags[INCLUDE .. group]
-        and distance <= depthOf(node, INCLUDE_DEPTH .. group, rawget(shader, 'tagDepth'))
-    then
+    if tags[INCLUDE .. group] and distance <= depthOf(node, INCLUDE_DEPTH .. group) then
         return true
     end
     return nil

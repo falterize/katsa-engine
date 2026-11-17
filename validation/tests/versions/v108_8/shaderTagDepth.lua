@@ -47,12 +47,9 @@ local function threeD(self)
     R:setAttribute('shaderDepth.fx', 0)
     self:check(reach(world, nodes) == 'R----', 'Depth 0 is the tagged node only')
     R:setAttribute('shaderDepth.fx', nil)
-    fx.tagDepth = 2
-    self:check(reach(world, nodes) == 'RAB--', 'The shader tagDepth is the default depth')
     R:setAttribute('shaderDepth.fx', 3)
-    self:check(reach(world, nodes) == 'RABC-', 'The node attribute overrides the shader tagDepth')
+    self:check(reach(world, nodes) == 'RABC-', 'shaderDepth.<group> 3 reaches three levels below')
     R:setAttribute('shaderDepth.fx', nil)
-    fx.tagDepth = -1
 
     B:addTag('#noshader-fx')
     self:check(reach(world, nodes) == 'RA---', '#noshader excludes the node and its subtree')

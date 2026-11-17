@@ -448,8 +448,7 @@ model:removeTag('#shader-glow')               -- unbinds it again
 ```
 
 **Levels.** Reach is counted in tree levels, the tagged node being level 0. How far an include tag
-reaches comes from, in order: the node's attribute `shaderDepth.<group>`, the shader's `tagDepth`
-property, else the whole subtree. How far an exclusion reaches is the node's attribute
+reaches is the node's attribute `shaderDepth.<group>`, else the whole subtree. How far an exclusion reaches is the node's attribute
 `noShaderDepth.<group>`, else the whole subtree. `-1` (or no value) always means unlimited.
 
 **Which tag decides.** For an object, the nearest ancestor (the object itself counts) whose tag
@@ -472,8 +471,7 @@ An `#shader-` tag below an exclusion switches the group back on for its own subt
 - 2D: a post effect filters the rectangle of the outermost reached `UINode`, so its children are
   inside it and depth cannot separate them; `#noshader-` cuts the excluded node's rectangle out.
 - The inspector edits the tags in the ordinary `tags` row (a `#` tag must look like
-  `#shader-<group>` or `#noshader-<group>`), the depth attributes under Attributes and `tagDepth`
-  on the shader.
+  `#shader-<group>` or `#noshader-<group>`), the depth attributes under Attributes.
 - A depth attribute without a matching tag does nothing.
 
 ## Errors
