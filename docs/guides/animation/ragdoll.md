@@ -13,7 +13,9 @@ ragdoll:update()
 ```
 
 While `active` is on, the node builds one capsule `Body3D` per segment (hips, chest, head, upper
-arm, forearm, thigh, shin on both sides) joined by `RagdollConstraint3D`, and an Animator
+arm, forearm, hand, thigh, shin, foot on both sides; a rig without hand or foot bones just ends its
+limbs at the wrist and ankle). Each body carries a regular `Collider3D` child (shown in the Explorer
+like any other collider) and the segments are joined by `RagdollConstraint3D`, and an Animator
 modifier writes the bodies' poses back to the bones. Switching it off removes the bodies and the
 animation takes over again. Bones are found by name (`Hips`, `Spine`, `UpperArm.L`, ...); a model
 without a recognised skeleton reports the reason in the read-only `status` property.

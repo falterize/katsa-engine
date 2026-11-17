@@ -24,8 +24,23 @@ function Module.run(self)
     self:check(hipsY < 0.6 and headY < 0.6, 'The ragdoll falls and lies on the floor')
     local body = scene.demo.player.body.node
     self:check(not body.canCollide, 'The walking capsule stops colliding while ragdolled')
+    -- Every segment's collider is a regular Collider3D node, feet and hands included.
+    local foot, collider = ragdoll.node:getBody('FootL'), nil
+    for _, child in ipairs(foot and foot.children or {}) do
+        if child.className == 'Collider3D' then
+            collider = child
+        end
+    end
+    self:check(ragdoll.node:getBody('HandR') and collider, 'Segments have Collider3D children, feet and hands too')
     ragdoll:toggle()
     self:check(not ragdoll:hips() and body.canCollide, 'Toggling again removes the rig')
+    -- A running fall must not slide on forever: the floor grips and the ragdoll comes to rest.
+    scene.demo.player.body:setVelocity({ 0, 0, 9 })
+    ragdoll:toggle()
+    step(scene, 60 * 5)
+    local v = ragdoll:hips().physics:getVelocity({})
+    self:check(math.sqrt(v[1] ^ 2 + v[2] ^ 2 + v[3] ^ 2) < 0.3, 'A ragdoll that fell while running stops sliding')
+    ragdoll:toggle()
     scene:release()
 end
 

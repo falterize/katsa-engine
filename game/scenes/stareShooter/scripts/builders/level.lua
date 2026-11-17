@@ -46,7 +46,9 @@ function Level.create(scene)
         bodyType = 'Static',
         position = { 0, -1, 0 },
         size = { 20000, 2, 20000 },
-        friction = 0,
+        -- The floor grips: with 0 the combined friction of any body on it is 0 and a ragdoll
+        -- slides until its damping stops it (the character controller sets its own velocity).
+        friction = 0.8,
         restitution = 0,
     })
     -- PlayStation vertex snap with affine textures. Off by default: enable the node in the

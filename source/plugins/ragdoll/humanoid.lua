@@ -49,21 +49,18 @@ local SPEC = {
     { name = 'Chest', bone = { 'chest', 'spine2', 'spine_002' }, parent = 'Hips', limit = 0.5, to = 'Head', chain = true, girth = 1.7 },
     { name = 'Head', bone = { 'head' }, exclude = { 'end', 'top' }, parent = 'Chest', limit = 0.6, girth = 1.3 },
 }
--- Bones that only mark the end of a limb (no body of their own).
-local ENDS = {}
-
 -- Arms and legs are the same chain on both sides: upper part (hangs on `anchor`), lower part, tip.
 local LIMBS = {
     {
         upper = { name = 'UpperArm', bone = { 'upper_arm', 'upperarm', 'arm' }, exclude = { 'fore', 'lower', 'twist' }, limit = 1.2 },
         lower = { name = 'Forearm', bone = { 'forearm', 'lowerarm' }, limit = 0.9 },
-        tip = { name = 'Hand', bone = { 'hand' }, exclude = { 'index', 'thumb', 'finger' } },
+        tip = { name = 'Hand', bone = { 'hand' }, exclude = { 'index', 'thumb', 'finger' }, limit = 0.5, girth = 1.2 },
         anchor = 'Chest',
     },
     {
         upper = { name = 'Thigh', bone = { 'thigh', 'upleg', 'upperleg' }, limit = 1.0 },
         lower = { name = 'Shin', bone = { 'shin', 'calf', 'lowerleg' }, limit = 0.8 },
-        tip = { name = 'Foot', bone = { 'foot', 'ankle' }, exclude = { '_001', 'end', 'toe' } },
+        tip = { name = 'Foot', bone = { 'foot', 'ankle' }, exclude = { '_001', 'end', 'toe' }, limit = 0.4, girth = 1.1 },
         anchor = 'Hips',
     },
 }
@@ -79,22 +76,27 @@ for _, limb in ipairs(LIMBS) do
             name = lower.name .. suffix, bone = lower.bone, side = key,
             parent = upper.name .. suffix, limit = lower.limit, to = tip.name .. suffix,
         }
-        ENDS[tip.name .. suffix] = { bone = tip.bone, exclude = tip.exclude, side = key }
+        -- Hands and feet are segments too: without them the foot mesh hangs below the shin
+        -- capsule and sinks into the floor.
+        SPEC[#SPEC + 1] = {
+            name = tip.name .. suffix, bone = tip.bone, exclude = tip.exclude, side = key,
+            parent = lower.name .. suffix, limit = tip.limit, girth = tip.girth, optional = true,
+        }
     end
 end
 
--- Resolves the bones of `model`. Returns { segments = {...}, ends = { Name = node } } or nil and a
+-- Resolves the bones of `model`. Returns { segments = {...}, byName = {...} } or nil and a
 -- message listing what is missing.
 function Humanoid.resolve(model)
-    local ends, missing = {}, {}
-    for name, spec in pairs(ENDS) do
-        ends[name] = find(model, spec.bone, spec.exclude, spec.side)
-    end
+    local missing = {}
     local segments, byName = {}, {}
     for _, spec in ipairs(SPEC) do
         local bone = find(model, spec.bone, spec.exclude, spec.side)
         if not bone then
-            missing[#missing + 1] = spec.name
+            -- A rig without hand or foot bones still gets its limbs (they just end at the wrist/ankle).
+            if not spec.optional then
+                missing[#missing + 1] = spec.name
+            end
         else
             local segment = {
                 name = spec.name,
@@ -115,9 +117,9 @@ function Humanoid.resolve(model)
     end
     for _, segment in ipairs(segments) do
         if segment.to then
-            -- The end of a limb segment is the next limb segment's bone or a marker bone.
+            -- The end of a limb segment is the next limb segment's bone (else its first child bone).
             local nextSegment = byName[segment.to]
-            segment.endBone = nextSegment and nextSegment.bone or ends[segment.to]
+            segment.endBone = nextSegment and nextSegment.bone
         end
     end
     return { segments = segments, byName = byName }
