@@ -13,8 +13,8 @@ function Module.run(self)
         name = 'Faller',
         position = { 0, 30, 0 },
         size = { 1, 1, 1 },
-        collider = { shape = 'Sphere', radius = 0.5 },
     })
+    ball:addCollider({ shape = 'Sphere', radius = 0.5 })
     for _ = 1, 10 do
         world:updateNodes(1 / 60)
         world.physics:update(1 / 60)

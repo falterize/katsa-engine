@@ -14,19 +14,24 @@ function Module.run(self)
         { 20, 5, 20 },
         { -20, -5, 20 },
     }
-    world:create('Body3D', {
+    local terrain = world:create('Body3D', {
         name = 'Terrain',
         bodyType = 'Static',
         position = { 0, 0, 0 },
         size = { 1, 1, 1 },
-        collider = { shape = 'Mesh', vertices = vertices, indices = { 1, 3, 2, 1, 4, 3 } },
+    })
+    terrain:addCollider({
+        shape = 'Points',
+        points = vertices,
+        indices = { 1, 3, 2, 1, 4, 3 },
+        collisionLevel = 'Trimesh',
     })
     local ball = world:create('Body3D', {
         name = 'Ball',
         position = { 0, 12, 0 },
         size = { 1, 1, 1 },
-        collider = { shape = 'Sphere', radius = 0.5 },
     })
+    ball:addCollider({ shape = 'Sphere', radius = 0.5 })
     for _ = 1, 240 do
         world:updateNodes(1 / 60)
         world.physics:update(1 / 60)
