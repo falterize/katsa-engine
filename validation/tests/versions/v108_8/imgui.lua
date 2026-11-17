@@ -66,6 +66,13 @@ function Module.run(self)
         seen ~= nil and gui.C.igGetStyle().FontScaleMain == 1.5,
         'An ImGuiLayer node applies its theme and scale and emits the gui signal'
     )
+    self:check(
+        gui.fontBytes ~= nil and gui.io.Fonts.Fonts.Size == 1,
+        'ImGui loads the wide-coverage TTF font (Cyrillic text is not drawn as ?)'
+    )
+    gui:frame(1 / 60, function(ig)
+        ig.text('Привет, мир')
+    end)
     gui:release()
 end
 

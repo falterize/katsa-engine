@@ -1,4 +1,5 @@
 local bit = require('bit')
+local ffi = require('ffi')
 local Library = require('../binding.library')
 local Api = require('../binding.api')
 local Input = require('./input')
@@ -13,7 +14,11 @@ local Renderer = require('./renderer')
 local Backend = {}
 Backend.__index = Backend
 
--- options.docking: dockable windows. options.scale: UI scale (fonts and spacing).
+local FONT = 'assets/fonts/engine/DejaVuSans.ttf'
+local FONT_SIZE = 15
+
+-- options.docking: dockable windows. options.scale: UI scale (fonts and spacing). options.font:
+-- path of a TTF (default: the engine's DejaVu Sans).
 function Backend.new(options)
     options = options or {}
     local library, reason = Library.load()
@@ -36,10 +41,27 @@ function Backend.new(options)
     io.BackendFlags = bit.bor(io.BackendFlags, C.ImGuiBackendFlags_RendererHasTextures)
     C.igGetStyle().FontScaleMain = options.scale or 1
     C.igStyleColorsDark(nil)
+    self:loadFont(options.font or FONT)
     self.input = Input.new(C, io)
     self.renderer = Renderer.new(C)
     self.frames = 0
     return self
+end
+
+-- ImGui's built-in font has Latin letters only (anything else shows as `?`), so a TTF with wide
+-- coverage (DejaVu Sans: Latin, Cyrillic, Greek) is loaded first. Glyphs are baked on demand.
+-- The bytes stay referenced here because the atlas does not copy them.
+function Backend:loadFont(path)
+    local C = self.C
+    if not katsa.filesystem.getInfo(path) then
+        return
+    end
+    local bytes = katsa.filesystem.read(path)
+    self.fontBytes = bytes
+    local config = C.ImFontConfig_ImFontConfig()
+    config.FontDataOwnedByAtlas = false
+    C.ImFontAtlas_AddFontFromMemoryTTF(self.io.Fonts, ffi.cast('void*', bytes), #bytes, FONT_SIZE, config, nil)
+    C.ImFontConfig_destroy(config)
 end
 
 -- Runs one ImGui frame. `build(ig)` creates the windows; `dt` is the real frame time.

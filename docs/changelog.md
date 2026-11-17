@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- ImGui: the backend loads DejaVu Sans (`assets/fonts/engine`, `options.font` overrides it) instead of ImGui's built-in Latin-only font, so Cyrillic and other non-Latin text typed into a Stats filter or any ImGui field is drawn instead of `?`. The `tagDepth` property of `Shader2D`/`Shader3D` is removed: how far a `#shader-` tag reaches is set only by the node attributes `shaderDepth.<group>` / `noShaderDepth.<group>`. Test: `v108_8/imgui.lua`.
 - Datamosh (stareShooter) now moves pixels like a real one: one motion vector per block (`blockSize`), the old pixels are pushed along it in whole pixels (`drag`, at least `push` pixels where anything moves, `meshBoost` extra on moving objects), so edges tear and colours smear instead of blurring; `pin` holds the frame on screen as the reference. Test: `v108_8/effectHistory.lua` (a pinned frame differs from the live render after a camera pan).
 - Inspector: the `replicatedProperties` row now appears (and the list rebuilds) when `replicated` is switched on at run time; the schema signature did not include it, so the row only showed after reselecting a node that was already replicated at selection time. Test: `v108_8/replication.lua`.
 - Spatial shaders get `hint_velocity_texture` too (the same lazy velocity pass; `Material.velocityUniform`, bound in `SceneTextures.bind`). Test: `v108_8/effectHistory.lua`.
