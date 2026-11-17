@@ -33,12 +33,6 @@ function Module.run(self)
         size = { 1, 0, 1, 0 },
         backgroundColor = { 1, 0, 0, 1 },
     }, ui.content)
-    local effect = ui:create('Shader2D', {
-        name = 'Feedback',
-        shaderPath = fixtures .. 'history2D.glsl',
-        position = { 0, 0, 0, 0 },
-        size = { 1, 0, 1, 0 },
-    }, ui.content)
     local canvas = katsa.graphics.newCanvas(WIDTH, HEIGHT)
     local frame = 0
     local function shot(withScene)
@@ -54,11 +48,16 @@ function Module.run(self)
         return canvas:newImageData()
     end
 
-    for _ = 1, 6 do
-        shot()
-    end
+    shot()
+    local effect = ui:create('Shader2D', {
+        name = 'Feedback',
+        shaderPath = fixtures .. 'history2D.glsl',
+        position = { 0, 0, 0, 0 },
+        size = { 1, 0, 1, 0 },
+    }, ui.content)
+    shot()
     local r, _, b = shot():getPixel(WIDTH / 2, HEIGHT / 2)
-    self:check(r > 0.95 and b < 0.05, 'A steady picture passes through a history shader unchanged')
+    self:check(r > 0.95 and b < 0.05, 'A history shader created on a laid-out picture starts from that picture')
     panel.backgroundColor = { 0, 0, 1, 1 }
     r, _, b = shot():getPixel(WIDTH / 2, HEIGHT / 2)
     self:check(math.abs(r - 0.5) < 0.05 and math.abs(b - 0.5) < 0.05, 'The next frame blends with the previous result')

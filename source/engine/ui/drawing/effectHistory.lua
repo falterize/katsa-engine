@@ -13,7 +13,21 @@ local function reset(g)
     g.setStencilTest()
 end
 
--- The canvas holding last frame's result; `snapshot` seeds it when it is new or the size changed.
+local function seed(history, snapshot)
+    local g = katsa.graphics
+    g.push('all')
+    g.setCanvas(history)
+    reset(g)
+    g.setScissor()
+    g.setBlendMode('replace', 'premultiplied')
+    g.draw(snapshot)
+    g.flushBatch()
+    g.pop()
+end
+
+-- The canvas holding last frame's result. It is seeded from `snapshot` on the first two frames
+-- after it is made (or the size changed): the very first snapshot of a new effect can still be
+-- empty, and a history that starts black would fade the picture in from black.
 function EffectHistory.get(node, snapshot)
     local g = katsa.graphics
     local w, h = snapshot:getDimensions()
@@ -25,13 +39,11 @@ function EffectHistory.get(node, snapshot)
         history = g.newCanvas(w, h, { dpiscale = snapshot:getDPIScale() })
         history:setFilter('linear', 'linear')
         node._effectHistory = node:own(history)
-        g.push('all')
-        g.setCanvas(history)
-        reset(g)
-        g.setScissor()
-        g.setBlendMode('replace', 'premultiplied')
-        g.draw(snapshot)
-        g.pop()
+        node._historySeeds = 2
+    end
+    if node._historySeeds > 0 then
+        node._historySeeds = node._historySeeds - 1
+        seed(history, snapshot)
     end
     return history
 end
@@ -49,6 +61,7 @@ function EffectHistory.store(node, scene, x, y, width, height)
     g.setBlendMode('replace', 'premultiplied')
     g.setScissor(x, y, width, height)
     g.draw(scene)
+    g.flushBatch()
     g.pop()
 end
 
