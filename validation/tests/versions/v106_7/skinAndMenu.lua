@@ -197,7 +197,7 @@ function Tests.run(tester)
             not scene.navigation.visible
                 and not scene.workspace.tab.visible
                 and not scene.debugButton.visible
-                and not scene.navigationVisible,
+                and not require('validation.tests.helpers.navigation').visible(scene),
             'Clean gameplay hides engine navigation initially'
         )
         input.menuKey = 'f8'
@@ -209,9 +209,9 @@ function Tests.run(tester)
         scene:keypressed('f8')
         tester:check(
             not input.captureWanted
-                and scene.navigationVisible
+                and require('validation.tests.helpers.navigation').visible(scene)
                 -- With ImGui the toolbar replaces the legacy header, Debug button and WS tab.
-                and (scene.imgui or scene.navigation.visible and scene.workspace.tab.visible and scene.debugButton.visible)
+                and (scene:module('editor').imgui or scene.navigation.visible and scene.workspace.tab.visible and scene.debugButton.visible)
                 and not katsa.mouse.getRelativeMode(),
             'Menu key releases the cursor and reveals common engine menus'
         )
@@ -242,7 +242,7 @@ function Tests.run(tester)
         scene:pointerpressed('phone-menu', x + w / 2, y + h / 2)
         scene:pointerreleased('phone-menu', x + w / 2, y + h / 2)
         tester:check(
-            not input.captureWanted and scene.navigationVisible,
+            not input.captureWanted and require('validation.tests.helpers.navigation').visible(scene),
             'Touching the screen button opens the same engine navigation'
         )
         x, y, w, h =

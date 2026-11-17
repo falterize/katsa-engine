@@ -142,16 +142,22 @@ function Tests.run(tester)
             scene.workspace and scene.navigation and scene.toolsPanel and scene.debugOverlay,
             name .. ': the standard Workspace, navigation, Tools and Debug are installed'
         )
+        local editor = scene:module('editor')
         scene:keypressed('f2')
-        tester:check(scene.workspace.opened, name .. ': F2 opens Workspace')
+        -- The ImGui Explorer window stands in for the Workspace panel when the library loads.
+        tester:check(
+            editor.imgui and editor.imgui.open.explorer or scene.workspace.opened,
+            name .. ': F2 opens the editor'
+        )
         scene:keypressed('f2')
         scene:keypressed('f4')
         -- The ImGui Debug window takes over F4 when the library loads; the overlay is the fallback.
-        local opened = scene.imgui and scene.imgui.open.debug or scene.debugOverlay.visible
+        local imgui = editor.imgui
+        local opened = imgui and imgui.open.debug or scene.debugOverlay.visible
         tester:check(opened, name .. ': F4 opens the shared Debug menu')
         scene.debugOverlay.visible = false
-        if scene.imgui then
-            scene.imgui:close('debug')
+        if imgui then
+            imgui:close('debug')
         end
         scene.root:find('World3D').timeScale = 0
         scene.root:find('World3D/World2D').timeScale = 1

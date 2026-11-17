@@ -70,7 +70,7 @@ function Interface.create(state)
     button('FOV -', function()
         ui.currentCamera.fov = math.max(20, ui.currentCamera.fov - 10)
     end)
-    if not scene.navigation and scene.manager.sceneFactory and scene.manager.startScene then
+    if not scene:module('navigation') and scene.manager.sceneFactory and scene.manager.startScene then
         button('Main scene', function()
             scene.manager:requestSwitch(scene.manager.sceneFactory, scene.manager.startScene)
         end)

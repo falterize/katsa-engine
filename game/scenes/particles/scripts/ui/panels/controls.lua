@@ -103,7 +103,10 @@ function Controls.build(lab)
         y = y + 34
     end
     button('Inspect', function()
-        scene:inspect(lab.emitter)
+        local editor = scene:module('editor')
+        if editor then
+            editor:inspect(lab.emitter)
+        end
     end)
     button('Emit', function()
         lab.emitter:emit(40)

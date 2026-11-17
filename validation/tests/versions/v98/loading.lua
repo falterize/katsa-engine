@@ -23,7 +23,7 @@ function T.new(manager)
         end
     end
     local Game = require('game.runtime.game')
-    for _, key in ipairs({ 'loadStress', 'buildUI', 'buildMaterials', 'resize' }) do
+    for _, key in ipairs({ 'loadStress', 'buildUI', 'resize' }) do
         wrap(Game, key, 'Game.' .. key)
     end
     for _, entry in ipairs({

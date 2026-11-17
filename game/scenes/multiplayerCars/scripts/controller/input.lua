@@ -40,9 +40,8 @@ function Input:playing()
         and scene.manager.focused ~= false
         and self.captureWanted
         and not require('source.engine.ui.widgets.textFocus').current
-        and not (scene.workspace and scene.workspace.opened)
+        and not scene:consume('capturesInput')
         and not scene.showStats
-        and not (scene.debugOverlay and scene.debugOverlay.visible)
         and not scene.freeDebugCamera
 end
 
@@ -114,7 +113,7 @@ function Input:toggleMenu()
         input.forward, input.right = 0, 0
         input.jump, input.sprint, input.crouch, input.shiftlock = false, false, false, false
     end
-    self.scene:setNavigationVisible(not self.captureWanted)
+    self.scene:emit('immersion', self.captureWanted)
     self.session:onMenuToggled(not self.captureWanted)
     katsa.mouse.setRelativeMode(self:playing() and not self.touchDevice)
 end

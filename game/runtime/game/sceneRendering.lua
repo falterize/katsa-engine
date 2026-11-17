@@ -1,16 +1,15 @@
 local Game = {}
 
 function Game:draw()
-    self.statsLayer.visible = self.showStats and not self.imgui
     if not self.world.activeCamera then
         self._ui.backgroundCanvas = nil
         -- A scene can set `clearColor` (alpha 0 shows the desktop through a transparent window).
         local clear = self.clearColor or { 0.03, 0.04, 0.06, 1 }
         katsa.graphics.clear(clear[1], clear[2], clear[3], clear[4])
-        self.statistics:sample()
+        self:emit('beforeUI')
         self._ui:draw()
         require('source.engine.graphics.debug.orientation').draw(self)
-        self:drawImGui()
+        self:emit('afterUI')
         return
     end
     self.renderer:draw(self.world, self.camera, self.time)
@@ -25,12 +24,12 @@ function Game:draw()
             3
         )
     end
-    self.statistics:sample()
+    self:emit('beforeUI')
     self.input:draw()
     local uiStamp = self.manager.profiler:begin() or (self.showStats and katsa.timer.getTime())
     self._ui:draw()
     require('source.engine.graphics.debug.orientation').draw(self)
-    self:drawImGui()
+    self:emit('afterUI')
     if uiStamp then
         self.uiMilliseconds = (katsa.timer.getTime() - uiStamp) * 1000
     end

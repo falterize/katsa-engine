@@ -295,8 +295,10 @@ function Catalog.prepare(scene, name)
                 label.text = 'Sample was destroyed; reopen this lab to recreate it'
                 return
             end
-            scene.workspace:toggle(true)
-            scene.workspace:select(node)
+            local editor = scene:module('editor')
+            if editor then
+                editor:inspect(node)
+            end
         end)
     end
     do
@@ -328,8 +330,10 @@ function Catalog.prepare(scene, name)
         end
         root.length = 148
     end
-    scene.workspace:toggle(true)
-    scene.workspace:select(node)
+    local editor = scene:module('editor')
+    if editor then
+        editor:inspect(node)
+    end
     return node
 end
 

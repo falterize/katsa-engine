@@ -61,12 +61,6 @@ function Game:update(dt, realDt)
     if self.frames == 2 then
         self:clearJoystickSpot()
     end
-    if self.debugOverlay and self.debugOverlay.visible and self.debugOverlay._syncDebug then
-        self.debugOverlay._syncDebug()
-    end
-    if self.console then
-        self.console:update()
-    end
     local profiler = self.manager.profiler
     local updateStamp = profiler:begin() or (self.showStats and katsa.timer.getTime())
     if self.world.activeCamera then
@@ -89,12 +83,12 @@ function Game:update(dt, realDt)
         end
     end
     self.time = self.time + dt
-    self.workspace:update(realDt or dt)
+    self:emit('update', realDt or dt)
     if self.world.activeCamera then
         self.camera = self.world.activeCamera
     end
     local inputStamp = profiler:begin()
-    self.input:update((self.workspace.editing or self.workspace.popup) and 0 or dt)
+    self.input:update(self:consume('blocksInput') and 0 or dt)
     profiler:finish('Input', inputStamp)
     local nodesStamp = profiler:begin()
     if self.lifecycle then
@@ -124,7 +118,7 @@ function Game:update(dt, realDt)
     local audioStamp = profiler:begin()
     self.audio:update(self.camera)
     profiler:finish('Audio', audioStamp)
-    self:syncButtons()
+    self:syncCameraButtons()
     if updateStamp then
         self.updateMilliseconds = (katsa.timer.getTime() - updateStamp) * 1000
     end

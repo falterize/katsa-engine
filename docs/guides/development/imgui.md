@@ -130,14 +130,14 @@ The plugin is the pattern for any C library:
 - **Process aborts with `imgui.cpp: Assertion ...`**: ImGui asserts on API misuse (unbalanced
   `begin`/`finish`, sized table columns without a sizing policy). The message names the window.
 - **Windows cover the on-screen joystick**: windows start in the upper half; drag them away.
-- **No Stats window**: F3 toggles it; check `scene.imguiReason` when the library failed to load.
+- **No Stats window**: F3 toggles it; check `scene:module('editor').reason` when the library failed to load.
 
 </details>
 
 ## Toolbar, Explorer and Properties
 
-The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after `scene:setNavigationVisible(false)`. Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, goals, gradient, uniforms, bone mask and value-table fields, and the Groups / Shaders buttons, open their own ImGui windows (`editors/`); drag points and green handles in the curve graph, or type exact values.
+The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after the scene emits `immersion` with `true` (first-person scenes while they capture the pointer). Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, goals, gradient, uniforms, bone mask and value-table fields, and the Groups / Shaders buttons, open their own ImGui windows (`editors/`); drag points and green handles in the curve graph, or type exact values.
 
 ## Scene control panels
 
-Panels registered through `ui/widgets/collapsible` (or `Collapsible.adopt`) show up as ImGui windows when the library loads; the engine panel stays hidden and keeps the behaviour, the window only mirrors its buttons, sliders, text boxes and labels in order. Open the editor from a scene with `scene:inspect(node)`. A new scene panel needs no ImGui code: build the panel and call `Collapsible.create` (toggle) or `Collapsible.adopt`.
+Panels registered through `ui/widgets/collapsible` (or `Collapsible.adopt`) show up as ImGui windows when the library loads; the engine panel stays hidden and keeps the behaviour, the window only mirrors its buttons, sliders, text boxes and labels in order. Open the editor from a scene with `local editor = scene:module('editor'); if editor then editor:inspect(node) end`: the editor is the optional module `game/devtools/editor.lua` (see `game/runtime/modules.lua`), so a scene must work when `scene:module('editor')` is nil. A new scene panel needs no ImGui code: build the panel and call `Collapsible.create` (toggle) or `Collapsible.adopt`.

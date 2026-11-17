@@ -108,7 +108,7 @@ function Runtime:update()
             'Depth billboard picking is occluded by stone cube'
         )
         s.demoAnimations = true
-        s:playSound()
+        s:module('navigation'):playSound()
     elseif self.frame == 17 then
         s.camera.rotation = { 0, 180, 0 }
     elseif self.frame == 18 then

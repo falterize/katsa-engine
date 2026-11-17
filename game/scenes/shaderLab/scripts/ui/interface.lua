@@ -251,11 +251,16 @@ function Interface.create(self)
         self.screenSwap.enabled = not self.screenSwap.enabled
     end)
     button('Layers', 'Shader layer matrix', function()
-        scene.workspace.selected = self.pixel
-        scene:openEditor('shaderLayers')
+        local editor = scene:module('editor')
+        if editor then
+            editor:openEditor('shaderLayers', self.pixel)
+        end
     end)
     button('Inspect', 'Inspect processed world', function()
-        scene:inspect(self.preview)
+        local editor = scene:module('editor')
+        if editor then
+            editor:inspect(self.preview)
+        end
     end)
     button('Pause', 'Pause / resume both views', function()
         local scale = self.preview.timeScale == 0 and 1 or 0

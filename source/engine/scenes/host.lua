@@ -6,7 +6,7 @@ local World = require('../world.world')
 local Renderer = require('../graphics.pipeline.renderer')
 local UI = require('../ui')
 local Input = require('../input.input')
-local Statistics = require('../debug.statistics.definitions')
+local Modules = require('./modules')
 
 -- A game scene host without the demonstration menu, tools or example behavior.
 -- Scene scripts own content, systems and gameplay; the host owns engine resources.
@@ -20,6 +20,7 @@ function Host.new(manager, package, options)
         package = package,
         time = 0,
         showStats = false,
+        runtime = 'standalone',
         options = options or {},
         statsHelp = 'F3: toggle Stats',
     }, Host)
@@ -59,6 +60,7 @@ function Host:load()
     self._ui.layoutMode = 'Viewport'
     self.input = Input.new(self)
     self.systems = Systems.new(self)
+    Modules.install(self, not prefab and self.options.modules or nil)
     mark('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
     require('source.engine.plugins').activate(self.world, self.settings.plugins)
@@ -81,14 +83,12 @@ function Host:load()
         self.state = assert(self.lifecycle.create(self, self.package), 'Scene create must return state')
     end
     mark('Scene create script')
-    if not prefab then
-        local layer = self._ui:container({ size = { 1, 0, 1, 0 }, zIndex = 1000 }, self._ui.content)
-        self.statistics = Statistics.new(self, layer)
-        self.console = require('source.engine.debug.consolePanel').new(self._ui, layer)
-    end
+    self:emit('created')
     self:resize(katsa.graphics.getDimensions())
     mark('Overlays and layout')
 end
+
+Modules.extend(Host)
 
 function Host:createPhysics2D(options, ui)
     return require('source.engine.scenes.physics2D').create(self, options, ui)
@@ -121,7 +121,7 @@ function Host:update(dt, realDt)
     self.camera = self.world.activeCamera or self.camera
     self.camera:update(katsa.graphics.getDimensions())
     self.audio:update(self.camera)
-    self.console:update()
+    self:emit('update', realDt or dt)
     self.updateMilliseconds = (katsa.timer.getTime() - started) * 1000
 end
 
@@ -135,7 +135,7 @@ function Host:draw()
         self._ui.backgroundCanvas = nil
         self._ui.backgroundRenderer = nil
     end
-    self.statistics:sample()
+    self:emit('beforeUI')
     local started = katsa.timer.getTime()
     self._ui:draw()
     require('source.engine.graphics.debug.orientation').draw(self)
@@ -145,9 +145,7 @@ end
 function Host:resize(width, height)
     self._ui:fit(width, height)
     self.camera:update(width, height)
-    if self.statistics then
-        self.statistics.panel:resize()
-    end
+    self:emit('resize', width, height)
 end
 
 function Host:pointerpressed(id, x, y)
@@ -173,13 +171,7 @@ function Host:keypressed(key)
     if self.input:keypressed(key) then
         return
     end
-    if key == 'f3' then
-        self.showStats = not self.showStats
-    elseif key == 'f6' and self.statistics then
-        self.statistics:export(30)
-    elseif key == 'f1' then
-        self.console:toggle()
-    end
+    self:consume('keyUnhandled', key)
 end
 
 function Host:textinput(text)
@@ -207,9 +199,7 @@ function Host:release()
     if self.pauseMenu then
         self.pauseMenu:close()
     end
-    if self.console then
-        self.console:release()
-    end
+    self:emit('release')
     Cleanup.run({
         function()
             if self.input then

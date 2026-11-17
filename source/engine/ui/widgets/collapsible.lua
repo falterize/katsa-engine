@@ -24,12 +24,12 @@ function Collapsible.create(scene, panel, title, position)
         toggle.text = (expanded and '− ' or '+ ') .. title
         scene.input:reset()
     end)
-    -- The scene's ImGui host (when it has one) shows the panel as a window instead.
+    -- Scene modules (the `controlPanel` hook) may present the panel differently, e.g. as a window.
     local entry = { title = title, panel = panel, toggle = toggle, startOpen = expanded }
     scene.controlPanels = scene.controlPanels or {}
     scene.controlPanels[#scene.controlPanels + 1] = entry
-    if scene.adoptControlPanel then
-        scene:adoptControlPanel(entry)
+    if scene.emit then
+        scene:emit('controlPanel', entry)
     end
     panel:onDestroy(function()
         entry.destroyed = true
@@ -40,8 +40,9 @@ function Collapsible.create(scene, panel, title, position)
     return toggle
 end
 
--- Loose scene controls (buttons, sliders) that have no panel of their own: with an ImGui host
--- they are mirrored in one window and the engine nodes are hidden; without it nothing changes.
+-- Loose scene controls (buttons, sliders) that have no panel of their own. A scene module that
+-- presents controls itself (the `controlPanel` hook) mirrors them in one window and hides the
+-- engine nodes; without such a module nothing changes.
 -- `nodes` is the list of controls in display order.
 function Collapsible.adopt(scene, title, nodes, onAdopt)
     -- A single node is a panel (hidden as a whole); a list is a set of loose controls.
@@ -53,8 +54,8 @@ function Collapsible.adopt(scene, title, nodes, onAdopt)
     end
     scene.controlPanels = scene.controlPanels or {}
     scene.controlPanels[#scene.controlPanels + 1] = entry
-    if scene.adoptControlPanel then
-        scene:adoptControlPanel(entry)
+    if scene.emit then
+        scene:emit('controlPanel', entry)
     end
     return entry
 end

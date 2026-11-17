@@ -11,7 +11,7 @@ function Module.run(self)
     end
     local scene = Application.new(self.manager, 'stareShooter')
     scene:load()
-    local host = scene.imgui
+    local host = scene:module('editor').imgui
     self:check(host ~= nil, 'A scene attaches the ImGui host')
 
     scene:keypressed('f4')
@@ -69,7 +69,7 @@ function Module.run(self)
     for _, name in ipairs({ 'physics', 'physics2D' }) do
         local physical = Application.new(self.manager, name)
         physical:load()
-        local physicalHost = physical.imgui
+        local physicalHost = physical:module('editor').imgui
         physicalHost:toggle('debug')
         physicalHost:toggle('profiler')
         for _, title in ipairs({ '3D Physics', '2D Physics', 'Rendering' }) do

@@ -250,9 +250,8 @@ end
 function Workspace:toggle(value)
     self.opened = value == nil and not self.opened or value == true
     self.scene.input:reset()
-    if self.scene.debugButton then
-        self.scene.debugButton.visible = not self.opened
-            and (not self.scene.navigation or self.scene.navigation.visible)
+    if self.scene.emit then
+        self.scene:emit('editorToggled', self.opened)
     end
     if self.opened then
         self:refreshTree()

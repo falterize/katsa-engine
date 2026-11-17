@@ -39,9 +39,8 @@ function Input:playing()
     local scene = self.scene
     return scene.manager.focused ~= false
         and self.captureWanted
-        and not (scene.workspace and scene.workspace.opened)
+        and not scene:consume('capturesInput')
         and not scene.showStats
-        and not (scene.debugOverlay and scene.debugOverlay.visible)
         and not scene.freeDebugCamera
 end
 
@@ -82,7 +81,7 @@ function Input:toggleMenu()
     self.player:setMove(0, 0)
     local input = self.player.input
     input.jump, input.sprint, input.crouch, input.shiftlock = false, false, false, false
-    self.scene:setNavigationVisible(not self.captureWanted)
+    self.scene:emit('immersion', self.captureWanted)
     if self.menuButton then
         self.menuButton.text = self.captureWanted and 'Engine menu' or 'Resume game'
     end

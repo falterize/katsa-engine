@@ -42,7 +42,7 @@ function Movement.install(Input)
             self.actions:reset()
         end
         self._typing = focused ~= nil
-        if focused or self.scene.workspace and self.scene.workspace.editing then
+        if focused or self.scene.consume and self.scene:consume('blocksInput') then
             if self.scene.character then
                 self.scene.character:setMove(0, 0)
             end
@@ -88,7 +88,7 @@ function Movement.install(Input)
                 elseif
                     name == 'Interact'
                     and hasWorldCamera(self.scene)
-                    and not (self.scene.workspace and self.scene.workspace.opened)
+                    and not (self.scene.consume and self.scene:consume('capturesInput'))
                 then
                     local scene = self.scene
                     local camera = scene.camera

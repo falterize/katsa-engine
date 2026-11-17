@@ -6,6 +6,7 @@ local World3D = require('source.engine.world.world')
 local Renderer = require('source.engine.graphics.pipeline.renderer')
 local UI = require('source.engine.ui')
 local Input = require('source.engine.input.input')
+local Modules = require('source.engine.scenes.modules')
 
 local Game = {}
 Game.__index = Game
@@ -33,6 +34,7 @@ function Game.new(manager, zone, sampleType, options)
         billboardMotion = true,
         billboardsVisible = true,
         showStats = false,
+        runtime = 'game',
     }, Game)
 end
 
@@ -103,6 +105,7 @@ function Game:load()
         zIndex = 50,
     })
     self.input = Input.new(self, self.controls)
+    Modules.install(self, self.options.modules or require('game.runtime.modules').game)
     -- Default Esc menu; a scene's main.lua calls attach(scene, true) to keep time running.
     require('game.runtime.pauseMenu').attach(self)
     profiler:markLoad('World, renderer and UI')
@@ -111,46 +114,9 @@ function Game:load()
     profiler:markLoad('Node types and plugins')
     self.demo = Loader.create(self)
     profiler:markLoad('Scene create script')
-    self.debugOverlay = require('source.engine.debug.menu').new(self)
-    local debugControls = self._ui:canvasGroup({
-        position = { 0, 0, 0, 0 },
-        size = { 0, 1280, 0, 720 },
-        name = 'DebugControls',
-
-        zIndex = 200,
-    })
-    self.console = require('source.engine.debug.consolePanel').new(self._ui, debugControls)
-    self.debugButton = self._ui:button({
-        position = { 1, -12, 0, 64 },
-        size = { 0, 110, 0, 34 },
-        anchorPoint = { 1, 0 },
-        textScaled = true,
-        maxTextSize = 16,
-        name = 'DebugToggle',
-        visible = not self.settings.presentation or self.settings.presentation.navigation ~= false,
-        _viewportAuthored = true,
-
-        text = 'Debug / F4',
-        fontSize = 22,
-        backgroundColor = { 0.08, 0.16, 0.25 },
-        backgroundTransparency = 1 - 0.95,
-    }, debugControls)
-    self.debugButton:connect('press', function()
-        if self.imgui then
-            self.imgui:toggle('debug')
-        else
-            self.debugOverlay.visible = not self.debugOverlay.visible
-        end
-    end)
+    self:emit('created')
     self._ui:adaptReference(1280, 720)
-    self.workspace = require('source.engine.editor.workspace').new(self)
-    if self.settings.presentation and self.settings.presentation.navigation == false then
-        self.workspace.tab.visible = false
-    end
-    -- The ImGui host may have been attached before these legacy nodes existed.
-    if self.imgui then
-        self:syncLegacyNavigation()
-    end
+    self:emit('ready')
     self:resize(katsa.graphics.getDimensions())
     if self.sampleType then
         require('game.scenes.nodeCatalog.scripts.catalog.samples').prepare(
@@ -165,9 +131,8 @@ function Game:preparePresentation()
     if self.character then
         self.world:setInteractionSource(self.character.body.node)
     end
-    self:buildMaterials()
     self:buildUI()
-    self:attachImGui()
+    self:emit('presentation')
 end
 
 function Game:enter()
@@ -190,21 +155,9 @@ function Game:resize(w, h)
         end
         self.controls.camera = { x = 0, y = vh * 138 / 720, width = vw, height = vh * 582 / 720 }
     end
-    if self.statistics then
-        self.statistics.panel:resize()
-    end
-    if self.mixerPanel then
-        self.mixerPanel.size =
-            { 0, math.min(480, self._ui.width - 24), 0, math.min(380, self._ui.height - 24) }
-    end
-    if self.toolsPanel then
-        self.toolsPanel.size = { 0, math.min(320, self._ui.width - 24), 1, -138 }
-    end
+    self:emit('resize', w, h)
     if self.demo and self.demo.toolbar then
         self.demo.toolbar.size = { 0, math.min(340, self._ui.width - 24), 0.45, -24 }
-    end
-    if self.workspace then
-        self.workspace:resize()
     end
     if self.stressMotion then
         self.stressMotion:resize()
@@ -213,7 +166,7 @@ function Game:resize(w, h)
 end
 
 function Game:pointerpressed(id, x, y)
-    if self.imgui and self.imgui:pointerpressed(id, x, y) then
+    if self:consume('pointerpressed', id, x, y) then
         return
     end
     local demo = self.demo
@@ -224,7 +177,7 @@ function Game:pointerpressed(id, x, y)
 end
 
 function Game:pointermoved(id, x, y, dx, dy)
-    if self.imgui and self.imgui:pointermoved(id, x, y) then
+    if self:consume('pointermoved', id, x, y) then
         return
     end
     local demo = self.demo
@@ -235,9 +188,7 @@ function Game:pointermoved(id, x, y, dx, dy)
 end
 
 function Game:pointerreleased(id, x, y)
-    if self.imgui then
-        self.imgui:pointerreleased(id, x, y)
-    end
+    self:emit('pointerreleased', id, x, y)
     local demo = self.demo
     if demo and demo.pointerreleased then
         demo:pointerreleased(id, x, y)
@@ -246,7 +197,7 @@ function Game:pointerreleased(id, x, y)
 end
 
 function Game:keypressed(key)
-    if self.imgui and self.imgui:keypressed(key) then
+    if self:consume('keypressed', key) then
         return
     end
     if
@@ -257,24 +208,13 @@ function Game:keypressed(key)
         self.input:keypressed(key)
         return
     end
-    if self.workspace:keypressed(key) then
-        return
-    end
     if self.input:keypressed(key) then
         return
     end
-    if key == 'f2' then
-        self:toggleEditor()
-    elseif key == 'escape' then
+    if key == 'escape' then
         self.pauseMenu:toggle()
-    elseif key == 'f3' then
-        self.showStats = not self.showStats
-    elseif key == 'f6' then
-        self.statistics:export(30)
-    elseif key == 'f4' then
-        self.debugOverlay.visible = not self.debugOverlay.visible
-    elseif key == 'f1' then
-        self.console:toggle()
+    elseif self:consume('keyUnhandled', key) then
+        return
     elseif key == 'space' and self.character then
         -- Jump is dispatched through the named action in Input:update.
     elseif key == 'space' then
@@ -283,9 +223,7 @@ function Game:keypressed(key)
 end
 
 function Game:keyreleased(key)
-    if self.imgui then
-        self.imgui:keyreleased(key)
-    end
+    self:emit('keyreleased', key)
     self.input:keyreleased(key)
 end
 
@@ -306,18 +244,13 @@ function Game:pointercancelled(id)
 end
 
 function Game:textinput(text)
-    if self.imgui and self.imgui:textinput(text) then
-        return
-    end
-    if self.workspace.editing then
-        self.workspace:textinput(text)
-    else
+    if not self:consume('textinput', text) then
         self.input:textinput(text)
     end
 end
 
 function Game:pause()
-    self.workspace:cancelEdit()
+    self:emit('pause')
     self.input:reset()
     self.audio:pause()
 end
@@ -328,21 +261,19 @@ end
 
 function Game:exit()
     self.pauseMenu:close()
-    self.workspace:cancelEdit()
+    self:emit('exit')
     self.input:reset()
     self.audio:stop()
     self.manager.time:setScale(1)
 end
 
 function Game:mousebutton(button, down)
-    if self.imgui then
-        self.imgui:mousebutton(button, down)
-    end
+    self:emit('mousebutton', button, down)
     self.input:mapMouseButton(button, down)
 end
 
 function Game:wheelmoved(x, y)
-    if self.imgui and self.imgui:wheelmoved(x, y) then
+    if self:consume('wheelmoved', x, y) then
         return
     end
     self.input:mapWheel(x, y)
@@ -366,11 +297,7 @@ function Game:wheelmoved(x, y)
 end
 
 function Game:release()
-    self:releaseImGui()
-    if self.console then
-        self.console:release()
-        self.console = nil
-    end
+    self:emit('release')
     require('source.engine.core.cleanup').run({
         function()
             if self.systems then
@@ -417,7 +344,9 @@ function Game:release()
     })
 end
 
-for _, path in ipairs({ 'sceneContent', 'sceneUI', 'sceneSimulation', 'sceneRendering', 'sceneImGui' }) do
+Modules.extend(Game)
+
+for _, path in ipairs({ 'sceneUI', 'sceneSimulation', 'sceneRendering' }) do
     for name, method in pairs(require('game.runtime.game.' .. path)) do
         Game[name] = method
     end

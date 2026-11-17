@@ -2,7 +2,7 @@ local bit = require('bit')
 
 -- The scene's main bar: a fixed strip along the top with the buttons the old Navigation header
 -- had (Menu, Pause, Stats, Debug) plus the Explorer and Properties windows. It is
--- shown while `scene.navigationVisible` is not false (presentation.navigation = false hides it).
+-- shown while the host's `hidden` flag is not set (presentation.navigation = false hides it).
 local Toolbar = {}
 
 local HEIGHT = 40
@@ -40,7 +40,7 @@ function Toolbar.height()
 end
 
 function Toolbar.draw(ig, scene, host)
-    if scene.navigationVisible == false then
+    if host.hidden then
         return
     end
     local width = katsa.graphics.getDimensions()

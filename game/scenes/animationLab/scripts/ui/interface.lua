@@ -54,7 +54,10 @@ function Interface.create(self)
         self.ramp.Enabled = not self.ramp.Enabled
     end)
     button('Edit Ramp / curves', function()
-        self.scene:inspect(self.ramp)
+        local editor = self.scene:module('editor')
+        if editor then
+            editor:inspect(self.ramp)
+        end
     end)
     button('World TimeScale 1 / .25 / 0', function()
         local root = self.scene.root:find('World3D')
