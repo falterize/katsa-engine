@@ -56,9 +56,9 @@ function Interface.create(self)
         local body = scene.world:create('Body3D', {
             name = 'TestDrop' .. self.dropCount,
             position = { -65, 110, 55 },
-            collider = { shape = 'Box', size = { 6, 6, 6 } },
             restitution = 0.6,
         })
+        body:addCollider({ name = 'Box', shape = 'Box', size = { 6, 6, 6 } })
         Mesh.create(scene.world, {
             name = 'TestDropVisual' .. self.dropCount,
             size = { 6, 6, 6 },

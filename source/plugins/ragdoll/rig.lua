@@ -66,13 +66,12 @@ local function createBody(owner, segment, settings)
         angularDamping = settings.damping,
         autoSleep = false,
     }) -- world space: the owner sits under a (possibly scaled) model
-    owner._sceneWorld:create('Collider3D', {
+    segment.body:addCollider({
         name = 'Capsule',
         shape = 'Capsule',
         radius = radius,
         height = math.max(length - 2 * radius, 1e-3),
-    }, segment.body)
-    segment.body:update(0)
+    })
     if settings.velocity then
         segment.body.velocity = settings.velocity
     end

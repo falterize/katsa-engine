@@ -1,5 +1,4 @@
 local ipairs = require('source.engine.math.array').ipairs
-local Physics = require('source.engine.physics')
 local UI = require('source.engine.ui')
 local Models = require('source.engine.import.models')
 local object = require('./object')
@@ -94,12 +93,17 @@ function CollisionModels.build(self, scene)
             position = position,
             rotation = rotation,
             scale = scale,
-            collider = Physics.modelCollider(mesh, 'Single Convex'),
             density = 2,
             restitution = 0.2,
         }, parent)
         mesh:setParent(body)
         mesh.poseMatrix = nil
+        body:addCollider({
+            name = 'Hull',
+            shape = 'Geometry',
+            geometrySource = mesh,
+            collisionLevel = 'Single Convex',
+        })
         for _, imported in ipairs(converted.nodes) do
             if imported.instance == mesh then
                 imported.physicalInstance = true

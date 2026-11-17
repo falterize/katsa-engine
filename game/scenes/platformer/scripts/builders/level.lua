@@ -11,9 +11,9 @@ function L.build(lab)
             name = name,
             bodyType = 'Static',
             position = p,
-            collider = { shape = 'Box', size = size },
             friction = 0.6,
         })
+        body:addCollider({ name = 'Box', shape = 'Box', size = size })
         Mesh.create(world, {
             name = name .. 'Visual',
             size = size,

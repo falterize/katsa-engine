@@ -72,7 +72,6 @@ function Walker.new(scene, options, others)
         name = options.name,
         position = { feet[1], feet[2] + height / 2 + 0.05, feet[3] },
         size = { radius * 2, height, radius * 2 },
-        collider = { shape = 'Capsule', radius = radius, height = height - 2 * radius },
         rotationFactor = { 0, 0, 0 },
         gravityScale = 0, -- the controller applies gravity itself, like StareShooter
         autoSleep = false,
@@ -82,6 +81,7 @@ function Walker.new(scene, options, others)
         angularDamping = 0,
         navWalkable = false,
     })
+    body:addCollider({ name = 'Capsule', shape = 'Capsule', radius = radius, height = height - 2 * radius })
     body:update(0)
     local asset = Models.load(Walker.MODEL, scene.resources)
     Models.instantiate(world, asset, {

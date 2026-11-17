@@ -26,7 +26,13 @@ local function groundCollider()
             end
         end
     end
-    return { shape = 'Mesh', vertices = vertices, indices = indices }
+    return {
+        name = 'Terrain',
+        shape = 'Points',
+        points = vertices,
+        indices = indices,
+        collisionLevel = 'Trimesh',
+    }
 end
 
 -- The car park: boxes for the deck, curbs, columns and a ramp. `solid` builds Body3D colliders,
@@ -111,7 +117,7 @@ local function statics()
                 position = { obstacle.x, base + 1, obstacle.z },
                 size = { diameter, diameter, diameter },
                 collider = function()
-                    return { shape = 'Sphere', radius = obstacle.radius }
+                    return { name = 'Sphere', shape = 'Sphere', radius = obstacle.radius }
                 end,
                 visual = { kind = 'sphere', color = { 0.6, 0.35, 0.3 } },
             }
@@ -131,15 +137,18 @@ local function statics()
 end
 
 function Statics.createBody(world, piece, parent)
-    return world:create('Body3D', {
+    local body = world:create('Body3D', {
         name = piece.name,
         bodyType = 'Static',
         position = piece.position,
         size = piece.size,
         rotation = piece.rotation,
         navFloor = piece.navFloor,
-        collider = piece.collider and piece.collider(),
     }, parent)
+    if piece.collider then
+        body:addCollider(piece.collider())
+    end
+    return body
 end
 
 -- Builds every piece once under an `Arena` Node3D. `visualize(world, piece, parent)` (optional)

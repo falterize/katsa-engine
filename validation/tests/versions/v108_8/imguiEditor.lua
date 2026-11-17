@@ -60,6 +60,15 @@ function Module.run(self)
     frames(host)
     self:check(ok and light.name == 'Renamed', 'A property edit applies through the shared setter')
 
+    -- Tags typed in the Properties window are read back live, not as the value the list was built with.
+    local Properties = require('source.engine.editor.inspectors.properties')
+    local tagField = { key = 'tags', kind = 'string', value = '' }
+    Properties.set(scene, light, tagField, 'alpha, beta')
+    self:check(
+        Properties.read(light, tagField) == 'alpha, beta' and light:hasTag('beta'),
+        'An edited tags row shows the new tags'
+    )
+
     -- Every node of the tree draws in Properties without errors.
     local roots, extras = scene.workspace:treeRoots()
     local rows = Tree.rows(roots, {}, nil, '', extras)

@@ -68,11 +68,16 @@ end
 
 function Class.mount(world, properties, parent)
     assert(world.physics, 'Assign World3D.physics before creating Body3D nodes')
+    assert(
+        properties.collider == nil,
+        'Body3D has no collider property: add Collider3D children (body:addCollider{...})'
+    )
     local node = Node.new('Body3D', properties, parent)
     node._world = world
     local settings = {
         type = node.bodyType,
-        collider = properties.collider or { shape = 'Box', size = node.size },
+        -- Until Collider3D children say otherwise the body is a box of its `size`.
+        collider = { shape = 'Box', size = node.size },
     }
     for _, key in ipairs({
         'mass',
@@ -101,6 +106,14 @@ function Class.mount(world, properties, parent)
     node:setProcess(true)
     return node
 end
+-- Adds a Collider3D child with `properties` and applies it now, so the body has its shape before
+-- the next physics step. Returns the collider.
+function Class:addCollider(properties)
+    local collider = self._world:create('Collider3D', properties, self)
+    self:update(0)
+    return collider
+end
+
 local settingsKeys = {
     'autoSleep',
     'density',
@@ -178,6 +191,18 @@ function Class:update(dt)
                 keysChanged = signature[keyCount] ~= key or keysChanged
                 signature[keyCount] = key
             end
+        end
+    end
+    if not explicit and not self._warnedNoCollider then
+        -- The fallback box keeps such bodies working, but a body without a shape is usually a slip.
+        self._warnedNoCollider = true
+        local store = self._world.resources and self._world.resources.store
+        if store and store.journal then
+            store.journal:warn(
+                'Physics',
+                'has no Collider3D child, so it collides as a box of its size',
+                self
+            )
         end
     end
     keysChanged = #signature ~= keyCount or keysChanged

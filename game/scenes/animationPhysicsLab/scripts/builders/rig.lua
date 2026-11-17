@@ -27,8 +27,8 @@ function Lab.new(scene)
         name = 'FloorPhysics',
         bodyType = 'Static',
         position = { 0, -3, 70 },
-        collider = { shape = 'Box', size = { 420, 6, 240 } },
     })
+    floor:addCollider({ name = 'Box', shape = 'Box', size = { 420, 6, 240 } })
     self.model = Models.load('assets/models/characters/xbot.glb', scene.resources)
     Models.instantiate(
         scene.world,

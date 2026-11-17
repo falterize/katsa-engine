@@ -16,10 +16,10 @@ function Proxy.new(world, netId, model)
         bodyType = 'Kinematic',
         position = { model.x, model.y + settings.standingHeight / 2, model.z },
         size = { settings.radius * 2, settings.standingHeight, settings.radius * 2 },
-        collider = { shape = 'Capsule', radius = settings.radius, height = cylinder },
         friction = 0,
         restitution = 0,
     })
+    node:addCollider({ name = 'Capsule', shape = 'Capsule', radius = settings.radius, height = cylinder })
     return setmetatable({ node = node, model = model, half = settings.standingHeight / 2 }, Proxy)
 end
 

@@ -50,8 +50,8 @@ function Lab.new(scene)
         name = 'GalleryFloor',
         bodyType = 'Static',
         position = { 0, -5, 90 },
-        collider = { shape = 'Box', size = { 420, 10, 380 } },
     })
+    floor:addCollider({ name = 'Box', shape = 'Box', size = { 420, 10, 380 } })
     Mesh.create(w, {
         name = 'GalleryFloorVisual',
         size = { 420, 10, 380 },
@@ -96,8 +96,8 @@ function Lab.new(scene)
         name = 'ParticleShelter',
         bodyType = 'Static',
         position = { 0, 70, 90 },
-        collider = { shape = 'Box', size = { 95, 8, 95 } },
     })
+    shelter:addCollider({ name = 'Box', shape = 'Box', size = { 95, 8, 95 } })
     Mesh.create(
         w,
         { name = 'ShelterVisual', size = { 95, 8, 95 }, color = { 0.25, 0.3, 0.4 } },

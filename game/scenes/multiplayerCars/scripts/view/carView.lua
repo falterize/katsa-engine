@@ -173,12 +173,12 @@ function CarView:shedWheel(index)
         bodyType = 'Dynamic',
         position = { x, y, z },
         size = { WHEEL_RADIUS * 2, WHEEL_RADIUS * 2, WHEEL_RADIUS * 2 },
-        collider = { shape = 'Sphere', radius = WHEEL_RADIUS },
         mass = 22,
         friction = 0.8,
         restitution = 0.35,
         angularDamping = 0.2,
     })
+    debris:addCollider({ name = 'Sphere', shape = 'Sphere', radius = WHEEL_RADIUS })
     local source = self.wheelParts and self.wheelParts[CarModel.WHEEL_ORDER[index]]
     if source then
         -- The loose wheel is the model's own wheel, with its tire texture.

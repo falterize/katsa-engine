@@ -40,7 +40,6 @@ function Walker.new(world, model, settings)
         name = 'Walker' .. tostring(model.playerId),
         position = { model.x, model.y + settings.standingHeight / 2, model.z },
         size = { settings.radius * 2, settings.standingHeight, settings.radius * 2 },
-        collider = { shape = 'Capsule', radius = settings.radius, height = cylinder },
         mass = settings.mass,
         rotationFactor = { 0, 0, 0 },
         gravityScale = 0, -- gravity is integrated by the states so jumps are tuned directly

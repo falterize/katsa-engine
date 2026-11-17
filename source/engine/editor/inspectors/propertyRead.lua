@@ -36,6 +36,13 @@ function PropertyRead.install(Properties)
             end
             return component and attribute[component] or attribute
         end
+        -- Tags and replicated names are virtual rows: they are not stored under their own key, so
+        -- they must be read live or an edit would snap back to the value the list was built with.
+        if field.key == 'tags' and not field.container and target.getTags then
+            return table.concat(target:getTags(), ', ')
+        elseif field.key == 'replicatedProperties' and not field.container then
+            return table.concat(rawget(target, 'replicatedProperties') or {}, ', ')
+        end
         local getter = Schema.descriptor(target, field.key).get
         if getter then
             return getter(target)

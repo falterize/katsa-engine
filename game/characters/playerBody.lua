@@ -10,11 +10,6 @@ function Builder.create(scene)
         name = 'Player',
         position = { 0, 1, 0 },
         size = { 1, 2, 1 },
-        collider = {
-            shape = 'Capsule',
-            radius = settings.radius,
-            height = settings.standingHeight - 2 * settings.radius,
-        },
         rotationFactor = { 0, 0, 0 },
         gravityScale = 0,
         autoSleep = false,
