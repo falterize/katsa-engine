@@ -135,6 +135,7 @@ General: UINodes are in `source/engine/ui`; layout is lazy (`ui:layout()`), chan
 ### Other
 - `canvasSize`, scrolling axes, scrollbar insets: see `docs/guides/ui/scrolling.md`.
 - Mobile controls: the joystick relocates away from scene UI; keep runner touch actions accessible; hide free-3D-camera controls when no active 3D camera exists.
+- **Frame history and motion vectors (v108.8)**: `canvas_item` shaders may declare `hint_history_texture` (own previous result, `ui/drawing/effectHistory.lua`) and `hint_velocity_texture` (`graphics/pipeline/velocity.lua`: lazy per-frame canvas, camera reprojection pass plus moved opaque meshes drawn with previous matrix/palette). `Velocity.track` runs in `Renderer:draw` **after** `prepare` (it refreshes the camera matrices); both hints are excluded from the uniform editor. Tests `v108_8/velocity.lua`, `effectHistory.lua`.
 - Normal runtime errors keep an interactive error screen and save `last-error.txt` (ten crash-history slots); automated test modes may exit immediately.
 
 ## 10. Animation and IK

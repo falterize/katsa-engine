@@ -3,6 +3,7 @@ local ipairs = require('../../math.array').ipairs
 local RenderFrame = {}
 
 local Post = require('source.engine.graphics.post')
+local Velocity = require('source.engine.graphics.pipeline.velocity')
 
 -- Post-processing runs when an effect is enabled (never in the wireframe debug view).
 local function postActive(world)
@@ -73,6 +74,7 @@ function RenderFrame.install(Renderer)
             and cacheModule.reusable(self, world, dependencies)
         then
             self.stats.frameReused = true
+            Velocity.track(self, camera, true)
             self.stats.reusedFrames = (self.stats.reusedFrames or 0) + 1
             self.stats.mainTriangles, self.stats.shadowTriangles = 0, 0
             self.stats.depthPrepassMilliseconds, self.stats.depthPrepassTriangles, self.stats.depthPrepassDrawCalls =
@@ -112,6 +114,8 @@ function RenderFrame.install(Renderer)
         self.stats.renderedFrames = (self.stats.renderedFrames or 0) + 1
         self.stats.cacheReason = dependencies.reason
         self:prepare(world, camera, time, dependencies)
+        -- After prepare: it refreshes the camera matrices this frame is drawn with.
+        Velocity.track(self, camera, false)
         local mainStart = katsa.timer.getTime()
         local g = katsa.graphics
         local s = world.debug and world.debug.wireframe and self.wireShader or nil

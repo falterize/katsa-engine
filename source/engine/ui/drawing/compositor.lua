@@ -5,6 +5,8 @@ local Programs = require('../../graphics.shaders.programs')
 local Tags = require('../../graphics.shaders.tags')
 local Samplers = require('../../graphics.shaders.samplers')
 local SceneTextures = require('../../graphics.pipeline.sceneTextures')
+local Velocity = require('../../graphics.pipeline.velocity')
+local EffectHistory = require('./effectHistory')
 -- Screen-space post effects operate on a snapshot, never read their draw target.
 local Compositor = {}
 
@@ -200,11 +202,16 @@ local function shader(ui, node)
         node._postShader = ui.resources:own(compiled)
         node._postProgram = program
         node._postScreenUniform, node._postDepthUniform = nil, nil
+        node._postVelocityUniform, node._postHistoryUniform = nil, nil
         for name, meta in pairs(program.uniforms) do
             if meta.info.hints.hint_screen_texture then
                 node._postScreenUniform = name
             elseif meta.info.hints.hint_depth_texture then
                 node._postDepthUniform = name
+            elseif meta.info.hints.hint_velocity_texture then
+                node._postVelocityUniform = name
+            elseif meta.info.hints.hint_history_texture then
+                node._postHistoryUniform = name
             end
         end
         node._shaderPath = node.shaderPath
@@ -318,6 +325,22 @@ function Compositor.apply(ui, node, region)
             effect:send(depthUniform, ui.resources:image('white'))
         end
     end
+    -- `hint_velocity_texture`: per-pixel motion of the 3D render (current uv minus previous uv in rg,
+    -- 1 in b where a moving mesh wrote it); zero when there is no 3D render under the effect.
+    local velocityUniform = node._postVelocityUniform
+    if velocityUniform and effect:hasUniform(velocityUniform) then
+        local renderer = allowed and ui.backgroundRenderer
+        if renderer and renderer.camera then
+            effect:send(velocityUniform, Velocity.get(renderer))
+        else
+            effect:send(velocityUniform, Velocity.zero(ui))
+        end
+    end
+    -- `hint_history_texture`: this effect's own result from the previous frame.
+    local historyUniform = node._postHistoryUniform
+    if historyUniform and effect:hasUniform(historyUniform) then
+        effect:send(historyUniform, EffectHistory.get(node, snapshot))
+    end
     -- Built-in region uniforms describe this actual canvas/draw, including resize and nesting.
     if effect:hasUniform('canvasSize') then
         effect:send('canvasSize', { w, h })
@@ -374,6 +397,9 @@ function Compositor.apply(ui, node, region)
     end
     g.flushBatch()
     g.pop()
+    if historyUniform then
+        EffectHistory.store(node, scene, x, y, x2 - x, y2 - y)
+    end
     g.setScissor()
     if cx then
         g.setScissor(cx, cy, cw, ch)

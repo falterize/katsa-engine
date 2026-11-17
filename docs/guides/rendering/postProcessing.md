@@ -40,7 +40,9 @@ passes run.
   ambient light. Post targets can be smaller than the depth texture, so SSAO always reads depth at
   texel centres (`snapToDepthTexel` in `chunks/depth.glsl`); a nearest lookup on a texel border
   picks either neighbour at random and broke the surface normal.
-- There is no TAA (it needs per-pixel motion vectors and a history buffer). A vignette is not
+- There is no built-in TAA, but its inputs exist for `Shader2D`: `hint_velocity_texture` (per-pixel
+  motion of the 3D render, computed only when a shader asks) and `hint_history_texture` (the shader's
+  own previous frame); see `shaders.md`. A vignette is not
   built in: put an `ImageRect` with a radial gradient over the screen.
 - Volumetric fog is a screen-space ray march, not Godot's froxel grid. It is lit by the sun (with
   its cascaded shadows, which gives light shafts), by every point and spot light (halos and

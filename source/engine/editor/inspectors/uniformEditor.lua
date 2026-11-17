@@ -10,7 +10,7 @@ local EnvironmentShaders = require('../../graphics.shaders.environmentShaders')
 --   bool                           true / false
 --   sampler2D                      a texture path or manifest name (a node-assigned texture is set
 --                                  from code and shown as the node's name)
---   hint_screen_texture, hint_depth_texture: fed by the engine, not listed
+--   hint_screen_texture, hint_depth_texture, hint_velocity_texture, hint_history_texture: fed by the engine, not listed
 -- Values left alone stay at the file's default; an edit writes the entry into `uniforms`.
 local UniformEditor = {}
 
@@ -28,7 +28,13 @@ end
 
 local function editable(info)
     local hints = info.hints
-    if info.array or hints.hint_screen_texture or hints.hint_depth_texture then
+    if
+        info.array
+        or hints.hint_screen_texture
+        or hints.hint_depth_texture
+        or hints.hint_velocity_texture
+        or hints.hint_history_texture
+    then
         return false
     end
     if info.sampler then

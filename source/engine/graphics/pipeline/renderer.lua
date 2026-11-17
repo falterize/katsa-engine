@@ -81,6 +81,7 @@ function Renderer:release()
     self._released = true
     require('source.engine.graphics.pipeline.depthPrepass').release(self)
     require('source.engine.graphics.pipeline.sceneTextures').release(self)
+    require('source.engine.graphics.pipeline.velocity').release(self)
     require('source.engine.graphics.occlusion.triangles').release(self.occlusionState)
     self.occlusionState, self.occlusionMeshes = nil, nil
     self._frameCache = nil

@@ -309,6 +309,20 @@ name (sample it with `UV`). `hint_depth_texture` gives the opaque depth of the 3
 interface (read it with `linear_depth(texture(d, UV).r)`); it needs a Shader2D layer that interacts with
 `Default3D`, otherwise the depth reads as far away (1.0).
 
+Two more opt-in hints make temporal effects possible (neither costs anything unless a shader declares it):
+
+- `uniform sampler2D previous : hint_history_texture;` is this shader's own result from the previous frame
+  (the first frame sees the unprocessed picture). Sample it with `UV`; feeding it back gives trails,
+  smoothing or datamosh.
+- `uniform sampler2D motion : hint_velocity_texture;` is the per-pixel motion of the 3D render: `rg` is the
+  current uv minus the uv the same surface point had last frame, so `texture(history, UV - motion.rg)`
+  fetches where a pixel came from; `b` is 1 where a moving mesh wrote the value (0 for camera motion only).
+  Like depth it needs a layer that interacts with `Default3D`; otherwise it is zero. Skinned meshes use
+  their previous bone palette. Not covered: vertices a user shader displaces, blend shapes, particles and
+  transparent meshes.
+
+`stareShooter`'s `Datamosh` (F7) uses both.
+
 `vertex()` receives `VERTEX` (screen pixels), `UV`, `COLOR`, `CANVAS_VERTEX`, `TIME`. `shaderTransparency` mixes
 the result with the untouched pixel after `fragment()`.
 
