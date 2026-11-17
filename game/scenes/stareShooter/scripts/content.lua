@@ -40,6 +40,12 @@ function Content.new(scene)
             scene.demo.datamosh.enabled = not scene.demo.datamosh.enabled
             return true
         end
+        if key == 'f8' then
+            -- Holds the frame on screen as the datamosh reference (see `pin` in datamosh.glsl).
+            local effect = scene.demo.datamosh
+            effect.uniforms = { pin = (effect.uniforms.pin or 0) > 0.5 and 0 or 1 }
+            return true
+        end
     end
     orbit:update()
     return setmetatable(

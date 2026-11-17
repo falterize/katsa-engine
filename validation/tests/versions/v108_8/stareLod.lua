@@ -74,6 +74,11 @@ function Module.run(self)
     effect.enabled = true
     render(scene)
     self:check(effect.enabled and render(scene) ~= nil, 'Switching Datamosh on renders without errors')
+    scene.input.keyHandler('f8')
+    local pinned = effect.uniforms.pin
+    scene.input.keyHandler('f8')
+    self:check(pinned == 1 and effect.uniforms.pin == 0, 'F8 pins the frame for the Datamosh and releases it')
+    render(scene)
     scene:release()
 end
 

@@ -430,6 +430,11 @@ end
 
 function Schema.signature(target)
     local text = table.concat(Schema.keys(target, {}) or {}, '|')
+    -- The replicatedProperties row exists only while the node is replicated (or a replica): the
+    -- Inspector must rebuild when that is switched at run time.
+    if rawget(target, 'replicated') == true or rawget(target, 'replica') then
+        text = text .. '|replicatedProperties'
+    end
     if target._node and target.getAttributeNames then
         -- Attributes appear, disappear or change type at run time.
         for _, name in ipairs(target:getAttributeNames()) do

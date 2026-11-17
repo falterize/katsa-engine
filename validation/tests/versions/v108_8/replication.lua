@@ -4,6 +4,7 @@ local Net = require('source.engine.net')
 local World3D = require('source.engine.world.world')
 
 local Properties = require('source.engine.editor.inspectors.properties')
+local Schema = require('source.engine.editor.inspectors.schema')
 
 local Module = {}
 
@@ -70,6 +71,13 @@ function Module.run(self)
         Properties.set(nil, watched, listed, 'position, size') and watched.replicatedProperties[2] == 'size'
             and not Properties.set(nil, watched, listed, 'nonsense'),
         'The list is parsed and unknown property names are rejected'
+    )
+    local plain = serverWorld:create('Mesh3D', { name = 'Plain' })
+    local before = Schema.signature(plain)
+    plain.replicated = true
+    self:check(
+        Schema.signature(plain) ~= before,
+        'Switching replicated at run time changes the inspector signature, so the list row appears'
     )
     watched.replica = true
     local mirrored, free = rowOf(watched, 'position'), rowOf(watched, 'brightness')
