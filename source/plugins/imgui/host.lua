@@ -99,6 +99,7 @@ function Host:build(ig)
 end
 
 function Host:frame(dt)
+    self.backend:sync()
     self.backend:frame(dt, function(ig)
         self:build(ig)
     end)

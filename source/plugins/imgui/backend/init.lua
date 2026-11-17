@@ -100,6 +100,10 @@ function Backend:draw()
     self.renderer:draw(self.C.igGetDrawData())
 end
 
+function Backend:sync()
+    self.input:sync()
+end
+
 function Backend:wantsMouse()
     return self.io.WantCaptureMouse
 end

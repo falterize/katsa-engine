@@ -75,6 +75,21 @@ function Module.run(self)
     frames(host)
     self:check(properties.node == nil, 'Clearing the selection empties Properties')
 
+    -- A held cursor (first-person look) never hovers or clicks ImGui windows.
+    host:pointermoved('mouse', 10, 5)
+    frames(host, 2)
+    self:check(host.backend:wantsMouse(), 'The free cursor over the toolbar is taken by ImGui')
+    katsa.mouse.setRelativeMode(true)
+    frames(host, 2)
+    self:check(
+        not host:pointermoved('mouse', 10, 5)
+            and not host:pointerpressed('mouse', 10, 5)
+            and not host:wheelmoved(0, 1)
+            and not host.backend:wantsMouse(),
+        'A captured cursor does not hover ImGui windows'
+    )
+    katsa.mouse.setRelativeMode(false)
+
     -- Presentation scenes hide the toolbar.
     scene:emit('immersion', true)
     self:check(host.hidden == true, 'Hiding the navigation hides the toolbar')
