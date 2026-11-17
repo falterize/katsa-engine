@@ -67,12 +67,12 @@ function AutoCollision.apply(world, model, objects, settings)
                 bodyType = 'Static',
                 friction = settings.friction,
                 restitution = settings.restitution,
-                collisionGroup = settings.collisionGroup,
             }, owner)
             world:create('Collider3D', {
                 shape = 'Geometry',
                 geometrySource = source,
                 collisionLevel = settings.collisionLevel or 'Trimesh',
+                collisionGroup = settings.collisionGroup,
             }, body)
             bodies[#bodies + 1] = body
         end

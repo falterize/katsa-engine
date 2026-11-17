@@ -90,10 +90,10 @@ function PhysicsExample.build(self, scene)
     local trigger = world:create('Body3D', {
         name = 'TriggerVolume',
         bodyType = 'Static',
-        isTrigger = true,
         position = { -130, 30, 80 },
         size = { 44, 14, 44 },
     })
+    trigger:addCollider({ name = 'Trigger', shape = 'Box', size = { 44, 14, 44 }, isTrigger = true })
     self.triggerBody = trigger
     local indicator = Mesh.create(world, {
         name = 'TriggerVisual',

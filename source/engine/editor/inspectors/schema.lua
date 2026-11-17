@@ -196,7 +196,9 @@ function Schema.options(target, key)
         return world and world.layerGroups.names
     end
     if key == 'collisionGroup' then
-        local body = bodyOf(target) or target._body
+        local body = bodyOf(target)
+            or target._body
+            or target.parent and bodyOf(target.parent)
         local world = target._world or target._sceneWorld
         local physics = body and body.space or world and world.physics
         return physics and physics.collisionGroups.names

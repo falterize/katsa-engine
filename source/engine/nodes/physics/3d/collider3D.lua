@@ -69,6 +69,11 @@ function Class.initialize(self)
     self.position = self.position or { 0, 0, 0 }
     self.rotation = self.rotation or { 0, 0, 0 }
     self.enabled = self.enabled ~= false
+    -- Collision behaviour lives on the collider; the Body3D only holds the physical data.
+    self.canCollide = self.canCollide ~= false
+    self.canQuery = self.canQuery ~= false
+    self.isTrigger = self.isTrigger == true
+    self.collisionGroup = self.collisionGroup or 'Default'
     self.collisionLevel = self.collisionLevel or 'Bounding Box'
     self.maxTriangles = self.maxTriangles or 4096
     local defaults = Decomposition.defaults

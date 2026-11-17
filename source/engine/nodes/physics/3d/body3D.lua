@@ -59,12 +59,11 @@ function Class.initialize(self)
     self.gravityScale = self.gravityScale or 1
     self.linearDamping = self.linearDamping or 0.05
     self.angularDamping = self.angularDamping or 0.05
-    self.collisionGroup = self.collisionGroup or 'Default'
-    self.isTrigger = self.isTrigger == true
-    self.canQuery = self.canQuery ~= false
-    self.canCollide = self.canCollide ~= false
     self.autoSleep = self.autoSleep ~= false
 end
+
+-- Collision behaviour is authored on Collider3D; the body takes the combined result.
+local collisionKeys = { 'canCollide', 'canQuery', 'isTrigger', 'collisionGroup' }
 
 function Class.mount(world, properties, parent)
     assert(world.physics, 'Assign World3D.physics before creating Body3D nodes')
@@ -72,6 +71,12 @@ function Class.mount(world, properties, parent)
         properties.collider == nil,
         'Body3D has no collider property: add Collider3D children (body:addCollider{...})'
     )
+    for _, key in ipairs(collisionKeys) do
+        assert(
+            properties[key] == nil,
+            'Body3D has no ' .. key .. ' property: set it on its Collider3D children'
+        )
+    end
     local node = Node.new('Body3D', properties, parent)
     node._world = world
     local settings = {
@@ -88,14 +93,12 @@ function Class.mount(world, properties, parent)
         'gravityScale',
         'linearDamping',
         'angularDamping',
-        'canQuery',
-        'canCollide',
-        'isTrigger',
-        'collisionGroup',
         'rotationFactor',
     }) do
         settings[key] = node[key]
     end
+    settings.canCollide, settings.canQuery, settings.isTrigger = true, true, false
+    settings.collisionGroup = 'Default'
     if node:isStored() then
         -- A template in storage: inert until a clone or a reparent brings it into the world.
         settings.type, settings.canCollide, settings.canQuery = 'Static', false, false
@@ -108,10 +111,41 @@ function Class.mount(world, properties, parent)
 end
 -- Adds a Collider3D child with `properties` and applies it now, so the body has its shape before
 -- the next physics step. Returns the collider.
+function Class:getCollider()
+    for _, child in ipairs(self.children) do
+        if child:isA('Collider3D') then
+            return child
+        end
+    end
+end
+
 function Class:addCollider(properties)
     local collider = self._world:create('Collider3D', properties, self)
     self:update(0)
     return collider
+end
+
+-- A body collides, is queried or triggers when any enabled collider does; the first enabled
+-- collider names its collision group.
+function Class:applyCollision(canCollide, canQuery, isTrigger, group)
+    local snapshot = self._collisionSettings or {}
+    self._collisionSettings = snapshot
+    if
+        snapshot.canCollide == canCollide
+        and snapshot.canQuery == canQuery
+        and snapshot.isTrigger == isTrigger
+        and snapshot.collisionGroup == group
+    then
+        return
+    end
+    snapshot.canCollide, snapshot.canQuery = canCollide, canQuery
+    snapshot.isTrigger, snapshot.collisionGroup = isTrigger, group
+    self.physics:set({
+        canCollide = canCollide,
+        canQuery = canQuery,
+        isTrigger = isTrigger,
+        collisionGroup = group,
+    })
 end
 
 local settingsKeys = {
@@ -122,11 +156,7 @@ local settingsKeys = {
     'gravityScale',
     'linearDamping',
     'angularDamping',
-    'canQuery',
-    'canCollide',
-    'isTrigger',
     'mass',
-    'collisionGroup',
 }
 
 function Class:update(dt)
@@ -171,10 +201,15 @@ function Class:update(dt)
     local descriptorCount, keyCount = 0, 0
     local keysChanged = self._colliderKeysSignature == nil
     local explicit = false
+    local canCollide, canQuery, isTrigger, group = false, false, false, nil
     for _, node in ipairs(self.children) do
         if node:isA('Collider3D') then
             explicit = true
             if node.enabled then
+                canCollide = canCollide or node.canCollide
+                canQuery = canQuery or node.canQuery
+                isTrigger = isTrigger or node.isTrigger
+                group = group or node.collisionGroup
                 local descriptor, key = node:descriptor(self)
                 if key then
                     keyCount = keyCount + 1
@@ -205,6 +240,10 @@ function Class:update(dt)
             )
         end
     end
+    if not explicit then
+        canCollide, canQuery, isTrigger, group = true, true, false, 'Default'
+    end
+    self:applyCollision(canCollide, canQuery, isTrigger, group or 'Default')
     keysChanged = #signature ~= keyCount or keysChanged
     for i = #signature, keyCount + 1, -1 do
         signature[i] = nil

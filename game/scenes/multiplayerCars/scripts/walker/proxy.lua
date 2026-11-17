@@ -19,15 +19,19 @@ function Proxy.new(world, netId, model)
         friction = 0,
         restitution = 0,
     })
-    node:addCollider({ name = 'Capsule', shape = 'Capsule', radius = settings.radius, height = cylinder })
-    return setmetatable({ node = node, model = model, half = settings.standingHeight / 2 }, Proxy)
+    local collider =
+        node:addCollider({ name = 'Capsule', shape = 'Capsule', radius = settings.radius, height = cylinder })
+    return setmetatable(
+        { node = node, collider = collider, model = model, half = settings.standingHeight / 2 },
+        Proxy
+    )
 end
 
 -- Moves the capsule to the pose the character is drawn at. Call once per frame.
 function Proxy:update()
     local model = self.model
     local state = WalkerEntity.states[model.state or 1]
-    self.node.canCollide = state ~= 'drive' and state ~= 'passenger'
+    self.collider.canCollide = state ~= 'drive' and state ~= 'passenger'
     self.node.position = {
         model.rx or model.x,
         (model.ry or model.y) + self.half,

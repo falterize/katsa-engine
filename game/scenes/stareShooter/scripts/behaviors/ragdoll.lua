@@ -34,7 +34,7 @@ function Ragdoll:toggle()
         local hips = self:hips()
         local m = hips and hips:getRenderWorldMatrix()
         setActive(self, false)
-        player.body.node.canCollide = true
+        player.collider.canCollide = true
         if m then
             player.body:teleport({ m[4], m[8] + STAND_CLEARANCE, m[12] })
         end
@@ -42,7 +42,7 @@ function Ragdoll:toggle()
     else
         setActive(self, true)
         if self:isActive() then
-            player.body.node.canCollide = false
+            player.collider.canCollide = false
             player.body:setVelocity({ 0, 0, 0 })
         end
     end

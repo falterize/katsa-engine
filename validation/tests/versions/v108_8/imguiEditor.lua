@@ -69,6 +69,33 @@ function Module.run(self)
         'An edited tags row shows the new tags'
     )
 
+    -- Changing a Body3D's type updates the listed rows on the next frame (no re-selection needed).
+    local body
+    for _, node in ipairs(scene.world._node:getDescendants()) do
+        if node.className == 'Body3D' and node.bodyType == 'Dynamic' then
+            body = node
+            break
+        end
+    end
+    host.selection = body
+    frames(host, 2)
+    local function listed(key)
+        for _, group in ipairs(host.state.properties.fields) do
+            for _, field in ipairs(group.fields) do
+                if field.key == key then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+    local hadMass = listed('mass')
+    Properties.set(scene, body, { key = 'bodyType', kind = 'string' }, 'Kinematic')
+    host.state.properties.checked = -math.huge
+    frames(host, 1)
+    self:check(hadMass and not listed('mass'), 'Switching Body3D to Kinematic updates Properties at once')
+    Properties.set(scene, body, { key = 'bodyType', kind = 'string' }, 'Dynamic')
+
     -- Every node of the tree draws in Properties without errors.
     local roots, extras = scene.workspace:treeRoots()
     local rows = Tree.rows(roots, {}, nil, '', extras)

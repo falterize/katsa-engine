@@ -36,21 +36,29 @@ local function sync(state, host)
     local target = targetOf(node)
     local signature = Schema.signature(target)
     local parent = target._node and Properties.parentPath(target) or nil
-    if
-        not state.fields
-        or now - state.checked > CHECK
-            and (signature ~= state.signature or parent ~= state.parent)
-    then
-        state.fields = Inspector.group(Properties.list(target))
-        state.signature, state.parent = signature, parent
+    if not state.fields or now - state.checked > CHECK then
+        -- The clock only advances when a check ran; moving it every frame would never let it expire.
+        state.checked = now
+        if
+            not state.fields
+            or signature ~= state.signature
+            or parent ~= state.parent
+        then
+            state.fields = Inspector.group(Properties.list(target))
+            state.signature, state.parent = signature, parent
+        end
     end
-    state.checked = now
     return target
 end
 
 local function apply(scene, state, target, field, value, component)
     local ok, message = Properties.set(scene, target, field, value, component)
     state.status = ok and '' or tostring(message)
+    if ok then
+        -- An edit can show or hide other rows (a body type hides mass, a shape hides size): check the
+        -- structure on the next frame instead of waiting for the interval.
+        state.checked = -math.huge
+    end
     return ok
 end
 

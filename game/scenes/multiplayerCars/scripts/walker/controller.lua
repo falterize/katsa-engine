@@ -158,7 +158,7 @@ end
 
 function Walker:setRiding(on)
     self.riding = on
-    self.node.canCollide = not on
+    self.node:getCollider().canCollide = not on
 end
 
 -- The seat: the car's chassis centre and its up axis, both at the pose the car is drawn at (the
