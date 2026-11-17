@@ -52,7 +52,11 @@ function LayerPass.get(ui, main, mask)
         renderer.layerPass = true
         renderer.shadows = main.shadows
         renderer.depthPrepass = false
-        pass = { renderer = renderer, proxy = setmetatable({ layers = mask }, {}) }
+        -- `update` does nothing: the proxy shares the main camera's matrices exactly as the main pass
+        -- used them. Recomputing them here moved a camera that follows its target between the
+        -- two passes, and the layer drifted away from the object by the camera's step.
+        local proxy = setmetatable({ layers = mask, update = function() end }, {})
+        pass = { renderer = renderer, proxy = proxy }
         passes(ui)[mask] = pass
     end
     local renderer = pass.renderer
