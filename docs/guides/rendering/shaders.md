@@ -315,6 +315,37 @@ name (sample it with `UV`). `hint_depth_texture` gives the opaque depth of the 3
 interface (read it with `linear_depth(texture(d, UV).r)`); it needs a Shader2D layer that interacts with
 `Default3D`, otherwise the depth reads as far away (1.0).
 
+### Seeing only some 3D layers (`viewLayers`)
+
+`hint_screen_texture` shows the whole 3D render. To see only some of it, give the Shader2D a
+`viewLayers` list (a comma separated string, or a table from code) of layer group names and read the
+result with two more hints:
+
+```lua
+world.layerGroups:add('Enemies')
+for _, enemy in ipairs(enemies) do
+    enemy.layerGroup = 'Enemies' -- every Node3D carries a layerGroup
+end
+ui:create('Shader2D', {
+    shaderPath = 'scene://shaders/outline.glsl',
+    viewLayers = 'Enemies',
+})
+```
+
+```glsl
+uniform sampler2D layer : hint_layer_texture;       // colour of only those groups, alpha 0 elsewhere
+uniform sampler2D layer_depth : hint_layer_depth_texture; // their opaque depth
+```
+
+This is Godot's recipe of a camera with a `cull_mask` in a SubViewport: the engine renders the 3D scene
+a second time with the main camera narrowed to those groups. The pass runs at half the main
+`renderDensity` (at least 0.5), draws no sky, gizmos, post effects, interface, transparent objects or particles (those stay in the main pass), and reads the main
+shadow atlas. Shaders with the same groups share one pass; a pass is made once a frame and only when a
+shader declares one of the two hints and names groups. It still pays for a second scene submission, so
+watch the number of different group sets. Like the other scene hints it needs a Shader2D layer that
+interacts with `Default3D`; otherwise both textures are empty (transparent, far). The stareShooter
+scene shows it: F9 outlines the character (`assets/shaders/outline.glsl`).
+
 Two more opt-in hints make temporal effects possible (neither costs anything unless a shader declares it):
 
 - `uniform sampler2D previous : hint_history_texture;` is this shader's own result from the previous frame

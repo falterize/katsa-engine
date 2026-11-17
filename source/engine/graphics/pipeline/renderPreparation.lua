@@ -45,6 +45,10 @@ function RenderPreparation.install(Renderer)
         for key, value in pairs(world.environment.render) do
             self[key] = value
         end
+        if self.layerPass then
+            -- The environment describes the main render; a layer pass is lighter by design.
+            self.renderDensity, self.msaa, self.depthPrepass = self.layerDensity, 0, false
+        end
         if self.vsync ~= nil and self.vsync ~= self.appliedVSync then
             -- Vertical sync is a window property; the Environment setting drives it.
             katsa.window.setVSync(self.vsync == true)
@@ -271,7 +275,8 @@ function RenderPreparation.install(Renderer)
             self.shadows.buildMilliseconds, self.shadows.scanMilliseconds, self.shadows.updatedLights =
                 0, 0, 0
         end
-        if not wire and not self.freezeShadowUpdates then
+        -- A layer pass reads the main renderer's shadow atlas instead of building its own.
+        if not wire and not self.freezeShadowUpdates and not self.layerPass then
             self.shadows.dependencies = dependencies
             self.shadows:update(world, camera, self.lights, time, receivers)
         end

@@ -34,6 +34,8 @@ local function editable(info)
         or hints.hint_depth_texture
         or hints.hint_velocity_texture
         or hints.hint_history_texture
+        or hints.hint_layer_texture
+        or hints.hint_layer_depth_texture
     then
         return false
     end

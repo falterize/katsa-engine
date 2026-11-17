@@ -5,6 +5,9 @@ Shader.propertySchema = {
     shaderPath = {},
     shaderTransparency = { min = 0, max = 1 },
     shaderLayer = {},
+    viewLayers = {
+        hint = 'Layer groups of the 3D scene this shader sees through hint_layer_texture and hint_layer_depth_texture, separated by commas (empty: it sees no layer pass).',
+    },
     zIndex = {},
     uniforms = { kind = 'bindings' },
 }
@@ -21,6 +24,8 @@ function Shader.initialize(self)
     self.zIndex = self._zIndexAuthored and self.zIndex or self.order or self.zIndex or 0
     self.order = nil
     self.uniforms = self.uniforms or {}
+    -- A comma separated list of layer group names, or a table of them from code.
+    self.viewLayers = self.viewLayers or ''
 end
 
 return Shader

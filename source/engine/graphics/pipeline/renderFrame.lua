@@ -6,14 +6,16 @@ local Post = require('source.engine.graphics.post')
 local Velocity = require('source.engine.graphics.pipeline.velocity')
 
 -- Post-processing runs when an effect is enabled (never in the wireframe debug view).
-local function postActive(world)
-    return Post.enabled(world.environment) and not (world.debug and world.debug.wireframe)
+local function postActive(world, renderer)
+    return not (renderer and renderer.layerPass)
+        and Post.enabled(world.environment)
+        and not (world.debug and world.debug.wireframe)
 end
 
 -- True when a post setting changed since the previous draw: a reused frame must then be
 -- rebuilt because its depth and passes depend on the settings.
 local function postChanged(renderer, world)
-    if not postActive(world) then
+    if not postActive(world, renderer) then
         local was = renderer._postSignature ~= nil
         renderer._postSignature = nil
         return was
@@ -87,7 +89,7 @@ function RenderFrame.install(Renderer)
             self.stats.shadowDrawCalls, self.stats.shadowFaces = 0, 0
             self.stats.shadowCasterTests, self.stats.shadowCasterSubmissions = 0, 0
             self.stats.shadowScanMilliseconds, self.stats.shadowBuildMilliseconds = 0, 0
-            if postActive(world) then
+            if postActive(world, self) then
                 self.post = self.post or Post.new()
                 return self.post:apply(self, offscreen)
             end
@@ -124,9 +126,14 @@ function RenderFrame.install(Renderer)
         g.setScissor()
         g.setStencilTest()
         g.setCanvas({ self.canvas, depthstencil = self.depth })
-        g.clear(0.03, 0.04, 0.06, 1, 0, 1)
+        -- A layer pass starts transparent and has no sky: alpha says which pixels it drew.
+        if self.layerPass then
+            g.clear(0, 0, 0, 0, 0, 1)
+        else
+            g.clear(0.03, 0.04, 0.06, 1, 0, 1)
+        end
         g.setDepthMode()
-        if not (world.debug and world.debug.wireframe) then
+        if not self.layerPass and not (world.debug and world.debug.wireframe) then
             self:drawSky(world, camera)
         end
         g.setFrontFaceWinding('cw')
@@ -146,7 +153,8 @@ function RenderFrame.install(Renderer)
         end
         g.setDepthMode('less', false)
         self.drawingTransparent = true
-        for _, o in ipairs(self.transparent) do
+        -- Transparent objects stay in the main pass only (a layer pass is opaque by design).
+        for _, o in ipairs(not self.layerPass and self.transparent or {}) do
             self:drawItem(o)
         end
         self.drawingTransparent = false
@@ -155,18 +163,20 @@ function RenderFrame.install(Renderer)
         g.setWireframe(false)
         g.setShader()
         g.setWireframe(false)
-        self.gizmos:draw(world, camera)
-        if world.physics then
-            world.physics:drawDebug(camera)
-        end
-        if world.plugins then
-            require('source.engine.plugins').drawDebug(world, camera)
-        end
-        if world.animators then
-            require('source.engine.graphics.debug.skeletonDebug').draw(world, camera)
-        end
-        if self.billboardDebugActive then
-            require('source.engine.graphics.debug.billboardDebug').draw(world, camera)
+        if not self.layerPass then
+            self.gizmos:draw(world, camera)
+            if world.physics then
+                world.physics:drawDebug(camera)
+            end
+            if world.plugins then
+                require('source.engine.plugins').drawDebug(world, camera)
+            end
+            if world.animators then
+                require('source.engine.graphics.debug.skeletonDebug').draw(world, camera)
+            end
+            if self.billboardDebugActive then
+                require('source.engine.graphics.debug.billboardDebug').draw(world, camera)
+            end
         end
         g.setShader(s)
         for _, o in ipairs(self.top) do
@@ -178,11 +188,11 @@ function RenderFrame.install(Renderer)
         g.setWireframe(false)
         if offscreen then
             local result = self.canvas
-            if postActive(world) then
+            if postActive(world, self) then
                 self.post = self.post or Post.new()
                 result = self.post:apply(self, true)
             end
-            if self.renderOverlay and #(world.uis or {}) > 0 then
+            if self.renderOverlay and not self.layerPass and #(world.uis or {}) > 0 then
                 g.setCanvas({ result, stencil = true })
                 g.setScissor()
                 g.setStencilTest()
@@ -198,7 +208,7 @@ function RenderFrame.install(Renderer)
             self.stats.mainSubmissionMilliseconds = (katsa.timer.getTime() - mainStart) * 1000
             return result
         end
-        if postActive(world) then
+        if postActive(world, self) then
             self.post = self.post or Post.new()
             self.post:apply(self, false)
         else

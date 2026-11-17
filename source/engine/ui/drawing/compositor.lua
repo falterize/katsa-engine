@@ -6,6 +6,7 @@ local Tags = require('../../graphics.shaders.tags')
 local Samplers = require('../../graphics.shaders.samplers')
 local SceneTextures = require('../../graphics.pipeline.sceneTextures')
 local Velocity = require('../../graphics.pipeline.velocity')
+local LayerPass = require('../../graphics.pipeline.layerPass')
 local EffectHistory = require('./effectHistory')
 -- Screen-space post effects operate on a snapshot, never read their draw target.
 local Compositor = {}
@@ -203,6 +204,7 @@ local function shader(ui, node)
         node._postProgram = program
         node._postScreenUniform, node._postDepthUniform = nil, nil
         node._postVelocityUniform, node._postHistoryUniform = nil, nil
+        node._postLayerUniform, node._postLayerDepthUniform = nil, nil
         for name, meta in pairs(program.uniforms) do
             if meta.info.hints.hint_screen_texture then
                 node._postScreenUniform = name
@@ -212,6 +214,10 @@ local function shader(ui, node)
                 node._postVelocityUniform = name
             elseif meta.info.hints.hint_history_texture then
                 node._postHistoryUniform = name
+            elseif meta.info.hints.hint_layer_texture then
+                node._postLayerUniform = name
+            elseif meta.info.hints.hint_layer_depth_texture then
+                node._postLayerDepthUniform = name
             end
         end
         node._shaderPath = node.shaderPath
@@ -334,6 +340,24 @@ function Compositor.apply(ui, node, region)
             effect:send(velocityUniform, Velocity.get(renderer))
         else
             effect:send(velocityUniform, Velocity.zero(ui))
+        end
+    end
+    -- `hint_layer_texture` / `hint_layer_depth_texture`: a render of only the layer groups in
+    -- `viewLayers` (see layerPass.lua); transparent black and "infinitely far" when there are none.
+    local layerUniform, layerDepthUniform = node._postLayerUniform, node._postLayerDepthUniform
+    if layerUniform or layerDepthUniform then
+        local renderer = allowed and ui.backgroundRenderer
+        local world = renderer and renderer.world
+        local mask = world and renderer.camera and LayerPass.mask(world, node.viewLayers)
+        local color, depth
+        if mask then
+            color, depth = LayerPass.get(ui, renderer, mask)
+        end
+        if layerUniform and effect:hasUniform(layerUniform) then
+            effect:send(layerUniform, color or LayerPass.empty(ui))
+        end
+        if layerDepthUniform and effect:hasUniform(layerDepthUniform) then
+            effect:send(layerDepthUniform, depth or ui.resources:image('white'))
         end
     end
     -- `hint_history_texture`: this effect's own result from the previous frame.

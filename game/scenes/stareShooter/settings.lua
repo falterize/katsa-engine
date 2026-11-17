@@ -20,6 +20,7 @@ local Settings = {
     camera = { sensitivity = 0.25, zoomSpeed = 1, minDistance = 0, maxDistance = 100, fov = 75 },
     retro = { enabled = false }, -- The source ColorRect is hidden in main.tscn.
     datamosh = { enabled = false }, -- F7; datamosh (F8 pins the current frame).
+    outline = { enabled = false }, -- F9; outline of the character through viewLayers.
 }
 
 return Settings

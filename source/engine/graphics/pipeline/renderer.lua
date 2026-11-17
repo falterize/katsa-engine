@@ -90,7 +90,9 @@ function Renderer:release()
     end
     require('source.engine.graphics.debug.wireframe').release(self)
     self.batches:release()
-    self.shadows:release()
+    if not self.layerPass then
+        self.shadows:release()
+    end
     if self.post then
         self.post:release()
         self.post = nil

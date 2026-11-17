@@ -1,3 +1,4 @@
+local ipairs = require('source.engine.math.array').ipairs
 -- The physics body, collider and visual model of a walking character (capsule, no rotation).
 local Models = require('source.engine.import.models')
 local Player = require('game.characters.controller')
@@ -25,6 +26,10 @@ function Builder.create(scene)
         height = settings.standingHeight - 2 * settings.radius,
     }, body)
     body:update(0)
+    local registry = scene.world.layerGroups
+    if not registry.bits.Outlined then
+        registry:add('Outlined')
+    end
     local model = Models.load('assets/models/characters/player.glb', scene.resources)
     Models.instantiate(scene.world, model, {
         name = 'CharacterVisual',
@@ -33,6 +38,13 @@ function Builder.create(scene)
         scale = { 0.65, 0.65, 0.65 },
         parent = body,
     })
+    -- The visual model is its own layer group: a Shader2D with viewLayers = 'Outlined' (the
+    -- stareShooter outline) sees only it.
+    for _, node in ipairs(body:getDescendants()) do
+        if node:isA('Node3D') and not node:isA('Collider3D') then
+            node.layerGroup = 'Outlined'
+        end
+    end
     local controller = Player.new(body.physics, collider, scene.camera, settings)
     controller.model = model
     return controller

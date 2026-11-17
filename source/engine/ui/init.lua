@@ -447,6 +447,7 @@ function UI:release()
     end
     self._destroying = destroying
     self.fonts = {}
+    require('source.engine.graphics.pipeline.layerPass').release(self)
     self:invalidate()
     -- Fonts and canvases belong to the explicit resource scope, released by its owner.
 end

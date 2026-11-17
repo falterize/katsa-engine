@@ -94,6 +94,22 @@ function Interface.create(state)
         animated = true,
         uniforms = {},
     }, ui.content)
+    -- The character's outline: the shader sees only the layer group Outlined (viewLayers).
+    if not scene.world.shaderLayers.priorities.Outline then
+        scene.world.shaderLayers:add('Outline')
+    end
+    state.outline = ui:create('Shader2D', {
+        _viewportAuthored = true,
+        name = 'CharacterOutline',
+        size = { 1, 0, 1, 0 },
+        shaderPath = 'scene://shaders/outline.glsl',
+        shaderLayer = 'Outline',
+        viewLayers = 'Outlined',
+        enabled = scene.settings.outline.enabled,
+        backgroundTransparency = 1,
+        zIndex = 1,
+        uniforms = {},
+    }, ui.content)
     Interface.lodPanel(state, ui)
     if scene.settings.presentation.menuButton ~= false then
         scene.input.menuButton = cornerButton(ui, 'EngineMenuToggle', 'Engine menu', 16, function()

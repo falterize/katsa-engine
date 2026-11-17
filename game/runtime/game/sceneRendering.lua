@@ -3,6 +3,7 @@ local Game = {}
 function Game:draw()
     if not self.world.activeCamera then
         self._ui.backgroundCanvas = nil
+        self._ui.backgroundRenderer = nil
         -- A scene can set `clearColor` (alpha 0 shows the desktop through a transparent window).
         local clear = self.clearColor or { 0.03, 0.04, 0.06, 1 }
         katsa.graphics.clear(clear[1], clear[2], clear[3], clear[4])
@@ -14,6 +15,8 @@ function Game:draw()
     end
     self.renderer:draw(self.world, self.camera, self.time)
     self._ui.backgroundCanvas = self.renderer.canvas
+    -- Shader2D scene hints (depth, velocity, layer passes) read the renderer that drew the 3D.
+    self._ui.backgroundRenderer = self.renderer
     if self.pendingShadowProbe then
         self.pendingShadowProbe = nil
         self.shadowProbe = require('source.engine.graphics.debug.shadowProbe').measure(

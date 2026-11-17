@@ -40,6 +40,10 @@ function Content.new(scene)
             scene.demo.datamosh.enabled = not scene.demo.datamosh.enabled
             return true
         end
+        if key == 'f9' then
+            scene.demo.outline.enabled = not scene.demo.outline.enabled
+            return true
+        end
         if key == 'f8' then
             -- Holds the frame on screen as the datamosh reference (see `pin` in datamosh.glsl).
             local effect = scene.demo.datamosh
