@@ -234,7 +234,8 @@ function ChangeTracking.install(UI)
                     result = true
                 end
                 if
-                    node.visible
+                    node:isA('UINode')
+                    and node.visible ~= false
                     and (
                         (node:isA('Shader2D') and node.enabled ~= false and node.shaderPath ~= '')
                         or (node.material and node.material.animated)
@@ -265,7 +266,7 @@ function ChangeTracking.install(UI)
     function UI:hasAnimatedMaterial()
         local animated = false
         walk(self.children, function(node)
-            if node.visible and node.material and node.material.animated then
+            if node:isA('UINode') and node.visible ~= false and node.material and node.material.animated then
                 animated = true
             end
         end)

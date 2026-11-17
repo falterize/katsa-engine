@@ -1,6 +1,6 @@
 local Node = require('../../nodes')
 
-local Shader = Node.define('Shader2D', 'Frame')
+local Shader = Node.define('Shader2D', 'UINode')
 Shader.propertySchema = {
     shaderPath = {},
     shaderTransparency = { min = 0, max = 1 },

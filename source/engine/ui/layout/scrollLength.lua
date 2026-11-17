@@ -13,7 +13,7 @@ end
 
 local function visit(node, children, state)
     for _, child in ipairs(children) do
-        local visible = child:isA('UINode') and child.visible and not child.modifier
+        local visible = child:isA('UINode') and child.visible ~= false and not child.modifier
         sample(state, child)
         sample(state, visible)
         if visible then

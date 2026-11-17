@@ -27,7 +27,7 @@ local function collect(list, out, tagged, targets)
     for _, node in ipairs(list) do
         if
             node:isA('UINode')
-            and node.visible
+            and node.visible ~= false
             and not node._layoutCollapsed
             and (not node.ui or node.ui:layerVisible(node))
         then
@@ -254,7 +254,7 @@ end
 -- Appends to `out` the nodes below `region` that `effect` does not reach (their subtrees included).
 local function excluded(effect, region, out)
     for _, child in ipairs(region.children) do
-        if child:isA('UINode') and child.visible then
+        if child:isA('UINode') and child.visible ~= false then
             if Tags.applies(effect, child) then
                 excluded(effect, child, out)
             else

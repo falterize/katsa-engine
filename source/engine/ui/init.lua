@@ -123,7 +123,7 @@ function UI:add(node, parent)
     Node.adopt(node, node.className or 'Frame')
     assert(node:isA('UINode'), 'UI:add requires a UINode instance')
     node.children = node.children or {}
-    node.visible, node.enabled = node.visible ~= false, node.enabled ~= false
+    node.enabled = node.enabled ~= false
     require('source.engine.ui.layout.metrics').resolve(
         node.size,
         0,

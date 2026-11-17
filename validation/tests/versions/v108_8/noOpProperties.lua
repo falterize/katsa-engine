@@ -35,12 +35,21 @@ function Module.run(self)
             and Nodes.classes.Constraint2D.propertySchema.enabled ~= nil,
         'Constraint2D and Constraint3D both list enabled'
     )
-    local ui = require('source.engine.ui').new(1280, 720, resources)
+    local ui = require('source.engine.ui').new(1280, 720, resources):bindWorld(world)
     local effect = ui:create('Shader2D', {}, ui.content)
-    local Schema = require('source.engine.editor.inspectors.schema')
+    -- Frame is the drawn UI node (visible, background, interactable); an effect is a bare UINode.
+    local shown = {}
+    for _, row in ipairs(Properties.list(effect)) do
+        shown[row.key] = true
+    end
     self:check(
-        not Schema.visible(effect, 'visible') and Schema.visible(effect, 'enabled'),
-        'Shader2D shows enabled, not visible, like Shader3D'
+        shown.enabled and not shown.visible and effect.visible == nil,
+        'Shader2D has enabled and no visible, like Shader3D'
+    )
+    local frame = ui:create('Frame', {}, ui.content)
+    self:check(
+        frame.visible == true and frame.interactable == true and frame.backgroundColor ~= nil,
+        'Frame keeps visible, interactable and a background'
     )
     ui:release()
     world:release()

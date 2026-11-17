@@ -4,7 +4,7 @@ local ContentBounds = {}
 
 function ContentBounds.measure(list, x, y, bounds)
     for _, node in ipairs(list) do
-        if node.visible then
+        if node:isA('UINode') and node.visible ~= false then
             local nx, ny = node._x or x + node.x, node._y or y + node.y
             local width, height = node._width or node.width, node._height or node.height
             local right, bottom = nx + width, ny + height

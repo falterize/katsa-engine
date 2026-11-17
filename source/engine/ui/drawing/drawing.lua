@@ -121,7 +121,7 @@ function Drawing.install(UI)
     function UI:drawNode(n, x, y)
         if
             not n:isA('UINode')
-            or not n.visible
+            or n.visible == false
             or n._layoutCollapsed
             or not self:layerVisible(n)
         then
