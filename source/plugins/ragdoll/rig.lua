@@ -65,12 +65,6 @@ local function createBody(owner, segment, settings)
         linearDamping = settings.damping,
         angularDamping = settings.damping,
         autoSleep = false,
-        -- The body's first collider; the Collider3D child below is the one the Explorer shows.
-        collider = {
-            shape = 'Capsule',
-            radius = radius,
-            height = math.max(length - 2 * radius, 1e-3),
-        },
     }) -- world space: the owner sits under a (possibly scaled) model
     owner._sceneWorld:create('Collider3D', {
         name = 'Capsule',
