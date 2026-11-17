@@ -51,7 +51,9 @@ function Toolbar.draw(ig, scene, host)
     if visible then
         if ig.button('Menu') then
             click(scene)
-            scene.manager:switch(require('game.runtime.menu').new)
+            host:defer(function()
+                scene.manager:switch(require('game.runtime.menu').new)
+            end)
         end
         ig.sameLine()
         if ig.button('Pause') then

@@ -105,8 +105,22 @@ function Host:frame(dt)
     end)
 end
 
+-- Queues an action that may replace or release the scene (Menu). Running it inside the ImGui frame
+-- would destroy the context between NewFrame and Render, so it waits until the frame was drawn.
+function Host:defer(action)
+    self.deferred = self.deferred or {}
+    self.deferred[#self.deferred + 1] = action
+end
+
 function Host:draw()
     self.backend:draw()
+    local queued = self.deferred
+    if queued then
+        self.deferred = nil
+        for _, action in ipairs(queued) do
+            action()
+        end
+    end
 end
 
 -- Tool hotkeys; F10 shows the Tools menu bar. Returns true when the key was used.

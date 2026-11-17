@@ -23,13 +23,13 @@ local ball = world:create('Body3D', { position = { 0, 20, 0 }, size = { 2, 2, 2 
 world:create('Collider3D', { shape = 'Sphere', radius = 1, size = { 2, 2, 2 } }, ball)
 require('source.engine.composition.mesh').create(world, { kind = 'sphere', size = { 2, 2, 2 } }, ball)   -- the visual rides the body
 
-local zone = world:create('Body3D', {
-    bodyType = 'Static', isTrigger = true, position = { 0, 1, 0 }, size = { 6, 2, 6 },
-})
+local zone = world:create('Body3D', { bodyType = 'Static', position = { 0, 1, 0 } })
+zone:addCollider({ shape = 'Box', size = { 6, 2, 6 }, isTrigger = true })
 zone:connect('triggerEntered', function(other) print('entered', other) end)
 ball.physics:teleport({ 0, 20, 0 })   -- moves the solver body and the visual together
 ball.velocity = { 3, 0, 0 }           -- live solver state as a node property
 ```
+`Body3D` holds the physical data (type, mass, density, friction, restitution, damping, gravity scale); collision settings (`canCollide`, `canQuery`, `isTrigger`, `collisionGroup`) belong to its `Collider3D` children, and the body collides, is queried or triggers when any enabled collider does. A body without a `Collider3D` child is a box of its `size` and logs a warning.
 See `nodeAccess.md` for `node.physics`, `.space`, `.raw`, `.node`, the method list and raycast hits.
 
 ## v44 lifecycle

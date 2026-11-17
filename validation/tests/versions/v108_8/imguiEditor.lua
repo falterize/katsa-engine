@@ -126,6 +126,16 @@ function Module.run(self)
     )
     katsa.mouse.setRelativeMode(false)
 
+    -- Actions that replace the scene (the Menu button) run after the frame was drawn.
+    local ran = 0
+    host:defer(function()
+        ran = ran + 1
+    end)
+    frames(host, 1)
+    local early = ran
+    host:draw()
+    self:check(early == 0 and ran == 1, 'A deferred toolbar action runs after the ImGui frame is drawn')
+
     -- Presentation scenes hide the toolbar.
     scene:emit('immersion', true)
     self:check(host.hidden == true, 'Hiding the navigation hides the toolbar')
