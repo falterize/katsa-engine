@@ -84,16 +84,20 @@ function Material.new(resources, options)
         castsShadow = not modes.shadows_disabled,
     }, Material)
     -- Samplers the renderer feeds: `uniform sampler2D t : hint_screen_texture;` is the opaque
-    -- scene colour, `hint_depth_texture` its depth. Such a material draws in the transparent pass.
+    -- scene colour, `hint_depth_texture` its depth, `hint_velocity_texture` the per-pixel motion. Such a material draws in the transparent pass.
     for compiled, meta in pairs(program and program.uniforms or {}) do
         local hints = meta.info.hints
         if hints.hint_screen_texture then
             self.screenUniform = compiled
         elseif hints.hint_depth_texture then
             self.depthUniform = compiled
+        elseif hints.hint_velocity_texture then
+            self.velocityUniform = compiled
         end
     end
-    self.needsScene = self.screenUniform ~= nil or self.depthUniform ~= nil
+    self.needsScene = self.screenUniform ~= nil
+        or self.depthUniform ~= nil
+        or self.velocityUniform ~= nil
     return self
 end
 
@@ -106,7 +110,8 @@ local function send(self, shader)
         if shader:hasUniform(name) then
             local info = meta and meta[name] and meta[name].info
             if info and info.sampler then
-                if not (info.hints.hint_screen_texture or info.hints.hint_depth_texture) then
+                local hints = info.hints
+                if not (hints.hint_screen_texture or hints.hint_depth_texture or hints.hint_velocity_texture) then
                     local texture = Samplers.resolve(self.resources, value, info)
                     if texture then
                         shader:send(name, texture)

@@ -83,6 +83,32 @@ function Module.run(self)
     ui.backgroundRenderer, ui.backgroundCanvas = nil, nil
     local none = shot():getPixel(WIDTH / 2, HEIGHT / 2)
     self:check(math.abs(none - 0.5) < 0.02, 'Without a 3D render the velocity is zero')
+
+    -- The same hint in a spatial shader: a pane in front of the wall shows the motion behind it.
+    local world3, camera3, renderer3 = build()
+    local pane = world3:create('Mesh3D', {
+        name = 'Pane',
+        position = { 0, 0, 10 },
+        size = { 80, 40, 1 },
+        color = { 1, 1, 1, 1 },
+    })
+    world3:create('Shader3D', { name = 'MotionPane', shaderPath = fixtures .. 'velocity3D.glsl' }, pane)
+    local clock = 0
+    local function pixel()
+        clock = clock + 1
+        camera3:update(WIDTH, HEIGHT)
+        local data = renderer3:draw(world3, camera3, clock, true):newImageData()
+        return (data:getPixel(WIDTH / 2, HEIGHT / 2))
+    end
+    pixel()
+    local steady = pixel()
+    camera3.position = { 2, 0, 0 }
+    local panned = pixel()
+    self:check(math.abs(steady - 0.5) < 0.02, 'A spatial shader reads zero velocity while nothing moves')
+    self:check(
+        math.abs(panned - 0.5) > 0.05,
+        ('A spatial shader reads the camera motion through hint_velocity_texture (%.2f -> %.2f)'):format(steady, panned)
+    )
 end
 
 return Module

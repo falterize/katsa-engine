@@ -76,7 +76,7 @@ parameters: the built-in variables below are in scope.
 * Hints are metadata; they never reach the GPU compiler. The Inspector's uniform editor uses them:
   `hint_range(min, max[, step])` limits numbers, `source_color` marks a colour (channels 0..1 with a
   swatch), `hint_enum("A", "B")` offers an int by name. `hint_screen_texture` and
-  `hint_depth_texture` are described under spatial.
+  `hint_depth_texture` and `hint_velocity_texture` are described under spatial.
 * A `Shader3D`/`Shader2D` node sets values through `uniforms = { name = value }`. A name the file
   does not declare is an error, not a silent no-op. A value may be a number, boolean, a vector table
   or a managed value (animated values are read every frame).
@@ -237,6 +237,12 @@ uniform sampler2D screen_tex : hint_screen_texture;  // the opaque scene colour
 uniform sampler2D depth_tex  : hint_depth_texture;   // the opaque scene depth
 void fragment() { ALBEDO = texture(screen_tex, SCREEN_UV).rgb; }
 ```
+
+`uniform sampler2D motion : hint_velocity_texture;` gives the per-pixel motion of the opaque scene (read it with
+`SCREEN_UV`): `rg` is the current uv minus last frame's uv of the same surface point, `b` is 1 where a moving
+mesh wrote it. A glass or water mesh can smear what is behind it only along real motion:
+`texture(screen_tex, SCREEN_UV - texture(motion, SCREEN_UV).rg * 6.0)`. The pass runs only when a material asks
+for it; the mesh itself (transparent) is not part of the velocity.
 
 `linear_depth(float raw)` turns a depth sample into view distance along the camera axis
 (`linear_depth(texture(depth_tex, SCREEN_UV).r)`); it works for perspective and orthographic cameras.

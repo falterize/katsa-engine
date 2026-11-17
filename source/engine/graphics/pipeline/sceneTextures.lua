@@ -1,7 +1,8 @@
 local SceneDepth = require('../post.sceneDepth')
 
 -- Scene textures for spatial shaders: `hint_screen_texture` (the colour drawn so far) and
--- `hint_depth_texture` (the opaque depth). Both are made on first use in a frame, so a scene
+-- `hint_depth_texture` (the opaque depth) and `hint_velocity_texture` (per-pixel motion, see
+-- velocity.lua). All are made on first use in a frame, so a scene
 -- without such a shader pays nothing; they are taken before the transparent pass, which is where
 -- materials that read them are drawn.
 local SceneTextures = {}
@@ -58,6 +59,13 @@ function SceneTextures.bind(renderer, material, shader)
     end
     if material.depthUniform and shader:hasUniform(material.depthUniform) then
         shader:send(material.depthUniform, SceneTextures.depth(renderer))
+    end
+    if material.velocityUniform and shader:hasUniform(material.velocityUniform) then
+        -- Absolute name: velocity.lua requires this module.
+        shader:send(
+            material.velocityUniform,
+            require('source.engine.graphics.pipeline.velocity').get(renderer)
+        )
     end
 end
 
