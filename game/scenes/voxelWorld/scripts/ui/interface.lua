@@ -115,8 +115,10 @@ local function picker(state, ui)
     hotbar.pickerOpen = false
     hotbar.picker = {
         toggle = function()
+            -- toggleMenu hides an open picker itself; only an opening call shows it.
+            local wasOpen = hotbar.pickerOpen
             input():toggleMenu()
-            if not hotbar.pickerOpen then
+            if not wasOpen then
                 hotbar.pickerOpen, panel.visible = true, true
             end
         end,

@@ -169,7 +169,10 @@ function VoxelWorld:requestMesh(chunk)
     if not request then
         return false
     end
-    chunk.dirty, chunk.meshing = false, true
+    -- `seq` numbers the request: only the newest answer is uploaded, older ones are dropped.
+    chunk.seq = (chunk.seq or 0) + 1
+    local seq = chunk.seq
+    chunk.dirty, chunk.meshing, chunk.queued = false, true, true
     self.meshing = self.meshing + 1
     self.actor:request('mesh', request, function(ok, result)
         self.meshing = self.meshing - 1
@@ -178,7 +181,7 @@ function VoxelWorld:requestMesh(chunk)
             error('Chunk meshing failed: ' .. tostring(result))
         end
         if self.chunks[chunk.key] == chunk then
-            self.pending[#self.pending + 1] = { chunk = chunk, result = result }
+            self.pending[#self.pending + 1] = { chunk = chunk, result = result, seq = seq }
         end
     end)
     return true
@@ -189,6 +192,10 @@ local function upload(self, entry)
     if self.chunks[chunk.key] ~= chunk then
         return
     end
+    if entry.seq ~= chunk.seq then
+        return -- a newer mesh was requested meanwhile
+    end
+    chunk.queued = false
     local flat, count = result.vertices, #result.vertices / 8
     local node
     if count > 0 then
@@ -279,6 +286,7 @@ function VoxelWorld:update(px, pz)
             chunk.ready
             and (chunk.dirty or not chunk.meshed)
             and not chunk.meshing
+            and not chunk.queued
             and entry.d2 <= viewSquared
             and self.meshing < settings.maxMeshing
         then
