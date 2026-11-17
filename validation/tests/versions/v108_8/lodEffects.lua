@@ -1,6 +1,7 @@
 -- LODGroup effects: quality bias, zoom compensation, animation rates, shadow level, cross-fade and
 -- the billboard level.
 local Application = require('game.runtime.application')
+local Plugins = require('source.engine.plugins')
 local Models = require('source.engine.import.models')
 local Profiles = require('source.engine.graphics.quality.profiles')
 local Renderer = require('source.engine.graphics.pipeline.renderer')
@@ -29,6 +30,7 @@ local function checkBillboard(self)
     local settings = require('game.data.settings').create()
     settings.gizmos.enabled, settings.shadows.enabled = false, false
     local world = World3D.new(resources, settings)
+    Plugins.activate(world, { 'lod' })
     local camera = world:addCamera({ position = { 0, 2, -10 }, rotation = { 0, 0, 0 }, drawDistance = 800 })
     world.environment.sky.enabled = false
     local renderer = Renderer.new(resources)
@@ -87,6 +89,7 @@ function Module.run(self)
     local scene = Application.new(self.manager, 'stareShooter')
     scene:load()
     local world = scene.world
+    Plugins.activate(world, { 'lod' })
     local camera = world:create('Camera3D', { position = { 0, 0, -5 } })
     world:setCamera(camera)
 
@@ -108,7 +111,7 @@ function Module.run(self)
     local zoomed = levelAt(group, world, camera, -15)
     group.referenceFov = 0
     local raw = levelAt(group, world, camera, -15)
-    group.referenceFov = require('source.engine.components.rendering.lodSelect').defaultFov
+    group.referenceFov = Plugins.require('lod').Select.defaultFov
     camera.fov = 84
     self:check(
         zoomed == 0 and raw == 1,

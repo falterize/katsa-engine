@@ -66,8 +66,6 @@ function C.initialize(self)
     if self.render.occlusionCulling == nil then
         self.render.occlusionCulling = false
     end
-    -- Multiplies every LODGroup bias: above 1 lowers detail sooner (see quality profiles).
-    self.render.lodBias = self.render.lodBias or 1
     self.render.occlusionMaxOccluders = self.render.occlusionMaxOccluders or 24
     self.render.occlusionTriangleBudget = self.render.occlusionTriangleBudget or 192
     self.render.occlusionMinArea = self.render.occlusionMinArea or 256

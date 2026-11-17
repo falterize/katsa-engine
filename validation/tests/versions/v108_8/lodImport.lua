@@ -1,9 +1,12 @@
 -- LOD import by names: suffixes in any order, level 0 conflicts, settings per group, levels with
 -- different parents, and which levels keep a collider.
 local AutoCollision = require('source.engine.import.autoCollision')
-local AutoLod = require('source.engine.import.autoLod')
+local Plugins = require('source.engine.plugins')
 local ModelNodes = require('source.engine.import.modelNodes')
+local Models = require('source.engine.import.models')
 local World = require('source.engine.world.world')
+
+local AutoLod = Plugins.require('lod').AutoLod
 
 local Module = {}
 
@@ -41,6 +44,7 @@ function Module.run(self)
     )
 
     local world = World.new(self.manager.resources:scope())
+    Plugins.activate(world, { 'lod' })
     world:createPhysics3D({ backend = 'oimo', gravity = { 0, 0, 0 } })
     local holder = world:create('Node3D', { name = 'Holder', position = { 10, 0, 0 } })
     local model, objects = fakeModel(world, {
@@ -74,6 +78,7 @@ function Module.run(self)
     )
 
     local other = World.new(self.manager.resources:scope())
+    Plugins.activate(other, { 'lod' })
     local clash, clashObjects = fakeModel(other, { { name = 'Rock' }, { name = 'Rock-lod0' } })
     local ok, message = pcall(AutoLod.apply, other, clash, clashObjects, {})
     self:check(
@@ -81,11 +86,24 @@ function Module.run(self)
         'A plain name and its -lod0 twin are a clear error that names both nodes'
     )
     local third = World.new(self.manager.resources:scope())
+    Plugins.activate(third, { 'lod' })
     local copies, copyObjects =
         fakeModel(third, { { name = 'Pine' }, { name = 'Pine.001' }, { name = 'Pine-lod1' } })
     self:check(
         pcall(AutoLod.apply, third, copies, copyObjects, {}),
         'Blender copies of one name are not a conflict'
+    )
+
+    -- Without the plugin the engine knows nothing of LOD: no node type, no grouping on import.
+    local bare = World.new(self.manager.resources:scope())
+    local _, root = Models.instantiate(
+        bare,
+        Models.load('validation/tests/fixtures/models/lod.glb', bare.resources),
+        { name = 'Bare' }
+    )
+    self:check(
+        not pcall(bare.create, bare, 'LODGroup', {}) and root:find('RockLOD') == nil,
+        'A scene that does not list the lod plugin has no LODGroup and no grouping on import'
     )
 end
 

@@ -1,4 +1,4 @@
-local ipairs = require('../../math.array').ipairs
+local ipairs = require('source.engine.math.array').ipairs
 
 -- What a LODGroup does to the meshes of one level besides showing or hiding it: fading (the
 -- transparency of every Mesh3D inside the level) and shadows. The authored values are remembered on

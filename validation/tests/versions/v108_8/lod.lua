@@ -1,9 +1,11 @@
 -- LODGroup: the level selection (pure), the node in a world, and the model import of -lodN nodes.
 local Application = require('game.runtime.application')
-local AutoLod = require('source.engine.import.autoLod')
-local LodSelect = require('source.engine.components.rendering.lodSelect')
+local Plugins = require('source.engine.plugins')
 local Models = require('source.engine.import.models')
 local Schema = require('source.engine.editor.inspectors.schema')
+
+local Lod = Plugins.require('lod')
+local AutoLod, LodSelect = Lod.AutoLod, Lod.Select
 
 local Module = {}
 
@@ -55,6 +57,7 @@ function Module.run(self)
     local scene = Application.new(self.manager, 'stareShooter')
     scene:load()
     local world = scene.world
+    Plugins.activate(world, { 'lod' })
     local camera = world:create('Camera3D', { position = { 0, 0, -5 } })
     world:setCamera(camera)
     local group = world:create('LODGroup', { name = 'Tree', distances = { 10, 30, 80 } })

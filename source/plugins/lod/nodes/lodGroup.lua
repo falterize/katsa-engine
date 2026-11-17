@@ -1,11 +1,11 @@
-local Node = require('../core.baseNode')
-local Math = require('../../math.math3d')
-local LodSelect = require('../../components.rendering.lodSelect')
-local LodLevel = require('../../components.rendering.lodLevel')
-local LodBillboard = require('../../components.rendering.lodBillboard')
-local Animator = require('../animation.animator')
+local Math = require('source.engine.math.math3d')
+local Animator = require('source.engine.nodes.animation.animator')
+local LodSelect = require('../select')
+local LodLevel = require('../level')
+local LodBillboard = require('../billboard')
 
--- LODGroup: shows one of its children at a time, by distance or by size on screen.
+-- LODGroup: shows one of its children at a time, by distance or by size on screen. Part of the
+-- `lod` plugin: the scene needs `plugins = { 'lod' }`.
 --
 --   local tree = world:create('LODGroup', { mode = 'Distance', distances = { 25, 60, 150 } })
 --   world:create('Mesh3D', { name = 'High', geometry = high }, tree)   -- level 0
@@ -18,41 +18,108 @@ local Animator = require('../animation.animator')
 -- missing number comes from the size of the group (`radius`, 0 = measured from level 0). Skinned
 -- levels that share one skeleton keep playing the same animation whichever is shown. A model file
 -- whose nodes are named `<name>-lod0`, `<name>-lod1`, `<name>-lod2` is grouped on import
--- (import/autoLod).
---
--- Besides the choice of level:
---   bias            > 1 lowers the detail sooner; the world's quality profile (Low/Medium/High,
---                   Environment.render.lodBias) multiplies it
---   referenceFov    the lens `distances` were set for; a zoomed-in camera counts as nearer (0 = off)
---   fadeTime        seconds the old and the new level cross-fade (0 = switch at once)
---   animationRates  Animator.poseRate per level, e.g. '60, 30, 10' (empty = leave it alone)
---   shadowLevel     the last level that casts shadows (-1 = every level as authored)
---   billboardImage  an image: adds a last level, a flat quad that always faces the camera
-local Class = Node.define('LODGroup', 'Node3D')
-Class.propertySchema = {
-    mode = { options = LodSelect.modes },
-    distances = { visibleWhen = { key = 'mode', equals = 'Distance' } },
-    screenSizes = { visibleWhen = { key = 'mode', equals = 'ScreenSize' } },
-    bias = { min = 0.1, max = 10 },
-    referenceFov = { min = 0, max = 179, visibleWhen = { key = 'mode', equals = 'Distance' } },
-    fadeTime = { min = 0, max = 5 },
-    animationRates = {},
-    shadowLevel = { min = -1, integer = true },
-    billboardImage = {},
-    billboardWidth = { min = 0, visibleWhen = { key = 'billboardImage', present = true } },
-    billboardHeight = { min = 0, visibleWhen = { key = 'billboardImage', present = true } },
-    billboardPivot = {
-        options = { 'Bottom', 'Center' },
-        visibleWhen = { key = 'billboardImage', present = true },
-    },
-    hysteresis = { min = 0, max = 0.5 },
-    radius = { min = 0 },
-    forceLevel = { min = -1 },
-    level = {
-        readOnly = true,
-        get = function(node)
-            return node:getLevel()
-        end,
+-- (plugin autoLod). The world's quality profile multiplies `bias` (Environment.render.lodBias).
+local Definition = {
+    base = 'Node3D',
+    properties = {
+        mode = {
+            default = 'Distance',
+            options = LodSelect.modes,
+            hint = 'Distance switches by camera distance in world units; ScreenSize by how tall '
+                .. 'the group looks (fraction of the screen height).',
+        },
+        distances = {
+            default = '',
+            hint = 'Where each next level starts, comma separated (for example 25, 60, 150): '
+                .. 'level 1 from 25, level 2 from 60, hidden beyond 150. Empty or 0 entries use '
+                .. 'defaults from the group radius.',
+            visibleWhen = { key = 'mode', equals = 'Distance' },
+        },
+        screenSizes = {
+            default = '',
+            hint = 'Screen height fraction below which each next level starts, comma separated, '
+                .. 'falling (for example 0.3, 0.1, 0.02); one more entry hides the group below it. '
+                .. 'Empty or 0 entries use defaults.',
+            visibleWhen = { key = 'mode', equals = 'ScreenSize' },
+        },
+        bias = {
+            default = 1,
+            min = 0.1,
+            max = 10,
+            hint = 'Above 1 lowers the detail sooner (weak devices), below 1 keeps it longer.',
+        },
+        referenceFov = {
+            default = LodSelect.defaultFov,
+            min = 0,
+            max = 179,
+            hint = 'The field of view the distances were set for. A zoomed-in camera counts as '
+                .. 'nearer, so zoom keeps its detail. 0 turns this off.',
+            visibleWhen = { key = 'mode', equals = 'Distance' },
+        },
+        hysteresis = {
+            default = 0.1,
+            min = 0,
+            max = 0.5,
+            hint = 'A finer level returns only after passing its switch point by this fraction, '
+                .. 'so a group on the border does not flicker.',
+        },
+        radius = {
+            default = 0,
+            min = 0,
+            hint = 'Size of the group for the defaults and for ScreenSize; 0 measures level 0.',
+        },
+        forceLevel = {
+            default = -1,
+            min = -1,
+            hint = 'Pins one level (0 = most detailed); -1 chooses by the camera.',
+        },
+        fadeTime = {
+            default = 0,
+            min = 0,
+            max = 5,
+            hint = 'Seconds the old and the new level cross-fade; 0 switches at once.',
+        },
+        animationRates = {
+            default = '',
+            hint = 'Animator pose rate (per second) for each level, comma separated (for example '
+                .. '60, 30, 10). Empty leaves the animation rate alone.',
+        },
+        shadowLevel = {
+            default = -1,
+            min = -1,
+            integer = true,
+            hint = 'The last level that casts shadows; -1 keeps every level as authored.',
+        },
+        billboardImage = {
+            default = '',
+            hint = 'An image (with transparency) that becomes a last, flat level which turns to '
+                .. 'face the camera.',
+        },
+        billboardWidth = {
+            default = 0,
+            min = 0,
+            hint = 'Billboard width in world units; 0 uses the group radius.',
+            visibleWhen = { key = 'billboardImage', present = true },
+        },
+        billboardHeight = {
+            default = 0,
+            min = 0,
+            hint = 'Billboard height in world units; 0 uses the group radius.',
+            visibleWhen = { key = 'billboardImage', present = true },
+        },
+        billboardPivot = {
+            default = 'Bottom',
+            options = { 'Bottom', 'Center' },
+            hint = 'Bottom puts the group position at the lower edge (trees), Center in the middle.',
+            visibleWhen = { key = 'billboardImage', present = true },
+        },
+        level = {
+            readOnly = true,
+            hint = 'The level shown now; -1 when the group is hidden.',
+            get = function(node)
+                return node:getLevel()
+            end,
+        },
     },
 }
 
@@ -67,8 +134,7 @@ local function distance(a, b)
     return math.sqrt(Math.distanceSquared(a, b))
 end
 
-function Class.initialize(self)
-    self.mode = self.mode or 'Distance'
+function Definition.initialize(self)
     assert(
         self.mode == 'Distance' or self.mode == 'ScreenSize',
         'LODGroup.mode must be Distance or ScreenSize'
@@ -76,29 +142,11 @@ function Class.initialize(self)
     -- Lists are kept as text, as the inspector edits them; tables are accepted and converted.
     self.distances = LodSelect.format(LodSelect.parse(self.distances, 'distances'))
     self.screenSizes = LodSelect.format(LodSelect.parse(self.screenSizes, 'screenSizes'))
-    self.bias = self.bias or 1
-    -- The default lens of Camera3D, so a camera that is not zoomed changes nothing.
-    self.referenceFov = self.referenceFov or LodSelect.defaultFov
-    self.fadeTime = self.fadeTime or 0
     self.animationRates = LodSelect.format(LodSelect.parse(self.animationRates, 'animationRates'))
-    self.shadowLevel = self.shadowLevel or -1
-    self.billboardImage = self.billboardImage or ''
-    self.billboardWidth = self.billboardWidth or 0
-    self.billboardHeight = self.billboardHeight or 0
-    self.billboardPivot = self.billboardPivot or 'Bottom'
-    self.hysteresis = self.hysteresis or 0.1
-    self.radius = self.radius or 0
-    self.forceLevel = self.forceLevel or -1
-end
-
-function Class.mount(world, properties, parent)
-    local node = Node.new('LODGroup', properties, parent)
-    node:setProcess(true)
-    return node
 end
 
 -- The level shown now: 0 is the most detailed, -1 means the whole group is hidden.
-function Class:getLevel()
+function Definition:getLevel()
     return self._level or 0
 end
 
@@ -332,7 +380,7 @@ local function updateBillboard(self, camera)
     end
 end
 
-function Class:update(dt)
+function Definition:update(dt)
     local camera = self._sceneWorld and self._sceneWorld.activeCamera
     if self.billboardImage ~= self._billboardImage then
         updateBillboard(self, camera)
@@ -363,4 +411,4 @@ function Class:update(dt)
     end
 end
 
-return Class
+return Definition

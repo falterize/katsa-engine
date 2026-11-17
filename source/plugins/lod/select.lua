@@ -1,4 +1,4 @@
-local V = require('../../core.validate')
+local V = require('source.engine.core.validate')
 
 -- Level selection of a LODGroup: pure functions, no nodes, no camera objects of their own.
 -- A group has `levels` children (0 = most detailed). Each switch point is a threshold:

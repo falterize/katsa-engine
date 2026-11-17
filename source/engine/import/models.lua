@@ -266,7 +266,7 @@ function Models.instantiate(world, model, settings)
         objects,
         settings
     )
-    model.lodGroups = require('source.engine.import.autoLod').apply(world, model, objects, settings)
+    require('source.engine.plugins').afterImport(world, model, objects, settings)
     -- A packed scene (scenes/packed) re-imports the model instead of copying these nodes: they carry
     -- skins and animation state that properties cannot describe.
     root._modelSource = { path = model.source, settings = importSettings(settings) }

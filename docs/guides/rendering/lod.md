@@ -1,6 +1,9 @@
 # Level of detail: LODGroup
 
-`LODGroup` (`source/engine/nodes/spatial/lodGroup.lua`) is a `Node3D` that shows **one of its children at
+Level of detail is the `lod` plugin (`source/plugins/lod`). Enable it in the scene settings with
+`plugins = { 'lod' }`; without it there is no `LODGroup` node and model files are not grouped.
+
+`LODGroup` (`source/plugins/lod/nodes/lodGroup.lua`) is a `Node3D` that shows **one of its children at
 a time**. The children are the levels, in order: the first is the most detailed (level 0), the next ones
 are coarser. The group sets the `visible` of its children, so give it nothing else to show or hide. Hidden
 levels are not drawn and do not cast shadows.
@@ -61,10 +64,11 @@ The group looks at the world's current camera once per update.
 
 ## Weak devices: the quality profile
 
-`Environment.render.lodBias` multiplies the `bias` of **every** group in the world. The quality profiles
-set it (`Low` 1.5, `Medium` 1.2, `High` 1; `Environment:applyQualityProfile`), so a phone drops detail
-sooner than a desktop without touching any scene. Nothing is removed: only the switch points move. Set it
-by hand in the inspector (Environment, render) when a scene needs its own value.
+`Environment.render.lodBias` multiplies the `bias` of **every** group in the world. The plugin adds it to
+the quality profiles through its manifest (`Low` 1.5, `Medium` 1.2, `High` 1; applied by
+`Environment:applyQualityProfile`), so a phone drops detail sooner than a desktop without touching any
+scene. Nothing is removed: only the switch points move. A scene can set `world.lighting.render.lodBias`
+itself after applying a profile.
 
 ## Zoom and field of view
 
@@ -140,10 +144,10 @@ shape, add a hidden `Tree-colonly` mesh: it becomes the collider (attached to le
 level. A name without a LOD suffix is its own mesh, so `Tree` and `Tree-col` stay two separate meshes; to
 make `Tree-col` the level 0 of a group, write `Tree-lod0-col`.
 
-The created groups are listed in `model.lodGroups`. The importer is `source/engine/import/autoLod.lua`
-(names are read by `import/modelNodes.lua`); the choice of the level is plain functions in
-`components/rendering/lodSelect.lua`; fading, shadows and the billboard are `lodLevel.lua` and
-`lodBillboard.lua` beside it.
+The created groups are listed in `model.lodGroups`. The importer is `source/plugins/lod/autoLod.lua`
+(names are read by the engine's `import/modelNodes.lua`, shared with `autoCollision`); the choice of the
+level is plain functions in `select.lua`; fading, shadows and the billboard are `level.lua` and
+`billboard.lua` beside it.
 
 ## Characters and animation
 

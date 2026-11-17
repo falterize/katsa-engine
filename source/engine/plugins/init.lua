@@ -74,6 +74,11 @@ end
 --       (the module returns the definition table).
 --   extend = { Body3D = 'source.plugins.pathfinding.extensions.body3D' }
 --       Settings and methods added to existing node classes (see nodes/core/extensions.lua).
+--   importers = { lodGroups = './autoLod' }
+--       Modules run after every model instantiation in worlds that activated the plugin. A module
+--       returns `apply(world, model, objects, settings)`; its result is stored as `model.<key>`.
+--   quality = { Low = { lodBias = 1.5 }, High = { lodBias = 1 } }
+--       Extra Environment.render values a quality profile (Low / Medium / High) sets.
 --   debug = { key = 'pathfinding', title = 'Pathfinding', defaults = { enabled = false, ... },
 --             draw = 'source.plugins.pathfinding.debug' }
 --       (or a list of such tables for several independent sections)
@@ -91,7 +96,7 @@ local function load(name, path)
 end
 
 function Plugins.activate(world, names)
-    world.plugins = world.plugins or { names = {}, debug = {} }
+    world.plugins = world.plugins or { names = {}, debug = {}, importers = {}, quality = {} }
     local state = world.plugins
     rawset(world.environment, '_pluginDebug', state.debug) -- read by the editor tree
     for _, name in ipairs(names or {}) do
@@ -106,6 +111,16 @@ function Plugins.activate(world, names)
                 local spec = load(name, modulePath)
                 spec.plugin = name
                 require('source.engine.nodes.core.extensions').add(className, spec)
+            end
+            for key, modulePath in pairs(info.importers or {}) do
+                state.importers[#state.importers + 1] = { key = key, module = load(name, modulePath) }
+            end
+            for profile, values in pairs(info.quality or {}) do
+                local merged = state.quality[profile] or {}
+                state.quality[profile] = merged
+                for key, value in pairs(values) do
+                    merged[key] = value
+                end
             end
             local sections = info.debug and (info.debug.key and { info.debug } or info.debug) or {}
             for _, debug in ipairs(sections) do
@@ -137,6 +152,18 @@ function Plugins.activate(world, names)
             end
         end
     end
+end
+
+-- Runs the importers of the plugins active in `world` on a model that was just instantiated.
+function Plugins.afterImport(world, model, objects, settings)
+    for _, importer in ipairs(world.plugins and world.plugins.importers or {}) do
+        model[importer.key] = importer.module.apply(world, model, objects, settings)
+    end
+end
+
+-- Extra Environment.render values the active plugins give a quality profile (or nil).
+function Plugins.qualityValues(world, profile)
+    return world and world.plugins and world.plugins.quality[profile]
 end
 
 -- Debug sections of the active plugins: { key, title, settings } in activation order.

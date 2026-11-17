@@ -1,6 +1,6 @@
-local ipairs = require('../math.array').ipairs
-local pairs = require('../math.array').pairs
-local ModelNodes = require('./modelNodes')
+local ipairs = require('source.engine.math.array').ipairs
+local pairs = require('source.engine.math.array').pairs
+local ModelNodes = require('source.engine.import.modelNodes')
 
 -- Level of detail from node names inside a model file (.glb, .gltf, .obj, .blend):
 --   <name>-lod0     the most detailed level (a plain <name> is level 0 too, but not both)

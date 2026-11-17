@@ -1,6 +1,6 @@
 local ipairs = require('../math.array').ipairs
 
--- The named nodes of an imported model, as the name-based importers (autoCollision, autoLod) read them.
+-- The named nodes of an imported model, as the name-based importers (autoCollision and the lod plugin's autoLod) read them.
 local ModelNodes = {}
 
 -- Blender's ".001" duplicate suffix is ignored.
@@ -9,7 +9,7 @@ function ModelNodes.stripCopy(name)
 end
 
 -- The name suffixes the importers read, in any order: `-colonly` / `-col` (collision, see
--- autoCollision) and `-lodN` (level of detail, see autoLod). `Tree-lod1-col` and `Tree-col-lod1`
+-- autoCollision) and `-lodN` (level of detail, see the lod plugin). `Tree-lod1-col` and `Tree-col-lod1`
 -- both mean level 1 of `Tree` with a collider. Each kind counts once; matching is case-insensitive.
 -- Returns { base = string, level = number|nil, collision = 'visible'|'only'|nil }, or nil when the
 -- name has no suffix.

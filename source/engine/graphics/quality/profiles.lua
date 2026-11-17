@@ -1,6 +1,7 @@
 -- Quality profiles trade GPU/CPU cost for fidelity without removing any feature:
--- a profile only changes numeric settings of Environment.render (including lodBias, the LODGroup
--- detail multiplier), Environment.shadows and the sample counts of the post-processing effects.
+-- a profile only changes numeric settings of Environment.render, Environment.shadows and the
+-- sample counts of the post-processing effects. Active plugins may add Environment.render values
+-- per profile (manifest `quality`).
 local Profiles = {}
 
 Profiles.names = { 'Low', 'Medium', 'High' }
@@ -8,7 +9,7 @@ Profiles.names = { 'Low', 'Medium', 'High' }
 -- resolutionCap limits (never raises) the shadow map size a scene authored.
 local definitions = {
     Low = {
-        render = { renderDensity = 0.75, msaa = 0, lodBias = 1.5 },
+        render = { renderDensity = 0.75, msaa = 0 },
         post = { ssaoQuality = 'Low', dofQuality = 'Low', glowLevels = 4 },
         shadows = {
             resolutionCap = 512,
@@ -19,7 +20,7 @@ local definitions = {
         },
     },
     Medium = {
-        render = { renderDensity = 1, msaa = 0, lodBias = 1.2 },
+        render = { renderDensity = 1, msaa = 0 },
         post = { ssaoQuality = 'Medium', dofQuality = 'Medium', glowLevels = 5 },
         shadows = {
             resolutionCap = 1024,
@@ -30,7 +31,7 @@ local definitions = {
         },
     },
     High = {
-        render = { renderDensity = 1, msaa = 2, lodBias = 1 },
+        render = { renderDensity = 1, msaa = 2 },
         post = { ssaoQuality = 'High', dofQuality = 'High', glowLevels = 6 },
         shadows = {
             resolutionCap = 4096,
@@ -55,6 +56,10 @@ function Profiles.apply(environment, name)
     local profile = definitions[name]
     assert(profile, 'Unknown quality profile: ' .. tostring(name))
     for key, value in pairs(profile.render) do
+        environment.render[key] = value
+    end
+    local extra = require('source.engine.plugins').qualityValues(environment._settingsOwner, name)
+    for key, value in pairs(extra or {}) do
         environment.render[key] = value
     end
     -- Post-processing keeps every effect and only lowers its sample counts.

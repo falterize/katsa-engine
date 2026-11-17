@@ -31,6 +31,7 @@ project: they are packed into `.katsa` archives and fused executables with every
 | `pathfinding` | A* on grids, graphs and multi-floor maps, a baked NavMesh with obstacles and crowds, the `NavMap3D`, `NavAgent3D` and `NavObstacle3D` nodes, a debug view |
 | `uiStyler` | UI style sheets and `assets/styles` files, themes switchable at runtime (`docs/guides/ui/uiStyler.md`) |
 | `ragdoll` | `Ragdoll3D` node: physical capsule bodies and joints for a humanoid model (`docs/guides/animation/ragdoll.md`) |
+| `lod` | `LODGroup` node (level of detail by distance or screen size, fade, billboard level), grouping of `-lodN` model nodes, quality-profile bias (`docs/guides/rendering/lod.md`) |
 | `ik` | `InverseKinematics3D` node with TwoBone, CCD, FABRIK, Jacobian, Spline, LookAt and FK types (`docs/guides/animation/ik.md`) |
 | `imgui` | Dear ImGui through the LuaJIT FFI: the `ImGuiLayer` node and the engine's Stats and Scene tools windows; a template for binding native libraries (`docs/guides/development/imgui.md`) |
 
@@ -62,7 +63,13 @@ return {
     -- 2. Settings and methods added to EXISTING node classes.
     extend = { Body3D = './extensions.body3D' },
 
-    -- 3. Debug sections: Environment.debug.<key>, drawn after the 3D scene when enabled.
+    -- 3. Importers: run after every model instantiation; the result becomes `model.<key>`.
+    importers = { lodGroups = './autoLod' },    -- module with apply(world, model, objects, settings)
+
+    -- 4. Extra Environment.render values per quality profile (Low / Medium / High).
+    quality = { Low = { lodBias = 1.5 }, High = { lodBias = 1 } },
+
+    -- 5. Debug sections: Environment.debug.<key>, drawn after the 3D scene when enabled.
     --    One table (its defaults are the section's properties), or a list of tables.
     debug = { key = 'pathfinding', title = 'Pathfinding',
               defaults = { enabled = false, drawCells = true, drawLinks = true,
