@@ -375,6 +375,11 @@ function Schema.visible(target, key)
         if target:isA('Collider2D') and ({ visible = true, transparency = true })[key] then
             return false
         end
+        -- A Shader2D is switched with `enabled`, like Shader3D (the effect is not a picture, so
+        -- hiding it would be a second switch for the same thing).
+        if target:isA('Shader2D') and key == 'visible' then
+            return false
+        end
     end
     local rule = Schema.descriptor(target, key).visibleWhen
     if key:match('^follow') and key ~= 'followMode' or key == 'pitchMin' or key == 'pitchMax' then

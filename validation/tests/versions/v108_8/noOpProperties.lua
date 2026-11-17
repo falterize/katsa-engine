@@ -35,6 +35,14 @@ function Module.run(self)
             and Nodes.classes.Constraint2D.propertySchema.enabled ~= nil,
         'Constraint2D and Constraint3D both list enabled'
     )
+    local ui = require('source.engine.ui').new(1280, 720, resources)
+    local effect = ui:create('Shader2D', {}, ui.content)
+    local Schema = require('source.engine.editor.inspectors.schema')
+    self:check(
+        not Schema.visible(effect, 'visible') and Schema.visible(effect, 'enabled'),
+        'Shader2D shows enabled, not visible, like Shader3D'
+    )
+    ui:release()
     world:release()
 end
 
