@@ -22,6 +22,11 @@ function Module.run(self)
         'The prefab player stays upright after an angular kick'
     )
 
+    scene.pauseMenu:open()
+    self:check(scene:consume('capturesInput'), 'An open pause menu takes the gameplay input')
+    scene.pauseMenu:close()
+    self:check(not scene:consume('capturesInput'), 'A closed pause menu gives it back')
+
     local points = { { 0, 0, 0 }, { 1, 0, 0 }, { 0, 0, 1 }, { 1, 0, 1 } }
     local descriptor = PointCollider.build({
         points = points,

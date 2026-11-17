@@ -11,8 +11,22 @@ PauseMenu.__index = PauseMenu
 
 function PauseMenu.attach(scene, keepTime)
     local menu = setmetatable({ scene = scene, keepTime = keepTime == true }, PauseMenu)
+    -- A scene may attach again (keepTime): the new menu replaces the default one as a module.
+    local list = scene.moduleList or {}
+    scene.moduleList = list
+    for index = #list, 1, -1 do
+        if list[index] == scene.pauseMenu then
+            table.remove(list, index)
+        end
+    end
+    list[#list + 1] = menu
     scene.pauseMenu = menu
     return menu
+end
+
+-- Gameplay input (mouse capture, movement) pauses while the menu is open, even with time running.
+function PauseMenu:capturesInput()
+    return self:isOpen()
 end
 
 function PauseMenu:isOpen()
