@@ -32,6 +32,8 @@ local function groundCollider()
         points = vertices,
         indices = indices,
         collisionLevel = 'Trimesh',
+        -- The height field is exact on purpose: raise the default limit to its triangle count.
+        maxTriangles = #indices / 3,
     }
 end
 

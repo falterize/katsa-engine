@@ -129,6 +129,7 @@ local groups = {
         'gravityScale',
         'linearDamping',
         'angularDamping',
+        'rotationFactor',
         'velocity',
         'angularVelocity',
         'isSleeping',

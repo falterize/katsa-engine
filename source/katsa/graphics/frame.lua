@@ -41,6 +41,16 @@ local function applyViewport()
     gl.glViewport(0, 0, target.pw, target.ph)
 end
 
+-- The viewport is normally re-applied after a present, so a window that changed size between two
+-- frames (fullscreen, maximise) would draw its next frame into the old rectangle, and a scene that
+-- reuses its last frame would keep that crop. Called when the window reports a new size.
+function G.refreshViewport()
+    if State.ready and not S.canvases then
+        applyViewport()
+        RenderState.applyScissor()
+    end
+end
+
 function G.setup(platform)
     if State.ready then
         applyViewport()

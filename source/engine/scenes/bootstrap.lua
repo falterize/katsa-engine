@@ -150,6 +150,7 @@ function Bootstrap.install(project, options)
 
     function katsa.resize(w, h)
         Runtime.windowFrameDirty = true
+        katsa.graphics.refreshViewport()
         for _, scene in ipairs(manager.stack) do
             if scene.input then
                 scene.input:reset()

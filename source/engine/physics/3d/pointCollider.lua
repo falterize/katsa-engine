@@ -93,6 +93,26 @@ function PointCollider.build(node, body)
     local points = PointCollider.copy(node.points or node.vertices)
     local kind = Level.kind(node.collisionLevel)
     assert(kind ~= 'trimesh' or body.bodyType == 'Static', 'Trimesh points require a Static Body3D')
+    -- An indexed Trimesh is already a mesh: hand its points and indices to the body as they are.
+    -- (Unrolling it into a triangle soup and welding it again costs minutes on a height field.)
+    if kind == 'trimesh' and node.indices then
+        assert(#node.indices % 3 == 0, 'Triangle indices require triples')
+        assert(#node.indices / 3 <= node.maxTriangles, 'Collider geometry exceeds MaxTriangles; select a simpler source or raise the explicit limit')
+        local indices = {}
+        for i, index in Array.ipairs(node.indices) do
+            assert(
+                type(index) == 'number' and index % 1 == 0 and points[index],
+                'Triangle index is outside the point list'
+            )
+            indices[i] = index
+        end
+        return {
+            shape = 'Compound',
+            children = { { shape = 'Mesh', vertices = points, indices = indices } },
+            position = { Array.unpack(node.position) },
+            rotation = { Array.unpack(node.rotation) },
+        }
+    end
     local triangles = points
     -- Trimesh and Multiple Convex read the surface, so they need triangles: indexed, or a soup.
     -- The other levels only need the hull of the points.

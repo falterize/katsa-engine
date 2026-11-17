@@ -4,6 +4,10 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- Fixed: switching to fullscreen (or any window resize) cropped the picture and left the UI at the old size in scenes that reuse their last frame, such as the menu. The GL viewport was only re-applied after a present, so the first frame at the new size was drawn into the old rectangle and then reused. `katsa.resize` now calls `katsa.graphics.refreshViewport()`. Test: `v108_8/windowResize.lua`. Windows-only behaviour still needs the owner's confirmation.
+- Fixed: `multiplayerCars` had no ground collision. The 7200-triangle terrain exceeded the default `maxTriangles` of the Points collider, and indexed Trimesh points were unrolled into a soup and welded again (minutes of load time). The scene sets `maxTriangles` and an indexed Trimesh now goes to the body as a mesh unchanged. `NavMap3D` also reads `navFloor`/`navWalkable` through the Collider3D's body again, so the car park deck is a second floor.
+- Fixed: nodes cloned from a prefab lost `Body3D.rotationFactor` (it was missing from the inspector property list the clone copies), so the `replicationLab` player could be spun over by a collision and walk upside down. Test: `v108_8/bodyFixes.lua`.
+
 - `voxelWorld` meshing: greedy meshing (about a third fewer rectangles on rolling terrain, far more on flat ground), per-corner ambient occlusion, 16-high mesh sections culled separately and pixelated block textures. The occlusion shade and the tile repeat travel in the vertex normal's length and the packed UVs and are decoded by `assets/shaders/voxel.glsl`.
 
 - Fixed: the `viewLayers` pass (stareShooter outline) drifted away from the object while a following camera moved, because the pass recomputed the camera matrices the main pass had already used; it now shares them unchanged.

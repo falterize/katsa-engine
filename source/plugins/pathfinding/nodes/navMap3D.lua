@@ -79,14 +79,23 @@ function NavMap3D:getClearance()
 end
 
 -- Colliders can opt out with `navWalkable`; `navFloor` picks the floor a collider is ground of.
+-- Raycast filters may receive the Collider3D; the nav settings live on its Body3D.
+local function navNode(body)
+    local node = body.node or body.object or body
+    if node.className == 'Collider3D' and node.parent then
+        return node.parent
+    end
+    return node
+end
+
 local function blocksHeadroom(body)
-    local node = body.object or body
+    local node = navNode(body)
     return node.navWalkable ~= false
 end
 
 local function groundOf(floor)
     return function(body)
-        local node = body.object or body
+        local node = navNode(body)
         if node.navWalkable == false then
             return false
         end
