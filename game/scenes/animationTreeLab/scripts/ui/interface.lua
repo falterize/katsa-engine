@@ -81,6 +81,7 @@ function Interface.create(state)
             status.text = text
         end
     end
+    require('source.engine.ui.widgets.collapsible').adopt(scene, 'Animation tree', panel)
 end
 
 return Interface

@@ -47,6 +47,7 @@ function Interface.create(self)
             self.wave = not self.wave
         end)
     end
+    require('source.engine.ui.widgets.collapsible').adopt(self.scene, 'Shape keys', card)
 end
 
 return Interface

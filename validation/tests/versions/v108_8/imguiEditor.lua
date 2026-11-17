@@ -79,6 +79,34 @@ function Module.run(self)
     scene:setNavigationVisible(false)
     self:check(scene.navigationVisible == false, 'Hiding the navigation hides the toolbar')
     scene:release()
+
+    -- A scene's collapsible control panel becomes an ImGui window that fires the same handlers.
+    local physical = Application.new(self.manager, 'physics2D')
+    physical:load()
+    local entry = physical.controlPanels and physical.controlPanels[1]
+    self:check(
+        entry ~= nil and entry.adopted and not entry.panel.visible and not entry.toggle.visible,
+        'A collapsible scene panel is adopted by ImGui and the legacy panel and toggle are hidden'
+    )
+    local button
+    for _, child in ipairs(entry.panel.children) do
+        if child:isA('Button') then
+            button = child
+            break
+        end
+    end
+    local presses = 0
+    button:connect('press', function()
+        presses = presses + 1
+    end)
+    frames(physical.imgui, 3)
+    button:emit('press', button, 0, 0, 'imgui')
+    self:check(presses == 1 and physical.imgui.backend.renderer ~= nil, 'The mirrored panel draws and its buttons keep their handlers')
+    -- Tab must not start ImGui keyboard navigation, or the game would lose its keys.
+    physical.imgui:keypressed('tab')
+    frames(physical.imgui, 2)
+    self:check(not physical.imgui:keypressed('w'), 'A Tab press does not make ImGui swallow later game keys')
+    physical:release()
 end
 
 return Module

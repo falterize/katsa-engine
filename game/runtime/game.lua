@@ -147,6 +147,10 @@ function Game:load()
     if self.settings.presentation and self.settings.presentation.navigation == false then
         self.workspace.tab.visible = false
     end
+    -- The ImGui host may have been attached before these legacy nodes existed.
+    if self.imgui then
+        self:syncLegacyNavigation()
+    end
     self:resize(katsa.graphics.getDimensions())
     if self.sampleType then
         require('game.scenes.nodeCatalog.scripts.catalog.samples').prepare(
@@ -260,7 +264,7 @@ function Game:keypressed(key)
         return
     end
     if key == 'f2' then
-        self.workspace:toggle()
+        self:toggleEditor()
     elseif key == 'escape' then
         self.pauseMenu:toggle()
     elseif key == 'f3' then

@@ -46,6 +46,7 @@ function Interface.create(state)
             .. 'Orange arcs = jump links, magenta = the ladder.',
         fontSize = 13,
     }, panel)
+    require('source.engine.ui.widgets.collapsible').adopt(scene, 'Navigation', panel)
 end
 
 return Interface

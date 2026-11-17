@@ -2,6 +2,7 @@ local Interface = {}
 
 function Interface.create(state)
     local ui = state.scene.root:find('World3D/World2D')
+    local controls = {}
     local label = ui:text({
         position = { 0, 20, 0, 20 },
         size = { 1, -40, 0, 44 },
@@ -15,6 +16,7 @@ function Interface.create(state)
             text = 'Save score +1',
             fontSize = 18,
         }, ui.content)
+        controls[#controls + 1] = node
         node:connect('press', function()
             if not state.saved then
                 label.text = tostring(state.saveError)
@@ -35,6 +37,7 @@ function Interface.create(state)
             text = 'Toggle rotation',
             fontSize = 18,
         }, ui.content)
+        controls[#controls + 1] = node
         node:connect('press', function()
             local preferences = state.preferences
             preferences.rotationEnabled = not preferences.rotationEnabled
@@ -42,6 +45,7 @@ function Interface.create(state)
             label.text = ok and 'Rotation preference saved' or tostring(failure)
         end)
     end
+    require('source.engine.ui.widgets.collapsible').adopt(state.scene, 'Starter game', controls)
 end
 
 return Interface

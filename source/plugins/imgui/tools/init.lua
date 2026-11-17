@@ -2,7 +2,6 @@
 -- state, host) }; `new` returns the tool's private state.
 return {
     require('./stats'),
-    require('./sceneTools'),
     require('./debug'),
     require('./profiler'),
     require('./console'),

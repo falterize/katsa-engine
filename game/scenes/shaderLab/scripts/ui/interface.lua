@@ -255,8 +255,7 @@ function Interface.create(self)
         require('source.engine.editor.panels.shaderLayers').open(scene.workspace)
     end)
     button('Inspect', 'Inspect processed world', function()
-        scene.workspace:toggle(true)
-        scene.workspace:select(self.preview)
+        scene:inspect(self.preview)
     end)
     button('Pause', 'Pause / resume both views', function()
         local scale = self.preview.timeScale == 0 and 1 or 0
@@ -264,6 +263,11 @@ function Interface.create(self)
         self.original.timeScale = scale
     end)
     self:sync()
+    -- With ImGui the control list is a window and the comparison takes the whole card.
+    require('source.engine.ui.widgets.collapsible').adopt(scene, 'Shader controls', self.controls, function()
+        self.views.position = { 0, 8, 0, 8 }
+        self.views.size = { 1, -16, 1, -16 }
+    end)
 end
 
 return Interface

@@ -3,13 +3,13 @@
 `imgui` puts [Dear ImGui](https://github.com/ocornut/imgui) (docking branch, 1.93) into scenes. It
 is a plugin that stays inside `source/plugins/imgui`: the sources, the binaries, the LuaJIT FFI
 binding and the katsa backend live there, and the core never requires it. The engine's own tools
-(Stats, Scene tools, Debug, Profiler, Console) are ImGui windows when the library loads; without it
+(Stats, Debug, Profiler, Console) are ImGui windows when the library loads; without it
 the old panels (Stats, Tools, the Debug menu, the console) remain. Only the Workspace and the
 Inspector stay on the engine's own UI.
 
 ## Using it
 
-Hotkeys in every scene: **F1** Console, **F3** Stats, **F4** Debug, **F9** Scene tools, **F10** a
+Hotkeys in every scene: **F1** Console, **F3** Stats, **F4** Debug, **F10** a
 *Tools* menu bar (it also opens the Profiler). **Debug** has a tab per area (2D Physics, 3D Physics,
 Rendering, Directions, Diagnostics) with the switches of the old Debug menu; **Profiler** shows the
 CPU stage timings, frame graph, recording/export and the error journal; **Console** tails
@@ -61,7 +61,7 @@ Scenes opt in with `plugins = { 'imgui' }`, or take the host that `Game` attache
 A tool is a file in `source/plugins/imgui/tools/` listed in `tools/init.lua`:
 `{ id, title, key?, new(), draw(ig, scene, state, host) }`. `new` returns the tool's private
 state, `key` is the hotkey, `draw` runs every frame while the tool is open (`host:close(id)` closes
-it). `stats.lua` and `sceneTools.lua` are the references. Tools read the scene through its public
+it). `stats.lua` and `debug.lua` are the references. Tools read the scene through its public
 methods (`toggleMusic`, `playSound`, `toggleBillboards`, ...) and fields (`scene.manager.time`,
 `scene.camera`); the legacy buttons and the windows each keep their own few lines for the rest.
 
@@ -136,4 +136,8 @@ The plugin is the pattern for any C library:
 
 ## Toolbar, Explorer and Properties
 
-The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Scene tools, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after `scene:setNavigationVisible(false)`. Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, bindings and gradient fields, and the Groups / Shaders buttons, open the engine's own dialogs for now.
+The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Debug, Explorer, Properties). It is hidden when `presentation.navigation = false` or after `scene:setNavigationVisible(false)`. Explorer and Properties are ordinary movable windows: drag, resize and close them independently. Selecting a row in the Explorer sets `host.selection`; Properties edits that node through `Properties.set`, so ranges and read-only reasons match the legacy panel. Hover a name for its hint. Text fields apply when they lose focus; number fields can be dragged or typed into with Ctrl+click. Sequence, bindings and gradient fields, and the Groups / Shaders buttons, open the engine's own dialogs for now.
+
+## Scene control panels
+
+Panels registered through `ui/widgets/collapsible` (or `Collapsible.adopt`) show up as ImGui windows when the library loads; the engine panel stays hidden and keeps the behaviour, the window only mirrors its buttons, sliders, text boxes and labels in order. Open the editor from a scene with `scene:inspect(node)`. A new scene panel needs no ImGui code: build the panel and call `Collapsible.create` (toggle) or `Collapsible.adopt`.

@@ -95,6 +95,7 @@ function Motion:buildUI()
     self.lightButton:connect('press', function()
         self:toggleLights()
     end)
+    require('source.engine.ui.widgets.collapsible').adopt(self.scene, 'Stress motion', self.panel)
 end
 
 function Motion:resize()

@@ -40,6 +40,7 @@ function Interface.create(self)
         textColor = { 0.6, 0.9, 0.7 },
         align = 'left',
     }, card)
+    require('source.engine.ui.widgets.collapsible').adopt(self.scene, 'Actor', card)
 end
 
 return Interface

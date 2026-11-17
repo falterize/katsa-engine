@@ -34,7 +34,12 @@ function Backend.new(options)
     local io = self.io
     io.IniFilename = nil
     io.LogFilename = nil
-    io.ConfigFlags = bit.bor(io.ConfigFlags, C.ImGuiConfigFlags_NavEnableKeyboard)
+    -- No keyboard navigation: with it a Tab or arrow press starts ImGui navigation, and from then on
+    -- WantCaptureKeyboard swallows the game's keys (menu key, WASD) while any window exists.
+    -- `options.navigation` turns it back on for tool-only hosts.
+    if options.navigation then
+        io.ConfigFlags = bit.bor(io.ConfigFlags, C.ImGuiConfigFlags_NavEnableKeyboard)
+    end
     if options.docking then
         io.ConfigFlags = bit.bor(io.ConfigFlags, C.ImGuiConfigFlags_DockingEnable)
     end

@@ -52,6 +52,7 @@ function Interface.create(state)
             .. 'Select an InverseKinematics3D node in the editor to change its type.',
         fontSize = 13,
     }, panel)
+    require('source.engine.ui.widgets.collapsible').adopt(scene, 'Inverse kinematics', panel)
 end
 
 return Interface

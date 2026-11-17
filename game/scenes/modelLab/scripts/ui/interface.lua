@@ -97,12 +97,10 @@ function Interface.create(self)
         end
     end)
     button('Inspect XBot hierarchy', function()
-        scene.workspace:toggle(true)
-        scene.workspace:select(self.model.root)
+        scene:inspect(self.model.root)
     end)
     button('Inspect multi-mesh model', function()
-        scene.workspace:toggle(true)
-        scene.workspace:select(self.multi.root)
+        scene:inspect(self.multi.root)
     end)
     self.info = ui:text({
         position = { 0, 6, 0, y },

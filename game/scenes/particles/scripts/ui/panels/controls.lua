@@ -23,6 +23,10 @@ function Controls.build(lab)
         lab.panel.visible = not lab.panel.visible
         node.text = lab.panel.visible and '− Particle controls' or '+ Particle controls'
     end)
+    -- With ImGui the panel is a window and the collapse button is not needed.
+    require('source.engine.ui.widgets.collapsible').adopt(scene, 'Particle controls', lab.panel, function()
+        lab.collapse.visible = false
+    end)
     lab.status = ui:text({
         position = { 0, 8, 0, 6 },
         size = { 1, -16, 0, 58 },
@@ -99,8 +103,7 @@ function Controls.build(lab)
         y = y + 34
     end
     button('Inspect', function()
-        scene.workspace:toggle(true)
-        scene.workspace:select(lab.emitter)
+        scene:inspect(lab.emitter)
     end)
     button('Emit', function()
         lab.emitter:emit(40)
@@ -186,7 +189,7 @@ function Controls.update(lab)
             b.backgroundColor = i == lab.selected and { 0.1, 0.38, 0.5 } or { 0.075, 0.14, 0.2 }
         end
         local text = {
-            Inspect = 'Workspace: ' .. e.name,
+            Inspect = 'Inspect: ' .. e.name,
             Emit = 'Burst: 40 particles',
             Enabled = 'Continuous: ' .. (e.enabled and 'ON' or 'OFF'),
             Clear = 'Clear live particles',

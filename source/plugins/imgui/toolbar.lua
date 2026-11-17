@@ -1,7 +1,7 @@
 local bit = require('bit')
 
 -- The scene's main bar: a fixed strip along the top with the buttons the old Navigation header
--- had (Menu, Pause, Stats, Scene tools, Debug) plus the Explorer and Properties windows. It is
+-- had (Menu, Pause, Stats, Debug) plus the Explorer and Properties windows. It is
 -- shown while `scene.navigationVisible` is not false (presentation.navigation = false hides it).
 local Toolbar = {}
 
@@ -61,10 +61,6 @@ function Toolbar.draw(ig, scene, host)
         ig.sameLine()
         if toggle(ig, 'Stats', host:isOpen('stats')) then
             host:toggle('stats')
-        end
-        ig.sameLine()
-        if toggle(ig, 'Scene tools', host:isOpen('sceneTools')) then
-            host:toggle('sceneTools')
         end
         ig.sameLine()
         if toggle(ig, 'Debug', host:isOpen('debug')) then

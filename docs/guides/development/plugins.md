@@ -33,7 +33,7 @@ project: they are packed into `.katsa` archives and fused executables with every
 | `ragdoll` | `Ragdoll3D` node: physical capsule bodies and joints for a humanoid model (`docs/guides/animation/ragdoll.md`) |
 | `lod` | `LODGroup` node (level of detail by distance or screen size, fade, billboard level), grouping of `-lodN` model nodes, quality-profile bias (`docs/guides/rendering/lod.md`) |
 | `ik` | `InverseKinematics3D` node with TwoBone, CCD, FABRIK, Jacobian, Spline, LookAt and FK types (`docs/guides/animation/ik.md`) |
-| `imgui` | Dear ImGui through the LuaJIT FFI: the `ImGuiLayer` node and the engine's Stats and Scene tools windows; a template for binding native libraries (`docs/guides/development/imgui.md`) |
+| `imgui` | Dear ImGui through the LuaJIT FFI: the `ImGuiLayer` node and the engine's Stats, Debug, Profiler, Console, Explorer and Properties windows; a template for binding native libraries (`docs/guides/development/imgui.md`) |
 
 ## Enabling a plugin in a scene
 

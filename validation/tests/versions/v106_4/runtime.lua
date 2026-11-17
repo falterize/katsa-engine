@@ -233,8 +233,9 @@ function Tests:allScenes()
                         'Stress controls retain their public scene handle'
                     )
                     local motion = scene.stressMotion
-                    motion.cubeButton:press()
-                    motion.lightButton:press()
+                    -- With ImGui the engine buttons are hidden mirrors; fire their handlers.
+                    motion.cubeButton:emit('press', motion.cubeButton)
+                    motion.lightButton:emit('press', motion.lightButton)
                     local cubeY = motion.cube.position.y
                     self.manager:update(1 / 60)
                     self:check(

@@ -57,6 +57,7 @@ function Interface.lodPanel(state, ui)
         text = 'Green, yellow, orange, purple billboard, then hidden. Low value = see it close.',
     }, panel)
     show()
+    require('source.engine.ui.widgets.collapsible').adopt(state.scene, 'Level of detail', panel)
 end
 
 function Interface.create(state)
@@ -98,9 +99,10 @@ function Interface.create(state)
         scene.input.menuButton = cornerButton(ui, 'EngineMenuToggle', 'Engine menu', 16, function()
             scene.input:toggleMenu()
         end)
-        cornerButton(ui, 'RagdollToggle', 'Ragdoll (R)', 72, function()
+        local ragdoll = cornerButton(ui, 'RagdollToggle', 'Ragdoll (R)', 72, function()
             state.ragdoll:toggle()
         end)
+        require('source.engine.ui.widgets.collapsible').adopt(scene, 'Ragdoll', { ragdoll })
     end
     -- Preserve the source Sprite2D's authored 324,323 center and 0.5962963 scale.
     state.hud = ui:create('ImageRect', {

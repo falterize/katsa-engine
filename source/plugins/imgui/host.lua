@@ -1,5 +1,6 @@
 local Backend = require('./backend')
 local Layers = require('./layers')
+local ControlPanels = require('./controlPanels')
 local Toolbar = require('./toolbar')
 local Tools = require('./tools')
 
@@ -64,6 +65,7 @@ end
 
 function Host:build(ig)
     Toolbar.draw(ig, self.scene, self)
+    ControlPanels.draw(ig, self.scene, self)
     if self.menuVisible and ig.beginMainMenuBar() then
         if ig.beginMenu('Tools') then
             for _, tool in ipairs(Tools) do
