@@ -1,7 +1,9 @@
 -- The toggle is a sibling, so a collapsed panel has no old hit or clipping region.
 local Collapsible = {}
 
-function Collapsible.create(scene, panel, title, position)
+-- `options.demo` marks a panel that is the scene's demonstration content (a gallery of widgets),
+-- not controls: scene modules leave it as engine UI.
+function Collapsible.create(scene, panel, title, position, options)
     local ui = panel.ui or scene.root:find('World3D/World2D')
     local parent = panel.parent
     local expanded = panel.visible ~= false
@@ -25,7 +27,13 @@ function Collapsible.create(scene, panel, title, position)
         scene.input:reset()
     end)
     -- Scene modules (the `controlPanel` hook) may present the panel differently, e.g. as a window.
-    local entry = { title = title, panel = panel, toggle = toggle, startOpen = expanded }
+    local entry = {
+        title = title,
+        panel = panel,
+        toggle = toggle,
+        startOpen = expanded,
+        demo = options and options.demo,
+    }
     scene.controlPanels = scene.controlPanels or {}
     scene.controlPanels[#scene.controlPanels + 1] = entry
     if scene.emit then

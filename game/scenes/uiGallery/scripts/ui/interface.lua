@@ -13,7 +13,7 @@ function Interface.create(self)
         backgroundColor = { 0.035, 0.065, 0.12 },
     }, ui.content)
     self.root = root
-    require('source.engine.ui.widgets.collapsible').create(self.scene, root, 'UI Gallery')
+    require('source.engine.ui.widgets.collapsible').create(self.scene, root, 'UI Gallery', nil, { demo = true })
     ui:create('UICorner', { radius = { 0, 18 } }, root)
     ui:create(
         'UIStroke',

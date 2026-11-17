@@ -43,6 +43,11 @@ local function create(library)
     function ig.setNextWindowSize(w, h, condition)
         C.igSetNextWindowSize(vec2(w, h), condition or C.ImGuiCond_FirstUseEver)
     end
+    -- Limits the next window's size (0 for no limit on a side); with auto-resize the window fits
+    -- its content inside these bounds.
+    function ig.setNextWindowConstraints(minW, minH, maxW, maxH)
+        C.igSetNextWindowSizeConstraints(vec2(minW, minH), vec2(maxW, maxH), nil, nil)
+    end
     function ig.setNextWindowBgAlpha(alpha)
         C.igSetNextWindowBgAlpha(alpha)
     end
@@ -255,6 +260,9 @@ local function create(library)
     end
     function ig.lineHeight()
         return C.igGetTextLineHeightWithSpacing()
+    end
+    function ig.textWidth(text)
+        return C.igCalcTextSize(text, nil, false, -1).x
     end
     function ig.dummy(w, h)
         C.igDummy(vec2(w, h))

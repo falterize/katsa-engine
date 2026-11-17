@@ -52,7 +52,7 @@ end
 -- A control panel registered through ui/widgets/collapsible becomes an ImGui window; the engine
 -- panel and its toggle stay hidden and keep owning the behaviour. Does nothing without ImGui.
 function Editor:adoptControlPanel(entry)
-    if not self.imgui or entry.adopted then
+    if not self.imgui or entry.adopted or entry.demo then
         return
     end
     entry.adopted = true

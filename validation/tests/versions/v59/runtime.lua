@@ -157,14 +157,14 @@ function R:update()
         scene.demo.syncControls = true
         scene:update(1 / 60, 1 / 60)
         self:check(
-            scene.demo.buttons.Enabled.text == 'Continuous: ON'
+            scene.demo.buttons.Enabled.text == 'Emitting: ON'
                 and scene.demo.sliders.gravity.node.value == scene.demo.emitter.gravityScale,
             'Particle controls show the selected effect state and actual gravity multiplier'
         )
         scene.demo.buttons.Attraction:press()
         scene:update(1 / 60, 1 / 60)
         self:check(
-            scene.demo.buttons.Attraction.text == 'Point attraction: ON',
+            scene.demo.buttons.Attraction.text == 'Attraction: ON',
             'Particle controls update state labels immediately'
         )
         self.capture = 'particle-controls'

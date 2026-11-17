@@ -96,6 +96,15 @@ function Module.run(self)
     scene:release()
 
     -- A scene's collapsible control panel becomes an ImGui window that fires the same handlers.
+    -- The particles panel (rows, toggles, labelled sliders, tabs) is laid out as one Controls window.
+    local lab = Application.new(self.manager, 'particles')
+    lab:load()
+    local labHost = lab:module('editor').imgui
+    lab:update(1 / 60, 1 / 60)
+    frames(labHost, 3)
+    self:check(labHost.backend.renderer ~= nil, 'The particles Controls window draws rows, checkboxes and sliders')
+    lab:release()
+
     local physical = Application.new(self.manager, 'physics2D')
     physical:load()
     local entry = physical.controlPanels and physical.controlPanels[1]

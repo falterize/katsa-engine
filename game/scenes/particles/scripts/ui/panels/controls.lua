@@ -62,10 +62,12 @@ function Controls.build(lab)
     end
     y = 72
 
-    local function button(key, fn)
+    -- `columns` buttons share one row (the ImGui window keeps rows that share a top).
+    local function button(key, fn, column, columns)
+        column, columns = column or 1, columns or 1
         local b = ui:button({
-            position = { 0, 3, 0, y },
-            size = { 1, -6, 0, 30 },
+            position = { (column - 1) / columns, 3, 0, y },
+            size = { 1 / columns, -6, 0, 30 },
             text = key,
             fontSize = 12,
             backgroundColor = { 0.07, 0.14, 0.2 },
@@ -75,7 +77,9 @@ function Controls.build(lab)
             lab.syncControls = true
         end)
         lab.buttons[key] = b
-        y = y + 34
+        if column == columns then
+            y = y + 34
+        end
         return b
     end
 
@@ -107,19 +111,36 @@ function Controls.build(lab)
         if editor then
             editor:inspect(lab.emitter)
         end
-    end)
+    end, 1, 4)
     button('Emit', function()
         lab.emitter:emit(40)
-    end)
+    end, 2, 4)
+    button('Clear', function()
+        lab.emitter:clear()
+    end, 3, 4)
+    button('Reset', function()
+        lab:restorePreset(lab.emitter)
+    end, 4, 4)
     button('Enabled', function()
         lab.emitter.enabled = not lab.emitter.enabled
     end)
-    button('Clear', function()
-        lab.emitter:clear()
+    button('Attraction', function()
+        lab.emitter.attractionEnabled = not lab.emitter.attractionEnabled
     end)
-    button('Reset', function()
-        lab:restorePreset(lab.emitter)
+    button('Collision', function()
+        lab.emitter.collisionEnabled = not lab.emitter.collisionEnabled
     end)
+    button('Unlit', function()
+        lab.emitter.lightInfluence = lab.emitter.lightInfluence > 0 and 0 or 1
+    end)
+    button('Space', function()
+        local e = lab.emitter
+        e.simulationSpace = e.simulationSpace == 'World' and 'Local' or 'World'
+    end, 1, 2)
+    button('Blend', function()
+        local next = { Alpha = 'Add', Add = 'Multiply', Multiply = 'Alpha' }
+        lab.emitter.blendMode = next[lab.emitter.blendMode]
+    end, 2, 2)
     slider('rate', 'Emission / second', 0, 150, function()
         return lab.emitter.rate
     end, function(v)
@@ -140,29 +161,12 @@ function Controls.build(lab)
     end, function(v)
         lab.emitter.drag = v
     end)
-    button('Attraction', function()
-        lab.emitter.attractionEnabled = not lab.emitter.attractionEnabled
-    end)
-    button('Space', function()
-        local e = lab.emitter
-        e.simulationSpace = e.simulationSpace == 'World' and 'Local' or 'World'
-    end)
-    button('Collision', function()
-        lab.emitter.collisionEnabled = not lab.emitter.collisionEnabled
-    end)
-    button('Unlit', function()
-        lab.emitter.lightInfluence = lab.emitter.lightInfluence > 0 and 0 or 1
-    end)
     slider('Brightness', 'Particle brightness', 0, 4, function()
         return lab.emitter.brightness
     end, function(v)
         lab.emitter.brightness = v
     end)
 
-    button('Blend', function()
-        local next = { Alpha = 'Add', Add = 'Multiply', Multiply = 'Alpha' }
-        lab.emitter.blendMode = next[lab.emitter.blendMode]
-    end)
     button('Move support', function()
         local node = lab.emitter.adornee or lab.emitter.parent
         node.position[1] = node.position[1] + 10
@@ -190,19 +194,20 @@ function Controls.update(lab)
             e.enabled, e.simulationSpace, e.blendMode, e.attractionEnabled, e.collisionEnabled
         for i, b in ipairs(lab.tabs) do
             b.backgroundColor = i == lab.selected and { 0.1, 0.38, 0.5 } or { 0.075, 0.14, 0.2 }
+            b.text = i == lab.selected and '[' .. lab.emitters[i].name .. ']' or lab.emitters[i].name
         end
         local text = {
-            Inspect = 'Inspect: ' .. e.name,
-            Emit = 'Burst: 40 particles',
-            Enabled = 'Continuous: ' .. (e.enabled and 'ON' or 'OFF'),
-            Clear = 'Clear live particles',
-            Reset = 'Restore full preset',
-            Attraction = 'Point attraction: ' .. (e.attractionEnabled and 'ON' or 'OFF'),
-            Space = 'New births: ' .. e.simulationSpace,
-            Collision = 'Collisions: ' .. (e.collisionEnabled and 'ON' or 'OFF'),
+            Inspect = 'Inspect',
+            Emit = 'Burst',
+            Enabled = 'Emitting: ' .. (e.enabled and 'ON' or 'OFF'),
+            Clear = 'Clear',
+            Reset = 'Reset',
+            Attraction = 'Attraction: ' .. (e.attractionEnabled and 'ON' or 'OFF'),
+            Space = 'Space: ' .. e.simulationSpace,
+            Collision = 'Collision: ' .. (e.collisionEnabled and 'ON' or 'OFF'),
             Unlit = 'Unlit: ' .. (e.lightInfluence <= 0 and 'ON' or 'OFF'),
             Blend = 'Blend: ' .. e.blendMode,
-            ['Move support'] = 'Move emission support +10 X',
+            ['Move support'] = 'Move emitter +10 X',
         }
         for key, b in pairs(lab.buttons) do
             b.text = text[key]
