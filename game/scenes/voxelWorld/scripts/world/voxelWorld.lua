@@ -218,7 +218,7 @@ local function upload(self, entry)
                 self.blocks.HEIGHT / 2,
                 chunk.cz * size + size / 2,
             },
-            surfaceAppearance = { colorMap = 'blocks' },
+            surfaceAppearance = { colorMap = 'blocks', pixelate = true },
         }, self.group)
     end
     self.stats.faces = self.stats.faces - (chunk.faces or 0) + result.faces
