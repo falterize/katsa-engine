@@ -205,10 +205,12 @@ end
 local function tagsRow(ig, scene, state, target, field)
     local tags = target:getTags()
     for index, tag in ipairs(tags) do
-        if index > 1 then
+        -- Buttons flow onto the next line when the row is full.
+        local label = tag .. ' x'
+        if index > 1 and ig.available() > ig.textWidth(label) + 16 then
             ig.sameLine()
         end
-        if ig.smallButton(tag .. ' x##tag' .. index) then
+        if ig.smallButton(label .. '##tag' .. index) then
             local kept = {}
             for _, other in ipairs(tags) do
                 if other ~= tag then

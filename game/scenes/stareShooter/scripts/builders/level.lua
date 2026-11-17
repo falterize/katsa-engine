@@ -41,7 +41,7 @@ function Level.create(scene)
     })
     -- Godot uses an infinite WorldBoundaryShape. The invisible floor covers the
     -- entire playable camera range without stretching the original 20 m mesh.
-    world:create('Body3D', {
+    local boundary = world:create('Body3D', {
         name = 'WorldBoundary',
         bodyType = 'Static',
         position = { 0, -1, 0 },
@@ -51,6 +51,7 @@ function Level.create(scene)
         friction = 0.8,
         restitution = 0,
     })
+    boundary:addCollider({ name = 'Floor', shape = 'Box', size = { 20000, 2, 20000 } })
     -- PlayStation vertex snap with affine textures. Off by default: enable the node in the
     -- Workspace to see it. affine = 0 keeps the floor's four huge vertices readable; raise it
     -- toward 1 for the full affine smear (best on subdivided surfaces).

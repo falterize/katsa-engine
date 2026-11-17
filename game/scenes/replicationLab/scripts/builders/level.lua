@@ -41,7 +41,7 @@ function Level.create(scene)
     })
     area(world, 'Lobby', Arena.lobby, Arena.lobbyRadius, { 0.5, 0.68, 0.9, 1 })
     -- A boundary for the local character; the server checks the pose it reports.
-    world:create('Body3D', {
+    local boundary = world:create('Body3D', {
         name = 'WorldBoundary',
         bodyType = 'Static',
         position = { 0, -1, 0 },
@@ -49,6 +49,7 @@ function Level.create(scene)
         friction = 0,
         restitution = 0,
     })
+    boundary:addCollider({ name = 'Floor', shape = 'Box', size = { 2000, 2, 2000 } })
     world:create('DirectionalLight3D', {
         name = 'Sun',
         direction = { 0.5, -0.75, -0.43301266 },
