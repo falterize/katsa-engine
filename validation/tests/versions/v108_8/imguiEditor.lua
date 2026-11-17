@@ -96,6 +96,9 @@ function Module.run(self)
     self:check(hadMass and not listed('mass'), 'Switching Body3D to Kinematic updates Properties at once')
     Properties.set(scene, body, { key = 'bodyType', kind = 'string' }, 'Dynamic')
 
+    local text = require('source.plugins.imgui.tools.properties').readOnlyText
+    self:check(text({ 1, 2.5, 0 }, {}) == '1.000, 2.500, 0.000', 'Read-only vectors such as velocity show their numbers')
+
     -- Every node of the tree draws in Properties without errors.
     local roots, extras = scene.workspace:treeRoots()
     local rows = Tree.rows(roots, {}, nil, '', extras)

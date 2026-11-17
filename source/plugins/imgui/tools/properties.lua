@@ -184,6 +184,21 @@ local function dialogRow(ig, host, target, field, text)
     end
 end
 
+-- A read-only value as text: vectors as their numbers (velocity), never as a table address.
+local function readOnlyText(value, field)
+    if type(value) ~= 'table' then
+        return tostring(value)
+    end
+    if type(value[1]) == 'number' then
+        local parts = {}
+        for i, number in ipairs(value) do
+            parts[i] = string.format('%.3f', number)
+        end
+        return table.concat(parts, ', ')
+    end
+    return tostring(field.value)
+end
+
 local function fieldRow(ig, scene, state, host, node, target, field)
     local blocker = field.key == 'interactable' and Inspector.interactableBlocker(node)
     local labelColor = blocker and { 1, 0.72, 0.2 } or nil
@@ -207,7 +222,7 @@ local function fieldRow(ig, scene, state, host, node, target, field)
     if field.key == 'parent' then
         ig.textDisabled(tostring(value))
     elseif field.readOnly then
-        ig.textDisabled(tostring(type(value) == 'table' and field.value or value))
+        ig.textDisabled(readOnlyText(value, field))
     elseif kind == 'boolean' then
         local changed, picked = ig.checkbox(label, value == true)
         if changed then
@@ -245,13 +260,15 @@ local function fieldRow(ig, scene, state, host, node, target, field)
     elseif kind == 'gradient' then
         dialogRow(ig, host, target, field, 'Edit gradient')
     else
-        ig.textDisabled(tostring(value))
+        ig.textDisabled(readOnlyText(value, field))
     end
     ig.popID()
     if field.kind ~= 'string' then
         hint(ig, field)
     end
 end
+
+PropertiesTool.readOnlyText = readOnlyText
 
 function PropertiesTool.draw(ig, scene, state, host)
     local width, height = katsa.graphics.getDimensions()
