@@ -24,7 +24,11 @@ function VoxelWorld.new(scene, context, blocks, settings)
         stats = { chunks = 0, faces = 0, meshes = 0 },
     }, VoxelWorld)
     local world = scene.world
-    self.group = world:create('Node3D', { name = 'Chunks' })
+    -- The block shader (occlusion shade, tile repeat) applies to every chunk mesh below it.
+    self.group = world:create('Shader3D', {
+        name = 'Chunks',
+        shaderPath = 'scene://shaders/voxel.glsl',
+    })
     local root = 'scene://worker/'
     self.actor = world:create('Actor', {
         name = 'ChunkBuilder',
@@ -187,6 +191,13 @@ function VoxelWorld:requestMesh(chunk)
     return true
 end
 
+local function destroyNodes(chunk)
+    for _, node in pairs(chunk.nodes or {}) do
+        node:destroy()
+    end
+    chunk.nodes = nil
+end
+
 local function upload(self, entry)
     local chunk, result = entry.chunk, entry.result
     if self.chunks[chunk.key] ~= chunk then
@@ -196,9 +207,12 @@ local function upload(self, entry)
         return -- a newer mesh was requested meanwhile
     end
     chunk.queued = false
-    local flat, count = result.vertices, #result.vertices / 8
-    local node
-    if count > 0 then
+    local size = self.blocks.CHUNK
+    local section = self.blocks.SECTION
+    chunk.version = (chunk.version or 0) + 1
+    local nodes = {}
+    for _, part in ipairs(result.sections) do
+        local flat, count = part.vertices, #part.vertices / 8
         local vertices = {}
         for i = 1, count do
             local at = (i - 1) * 8
@@ -207,15 +221,13 @@ local function upload(self, entry)
                 flat[at + 5], flat[at + 6], flat[at + 7], flat[at + 8],
             }
         end
-        local size = self.blocks.CHUNK
-        -- Node names are unique and the old mesh stays until the new one exists (no flicker).
-        chunk.version = (chunk.version or 0) + 1
-        node = Mesh.create(self.scene.world, {
-            name = ('Chunk %d,%d v%d'):format(chunk.cx, chunk.cz, chunk.version),
+        -- Node names are unique and the old meshes stay until the new ones exist (no flicker).
+        nodes[part.sy] = Mesh.create(self.scene.world, {
+            name = ('Chunk %d,%d,%d v%d'):format(chunk.cx, chunk.cz, part.sy, chunk.version),
             geometry = Geometry.mesh(vertices),
             position = {
                 chunk.cx * size + size / 2,
-                self.blocks.HEIGHT / 2,
+                part.sy * section + section / 2,
                 chunk.cz * size + size / 2,
             },
             surfaceAppearance = { colorMap = 'blocks', pixelate = true },
@@ -223,10 +235,8 @@ local function upload(self, entry)
     end
     self.stats.faces = self.stats.faces - (chunk.faces or 0) + result.faces
     chunk.faces = result.faces
-    if chunk.node then
-        chunk.node:destroy()
-    end
-    chunk.node, chunk.meshed = node, true
+    destroyNodes(chunk)
+    chunk.nodes, chunk.meshed = nodes, true
     self.stats.meshes = self.stats.meshes + 1
 end
 
@@ -234,9 +244,7 @@ local function unload(self, chunk)
     if chunk.modified and chunk.ready then
         self.saved[chunk.key] = chunk.data
     end
-    if chunk.node then
-        chunk.node:destroy()
-    end
+    destroyNodes(chunk)
     self.stats.faces = self.stats.faces - (chunk.faces or 0)
     self.chunks[chunk.key] = nil
 end

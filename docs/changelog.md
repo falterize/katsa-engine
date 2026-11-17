@@ -4,6 +4,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.8
 
+- `voxelWorld` meshing: greedy meshing (about a third fewer rectangles on rolling terrain, far more on flat ground), per-corner ambient occlusion, 16-high mesh sections culled separately and pixelated block textures. The occlusion shade and the tile repeat travel in the vertex normal's length and the packed UVs and are decoded by `assets/shaders/voxel.glsl`.
+
 - Fixed: the `viewLayers` pass (stareShooter outline) drifted away from the object while a following camera moved, because the pass recomputed the camera matrices the main pass had already used; it now shares them unchanged.
 - Fixed in `voxelWorld`: chunks were re-meshed over and over (a chunk counted as meshed only after its upload, so the same chunk was requested again every frame), which flooded the upload queue, grew memory and showed stale meshes (ghost faces of removed blocks, invisible placed blocks). A mesh request now carries a sequence number, a chunk waiting for upload is not requested again and stale answers are dropped. The block picker (E) now closes on the second press.
 

@@ -45,7 +45,7 @@ function Module.run(self)
     end
     local _, one = Mesher.build(chunkWith({ { 5, 5, 5 } }), {})
     local _, two = Mesher.build(chunkWith({ { 5, 5, 5 }, { 6, 5, 5 } }), {})
-    self:check(one == 6 and two == 10, 'Only faces next to air are meshed (1 block: 6, 2 touching blocks: 10)')
+    self:check(one == 6 and two == 6, 'Only faces next to air are meshed and equal neighbours merge (1 block: 6 faces, 2 touching blocks: still 6 rectangles)')
     local _, hidden = Mesher.build(chunkWith({ { 0, 5, 5 } }), { nx = chunkWith({ { 15, 5, 5 } }) })
     self:check(hidden == 5, 'A face against a solid block of the neighbouring chunk is not drawn')
 

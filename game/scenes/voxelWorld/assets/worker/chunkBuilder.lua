@@ -7,8 +7,8 @@ Actor.on('generate', function(data)
     return Terrain.generate(data.cx, data.cz, data.seed)
 end)
 
--- { blocks, px, nx, pz, nz } -> flat vertex array of the visible faces and their count.
+-- { blocks, px, nx, pz, nz } -> the 16-high mesh sections and the number of rectangles.
 Actor.on('mesh', function(data)
-    local vertices, faces = Mesher.build(data.blocks, data)
-    return { vertices = vertices, faces = faces }
+    local sections, faces = Mesher.build(data.blocks, data)
+    return { sections = sections, faces = faces }
 end)

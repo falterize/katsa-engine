@@ -3,6 +3,7 @@
 local Blocks = {
     CHUNK = 16,
     HEIGHT = 64,
+    SECTION = 16, -- vertical size of one mesh section
     AIR = 0,
     -- The order is the default hotbar order; `icon` is the tile shown in the hotbar.
     list = {
