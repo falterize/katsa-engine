@@ -108,6 +108,67 @@ function Module.run(self)
         math.abs(panned - 0.5) > 0.05,
         ('A spatial shader reads the camera motion through hint_velocity_texture (%.2f -> %.2f)'):format(steady, panned)
     )
+    -- The Datamosh demo shader tears a pinned frame along the motion: after the camera pans for a
+    -- few frames the picture differs from the live render of the same pose.
+    local world4, camera4, renderer4, ui4 = build()
+    for i = 1, 5 do
+        world4:create('Mesh3D', {
+            name = 'Block' .. i,
+            position = { -12 + i * 5, 0, 18 },
+            size = { 3, 20, 1 },
+            color = { i % 2, 1 - i % 2, 0.3 * i % 1, 1 },
+        })
+    end
+    world4.shaderLayers:setInteracts('Default2D', 'Default3D', true)
+    local mosh = ui4:create('Shader2D', {
+        name = 'Mosh',
+        shaderPath = 'game/scenes/stareShooter/assets/shaders/datamosh.glsl',
+        position = { 0, 0, 0, 0 },
+        size = { 1, 0, 1, 0 },
+        animated = true,
+        uniforms = { pin = 0 },
+    }, ui4.content)
+    local out = katsa.graphics.newCanvas(WIDTH, HEIGHT)
+    local tick = 0
+    local function mosh4()
+        tick = tick + 1
+        camera4:update(WIDTH, HEIGHT)
+        renderer4:draw(world4, camera4, tick, true)
+        ui4.backgroundRenderer, ui4.backgroundCanvas = renderer4, renderer4.canvas
+        katsa.graphics.setCanvas(out)
+        katsa.graphics.clear(0, 0, 0, 1)
+        katsa.graphics.draw(renderer4.canvas)
+        ui4:draw()
+        katsa.graphics.setCanvas()
+        return out:newImageData()
+    end
+    for _ = 1, 4 do
+        mosh4()
+    end
+    mosh.uniforms = { pin = 1 }
+    local x = 0
+    for _ = 1, 8 do
+        x = x + 0.15
+        camera4.position = { x, 0, 0 }
+        mosh4()
+    end
+    local torn = mosh4()
+    mosh.enabled = false
+    local live = mosh4()
+    local changed = 0
+    for y = 0, HEIGHT - 1, 2 do
+        for px = 0, WIDTH - 1, 2 do
+            local r1, g1, b1 = torn:getPixel(px, y)
+            local r2, g2, b2 = live:getPixel(px, y)
+            if math.abs(r1 - r2) + math.abs(g1 - g2) + math.abs(b1 - b2) > 0.15 then
+                changed = changed + 1
+            end
+        end
+    end
+    self:check(
+        changed > 20,
+        ('A pinned Datamosh pushes pixels along the camera motion (%d sampled pixels differ from live)'):format(changed)
+    )
 end
 
 return Module
