@@ -164,6 +164,11 @@ local function deleteResources(res)
     end
     if res.buffers then
         for _, id in ipairs(res.buffers) do
+            -- Deleting the bound element buffer unbinds it; the cache must not claim otherwise, or
+            -- a new buffer that reuses the id is never bound and the next draw reads address 0.
+            if Core.boundElementBuffer == id then
+                Core.boundElementBuffer = nil
+            end
             one[0] = id
             gl.glDeleteBuffers(1, one)
         end

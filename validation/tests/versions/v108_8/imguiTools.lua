@@ -34,6 +34,28 @@ function Module.run(self)
     host:frame(1 / 60)
     self:check(#host.state.console.shown >= 1 and #host.state.console.shown <= 3, 'The Console text filter narrows the lines')
 
+    -- A window that grows replaces the draw mesh while the previous one was the last bound: drawing
+    -- the larger frame must not read a stale element buffer (it used to crash the process).
+    host:close('debug')
+    host:close('profiler')
+    host:close('console')
+    local width, height = katsa.graphics.getDimensions()
+    local canvas = katsa.graphics.newCanvas(width, height, { dpiscale = 1 })
+    local function drawFrame()
+        host:frame(1 / 60)
+        katsa.graphics.setCanvas(canvas)
+        host:draw()
+        katsa.graphics.setCanvas()
+    end
+    scene.showStats = true
+    drawFrame()
+    host:toggle('debug')
+    host:toggle('console')
+    drawFrame()
+    drawFrame()
+    self:check(host.backend.renderer.stats.vertices > 400, 'A growing ImGui frame draws after its mesh was replaced')
+    host:close('console')
+
     -- Every Debug tab draws (a tab is built only while it is selected).
     for _, title in ipairs({ '3D Physics', 'Rendering', 'Directions', 'Diagnostics', '2D Physics' }) do
         host.state.debug.showTab = title
