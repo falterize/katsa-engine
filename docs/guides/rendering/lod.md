@@ -18,6 +18,8 @@ world:create('Mesh3D', { name = 'Low', geometry = low }, tree)     -- level 2
 Here level 1 starts at 25 world units from the camera, level 2 at 60, and the whole group is hidden
 beyond 150. The last number is optional: without it nothing is hidden.
 
+The `stareShooter` scene shows it: two rows of trees in front of the character, the left one switching at once and the right one cross-fading over 0.4 s, each ending in a purple billboard. A slider (top right) sets the maximum distance, so a low value shows every level up close.
+
 ## Two modes
 
 | `mode` | The thresholds are in `...` | Level `k + 1` starts when |

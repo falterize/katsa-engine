@@ -18,6 +18,47 @@ local function cornerButton(ui, name, text, lift, onPress)
     return button
 end
 
+-- The LOD demo's control: one slider for the maximum distance (all switch points follow it).
+function Interface.lodPanel(state, ui)
+    local Theme = require('source.engine.ui.theme')
+    local demo = state.lod
+    local panel = ui:container({
+        _viewportAuthored = true,
+        name = 'LodControls',
+        position = { 1, -12, 0, 12 },
+        anchorPoint = { 1, 0 },
+        size = { 0, 300, 0, 96 },
+        backgroundColor = Theme.panel,
+    }, ui.content)
+    ui:create('UICorner', { radius = { 0, Theme.corner } }, panel)
+    local title = ui:create('Label', {
+        position = { 0, 10, 0, 6 },
+        size = { 1, -20, 0, 24 },
+        fontSize = 16,
+    }, panel)
+    local function show()
+        title.text = ('Max distance: %d m'):format(demo.reach + 0.5)
+    end
+    local slider = ui:slider({
+        position = { 0, 4, 0, 32 },
+        size = { 1, -8, 0, 28 },
+        min = demo.minReach,
+        max = demo.maxReach,
+        value = demo.reach,
+    }, panel)
+    slider:connect('changed', function(value)
+        demo:setReach(value)
+        show()
+    end)
+    ui:create('Label', {
+        position = { 0, 10, 0, 62 },
+        size = { 1, -20, 0, 28 },
+        fontSize = 12,
+        text = 'Green, yellow, orange, purple billboard, then hidden. Low value = see it close.',
+    }, panel)
+    show()
+end
+
 function Interface.create(state)
     local scene, ui = state.scene, state.scene.root:find('World3D/World2D')
     -- A layer that interacts with Default3D, so the filter also processes the 3D render.
@@ -35,6 +76,24 @@ function Interface.create(state)
         zIndex = 1,
         uniforms = {},
     }, ui.content)
+    -- Off by default; F7 or the Workspace switches it on. Its own layer keeps it independent of the
+    -- retro filter, so both can run together.
+    if not scene.world.shaderLayers.priorities.Datamosh then
+        scene.world.shaderLayers:add('Datamosh')
+    end
+    state.datamosh = ui:create('Shader2D', {
+        _viewportAuthored = true,
+        name = 'Datamosh',
+        size = { 1, 0, 1, 0 },
+        shaderPath = 'scene://shaders/datamosh.glsl',
+        shaderLayer = 'Datamosh',
+        enabled = scene.settings.datamosh.enabled,
+        backgroundTransparency = 1,
+        zIndex = 1,
+        animated = true,
+        uniforms = {},
+    }, ui.content)
+    Interface.lodPanel(state, ui)
     if scene.settings.presentation.menuButton ~= false then
         scene.input.menuButton = cornerButton(ui, 'EngineMenuToggle', 'Engine menu', 16, function()
             scene.input:toggleMenu()

@@ -54,6 +54,8 @@ local function extendedDepth(tester, scene)
             brightness = 0.1,
         })
     end
+    -- The LOD demo's alpha-masked billboards are not eligible for the depth prepass (by design).
+    scene.demo.lod.groups[1].parent.visible = false
     scene.demo.orbit.distance = 4
     scene.demo.orbit:update()
     frames(scene.manager, 15)

@@ -148,6 +148,14 @@ function Module.run(self)
         'When the fade ends the old level is hidden and the transparencies are as authored'
     )
 
+    local late = world:create('LODGroup', { name = 'Late', distances = { 10 }, fadeTime = 0.5 })
+    local lateMeshes = cubes(world, late, { 'LateA', 'LateB' })
+    levelAt(late, world, camera, -20)
+    self:check(
+        not lateMeshes[1].visible and lateMeshes[2].visible and lateMeshes[2].transparency == 0,
+        'The first choice from a camera does not fade (nothing was seen before it)'
+    )
+
     -- Animation rate per level on a skinned model sharing one skeleton.
     local path = 'validation/tests/fixtures/models/lod.glb'
     local model = Models.load(path, world.resources)

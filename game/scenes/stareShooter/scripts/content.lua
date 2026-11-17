@@ -1,4 +1,5 @@
 local Level = require('./builders.level')
+local LodDemo = require('./builders.lodDemo')
 local Builder = require('game.characters.playerBody')
 local Destare = require('./builders.destare')
 local Orbit = require('game.characters.orbit')
@@ -17,6 +18,7 @@ function Content.new(scene)
         interpolate = true,
     })
     Level.create(scene)
+    local lod = LodDemo.create(scene)
     local player = Builder.create(scene)
     scene.destare = Destare.create(scene)
     local orbit = Orbit.new(scene, player)
@@ -34,11 +36,16 @@ function Content.new(scene)
             scene.demo.retro.enabled = not scene.demo.retro.enabled
             return true
         end
+        if key == 'f7' then
+            scene.demo.datamosh.enabled = not scene.demo.datamosh.enabled
+            return true
+        end
     end
     orbit:update()
     return setmetatable(
         {
             scene = scene,
+            lod = lod,
             player = player,
             orbit = orbit,
             animation = Animation.new(player),

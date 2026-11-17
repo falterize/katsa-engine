@@ -43,7 +43,7 @@ world:create('Shader3D', {
 Shader paths resolve like every asset path (`scene://`, `shared://`, project paths). Scenes keep
 their shaders in `assets/shaders/`. Examples live in scenes: `shaderLab` (tint, wave, pixel UV,
 PlayStation vertex snap, toon light, CRT static, mosaic), `platformer` (speed blur),
-`stareShooter` (retro screen, plus a disabled `VertexSnap` node under World3D to switch on in the Workspace). Open them as code to copy from.
+`stareShooter` (retro screen on F6, a block-sliding `Datamosh` screen shader on F7 that is off until switched on, plus a disabled `VertexSnap` node under World3D to switch on in the Workspace). Open them as code to copy from.
 
 ## File structure
 

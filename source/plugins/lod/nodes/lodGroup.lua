@@ -334,8 +334,9 @@ local function applyShadows(self, levels)
 end
 
 -- Shows level `index` (1-based; past the last = none) and hides the others. With `fadeTime` the
--- old level stays until the new one is fully drawn.
-local function show(self, levels, index)
+-- old level stays until the new one is fully drawn; `instant` skips that (the first choice, which
+-- replaces a guess, not something the viewer saw).
+local function show(self, levels, index, instant)
     if self._current == index then
         return
     end
@@ -343,7 +344,7 @@ local function show(self, levels, index)
     finishFade(self)
     self._current = index
     self._level = index <= #levels and index - 1 or -1
-    local fading = self.fadeTime > 0 and previous ~= nil
+    local fading = self.fadeTime > 0 and previous ~= nil and not instant
     for position, node in ipairs(levels) do
         node.visible = position == index or fading and position == previous
     end
@@ -393,9 +394,10 @@ function Definition:update(dt)
     if self.forceLevel >= 0 then
         index = math.min(self.forceLevel + 1, #levels)
     else
-        index = camera and chooseLevel(self, camera, levels, dt or 0) or self._current or 1
+        index = camera and chooseLevel(self, camera, levels, dt or 0)
     end
-    show(self, levels, index)
+    show(self, levels, index or self._current or 1, not self._placed)
+    self._placed = self._placed or index ~= nil
     if self._appliedShadow ~= self.shadowLevel then
         applyShadows(self, levels)
     end

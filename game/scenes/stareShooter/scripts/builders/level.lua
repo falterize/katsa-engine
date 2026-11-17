@@ -3,6 +3,17 @@ local Geometry = require('source.engine.graphics.geometry.primitives')
 
 local Level = {}
 
+-- A plane whose texture repeats `repeats` times over its size; the mesh belongs to the scene.
+function Level.tiledPlane(scene, repeats)
+    local geometry = Geometry.plane()
+    for _, vertex in ipairs(geometry.vertices) do
+        vertex[4], vertex[5] = vertex[4] * repeats, vertex[5] * repeats
+    end
+    geometry.mesh:setVertices(geometry.vertices)
+    scene.resources:own(geometry.mesh)
+    return geometry
+end
+
 function Level.create(scene)
     local world, environment = scene.world, scene.world.environment
     environment.debug.gizmos.enabled = false
@@ -19,15 +30,9 @@ function Level.create(scene)
     shadows.enabled, shadows.resolution, shadows.distance = true, 1024, 24
     shadows.fadeDistance, shadows.near = 4, 0.05
     shadows.bias, shadows.normalBias = 0.001, 0.015
-    local geometry = Geometry.plane()
-    for _, vertex in ipairs(geometry.vertices) do
-        vertex[4], vertex[5] = vertex[4] * 10, vertex[5] * 10
-    end
-    geometry.mesh:setVertices(geometry.vertices)
-    scene.resources:own(geometry.mesh)
     Mesh.create(world, {
         name = 'Ground',
-        geometry = geometry,
+        geometry = Level.tiledPlane(scene, 10),
         size = { 20, 0, 20 },
         surfaceAppearance = {
             colorMap = 'scene://textures/ground.png',
