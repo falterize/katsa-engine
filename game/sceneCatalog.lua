@@ -33,6 +33,7 @@ local Catalog = {
         { id = 'actorLab', path = 'game/scenes/actorLab' },
         { id = 'shapeKeysLab', path = 'game/scenes/shapeKeysLab' },
         { id = 'voxelWorld', path = 'game/scenes/voxelWorld' },
+        { id = 'levelEditor', path = 'game/scenes/levelEditor' },
         { id = 'windowsLab', path = 'game/scenes/windowsLab' },
         { id = 'nodes', path = 'game/scenes/nodes' },
         { id = 'collisionBox', path = 'game/scenes/collisionBox' },

@@ -1,0 +1,113 @@
+# Level editor scene (`levelEditor`, v108.9)
+
+`game/scenes/levelEditor` is a map editor built **only from the engine's public API**. It touches
+nothing under `source/`, `native/`, `vendor/` or `assets/shaders/engine`. Anything the engine lacks
+(scene serializer, gizmos, snapping, undo, a ZIP writer) lives inside the scene.
+
+All controls go through `InputMap` actions declared in the scene's `settings.lua`
+(`input = { ... }`); the scene code never reads devices. A player (or the owner) can rebind every
+editor key through the shared map. See `docs/guides/input/inputMap.md`.
+
+## Stages
+
+| Stage | Content | State |
+| --- | --- | --- |
+| a | Scene shell, fly camera, ground grid, picking and selection | in progress |
+| b | Workspace tree and Properties panel | planned |
+| c | Gizmos (move, rotate, scale), snapping | planned |
+| d | Creation palette, model and image import | planned |
+| e | `.katsa` location export and import | pure parts done (format, ZIP writer) |
+| f | Undo/redo, copy/paste, play-test, polish | pure undo stack done |
+
+## Module map
+
+```text
+game/scenes/levelEditor/
+    settings.lua            engine settings and the editor InputMap actions
+    menu-settings.lua       menu entry and tags
+    main.lua                lifecycle only
+    scripts/content.lua     composition: world, camera, grid, tools, UI
+    scripts/core/snap.lua   snap and drag math (pure)
+    scripts/core/selection.lua   ordered selection set with a primary item (pure)
+    scripts/core/bounds.lua bounding sphere of a node list (pure)
+    scripts/core/undo.lua   command stack with merge keys and transactions (pure)
+    scripts/io/crc32.lua    CRC-32 (pure)
+    scripts/io/zipWriter.lua   stored (uncompressed) ZIP writer (pure)
+    scripts/io/luaText.lua  deterministic Lua table text writer (pure)
+    scripts/io/locationFormat.lua   location data format, version check, encode/decode (pure)
+    scripts/input/editorInput.lua   Input subclass: mouse look and viewport clicks only
+    scripts/view/flyCamera.lua      fly camera driven by InputMap actions
+    scripts/view/selectionBox.lua   outline over the primary selected node
+    scripts/view/grid.lua   ground grid mesh
+    scripts/ui/interface.lua        UI entry
+    systems/simulation.lua  per-frame loop
+```
+
+"Pure" modules do not use `katsa`, `ffi` or any engine service, so they run in plain Lua and are
+tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
+
+## Controls (InputMap actions)
+
+| Action | Default binding |
+| --- | --- |
+| `editorLook` | hold right mouse button (captures the mouse) |
+| `editorForward/Back/Left/Right` | `W A S D` while looking |
+| `editorUp/Down` | `E` / `Q` while looking |
+| `editorFast` | `Shift` |
+| `editorSpeedUp/Down` | mouse wheel while looking |
+| `editorPick` | left mouse button |
+| `editorAdd` | `Ctrl` (add to selection) |
+| `editorRange` | `Shift` (range select) |
+| `editorFocus` / `editorFrameAll` | `F` / `Home` |
+| `editorToolSelect/Move/Rotate/Scale` | `Q W E R` (not while looking) |
+| `editorToggleGrid` | `G` |
+| `editorUndo/Redo` | `Ctrl+Z` / `Ctrl+Y` |
+| `editorDuplicate/Copy/Paste/Delete` | `Ctrl+D` / `Ctrl+C` / `Ctrl+V` / `Delete` |
+| `editorSave/Open` | `Ctrl+S` / `Ctrl+O` |
+
+## `.katsa` location format
+
+A location is a **ZIP archive** (the engine reads ZIP; the scene writes it with its own stored
+writer) that is also a valid Katsa scene package:
+
+```text
+settings.lua          engine settings of the location (plain table)
+main.lua              tiny loader: reads assets/location.lua and builds the nodes
+assets/location.lua   the serialized tree (see below)
+assets/models/...     copied models
+assets/textures/...   copied images
+```
+
+`assets/location.lua` returns:
+
+```lua
+return {
+    format = 'katsa-location',
+    version = 1,
+    nodes = {
+        {
+            class = 'Mesh3D',
+            name = 'Floor',
+            properties = { position = { 0, 0, 0 }, size = { 20, 1, 20 } },
+            children = { },
+        },
+    },
+}
+```
+
+Rules: paths inside `properties` that point to package files are relative to the package root
+(`assets/textures/brick.png`); node references are stored as `{ ref = 'Parent/Child' }` paths;
+unknown versions fail with `Unsupported location version N (this editor reads 1)`.
+
+## Engine APIs reused
+
+`world:create`, `Camera3D` (`screenRay`, `project`, `pixelsPerUnitAt`), `Picking.raycast`,
+`Mesh3D`/`Geometry.mesh`, `Clone.collect` and the inspector schema (`Schema.keys`, `descriptor`,
+`options`), `katsa.filesystem`, `source/katsa/core/archive.lua` (reader), the model importer
+registry, `SurfaceAppearance3D`, `ScrollFrame`, `TextBox`, `ui/widgets/collapsible`, uiStyler
+style files.
+
+## Not serialized (kept honest)
+
+Runtime caches, signal connections, scripts attached by code, physics state, anything the
+inspector schema does not list. The exact list is kept next to the serializer once stage e lands.

@@ -10,6 +10,8 @@ return {
     fallback = { '--test-v108.8', '--test' },
 
     rules = {
+        { prefix = 'game/scenes/levelEditor/', flags = { '--test-v108.9' } },
+        { prefix = 'validation/tests/versions/v108_9/', flags = { '--test-v108.9' } },
         { prefix = 'source/engine/scenes/packed/', flags = { '--test-v108.8' } },
         { prefix = 'source/engine/core/prefabs.lua', flags = { '--test-v108.8' } },
         { prefix = 'source/engine/scenes/paths.lua', flags = { '--test-v108.8', '--test' } },

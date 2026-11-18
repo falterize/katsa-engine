@@ -2,6 +2,10 @@
 
 Per-version notes. Test results and logs for each release live in Git history and tags.
 
+## v108.9
+
+- New scene `levelEditor` (stage a of the level editor, built only from the public engine API; nothing under `source/` changed): fly camera, ground grid, click selection with an outline, focus and frame-all, status bar. **Every control is an InputMap action** declared in the scene's `settings.input` (`editorLook`, `editorForward`, `editorPick`, `editorUndo`, ...), so each key can be rebound in the shared map. Pure parts that later stages build on, tested without a window: a stored ZIP writer (read back by the engine's `archive.lua`), the `.katsa` location data format with a version check, snap and gizmo drag math, an undo/redo stack with merge keys and transactions, a selection set. Guide: `docs/guides/development/levelEditor.md`. Tests: `v108_9/levelEditorLogic.lua` (ran in plain Lua 5.4: LuaJIT is not available in the authoring sandbox), `v108_9/levelEditorScene.lua` (not run yet: needs the engine host on the owner's machine).
+
 ## v108.8
 
 - Fixed: the Esc pause menu left the mouse captured in scenes that keep time running (`multiplayerCars`): the cursor stayed locked and hidden, so the menu could not be clicked. An open pause menu now counts as open UI (`capturesInput`). I could not reproduce a hard freeze in the sandbox, so this needs the owner's confirmation on Windows.

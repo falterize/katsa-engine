@@ -49,6 +49,12 @@ game/scenes/graphicsLab/assets/fonts
 game/scenes/graphicsLab/assets/models
 game/scenes/graphicsLab/assets/textures
 game/scenes/graphicsLab/nodes
+game/scenes/levelEditor/assets/audio
+game/scenes/levelEditor/assets/fonts
+game/scenes/levelEditor/assets/models
+game/scenes/levelEditor/assets/shaders
+game/scenes/levelEditor/assets/textures
+game/scenes/levelEditor/nodes
 game/scenes/lights/assets/audio
 game/scenes/lights/assets/fonts
 game/scenes/lights/assets/models
