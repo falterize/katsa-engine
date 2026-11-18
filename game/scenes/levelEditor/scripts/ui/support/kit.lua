@@ -4,6 +4,22 @@ local Focus = require('source.engine.ui.widgets.textFocus')
 
 local Kit = {}
 
+-- Resolved rectangle of a node: x, y, width, height in interface units. UI:layout() scans the
+-- whole tree for changed properties, so node:getAbsolutePosition()/getAbsoluteSize() cost about a
+-- millisecond each in a large UI. Per-frame polling (hover tests, drag targets) uses this instead:
+-- it lays out once per editor frame (Content:update advances `_editorFrame`) and reads the fields.
+function Kit.rect(node)
+    local ui = node.ui
+    if not ui then
+        return 0, 0, 0, 0
+    end
+    if ui._laidOutFrame ~= ui._editorFrame then
+        ui._laidOutFrame = ui._editorFrame
+        ui:layout()
+    end
+    return node._x or 0, node._y or 0, node._width or 0, node._height or 0
+end
+
 function Kit.make(ui, class, props, parent, ...)
     local node = ui:create(class, props, parent)
     for index = 1, select('#', ...) do

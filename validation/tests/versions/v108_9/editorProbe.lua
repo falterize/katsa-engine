@@ -68,6 +68,7 @@ function Tests:draw()
     local t1 = os.clock()
     host:draw()
     local t2 = os.clock()
+    if frame >= 100 and (t1 - t0) > 0.008 then print(('SPIKE frame %d update %.1f ms'):format(frame, (t1 - t0) * 1000)) end
     local bucket = frame >= 60 and frame < 150 and self.buckets.idle or frame >= 160 and frame < 250 and self.buckets.selected
     if bucket then
         bucket.update, bucket.draw, bucket.n = bucket.update + (t1 - t0), bucket.draw + (t2 - t1), bucket.n + 1

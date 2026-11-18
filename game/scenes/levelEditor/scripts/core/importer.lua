@@ -21,9 +21,20 @@ function Importer.copy(path, folder)
     return LevelFiles.full(relative), kind
 end
 
+-- The name nodes use for a level file: `scene://textures/a.png` for `editor/assets/textures/a.png`
+-- (the editor world resolves scene:// to the level files folder). Other paths pass through.
+function Importer.url(stored)
+    local prefix = LevelFiles.ROOT .. '/'
+    if stored:sub(1, #prefix) == prefix then
+        return 'scene://' .. stored:sub(#prefix + 1)
+    end
+    return stored
+end
+
 -- A stored asset (store path or shared:// URL) placed in the level. action: 'add' (model),
 -- 'sprite' (image as a quad), 'texture' (image on the selected mesh) or nil to pick by type.
 function Importer.place(state, stored, kind, action, slot)
+    stored = Importer.url(stored)
     local position = state:placement()
     local x = position[1] + (slot or 0) * 3
     if kind == 'model' and (action == nil or action == 'add') then

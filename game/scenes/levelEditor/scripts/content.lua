@@ -44,6 +44,14 @@ function Content.new(scene)
     host.sky.enabled, host.shadows.enabled, host.render.renderDensity = false, false, 0.5
     local root3D = ui:create('World3D', { name = 'EditorWorld', timeScale = 0 }, viewport)
     local world = root3D._world
+    -- Inside the editor world `scene://x` names a level file (editor/assets/x), exactly as it will
+    -- inside the exported package; everything else keeps the scene's own roots.
+    local roots = world.resources.paths
+    -- The editor's own assets (overlay shader) stay reachable as `editor://`.
+    world.resources.paths = setmetatable({
+        scene = LevelFiles.ROOT,
+        named = setmetatable({ editor = roots.scene }, { __index = roots.named }),
+    }, { __index = roots })
     local environment = world.environment
     environment.debug.gizmos.enabled = false -- the editor draws its own light visualisation (view/lightViz)
     environment.shadows.enabled = true
@@ -675,6 +683,7 @@ end
 
 function Content:update(dt)
     local perf = self.perf
+    self.ui._editorFrame = (self.ui._editorFrame or 0) + 1
     perf:run('fly', self.fly.update, self.fly, dt)
     local position = self.camera.position
     self.grid:follow(position[1], position[3])

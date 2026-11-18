@@ -354,7 +354,7 @@ function Browser:pollDrag()
     local down = Pointer.isDown(1)
     local state = self.state
     local mx, my = state:pointer()
-    local _, sy = self.scroll:getAbsolutePosition()
+    local _, sy = Kit.rect(self.scroll)
     local inside = self.view == 'level' and self.tab == 'Assets' and self.frame.visible
     local index = inside and math.floor((my - sy + (self.scroll.scrollY or 0)) / 22) + 1 or nil
     if down and not self.wasLeft then
@@ -617,7 +617,7 @@ function Browser:pollMenu()
         return
     end
     local mx, my = state:pointer()
-    local _, sy = self.scroll:getAbsolutePosition()
+    local _, sy = Kit.rect(self.scroll)
     local index = math.floor((my - sy + (self.scroll.scrollY or 0)) / 22) + 1
     local onMenu = self.menus[index] or self.emptyMenu
     if onMenu then

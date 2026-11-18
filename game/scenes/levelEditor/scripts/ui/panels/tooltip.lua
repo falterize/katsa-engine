@@ -29,8 +29,7 @@ function Tooltip:hide()
 end
 
 local function over(node, mx, my)
-    local x, y = node:getAbsolutePosition()
-    local w, h = node:getAbsoluteSize()
+    local x, y, w, h = Kit.rect(node)
     return mx >= x and mx <= x + w and my >= y and my <= y + h
 end
 

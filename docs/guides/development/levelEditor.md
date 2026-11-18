@@ -210,3 +210,9 @@ default sun when the level has no directional light.
 - "Use as texture of the selection" works on a selected Mesh3D (colour map through `SurfaceAppearance3D`) and on a selected Decal3D (its `image`).
 - Dragging a file in the Level files tab highlights the folder it would move into and shows a label with its name at the pointer, like the Workspace drop marks.
 - The scene's own (empty) World3D is rendered at the lowest density without a sky, so full-screen passes are spent only on the editor view. Probe: `--test-v108.9.editor` (per-stage frame cost; software GL, so relative numbers only).
+
+## scene:// names and per-frame cost
+
+- Nodes name level files `scene://textures/a.png`, not `editor/assets/...`: the editor world resolves `scene://` to the level files folder, the same name the exported package uses (`assets/...` inside the `.katsa`, mapped back on Open). The editor's own overlay shader is `editor://shaders/onTop.glsl`.
+- `UI:layout()` scans the whole tree for changed properties, so `getAbsolutePosition()`/`getAbsoluteSize()` cost about 1 ms each in this UI. Per-frame polling (tooltips, ribbon hints, drag targets, pop-ups) uses `Kit.rect(node)`, which lays out once per editor frame. Do not call the getters in loops.
+- Edit > Drop to ground puts the bottom of the selected objects on y = 0.

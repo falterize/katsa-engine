@@ -98,6 +98,9 @@ local function edit(state)
         item('Select all', function()
             state:selectAll()
         end, { shortcut = shortcut(state, 'editorSelectAll') }),
+        item('Drop to ground', function()
+            state:notify(('Dropped %d to the ground'):format(ops:dropToGround(selection:items())))
+        end, { enabled = has }),
         item('Group', function()
             ops:group(selection:items())
         end, { enabled = has }),

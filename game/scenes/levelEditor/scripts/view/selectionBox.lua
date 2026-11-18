@@ -56,7 +56,7 @@ function SelectionBox.new(world, parent, index)
         castShadow = false,
         visible = false,
     }, parent)
-    world:create('Shader3D', { name = 'OnTop', shaderPath = 'scene://shaders/onTop.glsl' }, self.node)
+    world:create('Shader3D', { name = 'OnTop', shaderPath = 'editor://shaders/onTop.glsl' }, self.node)
     return self
 end
 

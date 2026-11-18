@@ -210,8 +210,7 @@ function Tree:probe()
         return nil
     end
     local mx, my = mouse(ui)
-    local sx, sy = self.scroll:getAbsolutePosition()
-    local sw = self.scroll:getAbsoluteSize()
+    local sx, sy, sw = Kit.rect(self.scroll)
     local localX, localY = mx - sx, my - sy + (self.scroll.scrollY or 0)
     local index = math.floor(localY / ROW) + 1
     local row = self.rows[index]
@@ -231,7 +230,7 @@ end
 -- Row under a y coordinate while dragging, clamped to the list plus one empty slot (so a drag
 -- past either end still extends the range, and empty space selects nothing).
 function Tree:indexAt(my)
-    local _, sy = self.scroll:getAbsolutePosition()
+    local _, sy = Kit.rect(self.scroll)
     local index = math.floor((my - sy + (self.scroll.scrollY or 0)) / ROW) + 1
     return math.max(1, math.min(#self.rows + 1, index))
 end
@@ -343,8 +342,7 @@ end
 -- and the zone ('into', 'before', 'after'); nil when the pointer is outside the list.
 function Tree:target(mx, my)
     local scroll = self.scroll
-    local sx, sy = scroll:getAbsolutePosition()
-    local sw, sh = scroll:getAbsoluteSize()
+    local sx, sy, sw, sh = Kit.rect(scroll)
     if mx < sx or mx > sx + sw or my < sy or my > sy + sh then
         return nil
     end

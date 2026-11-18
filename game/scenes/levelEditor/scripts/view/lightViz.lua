@@ -123,7 +123,7 @@ function LightViz:create(light)
     local world = self.world
     local entry = { light = light, id = self.count }
     entry.root = world:create('Node3D', { name = 'EditorLightViz' .. entry.id, visible = false })
-    world:create('Shader3D', { name = 'OnTop', shaderPath = 'scene://shaders/onTop.glsl' }, entry.root)
+    world:create('Shader3D', { name = 'OnTop', shaderPath = 'editor://shaders/onTop.glsl' }, entry.root)
     -- The pick sphere: small, solid, tinted; a click on it selects the light.
     entry.pick = world:create('Mesh3D', {
         name = 'EditorLightPick' .. entry.id,

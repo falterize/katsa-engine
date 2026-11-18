@@ -530,20 +530,50 @@ function Ops:placeModel(path, position)
     return root
 end
 
+-- Puts each node's lowest point on the ground plane (y = 0), using its size; rotation is ignored.
+-- One undo step. Returns how many nodes moved.
+function Ops:dropToGround(nodes)
+    local undo = self.content.undo
+    local moved = 0
+    undo:begin('Drop to ground')
+    for _, node in ipairs(nodes) do
+        local position, size = node.position, node.size
+        if position and size and not node.className:find('Light') then
+            local bottom = position[2] - math.abs(size[2]) / 2
+            if math.abs(bottom) > 1e-4 then
+                self:setProperty({ node }, 'position', nil, nil, { position[1], position[2] - bottom, position[3] })
+                moved = moved + 1
+            end
+        end
+    end
+    undo:commit()
+    return moved
+end
+
 -- Gives a Mesh3D a colour map (reuses its SurfaceAppearance3D child or creates one); a Decal3D
 -- takes the image directly.
 function Ops:applyTexture(mesh, path)
+    local done
     if mesh.className == 'Decal3D' then
-        return self:setProperty({ mesh }, 'image', nil, path)
-    end
-    for _, child in ipairs(mesh.children) do
-        if child.className == 'SurfaceAppearance3D' then
-            return self:setProperty({ child }, 'colorMap', nil, path)
+        done = self:setProperty({ mesh }, 'image', nil, path)
+    else
+        for _, child in ipairs(mesh.children) do
+            if child.className == 'SurfaceAppearance3D' then
+                done = self:setProperty({ child }, 'colorMap', nil, path)
+            end
+        end
+        if not done then
+            self:create('SurfaceAppearance3D', { colorMap = path }, mesh)
+            self.content.selection:set({ mesh })
+            done = true
         end
     end
-    self:create('SurfaceAppearance3D', { colorMap = path }, mesh)
-    self.content.selection:set({ mesh })
-    return true
+    -- The inspector shows the old value until it is rebuilt.
+    local panel = self.content.panels and self.content.panels.properties
+    if panel then
+        panel.dirty = true
+    end
+    return done
 end
 
 return Ops

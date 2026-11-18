@@ -172,6 +172,30 @@ function Module.run(self)
                 self:check(Importer.place(state, 'shared://textures/engine/sky/dayCross.png', 'image', 'texture') and decal.image == 'shared://textures/engine/sky/dayCross.png', 'An image can be put on a selected decal')
             end
         end
+        do
+            local stored = Importer.copy('assets/textures/materials/normal.png', 'textures')
+            local url = Importer.url(stored)
+            self:check(url:sub(1, 8) == 'scene://' and state.world.resources:canonical(url) == stored, 'Level files are named scene:// inside the editor world')
+            local decal
+            for _, item in ipairs(Catalog.items()) do
+                if item.label == 'Decal' then
+                    decal = item.make(state, { 0, 0, 0 })
+                end
+            end
+            state.selection:set({ decal })
+            Importer.place(state, stored, 'image', 'texture')
+            self:check(decal.image == url, 'An imported image is written as scene://')
+            local packed = LocationIO.export(state)
+            self:check(Archive.fromString(packed, 'x'):has('assets/' .. url:sub(9)), 'The export packs the scene:// file')
+            LocationIO.import(state, packed)
+            self:check(katsa.filesystem.getInfo(stored) ~= nil, 'Importing the package restores the file under the level files')
+        end
+        do
+            local box = state.level:find('Box')
+            box.position = { box.position[1], 5, box.position[3] }
+            state.ops:dropToGround({ box })
+            self:check(math.abs(box.position[2] - box.size[2] / 2) < 1e-3, 'Drop to ground puts the bottom of an object on y = 0')
+        end
         LevelFiles.createFile('', 'leftover.txt')
         state:newLocation()
         self:check(not katsa.filesystem.getInfo(LevelFiles.full('leftover.txt')), 'A new location starts with empty level files')

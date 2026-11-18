@@ -16,7 +16,8 @@ LocationIO.EXPORTS = 'editor/exports'
 LocationIO.AUTOSAVE = 'editor/autosave.katsa'
 LocationIO.RECENT = 'editor/recent.lua'
 
-local STORE = AssetStore.ROOT .. '/' -- 'editor/assets/'
+local STORE = 'scene://' -- how nodes name a level file; the file is editor/assets/<rest>
+local FILES = AssetStore.ROOT .. '/'
 local PACKAGE = 'assets/'
 
 -- Runtime-only editor ids must not leak into a file; ids are handed out again on import.
@@ -56,7 +57,7 @@ function LocationIO.export(content)
     end
     local files = {}
     for storePath in pairs(used) do
-        local bytes = katsa.filesystem.read(storePath)
+        local bytes = katsa.filesystem.read(FILES .. storePath:sub(#STORE + 1))
         if bytes then
             files[PackagePaths.rewrite(storePath, STORE, PACKAGE)] = bytes
         else
@@ -127,7 +128,8 @@ local function importAssets(archive)
     walk('assets')
     for packagePath in pairs(map) do
         local bytes = archive:read(packagePath)
-        local target = PackagePaths.rewrite(packagePath, PACKAGE, STORE)
+        local relative = packagePath:sub(#PACKAGE + 1)
+        local target = FILES .. relative
         local index = 1
         while true do
             local existing = katsa.filesystem.read(target)
@@ -135,12 +137,13 @@ local function importAssets(archive)
                 break
             end
             index = index + 1
-            target = PackagePaths.rewrite(packagePath, PACKAGE, STORE):gsub('(%.[^%./]+)$', '_' .. index .. '%1')
+            relative = packagePath:sub(#PACKAGE + 1):gsub('(%.[^%./]+)$', '_' .. index .. '%1')
+            target = FILES .. relative
         end
         if katsa.filesystem.read(target) == nil then
             writeFile(target, bytes)
         end
-        map[packagePath] = target
+        map[packagePath] = STORE .. relative
     end
     return map
 end
