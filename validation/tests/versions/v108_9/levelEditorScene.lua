@@ -399,6 +399,11 @@ function Module.run(self)
     decal.doubleSided = true
     self:check(decal.doubleSided == true, 'A decal can be made double-sided')
     decal:destroy()
+    local surface = state.world:create('Decal3D', {}, state.level.children[1])
+    state.selection:set({ surface })
+    self:check(#state.transform:targets() == 0, 'The gizmo does not take a decal (its 4-component position would be refused)')
+    self:check(pcall(state.ops.dropToGround, state.ops, { surface }), 'Drop to ground skips a decal instead of failing')
+    surface:destroy()
     local Catalog2 = require('game.scenes.levelEditor.scripts.builders.catalog')
     local SelectionBox = require('game.scenes.levelEditor.scripts.view.selectionBox')
     for _, entry in ipairs(Catalog2.items()) do

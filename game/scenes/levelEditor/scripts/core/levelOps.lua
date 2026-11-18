@@ -373,7 +373,9 @@ function Ops:ungroup(group)
     end
     for _, child in ipairs(children) do
         local p = child.position
-        self:setProperty({ child }, 'position', nil, nil, { p[1] + offset[1], p[2] + offset[2], p[3] + offset[3] })
+        if p and #p == 3 then -- a surface node keeps its place on the face
+            self:setProperty({ child }, 'position', nil, nil, { p[1] + offset[1], p[2] + offset[2], p[3] + offset[3] })
+        end
     end
     self:reparent(children, group.parent)
     self:delete({ group })
@@ -538,7 +540,7 @@ function Ops:dropToGround(nodes)
     undo:begin('Drop to ground')
     for _, node in ipairs(nodes) do
         local position, size = node.position, node.size
-        if position and size and not node.className:find('Light') then
+        if position and size and #position == 3 and #size == 3 and not node.className:find('Light') then
             local bottom = position[2] - math.abs(size[2]) / 2
             if math.abs(bottom) > 1e-4 then
                 self:setProperty({ node }, 'position', nil, nil, { position[1], position[2] - bottom, position[3] })

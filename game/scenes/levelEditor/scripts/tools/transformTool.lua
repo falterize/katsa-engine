@@ -61,8 +61,9 @@ function Tool:targets()
     for _, node in ipairs(TreeModel.topLevel(content.selection:items(), function(n)
         return n.parent
     end)) do
-        -- Nodes without a position (a few non-spatial ones) cannot be transformed.
-        if node.position and not content.ops:isLocked(node) then
+        -- Nodes without a 3D position cannot be transformed: a few are non-spatial, and surface
+        -- nodes (decals, surface UI) have a 4-component UDim2 position on their parent's face.
+        if node.position and #node.position == 3 and not content.ops:isLocked(node) then
             result[#result + 1] = node
         end
     end
