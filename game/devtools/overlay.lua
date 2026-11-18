@@ -90,7 +90,10 @@ function Overlay:keyUnhandled(key)
     elseif key == 'f1' then
         scene.console:toggle()
     elseif key == 'f4' and scene.debugOverlay then
-        scene.debugOverlay.visible = not scene.debugOverlay.visible
+        -- Same path as the Debug button: the ImGui Debug window when it is attached.
+        if not scene:consume('toggleDebug') then
+            scene.debugOverlay.visible = not scene.debugOverlay.visible
+        end
     else
         return false
     end

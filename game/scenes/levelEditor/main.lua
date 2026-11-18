@@ -13,6 +13,12 @@ function Scene.create(scene, context)
     context.instance = state
     scene:preparePresentation()
     context:require('scripts.ui.interface').create(state)
+    -- F4, Stats, Console and the Profiler are ImGui windows when the native library loads; say so
+    -- when it does not, instead of silently showing the legacy menus.
+    local devtools = scene:module('editor')
+    if devtools and not devtools.imgui then
+        state:notify('Dear ImGui is not loaded (' .. tostring(devtools.reason) .. '): F4 shows the legacy Debug menu')
+    end
     local systems = state.scene.systems
     -- Discover once at creation; order and startup are controlled by this scene.
     local entries = {}

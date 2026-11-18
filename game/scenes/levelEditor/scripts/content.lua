@@ -79,7 +79,7 @@ function Content.new(scene)
         count = prefs.grid.count,
     })
     self.lightViz = LightViz.new(world, self.level)
-    self.perf = Profiler.new()
+    self.perf = Profiler.new(nil, katsa.profiler)
     self.boxes = {} -- outline pool: [1] is the primary selection, the rest are the others
     self.ops = Ops.new(self)
     self:seed()

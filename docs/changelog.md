@@ -22,6 +22,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 - levelEditor: files picked in the system dialog (absolute paths) now import (the virtual file system could not read them); two-finger zone select on touch screens.
 - levelEditor: View > Performance info (per-part editor frame times in the status bar); hover hit-testing of tooltips and ribbon hints no longer runs every frame.
 - Fixed: fullscreen could leave a black picture in scenes that reuse their last frame (the menu) and, after re-entering fullscreen, an invisible mouse cursor. A resize now schedules four redraws, because the desktop compositor can discard the old contents more than once while a window changes mode, and `setFullscreen` sets the cursor image and its visibility again, since Windows drops both on a mode change. Test: `v108_9/fullscreen.lua` (`--test-v108.9`). The Windows behaviour itself needs the owner's confirmation.
+- The **F4 key** now takes the same path as the Debug button: with ImGui attached it opens the ImGui Debug window (`scene:consume('toggleDebug')`), and only without ImGui the legacy menu (`game/devtools/overlay.lua`). levelEditor: when the Dear ImGui library did not load it says why in the status bar, and its per-section editor timings (View > Performance info) are also engine profiler stages named `Editor: <section>` while the profiler records. Test: `v108_9/levelEditorLogic.lua`.
 
 ## v108.8
 

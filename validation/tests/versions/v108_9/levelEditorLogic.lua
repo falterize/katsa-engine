@@ -449,6 +449,21 @@ function Module.profiler(self)
         profiler:frame(0.25)
     end
     self:check(profiler.text:find('editor 10.1 ms', 1, true) and profiler.text:find('slow 10.00', 1, true), 'The profiler reports the average time of each section')
+    -- While the engine profiler records, each section is also an engine stage.
+    local stages = {}
+    local forwarded = Profiler.new(nil, {
+        isEnabled = function()
+            return true
+        end,
+        scope = function(name, fn, ...)
+            stages[#stages + 1] = name
+            return fn(...)
+        end,
+    })
+    local result = forwarded:run('gizmo', function(a)
+        return a * 2
+    end, 21)
+    self:check(stages[1] == 'Editor: gizmo' and result == 42, 'Sections are forwarded to the engine profiler with their results')
 end
 
 function Module.run(self)

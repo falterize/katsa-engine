@@ -4,14 +4,30 @@
 local Profiler = {}
 Profiler.__index = Profiler
 
-function Profiler.new(clock)
-    return setmetatable({ clock = clock or os.clock, sums = {}, order = {}, frames = 0, elapsed = 0, text = '' }, Profiler)
+-- `engine` is the optional engine profiler (`katsa.profiler`): while it records, every section is
+-- also a stage named `Editor: <section>` in the ImGui Profiler window and in --profile logs.
+function Profiler.new(clock, engine)
+    return setmetatable({
+        clock = clock or os.clock,
+        engine = engine,
+        sums = {},
+        order = {},
+        frames = 0,
+        elapsed = 0,
+        text = '',
+    }, Profiler)
 end
 
 -- Times `fn`; the name is remembered in first-use order.
 function Profiler:run(name, fn, ...)
     local start = self.clock()
-    local a, b = fn(...)
+    local a, b
+    local engine = self.engine
+    if engine and engine.isEnabled() then
+        a, b = engine.scope('Editor: ' .. name, fn, ...)
+    else
+        a, b = fn(...)
+    end
     local took = self.clock() - start
     local sums = self.sums
     if not sums[name] then
