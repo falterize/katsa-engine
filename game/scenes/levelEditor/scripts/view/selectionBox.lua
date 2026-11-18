@@ -62,7 +62,8 @@ end
 -- Follows `target` (a Mesh3D with position, rotation and size) or hides when it is nil.
 function SelectionBox:follow(target)
     local node = self.node
-    if not target or target.destroyed then
+    -- Only nodes with a transform get an outline (groups, lights and the like may lack one).
+    if not target or target.destroyed or not target.position or not target.rotation then
         if node.visible then
             node.visible = false
         end
