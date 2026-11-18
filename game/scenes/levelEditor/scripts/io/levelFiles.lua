@@ -144,6 +144,24 @@ local function removeAll(fs, store)
     return fs.remove(store) and true or false
 end
 
+-- Bytes of a file: through the virtual file system first, then straight from disk for an absolute
+-- path (the system file dialog returns those, and the virtual file system does not see them).
+local function readSource(fs, source)
+    local bytes, message = fs.read(source)
+    if bytes then
+        return bytes
+    end
+    if source:match('^%a:[/\\]') or source:sub(1, 1) == '/' or source:sub(1, 2) == '\\\\' then
+        local handle = io.open(source, 'rb')
+        if handle then
+            local data = handle:read('*a')
+            handle:close()
+            return data
+        end
+    end
+    return nil, message
+end
+
 -- Copies the bytes of `source` (any readable path) into level folder `folder` under a clean,
 -- unused name (a.png, a_2.png, ...). Returns the new relative path or nil, message.
 function LevelFiles.importFile(source, folder, fs)
@@ -152,7 +170,7 @@ function LevelFiles.importFile(source, folder, fs)
     if not folder then
         return nil, 'Invalid folder'
     end
-    local bytes, message = fs.read(source)
+    local bytes, message = readSource(fs, source)
     if not bytes then
         return nil, tostring(message or ('Cannot read ' .. tostring(source)))
     end

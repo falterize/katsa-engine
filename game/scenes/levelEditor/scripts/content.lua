@@ -184,6 +184,38 @@ end
 
 -- Selection by rectangle (viewport pixels): a top-level object is taken when its centre projects
 -- inside; Ctrl adds to the current selection.
+-- Two-finger zone select: the two touch points are opposite corners of the zone while the fingers
+-- spread; lifting a finger selects what is inside. Points are window pixels.
+function Content:abortMarquee()
+    self.marquee, self.viewportPressed = nil, false
+    if self.marqueeFrame then
+        self.marqueeFrame.visible = false
+    end
+end
+
+function Content:updateZone(ax, ay, bx, by)
+    local frame, ui = self.marqueeFrame, self.ui
+    if not frame then
+        return
+    end
+    local x0, y0 = (ax - ui.offsetX) / ui.scale, (ay - ui.offsetY) / ui.scale
+    local x1, y1 = (bx - ui.offsetX) / ui.scale, (by - ui.offsetY) / ui.scale
+    frame.position = { 0, math.min(x0, x1), 0, math.min(y0, y1) }
+    frame.size = { 0, math.abs(x1 - x0), 0, math.abs(y1 - y0) }
+    frame.visible = true
+end
+
+function Content:finishZone(ax, ay, bx, by)
+    if self.marqueeFrame then
+        self.marqueeFrame.visible = false
+    end
+    local x0, y0 = self:viewportPoint(ax, ay, true)
+    local x1, y1 = self:viewportPoint(bx, by, true)
+    if x0 and x1 and (math.abs(x1 - x0) > 6 or math.abs(y1 - y0) > 6) then
+        self:boxSelect(x0, y0, x1, y1)
+    end
+end
+
 function Content:boxSelect(x0, y0, x1, y1)
     local left, right = math.min(x0, x1), math.max(x0, x1)
     local top, bottom = math.min(y0, y1), math.max(y0, y1)

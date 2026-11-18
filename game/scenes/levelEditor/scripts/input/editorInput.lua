@@ -42,13 +42,50 @@ function Input:press(id, x, y)
         if not Pointer.id then
             Pointer.begin(id, x, y)
             self:mapMouseButton(1, true)
+        elseif self:beginZone(id, x, y) then
+            return
         end
     end
     Base.press(self, id, x, y)
 end
 
+-- A second finger in the viewport while the first one is resting there starts a zone select.
+function Input:beginZone(id, x, y)
+    local state = self.state
+    if self.zone or not (state.marquee or state.viewportPressed) or state.transform.drag or Pointer.moved > 30 then
+        return false
+    end
+    if not state:viewportPoint(x, y) then
+        return false
+    end
+    local first = Pointer.id
+    local fx, fy = Pointer.x, Pointer.y
+    state:abortMarquee()
+    self.map:setEventStrength('mouse:1', 0)
+    Pointer.finish()
+    self.zone = { points = { [first] = { fx, fy }, [id] = { x, y } } }
+    state:updateZone(fx, fy, x, y)
+    return true
+end
+
+function Input:zoneCorners()
+    local corners = {}
+    for _, point in pairs(self.zone.points) do
+        corners[#corners + 1] = point
+    end
+    return corners[1][1], corners[1][2], corners[2][1], corners[2][2]
+end
+
 function Input:release(id, x, y)
     local touch = self.state.touch
+    if self.zone and self.zone.points[id] then
+        if x and y then
+            self.zone.points[id] = { x, y }
+        end
+        self.state:finishZone(self:zoneCorners())
+        self.zone = nil
+        return
+    end
     if id ~= 'mouse' then
         if touch and touch:release(id, x, y) then
             return
@@ -63,6 +100,11 @@ function Input:release(id, x, y)
 end
 
 function Input:cancel(id)
+    if self.zone and self.zone.points[id] then
+        self.zone = nil
+        self.state:abortMarquee()
+        return
+    end
     local touch = self.state.touch
     if id ~= 'mouse' then
         if touch and touch:release(id) then
@@ -97,6 +139,11 @@ function Input:mapMouseButton(button, down)
 end
 
 function Input:move(id, x, y, dx, dy)
+    if self.zone and self.zone.points[id] then
+        self.zone.points[id] = { x, y }
+        self.state:updateZone(self:zoneCorners())
+        return
+    end
     if id ~= 'mouse' then
         local touch = self.state.touch
         if touch and touch:move(id, x, y, dx, dy) then
@@ -117,6 +164,7 @@ function Input:move(id, x, y, dx, dy)
 end
 
 function Input:reset()
+    self.zone = nil
     Pointer.reset()
     if self.state.touch then
         self.state.touch:reset()
