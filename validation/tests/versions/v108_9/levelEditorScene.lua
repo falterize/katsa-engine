@@ -62,6 +62,7 @@ function Module.run(self)
     end
     local lightEntry = state.lightViz.entries[lightNode]
     self:check(lightEntry ~= nil and lightEntry.reach ~= nil and state.lightViz:ownerOf(lightEntry.pick) == lightNode, 'A selected light shows its marker, its reach and can be picked by the marker')
+    self:check(lightEntry.pick:getEffectiveOpacity() > 0 and lightEntry.pick:getEffectiveOpacity() < 0.05, 'The pick sphere is pickable but practically invisible')
     state.selection:clear()
     state.ops:delete({ lightNode })
     for _ = 1, 2 do

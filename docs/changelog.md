@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.9
 
+- levelEditor: light visualisation redone. Every light is a 28 px icon (bulb, or sun for the directional light) tinted with its colour and drawn over the scene at constant screen size, instead of a solid sphere with three rings; spots and the sun add a thin direction line. Only the selected light shows its reach (thin range circles, cone or arrow), so many lights no longer make a tangle. Clicking the icon selects the light (an almost invisible pick sphere).
 - Fix (regression of this version): decals were invisible unless `doubleSided` was on. Their quad is wound opposite to its outward normal, and giving `doubleSided` a default of false switched on back-face culling for them. A decal is no longer culled by winding (the side test in `Faces.update` decides visibility), so `doubleSided` only controls whether the back is shown.
 - levelEditor: the selection outline used the node's local position, rotation and size, so it stayed behind when a parent moved or turned; it now uses the world pose (a decal uses its drawn matrix). New decals pick the face that looks toward the camera (the default Front face was often turned away, so the decal seemed missing). New capsules and the spawn point are no longer stretched: the engine's unit capsule is already 2 tall by 1 wide.
 - Decal3D has `doubleSided` (default false): a one-sided decal is hidden and not pickable from behind, a double-sided one shows and picks from both sides, like meshes and surface UI.

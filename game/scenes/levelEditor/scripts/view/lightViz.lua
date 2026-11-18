@@ -1,7 +1,8 @@
--- Light visualisation as in current editors: every light gets a small marker (a solid sphere
--- that can be clicked, with rings or rays by type) tinted with the light colour, and the selected
--- light also shows its reach: three range circles for a point light, the cone for a spot light,
--- an arrow with a ring for the sun. Everything is drawn on top of the scene (onTop shader) and
+-- Light visualisation as in current editors: every light gets a small icon (a bulb, or a sun for
+-- the directional light) of constant size on screen, tinted with the light colour; spot lights and
+-- the sun also show a short direction line. The selected light additionally shows its reach: three
+-- thin range circles for a point light, the cone for a spot light, an arrow with a ring for the
+-- sun. A click on the icon selects the light (an invisible pick sphere carries the click). Everything is drawn on top of the scene (onTop shader) and
 -- lives outside the level, so it is never saved, copied or undone. The shapes are built in world
 -- space from the engine's own spot direction formula (graphics/debug/gizmos.lua) and rebuilt only
 -- when range, radius, rotation or colour change.
@@ -9,13 +10,15 @@ local Assign = require('../core.assign')
 local Builder = require('./meshBuilder')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
-local ICON_PIXELS = 28 -- on-screen radius of the light icon
+local ICON_PIXELS = 14 -- on-screen half size of the light icon
 
 local LightViz = {}
 LightViz.__index = LightViz
 
 local TYPES = { PointLight3D = true, SpotLight3D = true, DirectionalLight3D = true }
-local HALF = 0.02 -- half width of the thin bars
+local HALF = 0.01 -- half width of the thin reach lines (world units)
+local MARK = 0.008 -- half width of the direction line (drawn at the icon's scale)
+local Icons = require('../ui.widgets.icons')
 
 function LightViz.isLight(node)
     return node ~= nil and TYPES[node.className] == true
@@ -57,27 +60,15 @@ end
 
 local AXES = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } }
 
+-- A short direction line for spots and the sun, in icon space (scaled with the icon).
 local function markerVertices(light)
     local vertices, origin = {}, { 0, 0, 0 }
-    if light.className == 'DirectionalLight3D' then
-        local d, r, u = basis(light.rotation or { 0, 0, 0 })
-        for i = 0, 7 do -- rays around the disc, pointing the way the light goes
-            local a = i * math.pi / 4
-            local ray = add(add(origin, r, math.cos(a)), u, math.sin(a))
-            Builder.bar(vertices, add(origin, ray, 0.28), add(add(origin, ray, 0.5), d, 0.15), d, HALF)
-        end
-        circle(vertices, origin, r, u, 0.22, 16, d)
-    elseif light.className == 'SpotLight3D' then
-        local d, r, u = basis(light.rotation or { 0, 0, 0 })
-        circle(vertices, add(origin, d, 0.3), r, u, 0.2, 12, d)
-        for i = 0, 3 do
-            local a = i * math.pi / 2
-            Builder.bar(vertices, origin, add(add(add(origin, d, 0.3), r, math.cos(a) * 0.2), u, math.sin(a) * 0.2), d, HALF)
-        end
-    else
-        for axis = 1, 3 do
-            Builder.ring(vertices, axis, 0.24, HALF, 12)
-        end
+    if light.className ~= 'PointLight3D' then
+        local d, r = basis(light.rotation or { 0, 0, 0 })
+        local tip = add(origin, d, 1.1)
+        Builder.bar(vertices, add(origin, d, 0.35), tip, r, MARK)
+        Builder.bar(vertices, tip, add(add(origin, d, 0.85), r, 0.18), d, MARK)
+        Builder.bar(vertices, tip, add(add(origin, d, 0.85), r, -0.18), d, MARK)
     end
     return vertices
 end
@@ -86,13 +77,13 @@ local function reachVertices(light, selected)
     local vertices, origin = {}, { 0, 0, 0 }
     local range = light.range or 10
     if light.className == 'PointLight3D' then
-        -- The light's size (radius) and, when selected, how far it reaches (range).
+        -- How far the light reaches, and a small ring for its size when it has one.
         for axis = 1, 3 do
-            Builder.ring(vertices, axis, math.max(light.radius or 0, 0.05), HALF, 32)
+            Builder.ring(vertices, axis, range, HALF, 64)
         end
-        if selected then
+        if (light.radius or 0) > 0.05 then
             for axis = 1, 3 do
-                Builder.ring(vertices, axis, range, HALF, 48)
+                Builder.ring(vertices, axis, light.radius, HALF, 24)
             end
         end
     elseif light.className == 'SpotLight3D' then
@@ -129,11 +120,29 @@ function LightViz:create(light)
         name = 'EditorLightPick' .. entry.id,
         kind = 'sphere',
         size = { 0.28, 0.28, 0.28 },
+        transparency = 0.995, -- picking skips fully transparent meshes, so it is almost, not fully, clear
         lightInfluence = 0,
         castShadow = false,
         canQuery = true,
     }, entry.root)
     self.owners[entry.pick] = light
+    -- The icon: a screen-sized billboard (pixels, not metres) drawn over the scene.
+    entry.icon = world:create('BillboardUI', {
+        name = 'EditorLightIcon' .. entry.id,
+        sizeMode = 'Screen',
+        size = { 0, ICON_PIXELS * 2, 0, ICON_PIXELS * 2 },
+        canvasSize = { ICON_PIXELS * 2, ICON_PIXELS * 2 },
+        onTop = true,
+        interactable = false,
+    }, entry.root)
+    entry.image = entry.icon.ui:create('ImageRect', {
+        size = { 1, 0, 1, 0 },
+        image = Icons.image(light.className == 'DirectionalLight3D' and 'sun' or 'light'),
+        fitMode = 'Fit',
+        pixelate = true,
+        backgroundTransparency = 1,
+        interactable = false,
+    }, entry.icon.ui.content)
     return entry
 end
 
@@ -200,7 +209,7 @@ function LightViz:update(selection, show, camera)
             light.className, rotation[1], rotation[2], rotation[3], light.range or 0, light.radius or 0, 0)
         if entry.color ~= color[1] + color[2] * 7 + color[3] * 13 then
             entry.color = color[1] + color[2] * 7 + color[3] * 13
-            Assign.color(entry.pick, color)
+            entry.image.imageColor = { color[1], color[2], color[3] }
             entry.markerKey, entry.reachKey = nil, nil -- new tint: rebuild the lines too
         end
         rebuild(self, entry, base, function()
@@ -209,11 +218,10 @@ function LightViz:update(selection, show, camera)
         if entry.marker then
             Assign.color(entry.marker, color)
         end
-        -- A point light always shows its radius; every light shows its full reach when selected.
+        -- Only the selected light shows its reach, so a level full of lights stays readable.
         local selected = selection:has(light)
-        local always = light.className == 'PointLight3D'
-        rebuild(self, entry, (selected or always) and (base .. tostring(selected)) or false, function()
-            return (selected or always) and reachVertices(light, selected) or {}
+        rebuild(self, entry, selected and base or false, function()
+            return selected and reachVertices(light, selected) or {}
         end, 'reach', 'EditorLightReach')
         if entry.reach then
             Assign.color(entry.reach, color)
@@ -233,9 +241,9 @@ function LightViz:update(selection, show, camera)
         end
         if entry.unit ~= unit then
             entry.unit = unit
-            entry.pick.size = { unit * 1.1, unit * 1.1, unit * 1.1 }
+            entry.pick.size = { unit * 2.2, unit * 2.2, unit * 2.2 }
             if entry.marker then
-                entry.marker.scale = { unit / 0.24, unit / 0.24, unit / 0.24 }
+                entry.marker.scale = { unit * 3, unit * 3, unit * 3 }
             end
         end
     end
