@@ -3,6 +3,7 @@
 -- `on` tag while active. Items wrap onto more rows when the window is narrow (Flow), so no
 -- button ever leaves the screen. Every button has a hover description (panels/tooltip) and a hint
 -- in the status bar.
+local Pointer = require('../../input.pointer')
 local Flow = require('../support.flow')
 local Icons = require('../widgets.icons')
 local Kit = require('../support.kit')
@@ -379,7 +380,7 @@ end
 
 function Toolbar:update()
     local ui, state = self.ui, self.state
-    local mx, my = (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+    local mx, my = (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
     local hint
     for _, entry in ipairs(self.hints) do
         if entry.node.visible ~= false and over(entry.node, mx, my) then

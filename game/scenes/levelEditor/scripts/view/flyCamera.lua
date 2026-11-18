@@ -27,7 +27,30 @@ function FlyCamera:look(dx, dy)
     camera.rotation[1] = math.max(-89, math.min(89, camera.rotation[1]))
 end
 
+local LOOK_RATE = 500 -- pixels per second at full stick deflection (scaled by the sensitivity)
+
+-- Touch controls drive the camera without the right mouse button: `input` is
+-- { moveX, moveY, vertical, lookX, lookY, fast, lookSpeed } or nil.
+function FlyCamera:setTouch(input)
+    self.touch = input
+end
+
+function FlyCamera:updateTouch(dt)
+    local touch = self.touch
+    if not touch then
+        return
+    end
+    if touch.lookX ~= 0 or touch.lookY ~= 0 then
+        self:look(touch.lookX * LOOK_RATE * touch.lookSpeed * dt, -touch.lookY * LOOK_RATE * touch.lookSpeed * dt)
+    end
+    if touch.moveX ~= 0 or touch.moveY ~= 0 or touch.vertical ~= 0 then
+        local factor = touch.fast and self.fast or 1
+        self.camera:move(touch.moveX, touch.moveY, touch.vertical, dt, self.speed * factor)
+    end
+end
+
 function FlyCamera:update(dt)
+    self:updateTouch(dt)
     if not self:isLooking() then
         return
     end

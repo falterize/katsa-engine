@@ -1,5 +1,6 @@
 -- Level editor composition: world lighting, the Level root that owns every placed object, the
 -- fly camera, grid, selection and the editor's per-frame commands. Controls are InputMap actions.
+local Pointer = require('./input.pointer')
 local Bounds = require('./core.bounds')
 local EditorInput = require('./input.editorInput')
 local FlyCamera = require('./view.flyCamera')
@@ -212,7 +213,7 @@ function Content:updateSelectionDrag()
     local map = self.fly.map
     if self.viewportPressed then
         self.viewportPressed = false
-        local mx, my = katsa.mouse.getX(), katsa.mouse.getY()
+        local mx, my = Pointer.getX(), Pointer.getY()
         local x, y = self:viewportPoint(mx, my)
         if x then
             if not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
@@ -224,7 +225,7 @@ function Content:updateSelectionDrag()
     if not marquee then
         return
     end
-    local mx, my = katsa.mouse.getX(), katsa.mouse.getY()
+    local mx, my = Pointer.getX(), Pointer.getY()
     local frame, ui = self.marqueeFrame, self.ui
     if map:isDown('editorPick') then
         if not marquee.active and math.abs(mx - marquee.mx) + math.abs(my - marquee.my) > 6 then
@@ -382,7 +383,7 @@ end
 
 -- True when the pointer is over a panel; the viewport itself does not count as UI.
 function Content:overUI()
-    local node = self.ui:hit(katsa.mouse.getX(), katsa.mouse.getY())
+    local node = self.ui:hit(Pointer.getX(), Pointer.getY())
     if not node then
         return false
     end
@@ -451,7 +452,7 @@ end
 -- Pointer position in UI units.
 function Content:pointer()
     local ui = self.ui
-    return (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+    return (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
 end
 
 -- Right-click without dragging in the viewport: a menu for the object under it, or for the
@@ -494,7 +495,7 @@ function Content:handleActions()
     local map = self.fly.map
     if map:justPressed('editorCreate') then
         local x, y = self:pointer()
-        local vx, vy = self:viewportPoint(katsa.mouse.getX(), katsa.mouse.getY())
+        local vx, vy = self:viewportPoint(Pointer.getX(), Pointer.getY())
         self:openCreate(x, y, vx and { vx, vy } or nil)
     end
     if map:justPressed('editorToggleGrid') then
@@ -656,6 +657,7 @@ function Content:release()
     for _, box in ipairs(self.boxes) do
         box:release()
     end
+    Pointer.reset()
     katsa.mouse.setRelativeMode(false)
 end
 

@@ -2,6 +2,7 @@
 -- defaults, a merge that keeps only known keys of the right type, and the text form.
 -- Pure Lua; the file itself is written by the scene.
 local LuaText = require('./luaText')
+local TouchLayout = require('../ui.support.touchLayout')
 
 local Settings = {}
 
@@ -15,6 +16,7 @@ function Settings.defaults()
         grid = { cell = 1, major = 10, count = 60, visible = true },
         camera = { flySpeed = 10, sensitivity = 0.15, fov = 70 },
         bindings = {},
+        touch = { mode = 'auto', lookSpeed = 1, controls = TouchLayout.defaults() },
     }
 end
 

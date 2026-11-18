@@ -2,6 +2,7 @@
 -- right-click menu. Items: { label, run, shortcut, checked, enabled } | { separator = true } |
 -- { heading = text }. Long lists scroll; `search = true` adds a filter field (Enter runs the
 -- first match). A click anywhere outside, or Esc, closes it.
+local Pointer = require('../../input.pointer')
 local Focus = require('source.engine.ui.widgets.textFocus')
 local Icons = require('../widgets.icons')
 local Kit = require('../support.kit')
@@ -174,11 +175,11 @@ local function inside(node, mx, my)
 end
 
 function Popup:update()
-    local down = katsa.mouse.isDown(1) or katsa.mouse.isDown(2)
+    local down = Pointer.isDown(1) or Pointer.isDown(2)
     local escape = katsa.keyboard.isDown('escape')
     if self.window then
         local ui = self.ui
-        local mx, my = (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+        local mx, my = (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
         if down and not self.wasDown and not inside(self.window, mx, my) and not (self.ignore and self.ignore(mx, my)) then
             self:close()
         elseif escape and not self.wasEscape then

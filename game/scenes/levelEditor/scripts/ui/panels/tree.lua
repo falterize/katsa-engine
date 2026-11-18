@@ -4,6 +4,7 @@
 -- drag a row onto another row to move it inside (middle of the row) or before/after it (upper or
 -- lower quarter); a line or a frame shows where it will land. Rows are rebuilt only when the tree
 -- or the selection changed.
+local Pointer = require('../../input.pointer')
 local Flow = require('../support.flow')
 local Icons = require('../widgets.icons')
 local Kit = require('../support.kit')
@@ -193,7 +194,7 @@ local function state_popupOpen(self)
 end
 
 local function mouse(ui)
-    return (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+    return (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
 end
 
 -- The pointer over the list: row index (nil below the last row), the zone ('name', 'expander',
@@ -201,7 +202,7 @@ end
 -- (another window, a pop-up or another panel covers it).
 function Tree:probe()
     local ui = self.ui
-    local hit = ui:hit(katsa.mouse.getX(), katsa.mouse.getY())
+    local hit = ui:hit(Pointer.getX(), Pointer.getY())
     while hit and hit ~= self.scroll do
         hit = hit.parent
     end
@@ -319,7 +320,7 @@ function Tree:menu(index, mx, my)
 end
 
 function Tree:poll()
-    local left, right = katsa.mouse.isDown(1), katsa.mouse.isDown(2)
+    local left, right = Pointer.isDown(1), Pointer.isDown(2)
     local pressedLeft, pressedRight = left and not self.wasLeft, right and not self.wasRight
     self.wasLeft, self.wasRight = left, right
     if state_popupOpen(self) then
@@ -424,7 +425,7 @@ function Tree:updateDrag()
         return
     end
     local ui, state = self.ui, self.state
-    if not katsa.mouse.isDown(1) then
+    if not Pointer.isDown(1) then
         if self.dragging and self.drop then
             local drop = self.drop
             if drop.parent and self:valid(drop.parent) then

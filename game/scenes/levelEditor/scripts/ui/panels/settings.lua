@@ -7,7 +7,7 @@ local Kit = require('../support.kit')
 local Settings = {}
 Settings.__index = Settings
 
-local CATEGORIES = { 'Appearance', 'Interface', 'Snap & Grid', 'Camera', 'Shortcuts' }
+local CATEGORIES = { 'Appearance', 'Interface', 'Snap & Grid', 'Camera', 'Touch', 'Shortcuts' }
 local ROW = 28
 local MODIFIERS = { ['key:lctrl'] = true, ['key:rctrl'] = true, ['key:lshift'] = true, ['key:rshift'] = true, ['key:lalt'] = true, ['key:ralt'] = true }
 
@@ -232,6 +232,42 @@ function Settings:buildCamera()
     end, 10)
 end
 
+function Settings:buildTouch()
+    local state, y = self.state, 0
+    local touch = state.touch
+    local labels = { auto = 'Auto', on = 'Always', off = 'Never' }
+    y = self:row(y, 'Show touch controls', function(x, top)
+        local button = Kit.button(self.ui, self.scroll, labels[touch.prefs.mode] or 'Auto', 90, ROW - 6, function()
+            touch:cycleMode()
+            self.dirty = true
+        end, 'tool')
+        button.position = { 0, x, 0, top }
+        return button
+    end)
+    y = self:numberRow(y, 'Look stick speed', function()
+        return touch.prefs.lookSpeed
+    end, function(value)
+        touch.prefs.lookSpeed = math.max(0.1, math.min(5, value))
+    end, 0.1)
+    y = self:row(y, 'Layout', function(x, top)
+        local edit = self:add(Kit.button(self.ui, self.scroll, 'Edit layout', 110, ROW - 6, function()
+            touch:startEditing()
+        end, 'tool'))
+        edit.position = { 0, x, 0, top }
+        local reset = Kit.button(self.ui, self.scroll, 'Reset', 80, ROW - 6, function()
+            touch.controls = require('game.scenes.levelEditor.scripts.ui.support.touchLayout').defaults()
+            touch.prefs.controls = touch.controls
+            state:savePrefs()
+        end, 'tool')
+        reset.position = { 0, x + 116, 0, top }
+        return reset
+    end)
+    y = self:row(y, 'Auto shows them on phones and tablets, or after the first touch.', function() end)
+    y = self:row(y, 'Move stick: fly. Look stick: turn. Up/Down: height. Fast: speed up.', function() end)
+    y = self:row(y, 'Edit layout: drag a control to move it; Smaller/Larger resize it.', function() end)
+    return self:row(y, 'Touch panels: a finger acts as the mouse; hold still for a right click.', function() end)
+end
+
 local function title(name)
     local text = name:gsub('^editor', ''):gsub('(%u)', ' %1'):gsub('^ ', '')
     return text
@@ -320,6 +356,7 @@ function Settings:rebuild()
         Interface = self.buildInterface,
         ['Snap & Grid'] = self.buildSnap,
         Camera = self.buildCamera,
+        Touch = self.buildTouch,
         Shortcuts = self.buildShortcuts,
     })[self.category]
     local height = build(self)

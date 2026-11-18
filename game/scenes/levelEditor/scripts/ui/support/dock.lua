@@ -1,5 +1,6 @@
 -- Places the editor frames from the pure Layout rectangles and runs the three splitters. The
 -- frames are only touched when the window, a splitter or the toolbar height changed.
+local Pointer = require('../../input.pointer')
 local Layout = require('./layout')
 
 local Dock = {}
@@ -14,7 +15,7 @@ function Dock.new(state, ui, frames, sizes)
     self.key = nil
     for name in pairs({ splitLeft = true, splitRight = true, splitBottom = true }) do
         frames[name]:connect('press', function()
-            local x, y = katsa.mouse.getX(), katsa.mouse.getY()
+            local x, y = Pointer.getX(), Pointer.getY()
             self.drag = {
                 name = name,
                 x = (x - ui.offsetX) / ui.scale,
@@ -83,10 +84,10 @@ end
 function Dock:update()
     local drag = self.drag
     if drag then
-        if katsa.mouse.isDown(1) then
+        if Pointer.isDown(1) then
             local ui = self.ui
-            local dx = (katsa.mouse.getX() - ui.offsetX) / ui.scale - drag.x
-            local dy = (katsa.mouse.getY() - ui.offsetY) / ui.scale - drag.y
+            local dx = (Pointer.getX() - ui.offsetX) / ui.scale - drag.x
+            local dy = (Pointer.getY() - ui.offsetY) / ui.scale - drag.y
             local p = self.preferred
             if drag.name == 'splitLeft' then
                 p.left = math.floor(drag.sizes.left + dx)

@@ -1,5 +1,6 @@
 -- The menu bar: File, Edit, Create, View, Settings. A click opens the list (panels/popup) under
 -- the title; while one is open, hovering another title switches to it.
+local Pointer = require('../../input.pointer')
 local Kit = require('../support.kit')
 local Menus = require('../support.menus')
 
@@ -70,7 +71,7 @@ function Menubar:update()
         return
     end
     local ui = self.ui
-    local mx, my = (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+    local mx, my = (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
     for index, button in ipairs(self.titles) do
         if index ~= self.open and inside(button, mx, my) then
             self:openMenu(index)

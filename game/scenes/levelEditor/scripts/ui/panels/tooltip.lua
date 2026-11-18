@@ -2,6 +2,7 @@
 -- the pointer rests on a registered widget for a moment a small window with the text appears next
 -- to it and follows nothing: it hides when the pointer leaves, a press happens or a pop-up opens.
 -- Destroyed widgets are dropped from the registry on the way.
+local Pointer = require('../../input.pointer')
 local Kit = require('../support.kit')
 
 local Tooltip = {}
@@ -74,8 +75,8 @@ function Tooltip:update()
     local dt = math.min(0.1, now - (self.last or now))
     self.last = now
     local ui, state = self.ui, self.state
-    local mx, my = (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
-    local pressed = katsa.mouse.isDown(1) or katsa.mouse.isDown(2)
+    local mx, my = (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
+    local pressed = Pointer.isDown(1) or Pointer.isDown(2)
     local popup = state.panels.popup
     local blocked = pressed or (popup and popup:isOpen()) or (state.panels.colorPicker and state.panels.colorPicker:isOpen())
     local found

@@ -3,6 +3,7 @@
 -- and "Project assets" (shared by all levels, read-only: use in place or copy into the level).
 -- Locations: recent files, the autosave and saved locations. Objects are created from the Create
 -- menu (Shift+A, the + button).
+local Pointer = require('../../input.pointer')
 local AssetStore = require('../../io.assetStore')
 local Importer = require('../../core.importer')
 local Menus = require('../support.menus')
@@ -124,7 +125,7 @@ function Browser:clear()
             widget:destroy()
         end
     end
-    self.widgets, self.menus = {}, {}
+    self.widgets, self.menus, self.emptyMenu = {}, {}, nil
 end
 
 function Browser:add(widget)
@@ -178,6 +179,28 @@ end
 
 function Browser:ask(title, default, callback)
     self.state.panels.prompt:ask(title, default, callback)
+end
+
+function Browser:newFolder(path)
+    self:ask('New folder', '', function(name)
+        local made, message = LevelFiles.createFolder(path, name)
+        if not made then
+            self.state:notify(message)
+        end
+        self.dirty = true
+    end)
+end
+
+function Browser:newFile(path)
+    self:ask('New file name', 'notes.txt', function(name)
+        local made, message = LevelFiles.createFile(path, name)
+        if made then
+            self.levelSelected = LevelFiles.full(made)
+        else
+            self.state:notify(message)
+        end
+        self.dirty = true
+    end)
 end
 
 function Browser:rename(entry)
@@ -298,36 +321,19 @@ function Browser:buildLevel()
             end
         end
     end
+    -- Right-click on empty space: the New menu.
+    self.emptyMenu = function(x, my)
+        state:popup(Menus.levelNew(state, self, path), x, my, { width = 220 })
+    end
     self:footer({
         { 'Import...', function()
             Importer.dialog(state)
         end },
-        { 'New folder', function()
-            self:ask('New folder', '', function(name)
-                local made, message = LevelFiles.createFolder(path, name)
-                if not made then
-                    state:notify(message)
-                end
-                self.dirty = true
-            end)
-        end },
-        { 'New file', function()
-            self:ask('New file name', 'notes.txt', function(name)
-                local made, message = LevelFiles.createFile(path, name)
-                if made then
-                    self.levelSelected = LevelFiles.full(made)
-                else
-                    state:notify(message)
-                end
-                self.dirty = true
-            end)
-        end },
-        { 'Rename', withFile(function(entry)
-            self:rename(entry)
-        end) },
-        { 'Delete', withFile(function(entry)
-            self:delete(entry)
-        end) },
+        { 'New', function()
+            -- The list opens above the pointer: the dock is at the bottom of the window.
+            local x, y = state:pointer()
+            state:popup(Menus.levelNew(state, self, path), x - 20, y - 90, { width = 200 })
+        end, 80 },
         { 'Add to level', withFile(function(entry)
             local kind = AssetStore.kind(entry.store, Models.supports)
             self:use(kind == 'image' and 'sprite' or 'add', entry.store, kind)
@@ -447,7 +453,7 @@ end
 -- Right button on a row: the row's menu. Rows are 22 px and the list is polled, so no per-row
 -- signal is needed.
 function Browser:pollMenu()
-    local down = katsa.mouse.isDown(2)
+    local down = Pointer.isDown(2)
     local pressed = down and not self.wasRight
     self.wasRight = down
     local state = self.state
@@ -455,7 +461,7 @@ function Browser:pollMenu()
         return
     end
     local ui = self.ui
-    local hit = ui:hit(katsa.mouse.getX(), katsa.mouse.getY())
+    local hit = ui:hit(Pointer.getX(), Pointer.getY())
     while hit and hit ~= self.scroll do
         hit = hit.parent
     end
@@ -465,7 +471,7 @@ function Browser:pollMenu()
     local mx, my = state:pointer()
     local _, sy = self.scroll:getAbsolutePosition()
     local index = math.floor((my - sy + (self.scroll.scrollY or 0)) / 22) + 1
-    local onMenu = self.menus[index]
+    local onMenu = self.menus[index] or self.emptyMenu
     if onMenu then
         onMenu(mx, my)
     end

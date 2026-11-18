@@ -2,6 +2,7 @@
 -- (core/gizmoMath), drags them (core/snap math) and records one undo step per drag.
 -- Assumption: the parents of edited nodes only translate (no rotation or scale), which holds
 -- for the Level and for groups made by the editor; the gizmo is placed with the parent's offset.
+local Pointer = require('../input.pointer')
 local Affine = require('source.engine.math.affine')
 local Gizmo = require('../view.gizmo')
 local GizmoMath = require('../core.gizmoMath')
@@ -136,7 +137,7 @@ function Tool:update()
     local perUnit = camera:pixelsPerUnitAt(depth)
     self.length, self.tolerance = Gizmo.PIXELS / perUnit, 10 / perUnit
     self.gizmo:place(frame.world, frame.rotation, self.length)
-    local mouseX, mouseY = katsa.mouse.getX(), katsa.mouse.getY()
+    local mouseX, mouseY = Pointer.getX(), Pointer.getY()
     local x, y = content:viewportPoint(mouseX, mouseY, true)
     if self.drag then
         if content.fly.map:isDown('editorPick') and x then

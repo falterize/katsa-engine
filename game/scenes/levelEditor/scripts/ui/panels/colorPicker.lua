@@ -2,6 +2,7 @@
 -- vector property (`row`) of the selected nodes. While the mouse is held the nodes are updated
 -- directly for a live preview; on release the original value is restored and the final colour is
 -- committed through Ops:setProperty, so one drag is exactly one undo step.
+local Pointer = require('../../input.pointer')
 local Kit = require('../support.kit')
 
 local ColorPicker = {}
@@ -226,11 +227,11 @@ function ColorPicker:finish()
 end
 
 function ColorPicker:update()
-    local down = katsa.mouse.isDown(1) or katsa.mouse.isDown(2)
+    local down = Pointer.isDown(1) or Pointer.isDown(2)
     local escape = katsa.keyboard.isDown('escape')
     if self.window then
         local ui = self.ui
-        local mx, my = (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+        local mx, my = (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
         if down and not self.wasDown then
             if rectangle(self.wheel, mx, my) then
                 self.dragging = 'wheel'

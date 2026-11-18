@@ -217,6 +217,22 @@ function Menus.asset(state, browser, file, kind)
     }
 end
 
+-- The New list of the Level files (the New button, right-click on empty space).
+function Menus.levelNew(state, browser, path)
+    return {
+        item('New folder...', function()
+            browser:newFolder(path)
+        end),
+        item('New file...', function()
+            browser:newFile(path)
+        end),
+        SEPARATOR,
+        item('Import files...', function()
+            Importer.dialog(state)
+        end),
+    }
+end
+
 -- Right-click menu of a row of the Level tab (a file or a folder of the level).
 function Menus.levelEntry(state, browser, entry)
     local items = {}
