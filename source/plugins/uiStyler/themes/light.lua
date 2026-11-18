@@ -12,6 +12,7 @@ return {
     border = { 0.78, 0.80, 0.84 },
     selection = { 0.760, 0.840, 0.960 },
     danger = { 0.78, 0.22, 0.20 },
+    warning = { 0.70, 0.45, 0.05 },
     corner = 6,
     gap = 8,
     rowHeight = 28,

@@ -55,6 +55,13 @@ function Content.new(scene)
     local environment = world.environment
     environment.debug.gizmos.enabled = false -- the editor draws its own light visualisation (view/lightViz)
     environment.shadows.enabled = true
+    -- Every shadow face has one resolution, but the sun's face covers `distance` metres while a
+    -- point light's face covers only its range: at the default 256 px over 240 m the sun's
+    -- shadows were stair-stepped next to the fine ones of the lights. A tighter sun box with
+    -- more texels and PCF makes them match.
+    environment.shadows.distance = 80
+    environment.shadows.resolution = 512
+    environment.shadows.filterSamples = 4
     environment.ambient = { 130, 136, 150 }
     environment.sky.enabled = true
     world:create('DirectionalLight3D', {
@@ -680,9 +687,35 @@ function Content:refresh()
     end
 end
 
--- A message in the status bar for a few seconds (refused edits, hints).
-function Content:notify(text)
+-- Levels of a message, guessed from its words when the caller gives none: failures are errors,
+-- refusals and empty results are warnings.
+local function levelOf(text)
+    local lower = text:lower()
+    if lower:find('failed', 1, true) or lower:find('cannot', 1, true) or lower:find('error', 1, true) then
+        return 'error'
+    end
+    if lower:find('no ', 1, true) == 1 or lower:find('not ', 1, true) or lower:find('refused', 1, true) then
+        return 'warn'
+    end
+    return 'info'
+end
+
+-- A message: the status bar for a few seconds, a card on the screen and a line in the Console.
+function Content:notify(text, level)
+    text = tostring(text)
+    level = level or levelOf(text)
     self.message, self.messageUntil = text, katsa.timer.getTime() + 4
+    self.log = self.log or {}
+    local log = self.log
+    log[#log + 1] = { text = text, level = level, time = os.date('%H:%M:%S') }
+    if #log > 200 then
+        table.remove(log, 1)
+    end
+    self.logVersion = (self.logVersion or 0) + 1
+    local toasts = self.panels and self.panels.toasts
+    if toasts then
+        toasts:push(text, level)
+    end
 end
 
 function Content:update(dt)

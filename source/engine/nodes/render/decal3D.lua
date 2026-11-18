@@ -25,6 +25,8 @@ function Class.mount(world, properties, parent)
     properties.imageMode = properties.mode
     Tint.normalize(properties, 'Decal3D')
     properties.onTop = properties.onTop == true
+    -- A decal faces one way like a mesh face; doubleSided also shows (and picks) its back.
+    properties.doubleSided = properties.doubleSided == true
     require('source.engine.components.illumination.lighting').normalize(properties, 0)
     require('source.engine.components.rendering.renderRange').normalize(properties, 500)
     properties.zIndex = properties.zIndex or 0

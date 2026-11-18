@@ -15,8 +15,8 @@ local Models = require('source.engine.import.models')
 local Browser = {}
 Browser.__index = Browser
 
-local TABS = { 'Assets', 'Location' }
-local LABELS = { Assets = 'Assets', Location = 'Locations' }
+local TABS = { 'Assets', 'Location', 'Console' }
+local LABELS = { Assets = 'Assets', Location = 'Locations', Console = 'Console' }
 local PROJECT = 'assets'
 local HEAD = 30
 local FOOT = 30
@@ -45,15 +45,15 @@ function Browser.create(state, ui, frame)
         self.tabButtons[tab] = button
     end
     self.pathBox = Kit.make(ui, 'TextBox', {
-        position = { 0, 212, 0, 3 },
-        size = { 1, -220, 0, 24 },
+        position = { 0, 312, 0, 3 },
+        size = { 1, -320, 0, 24 },
         fontSize = 13,
         text = '',
         visible = false,
         interactable = false,
     }, frame, 'field')
     self.nameBox = Kit.make(ui, 'TextBox', {
-        position = { 0, 212, 0, 3 },
+        position = { 0, 312, 0, 3 },
         size = { 0, 220, 0, 24 },
         fontSize = 13,
         text = '',
@@ -97,7 +97,7 @@ end
 
 function Browser:show(tab, importMode)
     -- Older names of the file tabs all mean the Assets tab.
-    self.tab, self.dirty = (tab == 'Location') and 'Location' or 'Assets', true
+    self.tab, self.dirty = (tab == 'Location' or tab == 'Console') and tab or 'Assets', true
     self.importMode = importMode == true
 end
 
@@ -164,6 +164,7 @@ function Browser:row(y, label, onPress, selected, thumb, onMenu, onRelease)
             position = { 0, 2, 0, y + 2 },
             size = { 0, 18, 0, 18 },
             image = thumb,
+            fitMode = 'Fit',
             interactable = false,
         }, self.scroll))
         x = 24
@@ -625,7 +626,31 @@ function Browser:pollMenu()
     end
 end
 
+-- The message log, newest at the bottom, errors and warnings in their own colours.
+function Browser:buildConsole()
+    local log = self.state.log or {}
+    self.loggedVersion = self.state.logVersion
+    local y = 0
+    for _, entry in ipairs(log) do
+        self:add(Kit.label(self.ui, self.scroll, entry.time .. '  ' .. entry.text, {
+            position = { 0, 6, 0, y + 2 },
+            size = { 1, -12, 0, 18 },
+            fontSize = 13,
+        }, entry.level == 'info' and 'text' or entry.level))
+        y = y + 22
+    end
+    if #log == 0 then
+        y = self:heading(y, 'Messages and errors appear here')
+    end
+    self.scroll.size = { 1, -8, 1, -(HEAD + 4) }
+    self.scroll.canvasSize = { 0, 0, 0, y }
+    self.stickBottom = y
+end
+
 function Browser:update()
+    if self.tab == 'Console' and self.loggedVersion ~= self.state.logVersion then
+        self.dirty = true
+    end
     self:pollMenu()
     self:pollDrag()
     if not self.dirty then
@@ -652,11 +677,18 @@ function Browser:update()
         else
             self:buildLevel()
         end
+    elseif self.tab == 'Console' then
+        self:buildConsole()
     else
         self:buildLocation()
     end
     local styler = self.state.styler
     styler:apply(self.frame)
+    if self.stickBottom then
+        local _, _, _, height = Kit.rect(self.scroll)
+        self.scroll.scrollY = math.max(0, self.stickBottom - height)
+        self.stickBottom = nil
+    end
 end
 
 return Browser

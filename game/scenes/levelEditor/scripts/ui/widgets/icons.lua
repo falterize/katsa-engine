@@ -537,6 +537,7 @@ function Icons.add(ui, parent, name, x, y, size)
         position = { 0, x, 0, y },
         size = { 0, size, 0, size },
         image = Icons.image(name),
+        fitMode = 'Fit',
         pixelate = true,
         backgroundTransparency = 1,
         interactable = false,

@@ -70,7 +70,7 @@ function Toolbar.create(state, ui, parent)
         for index, row in ipairs(rows) do
             local dy = 3 + (index - 1) * 20
             local text = Kit.label(ui, parent, row.label, { size = { 0, labelWidth, 0, 18 }, align = 'right', fontSize = 12 }, 'muted')
-            local box, refresh = Kit.numberField(ui, parent, { size = { 0, fieldWidth, 0, 18 }, fontSize = 12 }, row.get, function(value)
+            local box, refresh = Kit.numberField(ui, parent, { size = { 0, fieldWidth, 0, 18 }, fontSize = 12, clip = true }, row.get, function(value)
                 row.set(value)
                 state:savePrefs()
             end, 0.0001)
@@ -163,7 +163,7 @@ function Toolbar.create(state, ui, parent)
         state.snap.surface = not state.snap.surface
     end, function()
         return state.snap.surface
-    end, 'Drop moved objects onto the surface under the pointer')
+    end, 'Drop moved objects onto the surface under the pointer', nil, 10)
 
     ---------------------------------------------------------------- Create
     group = 'create'

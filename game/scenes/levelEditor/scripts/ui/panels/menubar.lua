@@ -11,17 +11,17 @@ function Menubar.create(state, ui, parent)
     local self = setmetatable({ state = state, ui = ui, titles = {} }, Menubar)
     local x = 6
     for index, menu in ipairs(Menus.list) do
-        local width = #menu.title * 8 + 22
+        local width = #menu.title * 7 + 20
         local button = Kit.button(ui, parent, menu.title, width, 24, function()
             if self.open == index then
                 state.panels.popup:close()
             else
                 self:openMenu(index)
             end
-        end, 'tab')
+        end, 'menu')
         button.position = { 0, x, 0, 2 }
         self.titles[index] = button
-        x = x + width + 2
+        x = x + width
     end
     return self
 end

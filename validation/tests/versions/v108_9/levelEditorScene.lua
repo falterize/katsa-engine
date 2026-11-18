@@ -383,6 +383,22 @@ function Module.run(self)
     search(state.level)
     self:check(board ~= nil and UiText.get(board) ~= '', 'Board text survives Save and Open')
 
+    -- Messages: a log line, a card on the screen and a level guessed from the words.
+    local before = #(state.log or {})
+    state:notify('Export failed: disk is full')
+    state:notify('Saved level')
+    frame(scene)
+    self:check(#state.log == before + 2 and state.log[before + 1].level == 'error', 'A failure message is logged as an error')
+    self:check(#state.panels.toasts.cards >= 2, 'Messages show as cards on the screen')
+    state.panels.browser:show('Console')
+    frame(scene)
+    self:check(state.panels.browser.tab == 'Console', 'The Console tab lists the log')
+    local decal = state.world:create('Decal3D', {}, state.level)
+    self:check(decal.doubleSided == false, 'A decal is one-sided by default')
+    decal.doubleSided = true
+    self:check(decal.doubleSided == true, 'A decal can be made double-sided')
+    decal:destroy()
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')
