@@ -13,7 +13,7 @@ editor key through the shared map. See `docs/guides/input/inputMap.md`.
 | Stage | Content | State |
 | --- | --- | --- |
 | a | Scene shell, fly camera, ground grid, picking and selection | in progress |
-| b | Workspace tree and Properties panel | planned |
+| b | Workspace tree and Properties panel | done (needs hardware check); drag-reparent is a *Move into...* button for now |
 | c | Gizmos (move, rotate, scale), snapping | planned |
 | d | Creation palette, model and image import | planned |
 | e | `.katsa` location export and import | pure parts done (format, ZIP writer) |
@@ -27,6 +27,13 @@ game/scenes/levelEditor/
     menu-settings.lua       menu entry and tags
     main.lua                lifecycle only
     scripts/content.lua     composition: world, camera, grid, tools, UI
+    scripts/core/levelOps.lua   undoable operations: create, delete, duplicate, group, ungroup,
+                            reparent, rename, copy/paste, property edits (nodes addressed by EditorId)
+    scripts/core/nodeData.lua   plain-data snapshots of nodes (undo of a delete, paste, export)
+    scripts/core/treeModel.lua  visible rows, reparent rules, range selection (pure)
+    scripts/ui/panels/tree.lua        Workspace panel
+    scripts/ui/panels/properties.lua  Properties panel (rows from the engine inspector list)
+    scripts/ui/theme.lua    colours and sizes (replaced by uiStyler style files in the UI stage)
     scripts/core/snap.lua   snap and drag math (pure)
     scripts/core/selection.lua   ordered selection set with a primary item (pure)
     scripts/core/bounds.lua bounding sphere of a node list (pure)

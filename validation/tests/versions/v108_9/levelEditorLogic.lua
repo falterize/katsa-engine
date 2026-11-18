@@ -7,6 +7,7 @@ local LuaText = require('game.scenes.levelEditor.scripts.io.luaText')
 local Bounds = require('game.scenes.levelEditor.scripts.core.bounds')
 local Selection = require('game.scenes.levelEditor.scripts.core.selection')
 local Snap = require('game.scenes.levelEditor.scripts.core.snap')
+local TreeModel = require('game.scenes.levelEditor.scripts.core.treeModel')
 local Undo = require('game.scenes.levelEditor.scripts.core.undo')
 local ZipWriter = require('game.scenes.levelEditor.scripts.io.zipWriter')
 
@@ -132,7 +133,26 @@ function Module.selection(self)
     self:check(center[1] == 2 and math.abs(radius - (2 + math.sqrt(3))) < 1e-9 and Bounds.sphere({}) == nil, 'Bounds cover every item and an empty list has none')
 end
 
+function Module.tree(self)
+    local root = { name = 'root' }
+    local a, b, c = { name = 'a', parent = root }, { name = 'b', parent = root }, { name = 'c' }
+    c.parent = a
+    root.children, a.children, b.children, c.children = { a, b }, { c }, {}, {}
+    local function childrenOf(n) return n.children end
+    local function parentOf(n) return n.parent end
+    local rows = TreeModel.flatten(root, childrenOf, { [root] = true })
+    self:check(#rows == 3 and rows[2].node == a and rows[2].hasChildren and not rows[2].expanded, 'A collapsed branch hides its children')
+    rows = TreeModel.flatten(root, childrenOf, { [root] = true, [a] = true }, rows)
+    self:check(#rows == 4 and rows[3].node == c and rows[3].depth == 2, 'An expanded branch lists its children one level deeper')
+    self:check(not TreeModel.canReparent(a, c, parentOf) and not TreeModel.canReparent(a, a, parentOf) and TreeModel.canReparent(c, b, parentOf), 'A node cannot move into itself or its own descendant')
+    local top = TreeModel.topLevel({ a, c, b }, parentOf)
+    self:check(#top == 2 and top[1] == a and top[2] == b, 'Moving a group already carries its selected children')
+    local range = TreeModel.range(rows, a, b)
+    self:check(range and #range == 3 and range[1] == a and range[3] == b, 'A range selects the rows between two nodes')
+end
+
 function Module.run(self)
+    Module.tree(self)
     Module.selection(self)
     Module.zip(self)
     Module.format(self)

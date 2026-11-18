@@ -4,6 +4,7 @@ local Bounds = require('./core.bounds')
 local EditorInput = require('./input.editorInput')
 local FlyCamera = require('./view.flyCamera')
 local Grid = require('./view.grid')
+local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
 local SelectionBox = require('./view.selectionBox')
@@ -33,10 +34,13 @@ function Content.new(scene)
     self.level = world:create('Node3D', { name = 'Level' })
     self.selection = Selection.new()
     self.undo = Undo.new()
+    self.treeVersion = 0
     self.tool, self.space = 'Select', 'World'
     self.grid = Grid.new(world, nil, settings.grid)
     self.box = SelectionBox.new(world)
+    self.ops = Ops.new(self)
     self:seed()
+    self.ops:adopt(self.level)
 
     local camera = scene.camera
     camera.near, camera.far, camera.fov = 0.05, 2000, settings.fov
@@ -78,6 +82,9 @@ function Content:pick(x, y)
     local scene, map = self.scene, self.fly.map
     local hit = Picking.raycast(scene.world, scene.camera, x, y)
     local node = hit and self:levelChild(hit)
+    if node and self.ops:isLocked(node) then
+        node = nil
+    end
     local add = map:isDown('editorAdd')
     if not node then
         if not add then
@@ -99,6 +106,9 @@ end
 
 function Content:setTool(name)
     self.tool = name
+    for tool, button in pairs(self.toolButtons or {}) do
+        button.backgroundColor = tool == name and { 0.25, 0.5, 0.82 } or { 0.2, 0.22, 0.26 }
+    end
 end
 
 function Content:handleActions()
@@ -112,6 +122,22 @@ function Content:handleActions()
     end
     if map:justPressed('editorFrameAll') then
         self:frame(self.level.children)
+    end
+    local selection, ops = self.selection, self.ops
+    if map:justPressed('editorUndo') then
+        self.undo:undo()
+        self:refresh()
+    elseif map:justPressed('editorRedo') then
+        self.undo:redo()
+        self:refresh()
+    elseif map:justPressed('editorDelete') then
+        ops:delete(selection:items())
+    elseif map:justPressed('editorDuplicate') then
+        ops:duplicate(selection:items())
+    elseif map:justPressed('editorCopy') then
+        self:notify(('Copied %d'):format(ops:copy(selection:items())))
+    elseif map:justPressed('editorPaste') then
+        ops:paste(self.level)
     end
     -- Q/W/E/R pick tools only when they are not fly keys (the look button is up).
     if not self.fly:isLooking() then
@@ -129,6 +155,28 @@ function Content:handleActions()
     end
 end
 
+-- Called after an undo or redo changed the world behind the panels' back.
+function Content:refresh()
+    self.treeVersion = self.treeVersion + 1
+    local alive = {}
+    for _, node in ipairs(self.selection:items()) do
+        if not node.destroyed then
+            alive[#alive + 1] = node
+        end
+    end
+    if #alive ~= self.selection:count() then
+        self.selection:set(alive)
+    end
+    for _, panel in pairs(self.panels or {}) do
+        panel.dirty = true
+    end
+end
+
+-- A message in the status bar for a few seconds (refused edits, hints).
+function Content:notify(text)
+    self.message, self.messageUntil = text, katsa.timer.getTime() + 4
+end
+
 function Content:update(dt)
     local scene = self.scene
     scene.world:updateNodes(dt)
@@ -141,6 +189,9 @@ function Content:update(dt)
     end
     self:handleActions()
     self.box:follow(self.selection:primary())
+    for _, panel in pairs(self.panels or {}) do
+        panel:update()
+    end
     self:updateStatus()
 end
 
@@ -159,6 +210,9 @@ function Content:updateStatus()
         self.selection:count(),
         primary and ('   [' .. tostring(primary.name) .. ']') or ''
     )
+    if self.message and katsa.timer.getTime() < self.messageUntil then
+        text = self.message
+    end
     if text ~= label.text then
         label.text = text
     end

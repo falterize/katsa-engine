@@ -63,6 +63,33 @@ function Module.run(self)
     state:pick(2, 2)
     self:check(state.selection:count() == 0, 'A click on empty space clears the selection')
 
+    local ops, undo = state.ops, state.undo
+    state.selection:set({ box })
+    ops:duplicate({ box })
+    self:check(#state.level.children == 4, 'Duplicate adds a copy of the selected object')
+    undo:undo()
+    self:check(#state.level.children == 3, 'Undo removes the duplicate')
+    undo:redo()
+    self:check(#state.level.children == 4, 'Redo brings the duplicate back')
+    local copy = state.selection:primary()
+    ops:delete({ copy })
+    self:check(#state.level.children == 3, 'Delete removes the selected object')
+    undo:undo()
+    self:check(#state.level.children == 4, 'Undo of a delete rebuilds the object')
+    ops:group({ box })
+    local group = state.selection:primary()
+    self:check(group.className == 'Node3D' and box.parent == group, 'Group moves the selection under a new Node3D')
+    undo:undo()
+    self:check(ops:node(ops:idOf(box)).parent == state.level, 'Undo of a group puts the object back')
+    local ok = ops:setProperty({ ops:node(ops:idOf(box)) }, 'position', 1, '5')
+    self:check(ok and ops:node(ops:idOf(box)).position[1] == 5, 'A property edit goes through the inspector rules')
+    undo:undo()
+    self:check(ops:node(ops:idOf(box)).position[1] == -3, 'Undo restores the edited property')
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    self:check(#state.panels.tree.rows == 5 and state.panels.properties.name.visible ~= nil, 'The Workspace tree lists the level and its objects')
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')
