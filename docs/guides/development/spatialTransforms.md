@@ -22,7 +22,7 @@ children attach to its instance origin. Skeletal/bone sockets are a later stage.
   camera matrices use `Rz(roll) * Ry(yaw) * Rx(-pitch)`.
 - Camera3D roll now works consistently even when directly parented to World3D or
   unparented. Projection always extracts a rigid camera frame.
-- CFrame angular constructors use radians; CFrame is a rigid pose, without scale.
+- CFrame angular constructors (`CFrame.Angles(x, y, z)`, `CFrame.fromAxisAngle`) use radians; CFrame is a rigid pose, without scale.
 - Matrices are row-major arrays of 16 values acting on column vectors.
   Translation occupies indices 4, 8 and 12. The final row is 0,0,0,1.
 - `scale` is dimensionless and each component must exceed 0.000001. Zero,
