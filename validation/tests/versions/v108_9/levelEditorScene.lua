@@ -398,6 +398,22 @@ function Module.run(self)
     decal.doubleSided = true
     self:check(decal.doubleSided == true, 'A decal can be made double-sided')
     decal:destroy()
+    local Catalog2 = require('game.scenes.levelEditor.scripts.builders.catalog')
+    local SelectionBox = require('game.scenes.levelEditor.scripts.view.selectionBox')
+    for _, entry in ipairs(Catalog2.items()) do
+        if entry.label == 'Decal' then
+            local made = entry.make(state, { 0, 0, 0 })
+            local host = made.parent
+            host.position = { 5, 1, 0 }
+            made:update(state.world, state.camera)
+            local at = SelectionBox.pose(made)
+            self:check(made.drawable and math.abs(at[1] - 5) < 1.2, 'A new decal faces the camera and its outline follows a moved parent')
+        end
+        if entry.label == 'Capsule' then
+            local made = entry.make(state, { 0, 0, 0 })
+            self:check(made.size[2] == made.size[1], 'A new capsule is not stretched (the unit capsule is already twice as tall as wide)')
+        end
+    end
 
     local visible = state.grid.visible
     state.grid:setVisible(not visible)

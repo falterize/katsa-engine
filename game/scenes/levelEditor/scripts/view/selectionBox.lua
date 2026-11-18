@@ -1,6 +1,7 @@
 -- The selection outline: twelve thin bars around a unit cube, placed over the primary selected
 -- node every frame. One mesh, no per-frame allocation except the transform tables.
 local Assign = require('../core.assign')
+local Affine = require('source.engine.math.affine')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
 local SelectionBox = {}
@@ -60,6 +61,29 @@ function SelectionBox.new(world, parent, index)
     return self
 end
 
+-- World pose of the box for `target`: position, Euler degrees and size. A node's own position
+-- and rotation are relative to its parent, so a child of a moved or turned parent needs its
+-- world matrix; a decal (and any surface node) lies on a face of its parent, so its own drawn
+-- matrix is used, with a thin depth.
+function SelectionBox.pose(target)
+    local surface = rawget(target, '_surfaceLocal') ~= nil and target.matrix
+    local matrix = surface or (target.getWorldMatrix and target:getWorldMatrix())
+    if matrix then
+        local ok, position, rotation, scale = pcall(Affine.decompose, matrix)
+        if ok then
+            if surface then
+                return position, rotation, { scale[1], scale[2], 0.05 }
+            end
+            local size = target.size
+            if size and #size == 3 then
+                return position, rotation, { size[1] * scale[1], size[2] * scale[2], size[3] * scale[3] }
+            end
+            return position, rotation, scale
+        end
+    end
+    return target.position, target.rotation, target.size or { 1, 1, 1 }
+end
+
 -- Follows `target` (a Mesh3D with position, rotation and size) or hides when it is nil.
 function SelectionBox:follow(target)
     local node = self.node
@@ -70,7 +94,7 @@ function SelectionBox:follow(target)
         end
         return
     end
-    local p, r, size = target.position, target.rotation, target.size or { 1, 1, 1 }
+    local p, r, size = SelectionBox.pose(target)
     Assign.vec(node, 'position', p[1], p[2], p[3])
     Assign.vec(node, 'rotation', r[1], r[2], r[3])
     Assign.vec(node, 'size', size[1], size[2], size[3])

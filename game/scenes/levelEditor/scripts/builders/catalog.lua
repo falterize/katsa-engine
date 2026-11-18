@@ -1,6 +1,8 @@
 -- What the Create tab offers: every item knows how to build itself through the undoable
 -- `ops:create`. Positions come from the editor's placement point (in front of the camera).
+local Affine = require('source.engine.math.affine')
 local Clone = require('source.engine.nodes.core.clone')
+local Math = require('source.engine.math.math3d')
 local Shapes = require('./shapes')
 local UiText = require('../core.uiText')
 
@@ -74,6 +76,28 @@ local function volume(label, trigger)
     }
 end
 
+-- The face of `host` that looks most toward the camera, so a new decal or board is seen at
+-- once (the default Front face is the host's -Z side, often turned away from the editor view).
+local FACES = { { 'Left', 'Right' }, { 'Bottom', 'Top' }, { 'Front', 'Back' } }
+
+local function faceToward(host, camera)
+    local ok, inverse = pcall(Affine.inverse, host:getWorldMatrix())
+    if not ok or not camera then
+        return 'Front'
+    end
+    local eye = camera.worldPosition or camera.position
+    local x, y, z = Math.transform(inverse, eye[1], eye[2], eye[3])
+    local local3, best, face = { x, y, z }, -1, 'Front'
+    local size = host.size or { 1, 1, 1 }
+    for axis = 1, 3 do
+        local weight = math.abs(local3[axis]) / math.max(1e-6, size[axis])
+        if weight > best then
+            best, face = weight, FACES[axis][local3[axis] < 0 and 1 or 2]
+        end
+    end
+    return face
+end
+
 -- A node that lives on a surface (Decal3D, SurfaceUI, SurfaceAppearance3D): it goes under the
 -- selected mesh, or under a new cube when nothing suitable is selected. `child` is an optional
 -- first child, so the node shows something at once.
@@ -98,6 +122,9 @@ local function surfaceNode(group, label, class, extra, child, needsHost, text)
             for key, value in pairs(extra or {}) do
                 properties[key] = value
             end
+            if class == 'Decal3D' then
+                properties.face = properties.face or faceToward(host, content.camera)
+            end
             local node = ops:create(class, properties, host)
             if text then
                 UiText.set(node, text)
@@ -114,7 +141,7 @@ function Catalog.items()
         primitive('Cube', 'cube', { 2, 2, 2 }),
         primitive('Sphere', 'sphere', { 2, 2, 2 }),
         primitive('Plane', 'plane', { 4, 0.01, 4 }),
-        primitive('Capsule', 'capsule', { 1, 2, 1 }),
+        primitive('Capsule', 'capsule', { 1, 1, 1 }),
         primitive('Cylinder', 'cylinder', { 1.5, 2, 1.5 }),
         primitive('Cone', 'cone', { 1.5, 2, 1.5 }),
         plain('Lights', 'Point light', 'PointLight3D'),
@@ -130,7 +157,7 @@ function Catalog.items()
                     name = Clone.uniqueName(content.world, 'SpawnPoint'),
                     kind = 'capsule',
                     position = lifted(position, 1.8),
-                    size = { 0.6, 1.8, 0.6 },
+                    size = { 0.9, 0.9, 0.9 },
                     color = { 0.2, 0.85, 0.35, 0.8 },
                 }, nil, { SpawnPoint = true })
             end,
