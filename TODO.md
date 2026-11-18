@@ -18,6 +18,16 @@ Goal: make `layout()` nearly free when nothing changed.
   they must move behind the typed/observed store (or be written through setters) before polling
   can be dropped. Engine code that writes scroll offsets, text measurements and layout results
   with `rawset` needs the same audit.
+- Findings (v108.9 probe, 611 editor nodes, `ui:changed()` 1.08 ms on llvmpipe): UI vectors already
+  bump the node's `_propertyRevision` (managed values, `valueTypes.assign`), but scalar properties
+  (`text`, `fontSize`, `visible`, `backgroundTransparency`...) are raw instance fields: a write to
+  an existing key never reaches `__newindex`, so nothing bumps. The Node3D route (move them into
+  `_observedValues`, see `nodes/core/propertyChanges.lua`) makes every read of such a property a
+  metamethod call, which hits drawing and hit-testing hard on UI nodes. Before any rewrite,
+  benchmark the read overhead; the cheaper experiment is to gate only the `Snapshot.fields` call
+  on a revision once the layout-relevant scalars are observed. Full Godot-style deferred layout
+  (queue at end of frame, minimum-size propagation, container sort queue) also touches
+  `layout/arrangement.lua` and `scrollCanvas.lua` and is not needed for the speed-up.
 - Keep the polling scan as a debug check (`KATSA_VERIFY_LAYOUT`): run both and assert that the
   dirty flags never miss a change. The v106.8 suite (991+ UI checks) and the scene smoke tests
   are the regression net; real-GPU and Windows behaviour need the owner's confirmation.
