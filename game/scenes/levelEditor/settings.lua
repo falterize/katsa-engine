@@ -41,6 +41,7 @@ local Settings = {
         editorUndo = ctrl('z'),
         editorRedo = ctrl('y'),
         editorDuplicate = ctrl('d'),
+        editorCut = ctrl('x'),
         editorCopy = ctrl('c'),
         editorPaste = ctrl('v'),
         editorSelectAll = ctrl('a'),

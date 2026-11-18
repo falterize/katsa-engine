@@ -306,6 +306,51 @@ local function destroyLevelChildren(self)
     end
 end
 
+-- The default example level: a ground, a few shapes, a sun and a lamp. Built through the same
+-- Create path as everything else, then the undo history starts empty.
+-- Cut = copy to the clipboard, then delete (one undo step for the delete).
+function Content:cut()
+    local items = self.selection:items()
+    if #items == 0 then
+        return
+    end
+    self:notify(('Cut %d'):format(self.ops:copy(items)))
+    self.ops:delete(items)
+end
+
+function Content:newExample()
+    self:clearLevel()
+    local ops, world = self.ops, self.world
+    local Clone = require('source.engine.nodes.core.clone')
+    local function mesh(name, kind, position, size, color)
+        ops:create('Mesh3D', {
+            name = Clone.uniqueName(world, name),
+            kind = kind,
+            position = position,
+            size = size,
+            color = color,
+        })
+    end
+    mesh('Ground', 'plane', { 0, 0, 0 }, { 30, 0.1, 30 }, { 0.55, 0.62, 0.5, 1 })
+    mesh('Cube', 'cube', { -3, 1, -2 }, { 2, 2, 2 }, { 0.85, 0.45, 0.35, 1 })
+    mesh('Sphere', 'sphere', { 0, 1, -3 }, { 2, 2, 2 }, { 0.35, 0.6, 0.85, 1 })
+    mesh('Pillar', 'cube', { 3.5, 2, -2 }, { 1, 4, 1 }, { 0.8, 0.8, 0.75, 1 })
+    ops:create('DirectionalLight3D', {
+        name = Clone.uniqueName(world, 'Sun'),
+        position = { 0, 8, 0 },
+        rotation = { 50, 35, 0 },
+    })
+    ops:create('PointLight3D', {
+        name = Clone.uniqueName(world, 'Lamp'),
+        position = { 0, 3, 2 },
+    })
+    self.selection:clear()
+    self.undo:clear()
+    self.fileName, self.savedVersion = nil, self.undo.version
+    self:frame(self.level.children)
+    self:notify('Example level (File > New location starts an empty one)')
+end
+
 function Content:newLocation()
     self:clearLevel()
     self.fileName, self.savedVersion = nil, self.undo.version
@@ -553,6 +598,8 @@ function Content:handleActions()
         ops:delete(selection:items())
     elseif map:justPressed('editorDuplicate') then
         ops:duplicate(selection:items())
+    elseif map:justPressed('editorCut') then
+        self:cut()
     elseif map:justPressed('editorCopy') then
         self:notify(('Copied %d'):format(ops:copy(selection:items())))
     elseif map:justPressed('editorPaste') then

@@ -32,6 +32,8 @@ function Browser.create(state, ui, frame)
         levelPath = '',
         projectPath = PROJECT,
         menus = {},
+        sources = {},
+        drops = {},
         tabButtons = {},
         width = 600,
     }, Browser)
@@ -126,6 +128,7 @@ function Browser:clear()
         end
     end
     self.widgets, self.menus, self.emptyMenu = {}, {}, nil
+    self.sources, self.drops = {}, {}
 end
 
 function Browser:add(widget)
@@ -134,7 +137,7 @@ function Browser:add(widget)
 end
 
 -- A row of the list tabs: a full-width button, optionally with an image thumbnail.
-function Browser:row(y, label, onPress, selected, thumb, onMenu)
+function Browser:row(y, label, onPress, selected, thumb, onMenu, onRelease)
     self.menus[math.floor(y / 22) + 1] = onMenu
     local x = 2
     if thumb then
@@ -153,7 +156,12 @@ function Browser:row(y, label, onPress, selected, thumb, onMenu)
         align = 'left',
         fontSize = 13,
     }, self.scroll, 'row', selected and 'selected' or nil))
-    button:connect('press', onPress)
+    if onPress then
+        button:connect('press', onPress)
+    end
+    if onRelease then
+        button:connect('release', onRelease)
+    end
     return y + 22
 end
 
@@ -239,6 +247,99 @@ function Browser:delete(entry)
     end)
 end
 
+-- Clipboard of the Level files: { entry, cut }. Paste copies, or moves when it was cut.
+function Browser:setClipboard(entry, cut)
+    self.clipboard = { path = entry.path, name = entry.name, cut = cut }
+    self.state:notify((cut and 'Cut ' or 'Copied ') .. entry.name)
+end
+
+-- Where an object that moved is now: the open selection follows it.
+local function follow(self, from, to)
+    if self.levelSelected == LevelFiles.full(from) then
+        self.levelSelected = LevelFiles.full(to)
+    end
+end
+
+function Browser:paste(folder)
+    local clip = self.clipboard
+    if not clip then
+        self.state:notify('Nothing to paste: use Cut or Copy on a file first')
+        return
+    end
+    folder = LevelFiles.clean(folder) or ''
+    local new, message
+    if clip.cut then
+        new, message = LevelFiles.move(clip.path, folder)
+        if new then
+            follow(self, clip.path, new)
+            self.clipboard = nil
+            self.state:notify('Moved ' .. clip.name .. '. Objects that used the old path show a placeholder until re-assigned')
+        end
+    else
+        new, message = LevelFiles.copy(clip.path, folder)
+        if new then
+            self.state:notify('Pasted ' .. new)
+        end
+    end
+    if not new then
+        self.state:notify(tostring(message))
+    end
+    self.dirty = true
+end
+
+-- Clone: a copy next to the original (name_2).
+function Browser:clone(entry)
+    local new, message = LevelFiles.copy(entry.path, LevelFiles.parent(entry.path))
+    self.state:notify(new and ('Cloned to ' .. new) or tostring(message))
+    self.dirty = true
+end
+
+-- Move to a typed folder path (relative to Level files; empty = the root).
+function Browser:moveTo(entry)
+    self:ask('Move ' .. entry.name .. ' to folder (empty = root)', LevelFiles.parent(entry.path), function(folder)
+        self:moveInto(entry, folder)
+    end)
+end
+
+function Browser:moveInto(entry, folder)
+    local new, message = LevelFiles.move(entry.path, folder)
+    if new then
+        follow(self, entry.path, new)
+        self.state:notify('Moved to ' .. (folder ~= '' and folder or 'the root') .. '. Objects that used the old path show a placeholder until re-assigned')
+    else
+        self.state:notify(tostring(message))
+    end
+    self.dirty = true
+end
+
+-- Drag a row onto a folder row (or ".." for the parent folder) to move it. The press is noted,
+-- the release decides; a drag shorter than a few pixels is an ordinary click.
+function Browser:pollDrag()
+    local down = Pointer.isDown(1)
+    local state = self.state
+    local mx, my = state:pointer()
+    local _, sy = self.scroll:getAbsolutePosition()
+    local inside = self.view == 'level' and self.tab == 'Assets' and self.frame.visible
+    local index = inside and math.floor((my - sy + (self.scroll.scrollY or 0)) / 22) + 1 or nil
+    if down and not self.wasLeft then
+        local source = index and self.sources[index]
+        self.drag = source and { entry = source, x = mx, y = my, moved = false } or nil
+        self.dragMoved = false
+    elseif down and self.drag then
+        if math.abs(mx - self.drag.x) + math.abs(my - self.drag.y) > 8 then
+            self.drag.moved, self.dragMoved = true, true
+        end
+    elseif not down and self.wasLeft and self.drag then
+        local drag = self.drag
+        self.drag = nil
+        local target = drag.moved and index and self.drops[index]
+        if target ~= nil and target ~= false then
+            self:moveInto(drag.entry, target)
+        end
+    end
+    self.wasLeft = down
+end
+
 -- Copies a project file into the level folder on screen (or the folder for its type).
 function Browser:copyToLevel(entry)
     local stored, result = Importer.copy(entry.path, LevelFiles.clean(self.levelPath))
@@ -280,6 +381,9 @@ function Browser:buildLevel()
         end
         self.dirty = true
     end)
+    if path ~= '' then
+        self.drops[1] = LevelFiles.parent(path)
+    end
     local function menu(entry)
         return function(x, my)
             self.levelSelected, self.dirty = entry.store, true
@@ -287,13 +391,19 @@ function Browser:buildLevel()
         end
     end
     for _, dir in ipairs(listing.dirs) do
-        y = self:row(y, '[' .. dir.name .. ']', function()
-            self.levelPath, self.levelSelected, self.dirty = dir.path, nil, true
-        end, nil, nil, menu(dir))
+        local index = math.floor(y / 22) + 1
+        self.sources[index], self.drops[index] = dir, dir.path
+        -- A folder opens on release so that pressing it can start a drag instead.
+        y = self:row(y, '[' .. dir.name .. ']', nil, nil, nil, menu(dir), function()
+            if not self.dragMoved then
+                self.levelPath, self.levelSelected, self.dirty = dir.path, nil, true
+            end
+        end)
     end
     for _, file in ipairs(listing.files) do
         local kind = AssetStore.kind(file.store, Models.supports)
         local label = file.name .. (kind ~= 'file' and ('   (' .. kind .. ')') or '')
+        self.sources[math.floor(y / 22) + 1] = file
         y = self:row(y, label, function()
             self.levelSelected, self.dirty = file.store, true
         end, self.levelSelected == file.store, kind == 'image' and file.store or nil, menu(file))
@@ -479,6 +589,7 @@ end
 
 function Browser:update()
     self:pollMenu()
+    self:pollDrag()
     if not self.dirty then
         return
     end

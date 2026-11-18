@@ -7,6 +7,7 @@ local Catalog = require('../../builders.catalog')
 local Models = require('source.engine.import.models')
 local Shortcut = require('./shortcut')
 local Importer = require('../../core.importer')
+local LevelFiles = require('../../io.levelFiles')
 
 local Menus = {}
 
@@ -24,7 +25,10 @@ local SEPARATOR = { separator = true }
 
 local function file(state)
     local items = {
-        item('New location', function()
+        item('New (example level)', function()
+            state:newExample()
+        end),
+        item('New empty location', function()
             state:newLocation()
         end),
         item('Open...', function()
@@ -75,13 +79,16 @@ local function edit(state)
             state:refresh()
         end, { shortcut = shortcut(state, 'editorRedo'), enabled = state.undo:canRedo(), icon = 'redo' }),
         SEPARATOR,
+        item('Cut', function()
+            state:cut()
+        end, { shortcut = shortcut(state, 'editorCut'), enabled = has }),
         item('Copy', function()
             state:notify(('Copied %d'):format(ops:copy(selection:items())))
         end, { shortcut = shortcut(state, 'editorCopy'), enabled = has }),
         item('Paste', function()
             ops:paste(state.level)
-        end, { shortcut = shortcut(state, 'editorPaste') }),
-        item('Duplicate', function()
+        end, { shortcut = shortcut(state, 'editorPaste'), enabled = ops:hasClipboard() }),
+        item('Clone', function()
             ops:duplicate(selection:items())
         end, { shortcut = shortcut(state, 'editorDuplicate'), enabled = has }),
         item('Delete', function()
@@ -139,12 +146,18 @@ function Menus.node(state)
     local many = selection:count() > 1
     local hidden = node and node.visible == false
     return {
-        item('Duplicate', function()
-            ops:duplicate(selection:items())
-        end, { shortcut = shortcut(state, 'editorDuplicate') }),
+        item('Cut', function()
+            state:cut()
+        end, { shortcut = shortcut(state, 'editorCut') }),
         item('Copy', function()
             state:notify(('Copied %d'):format(ops:copy(selection:items())))
         end, { shortcut = shortcut(state, 'editorCopy') }),
+        item('Paste into', function()
+            ops:paste(node)
+        end, { enabled = node ~= nil and not many and ops:hasClipboard() }),
+        item('Clone', function()
+            ops:duplicate(selection:items())
+        end, { shortcut = shortcut(state, 'editorDuplicate') }),
         item('Delete', function()
             ops:delete(selection:items())
         end, { shortcut = shortcut(state, 'editorDelete') }),
@@ -185,7 +198,7 @@ function Menus.empty(state, point)
     local items = {
         item('Paste', function()
             state.ops:paste(state.level)
-        end, { shortcut = shortcut(state, 'editorPaste') }),
+        end, { shortcut = shortcut(state, 'editorPaste'), enabled = state.ops:hasClipboard() }),
         item('Select all', function()
             state:selectAll()
         end, { shortcut = shortcut(state, 'editorSelectAll') }),
@@ -227,6 +240,9 @@ function Menus.levelNew(state, browser, path)
             browser:newFile(path)
         end),
         SEPARATOR,
+        item('Paste', function()
+            browser:paste(path)
+        end, { enabled = browser.clipboard ~= nil }),
         item('Import files...', function()
             Importer.dialog(state)
         end),
@@ -255,6 +271,22 @@ function Menus.levelEntry(state, browser, entry)
             end, { enabled = state.selection:primary() ~= nil })
         end
     end
+    items[#items + 1] = SEPARATOR
+    items[#items + 1] = item('Cut', function()
+        browser:setClipboard(entry, true)
+    end)
+    items[#items + 1] = item('Copy', function()
+        browser:setClipboard(entry, false)
+    end)
+    items[#items + 1] = item('Paste' .. (entry.dir and ' into' or ' here'), function()
+        browser:paste(entry.dir and entry.path or LevelFiles.parent(entry.path))
+    end, { enabled = browser.clipboard ~= nil })
+    items[#items + 1] = item('Clone', function()
+        browser:clone(entry)
+    end)
+    items[#items + 1] = item('Move to...', function()
+        browser:moveTo(entry)
+    end)
     items[#items + 1] = SEPARATOR
     items[#items + 1] = item('Rename...', function()
         browser:rename(entry)

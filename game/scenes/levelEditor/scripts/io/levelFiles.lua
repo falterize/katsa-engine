@@ -209,4 +209,83 @@ function LevelFiles.delete(path, fs)
     return true
 end
 
+-- A free `name` in `folder`: name, name_2, name_3 ... (the extension stays last).
+local function freeName(fs, folder, name)
+    local stem, ext = name:match('^(.*)(%.[^%.]+)$')
+    stem, ext = stem or name, ext or ''
+    local relative, index = LevelFiles.join(folder, name), 1
+    while fs.getInfo(LevelFiles.full(relative)) do
+        index = index + 1
+        relative = LevelFiles.join(folder, ('%s_%d%s'):format(stem, index, ext))
+    end
+    return relative
+end
+
+local function copyAll(fs, from, to)
+    if fs.getInfo(from, 'directory') then
+        fs.createDirectory(to)
+        for _, name in ipairs(fs.getDirectoryItems(from)) do
+            if not copyAll(fs, from .. '/' .. name, to .. '/' .. name) then
+                return false
+            end
+        end
+        return true
+    end
+    local bytes = fs.read(from)
+    return bytes ~= nil and fs.write(to, bytes) and true or false
+end
+
+local function inside(path, folder)
+    return folder == path or folder:sub(1, #path + 1) == path .. '/'
+end
+
+-- Copies a file or folder into level folder `folder` under a free name (a copy in the same
+-- folder becomes name_2). Returns the new relative path or nil, message.
+function LevelFiles.copy(path, folder, fs)
+    fs = fs or katsa.filesystem
+    path, folder = LevelFiles.clean(path), LevelFiles.clean(folder)
+    if not path or path == '' or not folder then
+        return nil, 'Nothing to copy'
+    end
+    if inside(path, folder) and folder ~= LevelFiles.parent(path) then
+        return nil, 'A folder cannot be copied into itself'
+    end
+    if not fs.getInfo(LevelFiles.full(path)) then
+        return nil, path .. ' does not exist'
+    end
+    ensure(fs, LevelFiles.full(folder))
+    local target = freeName(fs, folder, path:match('([^/]+)$'))
+    if not copyAll(fs, LevelFiles.full(path), LevelFiles.full(target)) then
+        return nil, 'Could not copy ' .. path
+    end
+    return target
+end
+
+-- Moves a file or folder into level folder `folder`. Returns the new relative path or nil,
+-- message; a name already used there is refused (nothing is overwritten).
+function LevelFiles.move(path, folder, fs)
+    fs = fs or katsa.filesystem
+    path, folder = LevelFiles.clean(path), LevelFiles.clean(folder)
+    if not path or path == '' or not folder then
+        return nil, 'Nothing to move'
+    end
+    if inside(path, folder) then
+        return nil, 'A folder cannot be moved into itself'
+    end
+    local name = path:match('([^/]+)$')
+    local target = LevelFiles.join(folder, name)
+    if target == path then
+        return path
+    end
+    if fs.getInfo(LevelFiles.full(target)) then
+        return nil, name .. ' already exists in ' .. (folder == '' and 'the assets folder' or folder)
+    end
+    ensure(fs, LevelFiles.full(folder))
+    local moved, message = fs.rename(LevelFiles.full(path), LevelFiles.full(target))
+    if not moved then
+        return nil, tostring(message or 'Move failed')
+    end
+    return target
+end
+
 return LevelFiles

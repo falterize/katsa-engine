@@ -495,6 +495,10 @@ function Ops:copy(nodes)
     return #clipboard
 end
 
+function Ops:hasClipboard()
+    return self.clipboard ~= nil and #self.clipboard > 0
+end
+
 function Ops:paste(parent)
     local pasted = {}
     for _, data in ipairs(self.clipboard or {}) do
