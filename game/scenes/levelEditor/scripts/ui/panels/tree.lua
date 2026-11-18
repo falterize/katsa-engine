@@ -1,10 +1,12 @@
--- Workspace panel: the Level tree with expanders, selection (Ctrl adds, Shift selects a range),
+-- Workspace panel: the Level tree with expanders, selection (Ctrl adds, Shift selects a range, a
+-- drag over rows or over the empty space selects the rows it crosses),
 -- show/hide and lock toggles, edit buttons (Duplicate, Delete, Group, Ungroup) and drag and drop:
 -- drag a row onto another row to move it inside (middle of the row) or before/after it (upper or
 -- lower quarter); a line or a frame shows where it will land. Rows are rebuilt only when the tree
 -- or the selection changed.
 local Flow = require('../flow')
 local Kit = require('../kit')
+local Menus = require('../menus')
 local TreeModel = require('../../core.treeModel')
 
 local Tree = {}
@@ -13,6 +15,8 @@ Tree.__index = Tree
 local INDENT, EXPANDER, ROW = 14, 18, 22
 local CLASS_WIDTH = 84 -- room for the small class label at the right of a row
 local DRAG_DISTANCE = 6
+local TOOLS_WIDTH = 52 -- the eye and lock buttons at the right of a row
+local TAIL = 40 -- empty space under the last row, where a drag starts a selection
 
 local function childrenOf(node)
     return node.children
@@ -33,6 +37,12 @@ function Tree.create(state, ui, frame)
         self.items[#self.items + 1] = { w = width }
     end
     local ops, selection = state.ops, state.selection
+    action('+', 26, function()
+        local button = self.actions[1]
+        local x, y = button:getAbsolutePosition()
+        local _, height = button:getAbsoluteSize()
+        state:openCreate(x, y + height + 2, nil)
+    end)
     action('Duplicate', 66, function()
         ops:duplicate(selection:items())
     end)
@@ -146,17 +156,6 @@ function Tree:rebuild()
         if selected then
             name:addTag('selected')
         end
-        name:connect('press', function()
-            self:click(node)
-            if node ~= state.level then
-                local ui_ = self.ui
-                self.press = {
-                    node = node,
-                    x = (katsa.mouse.getX() - ui_.offsetX) / ui_.scale,
-                    y = (katsa.mouse.getY() - ui_.offsetY) / ui_.scale,
-                }
-            end
-        end)
         if node ~= state.level then
             -- The class (Mesh3D, PointLight3D, ...) as a small dim detail, right-aligned.
             local kind = add(Kit.label(ui, self.scroll, node.className or '', {
@@ -179,12 +178,159 @@ function Tree:rebuild()
             lock.position = { 1, -25, 0, y }
         end
     end
-    self.scroll.canvasSize = { 0, 0, 0, #self.rows * ROW }
+    self.scroll.canvasSize = { 0, 0, 0, #self.rows * ROW + TAIL }
     state.styler:apply(self.scroll)
+end
+
+local function state_popupOpen(self)
+    local popup = self.state.panels.popup
+    return popup ~= nil and popup:isOpen()
 end
 
 local function mouse(ui)
     return (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+end
+
+-- The pointer over the list: row index (nil below the last row), the zone ('name', 'expander',
+-- 'tools', 'bar') and the pointer position; nil when the list is not under the pointer
+-- (another window, a pop-up or another panel covers it).
+function Tree:probe()
+    local ui = self.ui
+    local hit = ui:hit(katsa.mouse.getX(), katsa.mouse.getY())
+    while hit and hit ~= self.scroll do
+        hit = hit.parent
+    end
+    if not hit then
+        return nil
+    end
+    local mx, my = mouse(ui)
+    local sx, sy = self.scroll:getAbsolutePosition()
+    local sw = self.scroll:getAbsoluteSize()
+    local localX, localY = mx - sx, my - sy + (self.scroll.scrollY or 0)
+    local index = math.floor(localY / ROW) + 1
+    local row = self.rows[index]
+    local zone = 'name'
+    if localX > sw - 8 then
+        zone = 'bar'
+    elseif row and row.node ~= self.state.level then
+        if localX > sw - TOOLS_WIDTH then
+            zone = 'tools'
+        elseif row.hasChildren and localX < row.depth * INDENT + EXPANDER then
+            zone = 'expander'
+        end
+    end
+    return row and index or nil, zone, mx, my
+end
+
+-- Row under a y coordinate while dragging, clamped to the list plus one empty slot (so a drag
+-- past either end still extends the range, and empty space selects nothing).
+function Tree:indexAt(my)
+    local _, sy = self.scroll:getAbsolutePosition()
+    local index = math.floor((my - sy + (self.scroll.scrollY or 0)) / ROW) + 1
+    return math.max(1, math.min(#self.rows + 1, index))
+end
+
+-- Left button pressed over the list: select, and prepare a drag (move) or a paint (range select).
+function Tree:pressed(index, zone, mx, my)
+    if zone ~= 'name' then
+        return
+    end
+    local state = self.state
+    local map, selection = state.fly.map, state.selection
+    local range, add = map:isDown('editorRange'), map:isDown('editorAdd')
+    local row = index and self.rows[index]
+    local node = row and row.node ~= state.level and row.node or nil
+    local press = {
+        x = mx,
+        y = my,
+        node = node,
+        start = index or #self.rows + 1,
+        base = add and selection:items() or {},
+        modified = range or add,
+    }
+    self.press = press
+    if not node then
+        -- Empty space (or the Level row): a click clears, a drag paints rows.
+        if not press.modified then
+            selection:clear()
+        end
+        press.paint = true
+        return
+    end
+    if range or add then
+        self:click(node)
+        press.paint = true
+        if range and self.anchor then
+            for i, r in ipairs(self.rows) do
+                if r.node == self.anchor then
+                    press.start = i
+                end
+            end
+        end
+    elseif selection:has(node) and selection:count() > 1 then
+        press.deferred = true -- a click collapses to this node on release, a drag moves them all
+    else
+        self:click(node)
+    end
+end
+
+function Tree:paint(my)
+    local press, selection = self.press, self.state.selection
+    local current = self:indexAt(my)
+    local key = press.start * 10000 + current
+    if key == press.last then
+        return
+    end
+    press.last = key
+    local items = TreeModel.slice(self.rows, press.start, current, self.state.level)
+    if #press.base > 0 then
+        local seen = {}
+        for _, node in ipairs(items) do
+            seen[node] = true
+        end
+        for _, node in ipairs(press.base) do
+            if not seen[node] then
+                items[#items + 1] = node
+            end
+        end
+    end
+    selection:set(items)
+end
+
+-- Right button over the list: a menu for the row (selecting it first) or for the empty space.
+function Tree:menu(index, mx, my)
+    local state = self.state
+    local row = index and self.rows[index]
+    local node = row and row.node ~= state.level and row.node or nil
+    if node then
+        if not state.selection:has(node) then
+            state.selection:set({ node })
+            self.anchor = node
+        end
+        state:popup(Menus.node(state), mx, my, { width = 220 })
+    else
+        state:popup(Menus.empty(state), mx, my, { width = 240 })
+    end
+end
+
+function Tree:poll()
+    local left, right = katsa.mouse.isDown(1), katsa.mouse.isDown(2)
+    local pressedLeft, pressedRight = left and not self.wasLeft, right and not self.wasRight
+    self.wasLeft, self.wasRight = left, right
+    if state_popupOpen(self) then
+        return
+    end
+    if pressedLeft or pressedRight then
+        local index, zone, mx, my = self:probe()
+        if zone == nil then
+            return
+        end
+        if pressedLeft then
+            self:pressed(index, zone, mx, my)
+        elseif zone ~= 'bar' then
+            self:menu(index, mx, my)
+        end
+    end
 end
 
 -- Where a drop would land: new parent, the sibling it goes before (nil = last), the row index
@@ -294,14 +440,26 @@ function Tree:updateDrag()
                     state.treeVersion = (state.treeVersion or 0) + 1
                 end
             end
+        elseif press.deferred and not press.moved then
+            state.selection:set({ press.node })
+            self.anchor = press.node
         end
         self:endDrag()
         self.dirty = true
         return
     end
     local mx, my = mouse(ui)
+    if not press.moved and math.abs(mx - press.x) + math.abs(my - press.y) > DRAG_DISTANCE then
+        press.moved = true
+    end
+    if press.paint then
+        if press.moved then
+            self:paint(my)
+        end
+        return
+    end
     if not self.dragging then
-        if math.abs(mx - press.x) + math.abs(my - press.y) > DRAG_DISTANCE then
+        if press.moved then
             self:beginDrag()
         else
             return
@@ -326,6 +484,7 @@ function Tree:updateDrag()
 end
 
 function Tree:update()
+    self:poll()
     self:updateDrag()
     local version = self.state.treeVersion or 0
     if (self.dirty or self.version ~= version) and not self.dragging then

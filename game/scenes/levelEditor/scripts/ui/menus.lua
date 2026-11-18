@@ -101,7 +101,9 @@ local function edit(state)
     }
 end
 
-local function create(state)
+-- The Create list: Catalog items under group headings, then the import entry. `point` is the
+-- viewport pixel where the object goes (nil = the middle of the view).
+function Menus.createItems(state, point)
     local items, group = {}, nil
     for _, entry in ipairs(Catalog.items()) do
         if entry.group ~= group then
@@ -109,7 +111,8 @@ local function create(state)
             items[#items + 1] = { heading = group }
         end
         items[#items + 1] = item(entry.label, function()
-            local ok, message = pcall(entry.make, state, state:placement())
+            local position = point and state:placement(point[1], point[2]) or state:placement()
+            local ok, message = pcall(entry.make, state, position)
             if not ok then
                 state:notify(tostring(message))
             end
@@ -120,6 +123,109 @@ local function create(state)
         state.panels.browser:show('Files')
     end)
     return items
+end
+
+local function create(state)
+    return Menus.createItems(state)
+end
+
+-- Right-click menu of the selected objects (viewport and Workspace rows).
+function Menus.node(state)
+    local ops, selection = state.ops, state.selection
+    local node = selection:primary()
+    local many = selection:count() > 1
+    local hidden = node and node.visible == false
+    return {
+        item('Duplicate', function()
+            ops:duplicate(selection:items())
+        end, { shortcut = shortcut(state, 'editorDuplicate') }),
+        item('Copy', function()
+            state:notify(('Copied %d'):format(ops:copy(selection:items())))
+        end, { shortcut = shortcut(state, 'editorCopy') }),
+        item('Delete', function()
+            ops:delete(selection:items())
+        end, { shortcut = shortcut(state, 'editorDelete') }),
+        SEPARATOR,
+        item('Rename...', function()
+            state.panels.prompt:ask('Rename', node.name or '', function(name)
+                if name ~= '' then
+                    ops:setProperty({ node }, 'name', nil, name)
+                end
+            end)
+        end, { enabled = node ~= nil and not many }),
+        item(hidden and 'Show' or 'Hide', function()
+            ops:setProperty(selection:items(), 'visible', nil, hidden and true or false)
+        end),
+        item(node and ops:isLocked(node) and 'Unlock' or 'Lock', function()
+            local lock = not (node and ops:isLocked(node))
+            ops:setLocked(selection:items(), lock)
+        end),
+        SEPARATOR,
+        item('Group', function()
+            ops:group(selection:items())
+        end),
+        item('Ungroup', function()
+            local ok, message = ops:ungroup(node)
+            if not ok then
+                state:notify(message)
+            end
+        end, { enabled = node ~= nil and #node.children > 0 }),
+        SEPARATOR,
+        item('Frame', function()
+            state:frame(selection:items())
+        end, { shortcut = shortcut(state, 'editorFocus') }),
+    }
+end
+
+-- Right-click menu of empty space (viewport or Workspace background).
+function Menus.empty(state, point)
+    local items = {
+        item('Paste', function()
+            state.ops:paste(state.level)
+        end, { shortcut = shortcut(state, 'editorPaste') }),
+        item('Select all', function()
+            state:selectAll()
+        end, { shortcut = shortcut(state, 'editorSelectAll') }),
+        item('Frame all', function()
+            state:frame(state.level.children)
+        end, { shortcut = shortcut(state, 'editorFrameAll') }),
+        SEPARATOR,
+    }
+    for _, entry in ipairs(Menus.createItems(state, point)) do
+        items[#items + 1] = entry
+    end
+    return items
+end
+
+-- Right-click menu of a row of the Files tab.
+function Menus.asset(state, browser, file, kind)
+    local function act(what)
+        return function()
+            browser.selected = file
+            browser:act(what)
+        end
+    end
+    if kind == 'model' then
+        return { item('Add to level', act('add')) }
+    end
+    return {
+        item('Add as sprite quad', act('sprite')),
+        item('Use as texture of the selection', act('texture'), { enabled = state.selection:primary() ~= nil }),
+    }
+end
+
+-- Right-click menu of a row of the Location tab.
+function Menus.location(state, browser, path)
+    return {
+        item('Open', function()
+            state:openLocation(path)
+            browser.dirty = true
+        end),
+        item('Import into this level', function()
+            state:importLocation(path)
+            browser.dirty = true
+        end),
+    }
 end
 
 local function view(state)

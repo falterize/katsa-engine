@@ -44,6 +44,7 @@ local Settings = {
         editorCopy = ctrl('c'),
         editorPaste = ctrl('v'),
         editorSelectAll = ctrl('a'),
+        editorCreate = { 'key:lshift+key:a', 'key:rshift+key:a' },
         editorDelete = { 'key:delete' },
         editorSave = ctrl('s'),
         editorOpen = ctrl('o'),

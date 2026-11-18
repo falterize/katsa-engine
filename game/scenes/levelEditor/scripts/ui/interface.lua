@@ -1,11 +1,12 @@
 -- Editor UI entry, laid out like the Godot editor: a menu bar and a tool strip on top, the Workspace tree on the
--- left, the Properties inspector on the right, a dock with tabs (Create, Files, Location) under
+-- left, the Properties inspector on the right, a dock with tabs (Files, Location) under
 -- the viewport and a status bar. Every dock edge is a draggable splitter. Look and colours come
 -- from the uiStyler style sheet (assets/styles/editor.lua) and the theme in Settings.
 local Browser = require('./panels.browser')
 local Dock = require('./dock')
 local Kit = require('./kit')
 local Menubar = require('./panels.menubar')
+local Popup = require('./panels.popup')
 local Prompt = require('./panels.prompt')
 local Properties = require('./panels.properties')
 local Settings = require('./panels.settings')
@@ -44,6 +45,7 @@ function Interface.create(state)
     end
 
     state.panels = {}
+    state.panels.popup = Popup.create(state, ui)
     state.panels.menubar = Menubar.create(state, ui, frames.top)
     state.panels.toolbar = Toolbar.create(state, ui, frames.top)
     state.panels.tree = Tree.create(state, ui, frames.left)

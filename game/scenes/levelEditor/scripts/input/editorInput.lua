@@ -30,6 +30,16 @@ function Input:mapMouseButton(button, down)
     if button == 2 then
         -- Looking starts only from a press in the viewport, never on a panel.
         self.lookActive = down and not self.state:overUI() or false
+        if self.lookActive then
+            self.rmb = { x = katsa.mouse.getX(), y = katsa.mouse.getY(), moved = 0, time = katsa.timer.getTime() }
+        elseif not down and self.rmb then
+            -- A short press that barely moved is a click, not a look: it asks for a context menu.
+            local rmb = self.rmb
+            if rmb.moved < 4 and katsa.timer.getTime() - rmb.time < 0.4 then
+                self.state.rmbTap = { x = rmb.x, y = rmb.y }
+            end
+            self.rmb = nil
+        end
     elseif button == 1 and down and not self.state:overUI() then
         self.state.viewportPressed = true
     end
@@ -37,6 +47,9 @@ end
 
 function Input:move(id, x, y, dx, dy)
     if id == 'mouse' and self.lookActive and katsa.mouse.getRelativeMode() then
+        if self.rmb then
+            self.rmb.moved = self.rmb.moved + math.abs(dx) + math.abs(dy)
+        end
         self.state.fly:look(dx, dy)
         return
     end

@@ -160,6 +160,9 @@ function Module.tree(self)
     self:check(#top == 2 and top[1] == a and top[2] == b, 'Moving a group already carries its selected children')
     local range = TreeModel.range(rows, a, b)
     self:check(range and #range == 3 and range[1] == a and range[3] == b, 'A range selects the rows between two nodes')
+    local span = TreeModel.slice(rows, 4, 1, root)
+    self:check(#span == 3 and span[1] == a and span[3] == b, 'Dragging over rows selects them in either direction, without the root')
+    self:check(#TreeModel.slice(rows, 3, 99, root) == 2, 'A drag past the last row is clamped to the list')
 end
 
 -- The engine's euler convention (math3d.compose, Affine.euler), restated for the pure test.

@@ -54,6 +54,21 @@ function Module.run(self)
     local after = camera.position[1] * 1000 + camera.position[2] * 100 + camera.position[3]
     self:check(math.abs(after - before) > 0.01, 'The fly camera moves from InputMap actions')
 
+    self:check(#state.boxes >= 0 and state.panels.popup ~= nil, 'The shared pop-up panel exists')
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    local visibleOutlines = 0
+    for _, box in ipairs(state.boxes) do
+        visibleOutlines = visibleOutlines + (box.node.visible and 1 or 0)
+    end
+    self:check(visibleOutlines == state.selection:count(), 'Every selected object has its own outline')
+    local Menus = require('game.scenes.levelEditor.scripts.ui.menus')
+    self:check(#Menus.node(state) > 0 and #Menus.empty(state, { 10, 10 }) > 0 and #Menus.createItems(state) > 0, 'Context and Create menus build their items')
+    state.panels.popup:show(Menus.node(state), 100, 100, { width = 200 })
+    self:check(state.panels.popup:isOpen(), 'A context menu opens as a pop-up')
+    state.panels.popup:close()
+    self:check(not state.panels.popup:isOpen(), 'A pop-up closes')
     state:frame(state.level.children)
     for _ = 1, 2 do
         frame(scene)

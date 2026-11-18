@@ -76,6 +76,15 @@ function SelectionBox:follow(target)
     end
 end
 
+local PRIMARY, OTHER = { 1, 0.62, 0.1, 1 }, { 1, 0.9, 0.45, 1 }
+
+function SelectionBox:setPrimary(primary)
+    if self.primary ~= primary then
+        self.primary = primary
+        self.node.color = primary and PRIMARY or OTHER
+    end
+end
+
 function SelectionBox:release()
     if self.node and not self.node.destroyed then
         self.node:destroy()

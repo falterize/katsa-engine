@@ -91,4 +91,18 @@ function TreeModel.range(rows, a, b)
     return result
 end
 
+-- The nodes of rows i..j (either order, clamped to the list), without `skip` (the level root).
+-- Used by the Workspace when the pointer is dragged over rows to select them.
+function TreeModel.slice(rows, i, j, skip)
+    local first, last = math.max(1, math.min(i, j)), math.min(#rows, math.max(i, j))
+    local result = {}
+    for index = first, last do
+        local node = rows[index].node
+        if node ~= skip then
+            result[#result + 1] = node
+        end
+    end
+    return result
+end
+
 return TreeModel

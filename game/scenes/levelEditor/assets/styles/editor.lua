@@ -9,6 +9,7 @@ return {
     { 'Frame.dim', { backgroundColor = '$background', backgroundTransparency = 0.45 } },
     { 'Button.splitter', { backgroundColor = '$background', backgroundTransparency = 0 } },
     { 'ScrollFrame.list', { backgroundColor = '$background', backgroundTransparency = 0 } },
+    { 'ScrollFrame.popupList', { backgroundTransparency = 1 } },
     { 'Label.title', { textColor = '$text', fontSize = 14 } },
     { 'Label.text', { textColor = '$text', fontSize = 13 } },
     { 'Label.classTag', { textColor = '$muted', fontSize = 11 } },

@@ -12,6 +12,7 @@ local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
 local Snap = require('./core.snap')
+local Menus = require('./ui.menus')
 local SelectionBox = require('./view.selectionBox')
 local TransformTool = require('./tools.transformTool')
 local Undo = require('./core.undo')
@@ -74,7 +75,7 @@ function Content.new(scene)
         major = settings.grid.major,
         count = settings.grid.count,
     })
-    self.box = SelectionBox.new(world)
+    self.boxes = {} -- outline pool: [1] is the primary selection, the rest are the others
     self.ops = Ops.new(self)
     self:seed()
     self.ops:adopt(self.level)
@@ -123,9 +124,9 @@ end
 -- The direct child of Level that contains a picked mesh (a group when it is inside one).
 -- A point in front of the camera for new objects: where the view centre meets the ground, or
 -- eight units ahead; snapped to the move step when snapping is on.
-function Content:placement()
-    local camera = self.camera
-    local ray = self.transform:ray((self.viewport._canvasWidth or 1280) / 2, (self.viewport._canvasHeight or 720) / 2)
+-- Where a new object goes: under the viewport point (vx, vy) when given, else the view centre.
+function Content:placement(vx, vy)
+    local ray = self.transform:ray(vx or (self.viewport._canvasWidth or 1280) / 2, vy or (self.viewport._canvasHeight or 720) / 2)
     local point = Snap.planePoint(ray[1], ray[2], { 0, 0, 0 }, { 0, 1, 0 })
     if not point or (point[1] - ray[1][1]) ^ 2 + (point[3] - ray[1][3]) ^ 2 > 60 ^ 2 then
         point = {
@@ -446,6 +447,47 @@ function Content:pick(x, y)
     end
 end
 
+-- Opens a pop-up list at window pixel (x, y) in UI units; `point` (viewport pixels) is where
+-- objects created from it are placed.
+function Content:popup(items, x, y, opts)
+    self.panels.popup:show(items, x, y, opts)
+end
+
+function Content:openCreate(x, y, point)
+    self:popup(Menus.createItems(self, point), x, y, { width = 260, search = true })
+end
+
+-- Pointer position in UI units.
+function Content:pointer()
+    local ui = self.ui
+    return (katsa.mouse.getX() - ui.offsetX) / ui.scale, (katsa.mouse.getY() - ui.offsetY) / ui.scale
+end
+
+-- Right-click without dragging in the viewport: a menu for the object under it, or for the
+-- empty space. A held right button that moves is the fly-look and never opens a menu.
+function Content:viewportMenu(tap)
+    local vx, vy = self:viewportPoint(tap.x, tap.y)
+    if not vx then
+        return
+    end
+    local hit = Picking.raycast(self.world, self.camera, vx, vy)
+    local node = hit and self:levelChild(hit)
+    if node and self.ops:isLocked(node) then
+        node = nil
+    end
+    local ui = self.ui
+    local ux, uy = (tap.x - ui.offsetX) / ui.scale, (tap.y - ui.offsetY) / ui.scale
+    local point = { vx, vy }
+    if node then
+        if not self.selection:has(node) then
+            self.selection:set({ node })
+        end
+        self:popup(Menus.node(self), ux, uy, { width = 220 })
+    else
+        self:popup(Menus.empty(self, point), ux, uy, { width = 240 })
+    end
+end
+
 function Content:frame(nodes)
     local center, radius = Bounds.sphere(nodes)
     if center then
@@ -464,6 +506,11 @@ function Content:handleActions()
             self:togglePlay()
         end
         return
+    end
+    if map:justPressed('editorCreate') then
+        local x, y = self:pointer()
+        local vx, vy = self:viewportPoint(katsa.mouse.getX(), katsa.mouse.getY())
+        self:openCreate(x, y, vx and { vx, vy } or nil)
     end
     if map:justPressed('editorToggleGrid') then
         self.grid:setVisible(not self.grid.visible)
@@ -548,16 +595,23 @@ function Content:update(dt)
     local position = self.camera.position
     self.grid:follow(position[1], position[3])
     self:updateSelectionDrag()
+    local tap = self.rmbTap
+    if tap then
+        self.rmbTap = nil
+        if not self.playing then
+            self:viewportMenu(tap)
+        end
+    end
     if not Focus.current then -- typing in a field must not trigger editor shortcuts
         self:handleActions()
     end
     self:autosave(dt)
     if self.playing then
         self.transform.gizmo:hide()
-        self.box:follow(nil)
+        self:followOutlines({})
     else
         self.transform:update()
-        self.box:follow(self.selection:primary())
+        self:followOutlines(self.selection:items())
     end
     for _, panel in pairs(self.panels or {}) do
         panel:update()
@@ -566,6 +620,26 @@ function Content:update(dt)
         self.dock:update()
     end
     self:updateStatus()
+end
+
+-- One outline per selected node. The primary (the gizmo's node) is orange, the others are
+-- a paler yellow; unused pool entries are hidden.
+function Content:followOutlines(items)
+    local boxes, primary = self.boxes, self.selection:primary()
+    local used = 0
+    for _, node in ipairs(items) do
+        used = used + 1
+        local box = boxes[used]
+        if not box then
+            box = SelectionBox.new(self.world)
+            boxes[used] = box
+        end
+        box:setPrimary(node == primary)
+        box:follow(node)
+    end
+    for index = used + 1, #boxes do
+        boxes[index]:follow(nil)
+    end
 end
 
 function Content:updateStatus()
@@ -596,7 +670,9 @@ end
 function Content:release()
     self.transform:release()
     self.grid:release()
-    self.box:release()
+    for _, box in ipairs(self.boxes) do
+        box:release()
+    end
     katsa.mouse.setRelativeMode(false)
 end
 

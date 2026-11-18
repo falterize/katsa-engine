@@ -1,11 +1,10 @@
--- Bottom dock with tabs. Create: primitives, lights and objects (buttons wrap to the dock width).
+-- Bottom dock with tabs (objects are created from the Create menu: Shift+A, the + button).
 -- Files: a browser over the virtual file system; a model is imported into the editor's asset store
 -- and placed, an image becomes a sprite quad or the colour map of the selected mesh, with a
 -- thumbnail per image row. Location: recent files, the autosave and saved locations.
 local AssetStore = require('../../io.assetStore')
-local Catalog = require('../../builders.catalog')
 local Clone = require('source.engine.nodes.core.clone')
-local Flow = require('../flow')
+local Menus = require('../menus')
 local Kit = require('../kit')
 local LocationIO = require('../../io.locationIO')
 local Models = require('source.engine.import.models')
@@ -13,7 +12,7 @@ local Models = require('source.engine.import.models')
 local Browser = {}
 Browser.__index = Browser
 
-local TABS = { 'Create', 'Files', 'Location' }
+local TABS = { 'Files', 'Location' }
 local HEAD = 30
 local FOOT = 30
 
@@ -23,7 +22,8 @@ function Browser.create(state, ui, frame)
         ui = ui,
         frame = frame,
         widgets = {},
-        tab = 'Create',
+        tab = 'Files',
+        menus = {},
         path = '',
         tabButtons = {},
         width = 600,
@@ -99,7 +99,7 @@ function Browser:clear()
             widget:destroy()
         end
     end
-    self.widgets = {}
+    self.widgets, self.menus = {}, {}
 end
 
 function Browser:add(widget)
@@ -108,7 +108,8 @@ function Browser:add(widget)
 end
 
 -- A row of the list tabs: a full-width button, optionally with an image thumbnail.
-function Browser:row(y, label, onPress, selected, thumb)
+function Browser:row(y, label, onPress, selected, thumb, onMenu)
+    self.menus[math.floor(y / 22) + 1] = onMenu
     local x = 2
     if thumb then
         self:add(self.ui:create('ImageRect', {
@@ -133,40 +134,6 @@ end
 function Browser:heading(y, text)
     self:add(Kit.label(self.ui, self.scroll, text, { position = { 0, 6, 0, y }, size = { 1, -12, 0, 22 } }, 'muted'))
     return y + 22
-end
-
-function Browser:buildCreate()
-    local state = self.state
-    local items = Catalog.items()
-    local y, group, list = 0, nil, {}
-    local function flush()
-        if #list == 0 then
-            return
-        end
-        local positions, height = Flow.place(list, self.width - 24, 4, 24, 0)
-        for index, entry in ipairs(list) do
-            entry.button.position = { 0, 8 + positions[index].x, 0, y + positions[index].y }
-        end
-        y = y + height + 8
-        list = {}
-    end
-    for _, item in ipairs(items) do
-        if item.group ~= group then
-            flush()
-            group = item.group
-            y = self:heading(y, group)
-        end
-        local width = math.max(60, #item.label * 8 + 22)
-        local button = self:add(Kit.button(self.ui, self.scroll, item.label, width, 24, function()
-            local ok, message = pcall(item.make, state, state:placement())
-            if not ok then
-                state:notify(tostring(message))
-            end
-        end, 'tool'))
-        list[#list + 1] = { w = width, button = button }
-    end
-    flush()
-    self.scroll.canvasSize = { 0, 0, 0, y }
 end
 
 function Browser:act(kind)
@@ -236,7 +203,10 @@ function Browser:buildFiles()
             local isSelected = self.selected and self.selected.path == file.path
             y = self:row(y, file.name .. (kind == 'model' and '   (model)' or ''), function()
                 self.selected, self.dirty = file, true
-            end, isSelected, kind == 'image' and file.path or nil)
+            end, isSelected, kind == 'image' and file.path or nil, function(x, y)
+                self.selected, self.dirty = file, true
+                self.state:popup(Menus.asset(self.state, self, file, kind), x, y, { width = 240 })
+            end)
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, y }
@@ -273,18 +243,25 @@ function Browser:buildLocation()
     for _, path in ipairs(state.recent or {}) do
         y = self:row(y, path, function()
             choose(path)
+        end, nil, nil, function(x, my)
+            state:popup(Menus.location(state, self, path), x, my, { width = 220 })
         end)
     end
     y = self:heading(y, 'Autosave')
     y = self:row(y, LocationIO.AUTOSAVE, function()
         choose(LocationIO.AUTOSAVE)
+    end, nil, nil, function(x, my)
+        state:popup(Menus.location(state, self, LocationIO.AUTOSAVE), x, my, { width = 220 })
     end)
     for _, folder in ipairs({ LocationIO.FOLDER, LocationIO.EXPORTS }) do
         y = self:heading(y, tostring(katsa.filesystem.getSaveDirectory()) .. '/' .. folder)
         for _, name in ipairs(katsa.filesystem.getDirectoryItems(folder)) do
             if name:match('%.katsa$') then
+                local full = folder .. '/' .. name
                 y = self:row(y, name, function()
-                    choose(folder .. '/' .. name)
+                    choose(full)
+                end, nil, nil, function(x, my)
+                    state:popup(Menus.location(state, self, full), x, my, { width = 220 })
                 end)
             end
         end
@@ -304,7 +281,35 @@ function Browser:buildLocation()
     })
 end
 
+-- Right button on a row: the row's menu. Rows are 22 px and the list is polled, so no per-row
+-- signal is needed.
+function Browser:pollMenu()
+    local down = katsa.mouse.isDown(2)
+    local pressed = down and not self.wasRight
+    self.wasRight = down
+    local state = self.state
+    if not pressed or state.panels.popup:isOpen() or not self.frame.visible then
+        return
+    end
+    local ui = self.ui
+    local hit = ui:hit(katsa.mouse.getX(), katsa.mouse.getY())
+    while hit and hit ~= self.scroll do
+        hit = hit.parent
+    end
+    if not hit then
+        return
+    end
+    local mx, my = state:pointer()
+    local _, sy = self.scroll:getAbsolutePosition()
+    local index = math.floor((my - sy + (self.scroll.scrollY or 0)) / 22) + 1
+    local onMenu = self.menus[index]
+    if onMenu then
+        onMenu(mx, my)
+    end
+end
+
 function Browser:update()
+    self:pollMenu()
     if not self.dirty then
         return
     end
@@ -320,11 +325,8 @@ function Browser:update()
     self.pathBox.visible = self.tab == 'Files'
     self.nameBox.visible = self.tab == 'Location'
     self.actions.visible = false
-    local footer = self.tab ~= 'Create'
-    self.scroll.size = { 1, -8, 1, -(HEAD + 4 + (footer and FOOT or 0)) }
-    if self.tab == 'Create' then
-        self:buildCreate()
-    elseif self.tab == 'Files' then
+    self.scroll.size = { 1, -8, 1, -(HEAD + 4 + FOOT) }
+    if self.tab == 'Files' then
         self:buildFiles()
     else
         self:buildLocation()
