@@ -514,9 +514,10 @@ end
 -- Loads a stored model file into the Level as one node that remembers its file (EditorModel).
 function Ops:placeModel(path, position)
     local world = self:world()
-    local root = world:loadModel(path)
+    -- The root name prefixes every part name, so it must be unique before the model is built.
+    local name = NodeData.modelName(world, path:match('([^/]+)%.[^%.]+$') or 'Model')
+    local root = world:loadModel(path, { name = name })
     root:setParent(self.content.level)
-    root.name = Clone.uniqueName(world, (path:match('([^/]+)%.[^%.]+$') or 'Model'))
     root.position = { position[1], position[2], position[3] }
     root:setAttribute('EditorModel', path)
     self:adopt(root)

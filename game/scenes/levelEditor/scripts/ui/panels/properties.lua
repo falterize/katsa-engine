@@ -4,8 +4,9 @@
 -- written to all of them. Edits go through `ops:setProperty` (the engine's validation, one undo
 -- step). The panel rebuilds when the selection changes or after an edit, never every frame.
 local Properties = require('source.engine.editor.inspectors.properties')
-local Groups = require('../propertyGroups')
-local Kit = require('../kit')
+local Schema = require('source.engine.editor.inspectors.schema')
+local Groups = require('../support.propertyGroups')
+local Kit = require('../support.kit')
 
 local Panel = {}
 Panel.__index = Panel
@@ -124,10 +125,15 @@ function Panel:rebuild()
         local shown = not HIDDEN[key]
             and (kind == 'boolean' or kind == 'number' or kind == 'string' or kind == 'vector' or kind == 'node')
         if shown then
-            add(Kit.label(ui, self.scroll, key, {
+            local caption = add(Kit.label(ui, self.scroll, key, {
                 position = { 0, 6, 0, y },
                 size = { 0.4, -6, 0, ROW },
             }, 'muted'))
+            local tip = function()
+                local ok, text = pcall(Schema.hint, primary, key)
+                return ok and text or nil
+            end
+            state.panels.tooltip:register(caption, tip)
             local at, width = { 0.4, 0, 0, y }, { 0.6, -8, 0, ROW - 2 }
             if kind == 'boolean' and editable then
                 local button = add(Kit.make(ui, 'Button', {

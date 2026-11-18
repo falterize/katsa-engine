@@ -12,7 +12,7 @@ local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
 local Snap = require('./core.snap')
-local Menus = require('./ui.menus')
+local Menus = require('./ui.support.menus')
 local LightViz = require('./view.lightViz')
 local SelectionBox = require('./view.selectionBox')
 local TransformTool = require('./tools.transformTool')
@@ -63,6 +63,7 @@ function Content.new(scene)
     self.undo = Undo.new()
     self.treeVersion = 0
     self.tool, self.space, self.pivotMode = 'Select', 'World', 'Center'
+    self.importTarget = 'scene' -- 'scene' copies imports into the level's assets, 'shared' references shared://
     self.snap = {
         enabled = prefs.snap.enabled,
         move = prefs.snap.move,

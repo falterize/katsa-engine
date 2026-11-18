@@ -4,17 +4,17 @@
 -- drag a row onto another row to move it inside (middle of the row) or before/after it (upper or
 -- lower quarter); a line or a frame shows where it will land. Rows are rebuilt only when the tree
 -- or the selection changed.
-local Flow = require('../flow')
+local Flow = require('../support.flow')
 local Icons = require('../widgets.icons')
-local Kit = require('../kit')
-local Menus = require('../menus')
+local Kit = require('../support.kit')
+local Menus = require('../support.menus')
 local TreeModel = require('../../core.treeModel')
 
 local Tree = {}
 Tree.__index = Tree
 
 local INDENT, EXPANDER, ROW = 14, 18, 22
-local CLASS_WIDTH = 64 -- room for the small class label at the right of a row
+local CLASS_WIDTH = 74 -- room for the small class label at the right of a row
 local DRAG_DISTANCE = 6
 local TOOLS_WIDTH = 52 -- the eye and lock buttons at the right of a row
 local TAIL = 40 -- empty space under the last row, where a drag starts a selection
@@ -173,11 +173,13 @@ function Tree:rebuild()
                 end
             end, 'icon'))
             eye.position = { 1, -50, 0, y }
+            state.panels.tooltip:register(eye, hidden and 'Hidden: click to show the object' or 'Visible: click to hide the object')
             Icons.add(ui, eye, hidden and 'eyeOff' or 'eye', 4, (ROW - 16) / 2)
             local lock = add(Kit.button(ui, self.scroll, '', 24, ROW, function()
                 ops:setLocked({ node }, not ops:isLocked(node))
             end, 'icon'))
             lock.position = { 1, -25, 0, y }
+            state.panels.tooltip:register(lock, ops:isLocked(node) and 'Locked: click to allow picking and editing' or 'Unlocked: click to lock the object against picking')
             Icons.add(ui, lock, ops:isLocked(node) and 'lock' or 'unlock', 4, (ROW - 16) / 2)
         end
     end

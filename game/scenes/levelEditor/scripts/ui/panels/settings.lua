@@ -2,7 +2,7 @@
 -- (dock sizes), Snap & Grid, Camera and Shortcuts (rebind every editor InputMap action).
 -- Changes apply at once and are saved to editor/settings.lua.
 local InputMap = require('source.engine.input.inputMap')
-local Kit = require('../kit')
+local Kit = require('../support.kit')
 
 local Settings = {}
 Settings.__index = Settings

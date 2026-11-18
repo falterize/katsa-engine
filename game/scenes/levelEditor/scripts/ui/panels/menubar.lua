@@ -1,7 +1,7 @@
 -- The menu bar: File, Edit, Create, View, Settings. A click opens the list (panels/popup) under
 -- the title; while one is open, hovering another title switches to it.
-local Kit = require('../kit')
-local Menus = require('../menus')
+local Kit = require('../support.kit')
+local Menus = require('../support.menus')
 
 local Menubar = {}
 Menubar.__index = Menubar

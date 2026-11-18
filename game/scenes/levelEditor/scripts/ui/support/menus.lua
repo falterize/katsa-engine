@@ -2,7 +2,7 @@
 -- its items fresh each time it opens, so check marks, the recent list and enabled states are
 -- current. An item is { label, run, shortcut, checked, enabled } or { separator = true } or
 -- { heading = text }.
-local Catalog = require('../builders.catalog')
+local Catalog = require('../../builders.catalog')
 local Shortcut = require('./shortcut')
 
 local Menus = {}
@@ -66,11 +66,11 @@ local function edit(state)
         item('Undo', function()
             state.undo:undo()
             state:refresh()
-        end, { shortcut = shortcut(state, 'editorUndo'), enabled = state.undo:canUndo() }),
+        end, { shortcut = shortcut(state, 'editorUndo'), enabled = state.undo:canUndo(), icon = 'undo' }),
         item('Redo', function()
             state.undo:redo()
             state:refresh()
-        end, { shortcut = shortcut(state, 'editorRedo'), enabled = state.undo:canRedo() }),
+        end, { shortcut = shortcut(state, 'editorRedo'), enabled = state.undo:canRedo(), icon = 'redo' }),
         SEPARATOR,
         item('Copy', function()
             state:notify(('Copied %d'):format(ops:copy(selection:items())))
@@ -116,7 +116,7 @@ function Menus.createItems(state, point)
             if not ok then
                 state:notify(tostring(message))
             end
-        end)
+        end, { icon = entry.group == 'Lights' and 'light' or nil })
     end
     items[#items + 1] = SEPARATOR
     items[#items + 1] = item('Import model or image...', function()
@@ -234,10 +234,10 @@ local function view(state)
         item('Grid', function()
             state.grid:setVisible(not state.grid.visible)
             state:savePrefs()
-        end, { checked = state.grid.visible, shortcut = shortcut(state, 'editorToggleGrid') }),
+        end, { checked = state.grid.visible, shortcut = shortcut(state, 'editorToggleGrid'), icon = 'grid' }),
         item('Light gizmos', function()
             state.lightViz.enabled = not state.lightViz.enabled
-        end, { checked = state.lightViz.enabled }),
+        end, { checked = state.lightViz.enabled, icon = 'light' }),
         item('Shadows', function()
             environment.shadows.enabled = not environment.shadows.enabled
         end, { checked = environment.shadows.enabled }),

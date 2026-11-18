@@ -19,6 +19,27 @@ local SKIPPED = {
 }
 local Shapes = require('../builders.shapes')
 
+-- A root name for a model about to be built: parts are named '<root>.<part>', so no registered
+-- name may already start with it.
+function NodeData.modelName(world, base)
+    local stem = Clone.uniqueName(world, base or 'Model')
+    local name, index = stem, 1
+    local function taken(candidate)
+        local prefix = candidate .. '.'
+        for key in pairs(world.byName) do
+            if type(key) == 'string' and key:sub(1, #prefix) == prefix then
+                return true
+            end
+        end
+        return false
+    end
+    while taken(name) do
+        index = index + 1
+        name = stem .. '_' .. index
+    end
+    return name
+end
+
 function NodeData.capture(node)
     local properties = Clone.collect(node)
     local data = {
@@ -73,7 +94,8 @@ function NodeData.build(world, data, parent)
     properties.name = data.name
     local node
     if data.model then
-        local root = world:loadModel(data.model)
+        -- A unique root name keeps the part names ('<root>.<part>') unique across copies.
+        local root = world:loadModel(data.model, { name = NodeData.modelName(world, data.name) })
         root:setParent(parent)
         root.name = data.name
         for key, value in pairs(properties) do

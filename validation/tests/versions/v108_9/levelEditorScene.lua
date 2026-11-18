@@ -76,7 +76,7 @@ function Module.run(self)
         visibleOutlines = visibleOutlines + (box.node.visible and 1 or 0)
     end
     self:check(visibleOutlines == state.selection:count(), 'Every selected object has its own outline')
-    local Menus = require('game.scenes.levelEditor.scripts.ui.menus')
+    local Menus = require('game.scenes.levelEditor.scripts.ui.support.menus')
     self:check(#Menus.node(state) > 0 and #Menus.empty(state, { 10, 10 }) > 0 and #Menus.createItems(state) > 0, 'Context and Create menus build their items')
     state.panels.popup:show(Menus.node(state), 100, 100, { width = 200 })
     self:check(state.panels.popup:isOpen(), 'A context menu opens as a pop-up')
@@ -200,7 +200,7 @@ function Module.run(self)
 
     -- Menus build, select all, box select, export and merge import.
     local builtMenus = true
-    for _, menu in ipairs(require('game.scenes.levelEditor.scripts.ui.menus').list) do
+    for _, menu in ipairs(require('game.scenes.levelEditor.scripts.ui.support.menus').list) do
         builtMenus = builtMenus and #menu.items(state) > 0
     end
     self:check(builtMenus, 'Every menu builds its items')
@@ -284,6 +284,23 @@ function Module.run(self)
         frame(scene)
     end
     self:check(#state.panels.toolbar.hints > 10, 'Toolbar buttons carry status-bar hints')
+    local first = state.ops:placeModel('shared://models/characters/player.glb', { 0, 0, 0 })
+    local second = state.ops:placeModel('shared://models/characters/player.glb', { 2, 0, 0 })
+    self:check(first ~= nil and second ~= nil and first.name ~= second.name, 'The same model can be placed twice (shared:// reference)')
+    local ok, bytes = pcall(LocationIO.export, state)
+    self:check(ok and state:saveLocation('sharedModels') and state:openLocation(LocationIO.pathFor('sharedModels')), 'A location with shared:// models saves and opens')
+    local tabs = {}
+    for _, entry in ipairs(require('game.scenes.levelEditor.scripts.ui.panels.toolbar').TABS) do
+        state.panels.toolbar.tab = entry[1]
+        state.panels.toolbar:relayout(1280)
+        tabs[#tabs + 1] = entry[1]
+    end
+    state.panels.toolbar.tab = 'home'
+    state.panels.toolbar:relayout(1280)
+    self:check(#tabs == 4, 'Every ribbon tab lays out')
+    state.importTarget = 'shared'
+    self:check(state.importTarget == 'shared', 'Imports can target shared://')
+    state.importTarget = 'scene'
 
     local visible = state.grid.visible
     state.grid:setVisible(not visible)

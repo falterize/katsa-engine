@@ -23,12 +23,34 @@ local function resolve(value, root)
     return value
 end
 
+-- Parts are named '<root>.<part>': the root name must not prefix any registered name already.
+function Loader.modelName(world, base)
+    base = base or 'Model'
+    local name, index = base, 1
+    local function taken(candidate)
+        local prefix = candidate .. '.'
+        for key in pairs(world.byName) do
+            if type(key) == 'string' and key:sub(1, #prefix) == prefix then
+                return true
+            end
+        end
+        return world.byName[candidate] ~= nil
+    end
+    while taken(name) do
+        index = index + 1
+        name = base .. '_' .. index
+    end
+    return name
+end
+
 local function build(world, entry, parent, root, Shapes)
     local properties = resolve(entry.properties or {}, root)
     properties.name = entry.name
     local node
     if entry.model then
-        node = world:loadModel(root .. '/' .. entry.model)
+        -- A URL (shared://, scene://) is used as it is; a package path is resolved against the root.
+        local path = entry.model:find('^%a[%w+.-]*://') and entry.model or (root .. '/' .. entry.model)
+        node = world:loadModel(path, { name = Loader.modelName(world, entry.name) })
         node:setParent(parent)
         for key, value in pairs(properties) do
             node[key] = value

@@ -1,6 +1,6 @@
 -- A small modal question with one text field (Save as, Export as). Enter or OK accepts, Cancel
 -- closes; the callback gets the text.
-local Kit = require('../kit')
+local Kit = require('../support.kit')
 
 local Prompt = {}
 Prompt.__index = Prompt

@@ -4,8 +4,8 @@
 -- thumbnail per image row. Location: recent files, the autosave and saved locations.
 local AssetStore = require('../../io.assetStore')
 local Clone = require('source.engine.nodes.core.clone')
-local Menus = require('../menus')
-local Kit = require('../kit')
+local Menus = require('../support.menus')
+local Kit = require('../support.kit')
 local LocationIO = require('../../io.locationIO')
 local Models = require('source.engine.import.models')
 
@@ -75,6 +75,14 @@ function Browser:show(tab, importMode)
     self.importMode = importMode == true
 end
 
+-- Opens the file browser on the level's own assets folder (the one imports are copied into).
+function Browser:openSceneFolder()
+    katsa.filesystem.createDirectory('editor')
+    katsa.filesystem.createDirectory(AssetStore.ROOT)
+    self.tab, self.path, self.selected, self.dirty = 'Files', AssetStore.ROOT, nil, true
+    self.state:notify(('Scene assets folder: %s/%s  (drop models and images there)'):format(katsa.filesystem.getSaveDirectory(), AssetStore.ROOT))
+end
+
 function Browser:resize(width, height)
     self.width, self.height = width, height
     self.dirty = true
@@ -142,7 +150,17 @@ function Browser:act(kind)
         state:notify('Select a file first')
         return
     end
-    local stored, fileKind = AssetStore.import(file.path, Models.supports)
+    local stored, fileKind
+    local relative = file.path:match('^assets/(.+)$')
+    if state.importTarget == 'shared' and relative and AssetStore.kind(file.path, Models.supports) then
+        -- Shared: refer to the project's own file (shared://) instead of copying it.
+        stored, fileKind = 'shared://' .. relative, AssetStore.kind(file.path, Models.supports)
+    else
+        if state.importTarget == 'shared' then
+            state:notify('Shared needs a file under assets/; it was copied into the scene folder instead')
+        end
+        stored, fileKind = AssetStore.import(file.path, Models.supports)
+    end
     if not stored then
         state:notify(tostring(fileKind))
         return

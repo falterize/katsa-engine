@@ -3,7 +3,8 @@
 -- { heading = text }. Long lists scroll; `search = true` adds a filter field (Enter runs the
 -- first match). A click anywhere outside, or Esc, closes it.
 local Focus = require('source.engine.ui.widgets.textFocus')
-local Kit = require('../kit')
+local Icons = require('../widgets.icons')
+local Kit = require('../support.kit')
 
 local Popup = {}
 Popup.__index = Popup
@@ -84,11 +85,14 @@ function Popup:fill(filter)
             local row = Kit.make(ui, 'Button', {
                 position = { 0, 0, 0, y },
                 size = { 1, 0, 0, ITEM },
-                text = mark .. entry.label,
+                text = (entry.icon and '       ' or '') .. mark .. entry.label,
                 align = 'left',
                 fontSize = 13,
             }, self.scroll, 'row', enabled and nil or 'disabled')
             self.rows[#self.rows + 1] = row
+            if entry.icon then
+                Icons.add(ui, row, entry.icon, 6, (ITEM - 16) / 2)
+            end
             if enabled then
                 row:connect('press', function()
                     self:run(entry)

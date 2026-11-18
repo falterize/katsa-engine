@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.9
 
+- levelEditor: ribbon with category tabs (Home, Create, View, Assets) and big pixel-icon buttons; hover descriptions for ribbon buttons, fields and property names (engine hint texts); icons in menus; Assets tab chooses where imports go (`scene` copies into the level's assets folder, `shared` references a project file as `shared://`) and opens the level's assets folder; the same model can now be placed, duplicated and reopened any number of times (model root names are made unique); exported packages accept `shared://`/`scene://` model URLs.
 - levelEditor: pixel-art icons (drawn in code) on the toolbar and in the Workspace tree, status-bar hints for toolbar buttons, grid cell/major/size fields in the toolbar (saved in the preferences), shorter class labels in the tree.
 - levelEditor: Save/Open lost every vector property (position, size, colour, rotation, scale) because engine vectors were dropped as unsupported values; they are now written as arrays. Derived runtime statistics are no longer saved.
 - Engine: light selection no longer depends on the world clock, so lights added or moved in a paused world (timeScale 0) are lit and shadowed (`world/lights.lua`).

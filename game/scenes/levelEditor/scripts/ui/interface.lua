@@ -3,11 +3,12 @@
 -- the viewport and a status bar. Every dock edge is a draggable splitter. Look and colours come
 -- from the uiStyler style sheet (assets/styles/editor.lua) and the theme in Settings.
 local Browser = require('./panels.browser')
-local Dock = require('./dock')
-local Kit = require('./kit')
+local Dock = require('./support.dock')
+local Kit = require('./support.kit')
 local Menubar = require('./panels.menubar')
 local Popup = require('./panels.popup')
 local ColorPicker = require('./panels.colorPicker')
+local Tooltip = require('./panels.tooltip')
 local Prompt = require('./panels.prompt')
 local Properties = require('./panels.properties')
 local Settings = require('./panels.settings')
@@ -48,6 +49,7 @@ function Interface.create(state)
     state.panels = {}
     state.panels.popup = Popup.create(state, ui)
     state.panels.colorPicker = ColorPicker.create(state, ui)
+    state.panels.tooltip = Tooltip.create(state, ui)
     state.panels.menubar = Menubar.create(state, ui, frames.top)
     state.panels.toolbar = Toolbar.create(state, ui, frames.top)
     state.panels.tree = Tree.create(state, ui, frames.left)

@@ -2,7 +2,7 @@
 -- vector property (`row`) of the selected nodes. While the mouse is held the nodes are updated
 -- directly for a live preview; on release the original value is restored and the final colour is
 -- committed through Ops:setProperty, so one drag is exactly one undo step.
-local Kit = require('../kit')
+local Kit = require('../support.kit')
 
 local ColorPicker = {}
 ColorPicker.__index = ColorPicker

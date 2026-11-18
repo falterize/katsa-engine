@@ -86,9 +86,9 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 
 ## Interface (Godot-style docks)
 
-- Layout (`ui/layout.lua`, pure): toolbar on top, **Workspace** (left) and **Properties** (right) over the full middle height, a bottom dock with tabs (**Files**, **Location**) under the viewport, a status bar. The three borders are draggable splitters (`ui/dock.lua`); sizes are clamped so the viewport never drops below 300x160, and the chosen sizes are saved.
+- Layout (`ui/support/layout.lua`, pure): toolbar on top, **Workspace** (left) and **Properties** (right) over the full middle height, a bottom dock with tabs (**Files**, **Location**) under the viewport, a status bar. The three borders are draggable splitters (`ui/support/dock.lua`); sizes are clamped so the viewport never drops below 300x160, and the chosen sizes are saved.
 - Nothing runs off the screen: the toolbar and the Create palette wrap onto more rows through `ui/flow.lua` when the window or dock is narrow.
-- **Menu bar** (`ui/menus.lua`, `panels/menubar.lua`): *File* (New, Open, recent files, Save, Save as, **Import .katsa** adds a file's objects to the level as one undo step, **Export .katsa** writes `editor/exports/<name>.katsa`), *Edit* (undo/redo, copy/paste, duplicate, delete, select all, group), *Create* (everything from the palette), *View* (grid, light/camera gizmos, shadows, wireframe, frame, reset layout) and *Settings* (editor settings, shortcuts, theme). Items show their InputMap shortcut and check marks.
+- **Menu bar** (`ui/support/menus.lua`, `panels/menubar.lua`): *File* (New, Open, recent files, Save, Save as, **Import .katsa** adds a file's objects to the level as one undo step, **Export .katsa** writes `editor/exports/<name>.katsa`), *Edit* (undo/redo, copy/paste, duplicate, delete, select all, group), *Create* (everything from the palette), *View* (grid, light/camera gizmos, shadows, wireframe, frame, reset layout) and *Settings* (editor settings, shortcuts, theme). Items show their InputMap shortcut and check marks.
 - Tool strip: Undo / Redo, Select / Move / Rotate / Scale, World/Local and Center/Origin, **Snap** with three editable steps (move in units, rotate in degrees, scale), **Surface** snap (a free Move drag puts the object on the surface under the pointer; Ctrl inverts), Grid and . Active toggles are highlighted.
 - Selection: click, Ctrl-click, drag a **rectangle** in the viewport (objects whose centre falls inside are taken), Ctrl+A.
 - Properties are grouped into collapsible categories (`ui/propertyGroups.lua`): Transform, Appearance, Light, Camera, Physics open; Node, Rendering (draw cutoff `maxDistance`, `onTop`, ...) and Other collapsed. Editor-created meshes get `maxDistance = 0` (never culled by distance).
@@ -99,7 +99,7 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 - Workspace: select (Ctrl adds, Shift ranges; the pointer is polled, not tied to widget signals), **drag over rows or over the empty space under them to select the rows crossed** (Ctrl keeps the old selection), plain drag on a row moves it, show/hide, lock, Duplicate / Delete / Group / Ungroup, and **drag and drop**: drop on the middle of a row to move inside it, on the upper or lower quarter to place before or after it (a frame or a line shows the target; one undo step; undo restores parent and order).
 - Gizmos and the selection outline draw **on top of everything** (`assets/shaders/onTop.glsl`, a scene `Shader3D` that squeezes the clip depth), so they stay usable inside large objects. Picking handles geometrically, so it is unaffected.
 - **Settings window** (toolbar): Appearance (dark/light theme through the uiStyler plugin), Interface (dock sizes, reset), Snap & Grid, Camera (fly speed, look sensitivity, FOV) and Shortcuts: **Rebind** any editor InputMap action (a modifier first makes a chord, Esc cancels) or **Reset** it. Everything is stored in `editor/settings.lua`.
-- Styling: widgets carry tags (`dock`, `bar`, `tool`, `row`, `selected`, `on`, `field`, `list`, ...); `assets/styles/editor.lua` maps them to theme tokens, so a theme switch restyles the whole editor. Helpers are in `ui/kit.lua`.
+- Styling: widgets carry tags (`dock`, `bar`, `tool`, `row`, `selected`, `on`, `field`, `list`, ...); `assets/styles/editor.lua` maps them to theme tokens, so a theme switch restyles the whole editor. Helpers are in `ui/support/kit.lua`.
 - The 3D view is a **ViewportFrame** with its own World3D and camera (`content.world`, `content.camera`), sized by the dock layout; the scene's main World3D stays empty and only carries the UI. Pointer positions are converted to viewport pixels (`content:viewportPoint`) before picking and gizmo drags, so the camera centre is the viewport centre and clicks on panels never reach the 3D view.
 - Known limits: the Workspace does not auto-scroll while dragging near its edges; a rebind replaces all bindings of the action.
 
@@ -188,3 +188,9 @@ default sun when the level has no directional light.
 - Pixel icons are drawn in code (`scripts/ui/widgets/icons.lua`, 16x16 ASCII art, tinted by the style sheet).
 - Hovering a toolbar button shows a hint in the status bar.
 - Grid: `Cell` (unit size), `Major` (bright line every N cells) and `Size` (cells covered each way) are editable and saved in the preferences.
+
+## Ribbon, tooltips and asset targets
+
+- The ribbon (`panels/toolbar.lua`) has four tabs: **Home** (undo, tools, space/pivot, snapping), **Create** (create list, lights, import), **View** (grid cell/major/extent, light markers, shadows, wireframe, frame) and **Assets**.
+- `panels/tooltip.lua`: any widget registers a description; it appears after the pointer rests on it. Property names use the engine hint texts (`editor/hints`).
+- Assets: `scene` (default) copies an imported file into `editor/assets/` (written into the package as `assets/...`); `shared` stores `shared://<path under assets/>` and copies nothing. **Scene folder** opens the editor assets folder in the file browser so files can be dropped there directly.
