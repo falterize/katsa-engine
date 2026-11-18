@@ -235,7 +235,9 @@ function Panel:update()
             state.fly:setTouch(nil)
         end
     end
-    self.bar.visible = self.editing
+    if self.bar.visible ~= self.editing then
+        self.bar.visible = self.editing
+    end
     if not show then
         return
     end

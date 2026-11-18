@@ -15,6 +15,7 @@ local Selection = require('./core.selection')
 local Snap = require('./core.snap')
 local Menus = require('./ui.support.menus')
 local LightViz = require('./view.lightViz')
+local Profiler = require('./core.profiler')
 local SelectionBox = require('./view.selectionBox')
 local TransformTool = require('./tools.transformTool')
 local Undo = require('./core.undo')
@@ -78,6 +79,7 @@ function Content.new(scene)
         count = prefs.grid.count,
     })
     self.lightViz = LightViz.new(world, self.level)
+    self.perf = Profiler.new()
     self.boxes = {} -- outline pool: [1] is the primary selection, the rest are the others
     self.ops = Ops.new(self)
     self:seed()
@@ -607,29 +609,38 @@ function Content:notify(text)
 end
 
 function Content:update(dt)
-    self.fly:update(dt)
+    local perf = self.perf
+    perf:run('fly', self.fly.update, self.fly, dt)
     local position = self.camera.position
     self.grid:follow(position[1], position[3])
-    self:updateSelectionDrag()
+    perf:run('drag', self.updateSelectionDrag, self)
     local tap = self.rmbTap
     if tap then
         self.rmbTap = nil
-        self:viewportMenu(tap)
+        if not self.playing then
+            self:viewportMenu(tap)
+        end
     end
     if not Focus.current then -- typing in a field must not trigger editor shortcuts
-        self:handleActions()
+        perf:run('actions', self.handleActions, self)
     end
-    self:autosave(dt)
-    self.lightViz:update(self.selection, true, self.camera)
-    self.transform:update()
-    self:followOutlines(self.selection:items())
-    for _, panel in pairs(self.panels or {}) do
-        panel:update()
+    perf:run('autosave', self.autosave, self, dt)
+    perf:run('lights', self.lightViz.update, self.lightViz, self.selection, not self.playing)
+    if self.playing then
+        self.transform.gizmo:hide()
+        self:followOutlines({})
+    else
+        perf:run('gizmo', self.transform.update, self.transform)
+        perf:run('outlines', self.followOutlines, self, self.selection:items())
+    end
+    for name, panel in pairs(self.panels or {}) do
+        perf:run(name, panel.update, panel)
     end
     if self.dock then
-        self.dock:update()
+        perf:run('dock', self.dock.update, self.dock)
     end
     self:updateStatus()
+    perf:frame(dt)
 end
 
 -- One outline per selected node. The primary (the gizmo's node) is orange, the others are
@@ -673,6 +684,8 @@ function Content:updateStatus()
     )
     if self.message and katsa.timer.getTime() < self.messageUntil then
         text = self.message
+    elseif self.showPerf and self.perf.text ~= '' then
+        text = text .. '   |   ' .. self.perf.text
     end
     if text ~= label.text then
         label.text = text

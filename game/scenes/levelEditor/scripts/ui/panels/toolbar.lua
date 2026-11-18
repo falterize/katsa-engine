@@ -381,14 +381,19 @@ end
 function Toolbar:update()
     local ui, state = self.ui, self.state
     local mx, my = (Pointer.getX() - ui.offsetX) / ui.scale, (Pointer.getY() - ui.offsetY) / ui.scale
-    local hint
-    for _, entry in ipairs(self.hints) do
-        if entry.node.visible ~= false and over(entry.node, mx, my) then
-            hint = entry.text
-            break
+    -- The hint search hit-tests every ribbon item: only when the pointer moved or now and then.
+    self.frame = (self.frame or 0) + 1
+    if mx ~= self.lastX or my ~= self.lastY or self.frame % 15 == 0 then
+        self.lastX, self.lastY = mx, my
+        local hint
+        for _, entry in ipairs(self.hints) do
+            if entry.node.visible ~= false and over(entry.node, mx, my) then
+                hint = entry.text
+                break
+            end
         end
+        state.hint = hint
     end
-    state.hint = hint
     for _, entry in ipairs(self.toggles) do
         local on = entry.isOn()
         if entry.on ~= on then

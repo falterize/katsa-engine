@@ -311,6 +311,9 @@ local function view(state)
         item('Light gizmos', function()
             state.lightViz.enabled = not state.lightViz.enabled
         end, { checked = state.lightViz.enabled, icon = 'light' }),
+        item('Performance info (status bar)', function()
+            state.showPerf = not state.showPerf
+        end, { checked = state.showPerf == true }),
         item('Shadows', function()
             environment.shadows.enabled = not environment.shadows.enabled
         end, { checked = environment.shadows.enabled }),

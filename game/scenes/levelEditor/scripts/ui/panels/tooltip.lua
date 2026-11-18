@@ -79,18 +79,26 @@ function Tooltip:update()
     local pressed = Pointer.isDown(1) or Pointer.isDown(2)
     local popup = state.panels.popup
     local blocked = pressed or (popup and popup:isOpen()) or (state.panels.colorPicker and state.panels.colorPicker:isOpen())
-    local found
-    local kept = {}
-    for _, entry in ipairs(self.entries) do
-        local node = entry.node
-        if not node.destroyed then
-            kept[#kept + 1] = entry
-            if not found and not blocked and node.visible ~= false and over(node, mx, my) then
-                found = entry
+    -- Hit-testing every registered widget costs real time; do it when the pointer moved, and
+    -- otherwise only now and then (a panel may have changed under a resting pointer).
+    self.frame = (self.frame or 0) + 1
+    local found = self.found
+    if mx ~= self.lastX or my ~= self.lastY or blocked ~= self.lastBlocked or self.frame % 15 == 0 then
+        self.lastX, self.lastY, self.lastBlocked = mx, my, blocked
+        found = nil
+        local kept = {}
+        for _, entry in ipairs(self.entries) do
+            local node = entry.node
+            if not node.destroyed then
+                kept[#kept + 1] = entry
+                if not found and not blocked and node.visible ~= false and over(node, mx, my) then
+                    found = entry
+                end
             end
         end
+        self.entries = kept
+        self.found = found
     end
-    self.entries = kept
     if found ~= self.hovered then
         self.hovered, self.since = found, 0
         self:hide()

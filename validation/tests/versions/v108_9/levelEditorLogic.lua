@@ -11,6 +11,7 @@ local Shapes = require('game.scenes.levelEditor.scripts.builders.shapes')
 local PackagePaths = require('game.scenes.levelEditor.scripts.io.packagePaths')
 local Recent = require('game.scenes.levelEditor.scripts.io.recent')
 local EditorSettings = require('game.scenes.levelEditor.scripts.io.editorSettings')
+local Profiler = require('game.scenes.levelEditor.scripts.core.profiler')
 local Pointer = require('game.scenes.levelEditor.scripts.input.pointer')
 local TouchLayout = require('game.scenes.levelEditor.scripts.ui.support.touchLayout')
 local Assign = require('game.scenes.levelEditor.scripts.core.assign')
@@ -433,7 +434,25 @@ function Module.touch(self)
     self:check(EditorSettings.defaults().touch.mode == 'auto' and EditorSettings.defaults().touch.controls.moveStick ~= nil, 'Touch settings have defaults')
 end
 
+function Module.profiler(self)
+    local now = 0
+    local profiler = Profiler.new(function()
+        return now
+    end)
+    for _ = 1, 4 do
+        profiler:run('slow', function()
+            now = now + 0.010
+        end)
+        profiler:run('fast', function()
+            now = now + 0.0001
+        end)
+        profiler:frame(0.25)
+    end
+    self:check(profiler.text:find('editor 10.1 ms', 1, true) and profiler.text:find('slow 10.00', 1, true), 'The profiler reports the average time of each section')
+end
+
 function Module.run(self)
+    Module.profiler(self)
     Module.touch(self)
     Module.levelFiles(self)
     Module.menus(self)
