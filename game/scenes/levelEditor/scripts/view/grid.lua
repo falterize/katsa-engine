@@ -85,6 +85,23 @@ function Grid:setCell(cell)
     end
 end
 
+-- Lines between two bright ones, and how many cells the grid patch covers each way.
+function Grid:setMajor(major)
+    major = math.floor(major)
+    if major >= 1 and major ~= self.settings.major then
+        self.settings.major = major
+        self:rebuild()
+    end
+end
+
+function Grid:setCount(count)
+    count = math.floor(count)
+    if count >= 2 and count <= 400 and count ~= self.settings.count then
+        self.settings.count = count
+        self:rebuild()
+    end
+end
+
 function Grid:setVisible(visible)
     self.visible = visible
     for _, node in pairs(self.nodes) do

@@ -73,8 +73,8 @@ function Content.new(scene)
     self.grid = Grid.new(world, nil, {
         cell = prefs.grid.cell,
         visible = prefs.grid.visible,
-        major = settings.grid.major,
-        count = settings.grid.count,
+        major = prefs.grid.major,
+        count = prefs.grid.count,
     })
     self.lightViz = LightViz.new(world, self.level)
     self.boxes = {} -- outline pool: [1] is the primary selection, the rest are the others
@@ -164,6 +164,7 @@ function Content:savePrefs()
     prefs.snap.enabled, prefs.snap.move = self.snap.enabled, self.snap.move
     prefs.snap.rotate, prefs.snap.scale = self.snap.rotate, self.snap.scale
     prefs.grid.cell, prefs.grid.visible = self.grid.cell, self.grid.visible
+    prefs.grid.major, prefs.grid.count = self.grid.settings.major, self.grid.settings.count
     prefs.camera.flySpeed = self.fly.speed
     prefs.camera.sensitivity = self.fly.sensitivity
     prefs.camera.fov = self.camera.fov
@@ -626,7 +627,7 @@ function Content:updateStatus()
         return
     end
     local primary = self.selection:primary()
-    local text = ('Tool %s (%s, %s pivot)   Snap %s   Grid %s %.2f   Fly speed %.1f   Selected %d%s'):format(
+    local text = self.hint or ('Tool %s (%s, %s pivot)   Snap %s   Grid %s %.2f   Fly speed %.1f   Selected %d%s'):format(
         self.tool,
         self.space,
         self.pivotMode:lower(),

@@ -23,6 +23,7 @@ return {
     { 'Button.on', { backgroundColor = '$accent', backgroundTransparency = 0, textColor = '$accentText' } },
     { 'Button.selected', { backgroundColor = '$selection', backgroundTransparency = 0, textColor = '$text' } },
     { 'Button.disabled', { textColor = '$muted' } },
+    { 'ImageRect.icon', { imageColor = '$text' } },
     { 'Frame.marquee', { backgroundColor = '$accent', backgroundTransparency = 0.8, stroke = { color = '$accent', thickness = 1 } } },
     { 'Frame.dropLine', { backgroundColor = '$accent', backgroundTransparency = 0 } },
     { 'Frame.dropInto', { backgroundColor = '$accent', backgroundTransparency = 0.7 } },

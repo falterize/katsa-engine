@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.9
 
+- levelEditor: pixel-art icons (drawn in code) on the toolbar and in the Workspace tree, status-bar hints for toolbar buttons, grid cell/major/size fields in the toolbar (saved in the preferences), shorter class labels in the tree.
 - levelEditor: Save/Open lost every vector property (position, size, colour, rotation, scale) because engine vectors were dropped as unsupported values; they are now written as arrays. Derived runtime statistics are no longer saved.
 - Engine: light selection no longer depends on the world clock, so lights added or moved in a paused world (timeScale 0) are lit and shadowed (`world/lights.lua`).
 - levelEditor: shadows on by default; three coloured point lights in the starter level; colour wheel picker for colour properties; option properties open a scrolling, searchable list instead of cycling on click.

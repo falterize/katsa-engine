@@ -5,6 +5,7 @@
 -- lower quarter); a line or a frame shows where it will land. Rows are rebuilt only when the tree
 -- or the selection changed.
 local Flow = require('../flow')
+local Icons = require('../widgets.icons')
 local Kit = require('../kit')
 local Menus = require('../menus')
 local TreeModel = require('../../core.treeModel')
@@ -13,7 +14,7 @@ local Tree = {}
 Tree.__index = Tree
 
 local INDENT, EXPANDER, ROW = 14, 18, 22
-local CLASS_WIDTH = 84 -- room for the small class label at the right of a row
+local CLASS_WIDTH = 64 -- room for the small class label at the right of a row
 local DRAG_DISTANCE = 6
 local TOOLS_WIDTH = 52 -- the eye and lock buttons at the right of a row
 local TAIL = 40 -- empty space under the last row, where a drag starts a selection
@@ -158,24 +159,26 @@ function Tree:rebuild()
         end
         if node ~= state.level then
             -- The class (Mesh3D, PointLight3D, ...) as a small dim detail, right-aligned.
-            local kind = add(Kit.label(ui, self.scroll, node.className or '', {
+            local kind = add(Kit.label(ui, self.scroll, (node.className or ''):gsub('3D$', ''):gsub('2D$', ''), {
                 position = { 1, -(52 + CLASS_WIDTH), 0, y },
                 size = { 0, CLASS_WIDTH - 4, 0, ROW },
                 align = 'right',
                 fontSize = 11,
             }, 'classTag'))
             kind.interactable = false
-            local eye = add(Kit.button(ui, self.scroll, hidden and 'h' or 'V', 24, ROW, function()
+            local eye = add(Kit.button(ui, self.scroll, '', 24, ROW, function()
                 local ok, message = ops:setProperty({ node }, 'visible', nil, hidden)
                 if not ok then
                     state:notify(message)
                 end
             end, 'icon'))
             eye.position = { 1, -50, 0, y }
-            local lock = add(Kit.button(ui, self.scroll, ops:isLocked(node) and 'L' or '-', 24, ROW, function()
+            Icons.add(ui, eye, hidden and 'eyeOff' or 'eye', 4, (ROW - 16) / 2)
+            local lock = add(Kit.button(ui, self.scroll, '', 24, ROW, function()
                 ops:setLocked({ node }, not ops:isLocked(node))
             end, 'icon'))
             lock.position = { 1, -25, 0, y }
+            Icons.add(ui, lock, ops:isLocked(node) and 'lock' or 'unlock', 4, (ROW - 16) / 2)
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, #self.rows * ROW + TAIL }

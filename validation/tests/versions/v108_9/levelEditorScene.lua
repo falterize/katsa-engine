@@ -264,6 +264,27 @@ function Module.run(self)
     local red = find(state.level, 'Red Light')
     self:check(red ~= nil and red.color[1] == 255 and red.range == 14, 'Light colour and range survive Save and Open')
 
+    local Icons = require('game.scenes.levelEditor.scripts.ui.widgets.icons')
+    local icons = Icons.names()
+    local drawn = #icons > 10
+    for _, name in ipairs(icons) do
+        drawn = drawn and Icons.image(name) ~= nil
+    end
+    self:check(drawn, 'Every pixel icon builds an image')
+    state.grid:setCell(2)
+    state.grid:setMajor(5)
+    state.grid:setCount(30)
+    self:check(state.grid.cell == 2 and state.grid.step == 10 and state.grid.settings.count == 30, 'The grid cell, major step and size can be changed')
+    state:savePrefs()
+    self:check(state.prefs.grid.major == 5 and state.prefs.grid.count == 30, 'Grid settings are saved in the preferences')
+    state.grid:setCell(1)
+    state.grid:setMajor(10)
+    state.grid:setCount(60)
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    self:check(#state.panels.toolbar.hints > 10, 'Toolbar buttons carry status-bar hints')
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')

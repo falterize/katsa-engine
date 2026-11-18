@@ -182,3 +182,9 @@ default sun when the level has no directional light.
   in World space and to relative steps in Local space; rotation and scale use the steps from
   `settings.editor.snap`. Snap-to-surface is not implemented yet.
 * Edited nodes are assumed to have translation-only parents (true for the Level and editor groups).
+
+## Toolbar details
+
+- Pixel icons are drawn in code (`scripts/ui/widgets/icons.lua`, 16x16 ASCII art, tinted by the style sheet).
+- Hovering a toolbar button shows a hint in the status bar.
+- Grid: `Cell` (unit size), `Major` (bright line every N cells) and `Size` (cells covered each way) are editable and saved in the preferences.

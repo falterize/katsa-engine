@@ -12,7 +12,7 @@ function Settings.defaults()
         theme = 'dark',
         layout = { left = 250, right = 320, bottom = 190 },
         snap = { enabled = true, move = 0.5, rotate = 15, scale = 0.1 },
-        grid = { cell = 1, visible = true },
+        grid = { cell = 1, major = 10, count = 60, visible = true },
         camera = { flySpeed = 10, sensitivity = 0.15, fov = 70 },
         bindings = {},
     }
