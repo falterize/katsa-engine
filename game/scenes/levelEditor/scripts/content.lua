@@ -631,7 +631,7 @@ function Content:followOutlines(items)
         used = used + 1
         local box = boxes[used]
         if not box then
-            box = SelectionBox.new(self.world)
+            box = SelectionBox.new(self.world, nil, used)
             boxes[used] = box
         end
         box:setPrimary(node == primary)

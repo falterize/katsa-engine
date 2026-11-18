@@ -43,10 +43,11 @@ local function geometry()
     return Geometry.mesh(vertices)
 end
 
-function SelectionBox.new(world, parent)
+-- `index` makes the node name unique: object names must be unique in a world.
+function SelectionBox.new(world, parent, index)
     local self = setmetatable({}, SelectionBox)
     self.node = world:create('Mesh3D', {
-        name = 'EditorSelection',
+        name = 'EditorSelection' .. (index or 1),
         geometry = geometry(),
         color = { 1, 0.62, 0.1, 1 },
         lightInfluence = 0,
