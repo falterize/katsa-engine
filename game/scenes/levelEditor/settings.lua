@@ -48,7 +48,6 @@ local Settings = {
         editorDelete = { 'key:delete' },
         editorSave = ctrl('s'),
         editorOpen = ctrl('o'),
-        editorPlay = { 'key:f5' },
     },
     editor = {
         autosaveSeconds = 60,

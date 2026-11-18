@@ -79,12 +79,18 @@ local function markerVertices(light)
     return vertices
 end
 
-local function reachVertices(light)
+local function reachVertices(light, selected)
     local vertices, origin = {}, { 0, 0, 0 }
     local range = light.range or 10
     if light.className == 'PointLight3D' then
+        -- The light's size (radius) and, when selected, how far it reaches (range).
         for axis = 1, 3 do
-            Builder.ring(vertices, axis, range, HALF, 40)
+            Builder.ring(vertices, axis, math.max(light.radius or 0, 0.05), HALF, 32)
+        end
+        if selected then
+            for axis = 1, 3 do
+                Builder.ring(vertices, axis, range, HALF, 48)
+            end
         end
     elseif light.className == 'SpotLight3D' then
         local d, r, u = basis(light.rotation or { 0, 0, 0 })
@@ -165,7 +171,7 @@ local function collect(node, out)
     end
 end
 
--- Called every frame. `selection` is the editor selection; `show` is false while play-testing.
+-- Called every frame. `selection` is the editor selection; `show` hides every marker.
 function LightViz:update(selection, show)
     local lights, alive = {}, {}
     if show and self.enabled then
@@ -199,9 +205,11 @@ function LightViz:update(selection, show)
         if entry.marker then
             entry.marker.color = color
         end
+        -- A point light always shows its radius; every light shows its full reach when selected.
         local selected = selection:has(light)
-        rebuild(self, entry, selected and base or false, function()
-            return selected and reachVertices(light) or {}
+        local always = light.className == 'PointLight3D'
+        rebuild(self, entry, (selected or always) and (base .. tostring(selected)) or false, function()
+            return (selected or always) and reachVertices(light, selected) or {}
         end, 'reach', 'EditorLightReach')
         if entry.reach then
             entry.reach.color = color

@@ -197,7 +197,7 @@ function Module.run(self)
     state.snap.rotate = 15
     toolbar:relayout(scene.root:find('World3D/World2D').width)
 
-    -- Menus build, select all, box select, play-test restore, export and merge import.
+    -- Menus build, select all, box select, export and merge import.
     local builtMenus = true
     for _, menu in ipairs(require('game.scenes.levelEditor.scripts.ui.menus').list) do
         builtMenus = builtMenus and #menu.items(state) > 0
@@ -215,11 +215,6 @@ function Module.run(self)
     self:check(state.selection:count() > 0, 'A rectangle over the whole view selects objects')
     state.selection:clear()
     local before = #state.level.children
-    state:togglePlay()
-    local running = state.playing and state.root3D.timeScale == 1
-    state.level.children[1].position = { 50, 50, 50 }
-    state:togglePlay()
-    self:check(running and not state.playing and #state.level.children == before and state.level.children[1].position[1] ~= 50, 'Play-test restores the level when it stops')
     self:check(state:exportLocation('smokeExport') and katsa.filesystem.getInfo('editor/exports/smokeExport.katsa', 'file') ~= nil, 'Export writes a .katsa into the exports folder')
     self:check(state:importLocation('editor/exports/smokeExport.katsa') and #state.level.children == before * 2, 'Importing a .katsa adds its objects')
     state.undo:undo()

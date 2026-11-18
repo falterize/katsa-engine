@@ -1,5 +1,5 @@
 -- Tool strip under the menu bar: undo/redo, tools, space/pivot, snap with editable steps, surface
--- snap, grid and play-test. Items wrap onto more rows when the window is narrow (Flow), so no
+-- snap and grid. Items wrap onto more rows when the window is narrow (Flow), so no
 -- button ever leaves the screen. Toggle buttons carry the `on` tag while active.
 local Flow = require('../flow')
 local Kit = require('../kit')
@@ -85,11 +85,6 @@ function Toolbar.create(state, ui, parent)
         state:savePrefs()
     end, function()
         return state.grid.visible
-    end, 12)
-    toggle('Play', 52, function()
-        state:togglePlay()
-    end, function()
-        return state.playing == true
     end, 12)
     return self
 end

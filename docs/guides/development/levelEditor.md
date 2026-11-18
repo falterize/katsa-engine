@@ -17,7 +17,7 @@ editor key through the shared map. See `docs/guides/input/inputMap.md`.
 | c | Gizmos (move, rotate, scale), snapping | done except snap-to-surface; needs hardware check |
 | d | Creation palette, model and image import | planned |
 | e | `.katsa` location export and import | pure parts done (format, ZIP writer) |
-| f | Undo/redo, copy/paste, play-test, polish | pure undo stack done |
+| f | Undo/redo, copy/paste, polish | pure undo stack done |
 
 ## Module map
 
@@ -89,8 +89,8 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 - Layout (`ui/layout.lua`, pure): toolbar on top, **Workspace** (left) and **Properties** (right) over the full middle height, a bottom dock with tabs (**Files**, **Location**) under the viewport, a status bar. The three borders are draggable splitters (`ui/dock.lua`); sizes are clamped so the viewport never drops below 300x160, and the chosen sizes are saved.
 - Nothing runs off the screen: the toolbar and the Create palette wrap onto more rows through `ui/flow.lua` when the window or dock is narrow.
 - **Menu bar** (`ui/menus.lua`, `panels/menubar.lua`): *File* (New, Open, recent files, Save, Save as, **Import .katsa** adds a file's objects to the level as one undo step, **Export .katsa** writes `editor/exports/<name>.katsa`), *Edit* (undo/redo, copy/paste, duplicate, delete, select all, group), *Create* (everything from the palette), *View* (grid, light/camera gizmos, shadows, wireframe, frame, reset layout) and *Settings* (editor settings, shortcuts, theme). Items show their InputMap shortcut and check marks.
-- Tool strip: Undo / Redo, Select / Move / Rotate / Scale, World/Local and Center/Origin, **Snap** with three editable steps (move in units, rotate in degrees, scale), **Surface** snap (a free Move drag puts the object on the surface under the pointer; Ctrl inverts), Grid and **Play** (F5). Active toggles are highlighted.
-- Selection: click, Ctrl-click, drag a **rectangle** in the viewport (objects whose centre falls inside are taken), Ctrl+A. Play-test runs the world and hides the overlays; stopping rebuilds the level from the snapshot taken at the start.
+- Tool strip: Undo / Redo, Select / Move / Rotate / Scale, World/Local and Center/Origin, **Snap** with three editable steps (move in units, rotate in degrees, scale), **Surface** snap (a free Move drag puts the object on the surface under the pointer; Ctrl inverts), Grid and . Active toggles are highlighted.
+- Selection: click, Ctrl-click, drag a **rectangle** in the viewport (objects whose centre falls inside are taken), Ctrl+A.
 - Properties are grouped into collapsible categories (`ui/propertyGroups.lua`): Transform, Appearance, Light, Camera, Physics open; Node, Rendering (draw cutoff `maxDistance`, `onTop`, ...) and Other collapsed. Editor-created meshes get `maxDistance = 0` (never culled by distance).
 - **Create**: `Shift+A` (action `editorCreate`), the **+** button in the Workspace header and the Create menu open one searchable list (type to filter, Enter creates the first match). From `Shift+A` over the viewport and from the viewport context menu the object is placed under the pointer.
 - **Context menus** (right button, one shared pop-up, `panels/popup.lua`): on an object in the viewport or a Workspace row (Duplicate, Copy, Delete, Rename, Hide, Lock, Group, Ungroup, Frame), on empty space in either (Paste, Select all, Frame all and the Create list), on a file row (add model, sprite quad, use as texture) and on a location row (Open, Import). In the viewport a short right click opens the menu; holding the button and moving is still the fly-look.

@@ -198,7 +198,7 @@ function Content:updateSelectionDrag()
         self.viewportPressed = false
         local mx, my = katsa.mouse.getX(), katsa.mouse.getY()
         local x, y = self:viewportPoint(mx, my)
-        if x and not self.playing then
+        if x then
             if not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
                 self.marquee = { x = x, y = y, mx = mx, my = my, active = false }
             end
@@ -252,33 +252,6 @@ local function destroyLevelChildren(self)
         local node = self.level.children[index]
         self.ops:forget(node)
         node:destroy()
-    end
-end
-
--- Play-test: the world runs (physics, animation) with the editor overlays hidden; stopping
--- rebuilds the level from the snapshot taken at the start, so nothing the run changed is kept.
-function Content:togglePlay()
-    if not self.playing then
-        self.playSnapshot = {}
-        for index, node in ipairs(self.level.children) do
-            self.playSnapshot[index] = NodeData.capture(node)
-        end
-        self.playGrid = self.grid.visible
-        self.selection:clear()
-        self.grid:setVisible(false)
-        self.root3D.timeScale = 1
-        self.playing = true
-        self:notify('Play-test running: press F5 to stop and restore the level')
-    else
-        self.root3D.timeScale = 0
-        destroyLevelChildren(self)
-        for _, data in ipairs(self.playSnapshot) do
-            self.ops:adopt(NodeData.build(self.world, data, self.level))
-        end
-        self.playSnapshot, self.playing = nil, false
-        self.grid:setVisible(self.playGrid)
-        self:refresh()
-        self:notify('Play-test stopped, level restored')
     end
 end
 
@@ -503,12 +476,6 @@ end
 
 function Content:handleActions()
     local map = self.fly.map
-    if self.playing then -- only Play stops it; every edit shortcut is ignored meanwhile
-        if map:justPressed('editorPlay') then
-            self:togglePlay()
-        end
-        return
-    end
     if map:justPressed('editorCreate') then
         local x, y = self:pointer()
         local vx, vy = self:viewportPoint(katsa.mouse.getX(), katsa.mouse.getY())
@@ -541,8 +508,6 @@ function Content:handleActions()
         ops:paste(self.level)
     elseif map:justPressed('editorSelectAll') then
         self:selectAll()
-    elseif map:justPressed('editorPlay') then
-        self:togglePlay()
     elseif map:justPressed('editorSave') then
         self:saveLocation()
     elseif map:justPressed('editorOpen') then
@@ -600,22 +565,15 @@ function Content:update(dt)
     local tap = self.rmbTap
     if tap then
         self.rmbTap = nil
-        if not self.playing then
-            self:viewportMenu(tap)
-        end
+        self:viewportMenu(tap)
     end
     if not Focus.current then -- typing in a field must not trigger editor shortcuts
         self:handleActions()
     end
     self:autosave(dt)
-    self.lightViz:update(self.selection, not self.playing)
-    if self.playing then
-        self.transform.gizmo:hide()
-        self:followOutlines({})
-    else
-        self.transform:update()
-        self:followOutlines(self.selection:items())
-    end
+    self.lightViz:update(self.selection, true)
+    self.transform:update()
+    self:followOutlines(self.selection:items())
     for _, panel in pairs(self.panels or {}) do
         panel:update()
     end
