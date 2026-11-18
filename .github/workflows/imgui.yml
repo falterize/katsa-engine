@@ -39,3 +39,35 @@ jobs:
         with:
           name: imgui-android-${{ matrix.abi }}
           path: source/plugins/imgui/native/android-*/libcimgui.so
+  # Commits the built libraries into the branch, so the engine finds them in source/plugins/imgui/native
+  # (the packager ships that folder) without anyone downloading artifacts by hand.
+  publish:
+    needs: [windows, android]
+    if: ${{ always() && needs.windows.result == 'success' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: imgui-*
+          path: artifacts
+      - name: Copy the libraries into native/
+        run: |
+          set -e
+          mkdir -p source/plugins/imgui/native/win-x64
+          cp artifacts/imgui-win-x64/cimgui.dll source/plugins/imgui/native/win-x64/cimgui.dll
+          for dir in artifacts/imgui-android-*; do
+            [ -d "$dir" ] || continue
+            find "$dir" -name libcimgui.so | while read -r lib; do
+              target="source/plugins/imgui/native/$(basename "$(dirname "$lib")")"
+              mkdir -p "$target" && cp "$lib" "$target/libcimgui.so"
+            done
+          done
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f source/plugins/imgui/native
+          git diff --cached --quiet || (git commit -m "imgui: native libraries built by CI" && git pull --rebase && git push)

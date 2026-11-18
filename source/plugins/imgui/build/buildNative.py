@@ -24,7 +24,11 @@ FLAGS = ['-O2', '-fno-exceptions', '-fno-rtti', '-DIMGUI_DISABLE_OBSOLETE_FUNCTI
 
 
 def host():
-    system = {'Linux': 'linux', 'Windows': 'win', 'Darwin': 'osx'}[platform.system()]
+    name = platform.system()
+    # An MSYS2/MinGW shell reports 'MINGW64_NT-10.0-...' (Cygwin 'CYGWIN_NT-...'): that is Windows.
+    if name.startswith(('MINGW', 'MSYS', 'CYGWIN')):
+        name = 'Windows'
+    system = {'Linux': 'linux', 'Windows': 'win', 'Darwin': 'osx'}[name]
     machine = platform.machine().lower()
     arch = {'x86_64': 'x64', 'amd64': 'x64', 'aarch64': 'arm64', 'arm64': 'arm64'}.get(machine, machine)
     return system, arch
