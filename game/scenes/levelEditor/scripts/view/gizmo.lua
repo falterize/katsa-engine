@@ -60,6 +60,8 @@ local LAYOUT = {
 function Gizmo.new(world)
     local self = setmetatable({ parts = {}, tool = 'Select' }, Gizmo)
     self.root = world:create('Node3D', { name = 'EditorGizmo', visible = false })
+    -- The shader node covers its subtree: the whole gizmo draws on top of the scene.
+    world:create('Shader3D', { name = 'OnTop', shaderPath = 'scene://shaders/onTop.glsl' }, self.root)
     for _, tool in ipairs({ 'Move', 'Rotate', 'Scale' }) do
         self.parts[tool] = {}
         for _, name in ipairs(LAYOUT[tool]) do

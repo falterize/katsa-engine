@@ -150,6 +150,21 @@ function Module.run(self)
     self:check(#loaded.level.children == count, 'The package loader builds the exported objects')
     loaded.level:destroy()
 
+    -- Reordering by drag and drop: B goes before A, undo restores the order.
+    local first, second = state.level.children[1], state.level.children[2]
+    self:check(state.ops:reparent({ second }, state.level, first) and state.level.children[1] == second, 'Reparent can place a node before a sibling')
+    state.undo:undo()
+    self:check(state.level.children[1] == first and state.level.children[2] == second, 'Undo of a reorder restores the order')
+
+    -- Toolbar wraps on a narrow window; the settings file keeps the snap steps.
+    local toolbar = state.panels.toolbar
+    self:check(toolbar:relayout(700) > toolbar:relayout(1600), 'The toolbar wraps onto more rows in a narrow window')
+    state.snap.rotate = 22.5
+    state:savePrefs()
+    self:check(require('game.scenes.levelEditor.scripts.io.editorSettings').parse(katsa.filesystem.read('editor/settings.lua')).snap.rotate == 22.5, 'Snap steps are saved with the editor settings')
+    state.snap.rotate = 15
+    toolbar:relayout(scene.root:find('World3D/World2D').width)
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')

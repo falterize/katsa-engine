@@ -4,7 +4,7 @@
 -- written to all of them. Edits go through `ops:setProperty` (the engine's validation, one undo
 -- step). The panel rebuilds when the selection changes or after an edit, never every frame.
 local Properties = require('source.engine.editor.inspectors.properties')
-local Theme = require('../theme')
+local Kit = require('../kit')
 
 local Panel = {}
 Panel.__index = Panel
@@ -12,48 +12,34 @@ Panel.__index = Panel
 local ROW = 24
 local HIDDEN = { parent = true, ['add attribute'] = true }
 
-function Panel.create(state, ui)
-    local self = setmetatable({ state = state, ui = ui, widgets = {} }, Panel)
-    self.frame = ui:container({
-        name = 'PropertiesPanel',
-        position = { 1, 0, 0, Theme.top },
-        anchorPoint = { 1, 0 },
-        size = { 0, Theme.right, 1, -(Theme.top + Theme.bottom + Theme.browser) },
-        backgroundColor = Theme.panel,
-        zIndex = 5,
-    }, ui.content)
-    self.title = ui:create('Label', {
+function Panel.create(state, ui, frame)
+    local self = setmetatable({ state = state, ui = ui, widgets = {}, frame = frame }, Panel)
+    self.title = Kit.label(ui, frame, 'Properties', {
         position = { 0, 8, 0, 4 },
         size = { 1, -16, 0, 20 },
-        fontSize = 15,
-        align = 'left',
-        text = 'Properties',
-        textColor = Theme.text,
-        interactable = false,
-    }, self.frame)
-    self.name = ui:create('TextBox', {
+        fontSize = 14,
+    }, 'title')
+    self.name = Kit.make(ui, 'TextBox', {
         name = 'NameField',
         position = { 0, 8, 0, 28 },
         size = { 1, -16, 0, 24 },
         fontSize = 14,
-        backgroundColor = Theme.field,
         placeholderText = 'Name',
         visible = false,
-    }, self.frame)
+    }, frame, 'field')
     self.name:connect('submitted', function(_, text)
         local node = state.selection:primary()
         if node and state.ops:rename(node, text) then
             self.dirty = true
         end
     end)
-    self.scroll = ui:scroll({
+    self.scroll = Kit.make(ui, 'ScrollFrame', {
         name = 'PropertyList',
         position = { 0, 4, 0, 58 },
         size = { 1, -8, 1, -62 },
         canvasSize = { 0, 0, 0, 0 },
         scrollBarThickness = 6,
-        backgroundColor = Theme.bar,
-    }, self.frame)
+    }, frame, 'list')
     self.dirty = true
     state.selection:onChange(function()
         self.dirty = true
@@ -137,35 +123,28 @@ function Panel:rebuild()
         local shown = not HIDDEN[key]
             and (kind == 'boolean' or kind == 'number' or kind == 'string' or kind == 'vector' or kind == 'node')
         if shown then
-            add(ui:create('Label', {
+            add(Kit.label(ui, self.scroll, key, {
                 position = { 0, 6, 0, y },
                 size = { 0.4, -6, 0, ROW },
-                fontSize = 13,
-                align = 'left',
-                text = key,
-                textColor = Theme.dim,
-                interactable = false,
-            }, self.scroll))
+            }, 'muted'))
             local at, width = { 0.4, 0, 0, y }, { 0.6, -8, 0, ROW - 2 }
             if kind == 'boolean' and editable then
-                local button = add(ui:button({
+                local button = add(Kit.make(ui, 'Button', {
                     position = at,
                     size = width,
                     text = row.value and 'true' or 'false',
                     fontSize = 13,
-                    backgroundColor = row.value and Theme.buttonOn or Theme.button,
-                }, self.scroll))
+                }, self.scroll, 'tool', row.value and 'on' or nil))
                 button:connect('press', function()
                     self:commit(key, nil, not row.value)
                 end)
             elseif row.options and editable then
-                local button = add(ui:button({
+                local button = add(Kit.make(ui, 'Button', {
                     position = at,
                     size = width,
                     text = tostring(row.value),
                     fontSize = 13,
-                    backgroundColor = Theme.button,
-                }, self.scroll))
+                }, self.scroll, 'tool'))
                 button:connect('press', function()
                     local list, index = row.options, 1
                     for position, option in ipairs(list) do
@@ -178,25 +157,23 @@ function Panel:rebuild()
             elseif kind == 'vector' and editable then
                 local count = #row.value
                 for index = 1, count do
-                    local box = add(ui:create('TextBox', {
+                    local box = add(Kit.make(ui, 'TextBox', {
                         position = { 0.4 + 0.6 * (index - 1) / count, 0, 0, y },
                         size = { 0.6 / count, -4, 0, ROW - 2 },
                         fontSize = 12,
                         text = format(row.value[index]),
-                        backgroundColor = Theme.field,
-                    }, self.scroll))
+                    }, self.scroll, 'field'))
                     box:connect('submitted', function(_, text)
                         self:commit(key, index, text)
                     end)
                 end
             elseif (kind == 'number' or kind == 'string') and editable then
-                local box = add(ui:create('TextBox', {
+                local box = add(Kit.make(ui, 'TextBox', {
                     position = at,
                     size = width,
                     fontSize = 13,
                     text = format(row.value),
-                    backgroundColor = Theme.field,
-                }, self.scroll))
+                }, self.scroll, 'field'))
                 box:connect('submitted', function(_, text)
                     self:commit(key, nil, kind == 'number' and text or text)
                 end)
@@ -211,20 +188,13 @@ function Panel:rebuild()
                     end
                     text = table.concat(parts, ', ')
                 end
-                add(ui:create('Label', {
-                    position = at,
-                    size = width,
-                    fontSize = 13,
-                    align = 'left',
-                    text = text,
-                    textColor = Theme.dim,
-                    interactable = false,
-                }, self.scroll))
+                add(Kit.label(ui, self.scroll, text, { position = at, size = width }, 'muted'))
             end
             y = y + ROW
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, y }
+    state.styler:apply(self.scroll)
 end
 
 function Panel:update()

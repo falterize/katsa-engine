@@ -247,23 +247,70 @@ end
 
 -- Moves nodes under `newParent`; their local transforms are kept (a group at the origin with
 -- no rotation or scale never moves them; other parents shift them with the parent).
-function Ops:reparent(nodes, newParent)
+-- Moves nodes under `newParent`. With `before` (a sibling under the new parent) they are placed
+-- just in front of it, otherwise at the end. One undo step; undo restores parent and order.
+function Ops:reparent(nodes, newParent, before)
+    local top = TreeModel.topLevel(nodes, parentOf)
+    local moving = {}
+    for _, node in ipairs(top) do
+        moving[node] = true
+    end
     local moves = {}
-    for _, node in ipairs(TreeModel.topLevel(nodes, parentOf)) do
+    for _, node in ipairs(top) do
         if node ~= self.content.level and TreeModel.canReparent(node, newParent, parentOf) then
-            moves[#moves + 1] = { id = self:idOf(node), from = self:idOf(node.parent) }
+            local next
+            local seen = false
+            for _, sibling in ipairs(node.parent.children) do
+                if seen and not moving[sibling] then
+                    next = sibling
+                    break
+                end
+                seen = seen or sibling == node
+            end
+            moves[#moves + 1] = {
+                id = self:idOf(node),
+                from = self:idOf(node.parent),
+                nextId = next and self:idOf(next) or nil,
+            }
         end
     end
     if #moves == 0 then
         return false
     end
     local toId = self:idOf(newParent)
-    local function apply(target)
-        for _, move in ipairs(moves) do
-            local node = self:node(move.id)
-            local parent = self:node(target and toId or move.from) or self.content.level
-            if node then
-                node:setParent(parent)
+    local beforeId = before and self:idOf(before) or nil
+    -- Puts `node` under `parent`, directly in front of `anchor` (or last).
+    local function place(node, parent, anchor)
+        node:setParent(parent)
+        local siblings = parent.children
+        if anchor and not anchor.destroyed and anchor ~= node then
+            local at
+            for position, child in ipairs(siblings) do
+                if child == anchor then
+                    at = position
+                end
+            end
+            if at then
+                table.remove(siblings, #siblings)
+                table.insert(siblings, at, node)
+            end
+        end
+    end
+    local function apply(forward)
+        if forward then
+            for _, move in ipairs(moves) do
+                local node = self:node(move.id)
+                if node then
+                    place(node, self:node(toId) or self.content.level, beforeId and self:node(beforeId))
+                end
+            end
+        else
+            for index = #moves, 1, -1 do
+                local move = moves[index]
+                local node = self:node(move.id)
+                if node then
+                    place(node, self:node(move.from) or self.content.level, move.nextId and self:node(move.nextId))
+                end
             end
         end
         self:touch()

@@ -10,6 +10,9 @@ local AssetStore = require('game.scenes.levelEditor.scripts.io.assetStore')
 local Shapes = require('game.scenes.levelEditor.scripts.builders.shapes')
 local PackagePaths = require('game.scenes.levelEditor.scripts.io.packagePaths')
 local Recent = require('game.scenes.levelEditor.scripts.io.recent')
+local EditorSettings = require('game.scenes.levelEditor.scripts.io.editorSettings')
+local Flow = require('game.scenes.levelEditor.scripts.ui.flow')
+local Layout = require('game.scenes.levelEditor.scripts.ui.layout')
 local Builder = require('game.scenes.levelEditor.scripts.view.meshBuilder')
 local Selection = require('game.scenes.levelEditor.scripts.core.selection')
 local Snap = require('game.scenes.levelEditor.scripts.core.snap')
@@ -269,7 +272,34 @@ function Module.package(self)
     self:check(parsed and parsed.nodes[1].attributes.EditorShape == 'cone' and parsed.nodes[1].model == 'assets/models/x.glb', 'Attributes and model files survive the location format')
 end
 
+function Module.interface(self)
+    for _, size in ipairs({ { 1280, 720 }, { 1024, 600 }, { 800, 500 } }) do
+        local r = Layout.compute(size[1], size[2], Layout.DEFAULTS, 36, 24)
+        local across = r.left.w + r.splitLeft.w + r.view.w + r.splitRight.w + r.right.w
+        self:check(r.view.w >= Layout.MIN_VIEW.width and r.view.h >= Layout.MIN_VIEW.height and across == size[1], ('The viewport keeps its size and the docks fill the window at %dx%d'):format(size[1], size[2]))
+    end
+    local wide = Layout.compute(1280, 720, { left = 900, right = 900, bottom = 900 }, 36, 24)
+    self:check(wide.view.w >= Layout.MIN_VIEW.width and wide.bottom.y >= wide.view.y + Layout.MIN_VIEW.height, 'Oversized splitter values are clamped')
+    local items = {}
+    for index = 1, 9 do
+        items[index] = { w = 60 }
+    end
+    local positions, height = Flow.place(items, 300, 4, 26, 5)
+    local inside = true
+    for index, at in ipairs(positions) do
+        inside = inside and at.x + items[index].w <= 300 - 5
+    end
+    self:check(inside and height > 26 * 2 and positions[1].y == 5, 'Flow wraps items so none leaves the available width')
+    local single = Flow.place({ { w = 50 }, { w = 50, row = true } }, 500, 4, 26, 0)
+    self:check(single[2].y == 30 and single[2].x == 0, 'Flow starts a new row on request')
+    local merged = EditorSettings.merge({ theme = 5, snap = { move = 2, junk = 1 }, other = true })
+    self:check(merged.theme == 'dark' and merged.snap.move == 2 and merged.snap.junk == nil and merged.other == nil and merged.layout.left == 250, 'Settings keep known keys of the right type and default the rest')
+    local again = EditorSettings.parse(EditorSettings.serialize(merged))
+    self:check(again.snap.move == 2 and again.theme == 'dark', 'Settings survive a save and load')
+end
+
 function Module.run(self)
+    Module.interface(self)
     Module.package(self)
     Module.shapes(self)
     Module.assets(self)

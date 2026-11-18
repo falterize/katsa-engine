@@ -84,6 +84,17 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 - The Files tab uses `katsa.filesystem`. `io/assetStore.lua` copies a chosen file to `editor/assets/models|textures/` in the save directory (unique, safe names); the same path without `editor/` is used inside the exported package. Models remember their file in the `EditorModel` attribute; images become sprite quads or the colour map of the selected mesh.
 - Dropped files are not used for import: the engine's `katsa.filedropped` switches scenes.
 
+## Interface (Godot-style docks)
+
+- Layout (`ui/layout.lua`, pure): toolbar on top, **Workspace** (left) and **Properties** (right) over the full middle height, a bottom dock with tabs (**Create**, **Files**, **Location**) under the viewport, a status bar. The three borders are draggable splitters (`ui/dock.lua`); sizes are clamped so the viewport never drops below 300x160, and the chosen sizes are saved.
+- Nothing runs off the screen: the toolbar and the Create palette wrap onto more rows through `ui/flow.lua` when the window or dock is narrow.
+- Toolbar: New / Open / Save, Undo / Redo, Select / Move / Rotate / Scale, World/Local and Center/Origin, **Snap** with three editable steps (move in units, rotate in degrees, scale), Grid, Frame all, Settings. Active toggles are highlighted.
+- Workspace: select (Ctrl adds, Shift ranges), show/hide, lock, Duplicate / Delete / Group / Ungroup, and **drag and drop**: drop on the middle of a row to move inside it, on the upper or lower quarter to place before or after it (a frame or a line shows the target; one undo step; undo restores parent and order).
+- Gizmos and the selection outline draw **on top of everything** (`assets/shaders/onTop.glsl`, a scene `Shader3D` that squeezes the clip depth), so they stay usable inside large objects. Picking handles geometrically, so it is unaffected.
+- **Settings window** (toolbar): Appearance (dark/light theme through the uiStyler plugin), Interface (dock sizes, reset), Snap & Grid, Camera (fly speed, look sensitivity, FOV) and Shortcuts: **Rebind** any editor InputMap action (a modifier first makes a chord, Esc cancels) or **Reset** it. Everything is stored in `editor/settings.lua`.
+- Styling: widgets carry tags (`dock`, `bar`, `tool`, `row`, `selected`, `on`, `field`, `list`, ...); `assets/styles/editor.lua` maps them to theme tokens, so a theme switch restyles the whole editor. Helpers are in `ui/kit.lua`.
+- Known limits: the 3D view still renders under the docks (the camera centre is the window centre, not the viewport centre); the Workspace does not auto-scroll while dragging near its edges; a rebind replaces all bindings of the action.
+
 ## `.katsa` location format
 
 A location is a **ZIP archive** (the engine reads ZIP; the scene writes it with its own stored

@@ -12,6 +12,7 @@ end
 
 local Settings = {
     layoutVersion = 3,
+    plugins = { 'uiStyler' },
     physics = { backend = 'auto' },
     presentation = { navigation = false },
     cameraButtons = false,

@@ -1,74 +1,82 @@
--- Bottom panel: the Create tab (primitives, lights, objects) and the Files tab, a browser over
--- the virtual file system (project folders and the save directory). A model file is imported
--- into the editor's asset store and placed; an image becomes a sprite quad or the colour map of
--- the selected mesh. Image rows show a thumbnail.
+-- Bottom dock with tabs. Create: primitives, lights and objects (buttons wrap to the dock width).
+-- Files: a browser over the virtual file system; a model is imported into the editor's asset store
+-- and placed, an image becomes a sprite quad or the colour map of the selected mesh, with a
+-- thumbnail per image row. Location: recent files, the autosave and saved locations.
 local AssetStore = require('../../io.assetStore')
 local Catalog = require('../../builders.catalog')
+local Clone = require('source.engine.nodes.core.clone')
+local Flow = require('../flow')
+local Kit = require('../kit')
 local LocationIO = require('../../io.locationIO')
 local Models = require('source.engine.import.models')
-local Theme = require('../theme')
 
 local Browser = {}
 Browser.__index = Browser
 
-local CELL_W, CELL_H = 110, 26
+local TABS = { 'Create', 'Files', 'Location' }
+local HEAD = 30
+local FOOT = 30
 
-function Browser.create(state, ui)
-    local self = setmetatable({ state = state, ui = ui, widgets = {}, tab = 'Create', path = '' }, Browser)
-    self.frame = ui:container({
-        name = 'BrowserPanel',
-        position = { 0, Theme.left, 1, -(Theme.bottom + Theme.browser) },
-        size = { 1, -(Theme.left + Theme.right), 0, Theme.browser },
-        backgroundColor = Theme.panel,
-        zIndex = 5,
-    }, ui.content)
-    for index, tab in ipairs({ 'Create', 'Files', 'Location' }) do
-        local button = ui:button({
-            position = { 0, 6 + (index - 1) * 84, 0, 4 },
-            size = { 0, 80, 0, 22 },
-            text = tab,
-            fontSize = 13,
-            backgroundColor = Theme.button,
-        }, self.frame)
-        button:connect('press', function()
-            self.tab, self.dirty = tab, true
-        end)
+function Browser.create(state, ui, frame)
+    local self = setmetatable({
+        state = state,
+        ui = ui,
+        frame = frame,
+        widgets = {},
+        tab = 'Create',
+        path = '',
+        tabButtons = {},
+        width = 600,
+    }, Browser)
+    for index, tab in ipairs(TABS) do
+        local button = Kit.button(ui, frame, tab, 80, 24, function()
+            self:show(tab)
+        end, 'tab')
+        button.position = { 0, 6 + (index - 1) * 84, 0, 3 }
+        self.tabButtons[tab] = button
     end
-    self.pathBox = ui:create('TextBox', {
-        position = { 0, 180, 0, 4 },
-        size = { 1, -300, 0, 22 },
+    self.pathBox = Kit.make(ui, 'TextBox', {
+        position = { 0, 262, 0, 3 },
+        size = { 1, -270, 0, 24 },
         fontSize = 13,
         text = '',
-        backgroundColor = Theme.field,
         placeholderText = 'folder (empty = root), Enter opens it',
         visible = false,
-    }, self.frame)
+    }, frame, 'field')
     self.pathBox:connect('submitted', function(_, text)
         self.path, self.selected, self.dirty = text:gsub('^/+', ''):gsub('/+$', ''), nil, true
     end)
-    self.nameBox = ui:create('TextBox', {
-        position = { 0, 270, 0, 4 },
-        size = { 0, 220, 0, 22 },
+    self.nameBox = Kit.make(ui, 'TextBox', {
+        position = { 0, 262, 0, 3 },
+        size = { 0, 220, 0, 24 },
         fontSize = 13,
         text = '',
-        backgroundColor = Theme.field,
         placeholderText = 'file name',
         visible = false,
-    }, self.frame)
-    self.scroll = ui:scroll({
-        position = { 0, 4, 0, 30 },
-        size = { 1, -8, 1, -62 },
+    }, frame, 'field')
+    self.scroll = Kit.make(ui, 'ScrollFrame', {
+        position = { 0, 4, 0, HEAD },
+        size = { 1, -8, 1, -(HEAD + 4) },
         canvasSize = { 0, 0, 0, 0 },
         scrollBarThickness = 6,
-        backgroundColor = Theme.bar,
-    }, self.frame)
-    self.actions = ui:container({
-        position = { 0, 4, 1, -30 },
+    }, frame, 'list')
+    self.actions = Kit.make(ui, 'Frame', {
+        position = { 0, 4, 1, -(FOOT) },
         size = { 1, -8, 0, 26 },
         backgroundTransparency = 1,
-    }, self.frame)
+        visible = false,
+    }, frame)
     self.dirty = true
     return self
+end
+
+function Browser:show(tab)
+    self.tab, self.dirty = tab, true
+end
+
+function Browser:resize(width, height)
+    self.width, self.height = width, height
+    self.dirty = true
 end
 
 local function names(path)
@@ -98,43 +106,66 @@ function Browser:add(widget)
     return widget
 end
 
-function Browser:buildCreate()
-    local ui, state = self.ui, self.state
-    local y, row = 0, nil
-    local lastGroup
-    local x = 0
-    for _, item in ipairs(Catalog.items()) do
-        if item.group ~= lastGroup then
-            lastGroup = item.group
-            y = y + (row and CELL_H + 4 or 0)
-            x, row = 0, true
-            self:add(ui:create('Label', {
-                position = { 0, 6, 0, y },
-                size = { 0, 90, 0, CELL_H },
-                fontSize = 13,
-                align = 'left',
-                text = item.group,
-                textColor = Theme.dim,
-                interactable = false,
-            }, self.scroll))
-            x = 96
-        end
-        local button = self:add(ui:button({
-            position = { 0, x, 0, y },
-            size = { 0, CELL_W - 4, 0, CELL_H - 2 },
-            text = item.label,
-            fontSize = 13,
-            backgroundColor = Theme.button,
+-- A row of the list tabs: a full-width button, optionally with an image thumbnail.
+function Browser:row(y, label, onPress, selected, thumb)
+    local x = 2
+    if thumb then
+        self:add(self.ui:create('ImageRect', {
+            position = { 0, 2, 0, y + 2 },
+            size = { 0, 18, 0, 18 },
+            image = thumb,
+            interactable = false,
         }, self.scroll))
-        button:connect('press', function()
+        x = 24
+    end
+    local button = self:add(Kit.make(self.ui, 'Button', {
+        position = { 0, x, 0, y },
+        size = { 1, -(x + 2), 0, 22 },
+        text = label,
+        align = 'left',
+        fontSize = 13,
+    }, self.scroll, 'row', selected and 'selected' or nil))
+    button:connect('press', onPress)
+    return y + 22
+end
+
+function Browser:heading(y, text)
+    self:add(Kit.label(self.ui, self.scroll, text, { position = { 0, 6, 0, y }, size = { 1, -12, 0, 22 } }, 'muted'))
+    return y + 22
+end
+
+function Browser:buildCreate()
+    local state = self.state
+    local items = Catalog.items()
+    local y, group, list = 0, nil, {}
+    local function flush()
+        if #list == 0 then
+            return
+        end
+        local positions, height = Flow.place(list, self.width - 24, 4, 24, 0)
+        for index, entry in ipairs(list) do
+            entry.button.position = { 0, 8 + positions[index].x, 0, y + positions[index].y }
+        end
+        y = y + height + 8
+        list = {}
+    end
+    for _, item in ipairs(items) do
+        if item.group ~= group then
+            flush()
+            group = item.group
+            y = self:heading(y, group)
+        end
+        local width = math.max(60, #item.label * 8 + 22)
+        local button = self:add(Kit.button(self.ui, self.scroll, item.label, width, 24, function()
             local ok, message = pcall(item.make, state, state:placement())
             if not ok then
                 state:notify(tostring(message))
             end
-        end)
-        x = x + CELL_W
+        end, 'tool'))
+        list[#list + 1] = { w = width, button = button }
     end
-    self.scroll.canvasSize = { 0, 0, 0, y + CELL_H + 4 }
+    flush()
+    self.scroll.canvasSize = { 0, 0, 0, y }
 end
 
 function Browser:act(kind)
@@ -156,7 +187,7 @@ function Browser:act(kind)
         end
     elseif fileKind == 'image' and kind == 'sprite' then
         local mesh = state.ops:create('Mesh3D', {
-            name = require('source.engine.nodes.core.clone').uniqueName(state.scene.world, 'Sprite'),
+            name = Clone.uniqueName(state.scene.world, 'Sprite'),
             kind = 'quad',
             position = { position[1], position[2] + 1, position[3] },
             size = { 2, 2, 1 },
@@ -174,41 +205,27 @@ function Browser:act(kind)
     end
 end
 
+function Browser:footer(specs)
+    local x = 0
+    for _, spec in ipairs(specs) do
+        local button = self:add(Kit.button(self.ui, self.actions, spec[1], spec[3] or 110, 24, spec[2], 'tool'))
+        button.position = { 0, x, 0, 0 }
+        x = x + (spec[3] or 110) + 4
+    end
+    self.actions.visible = true
+end
+
 function Browser:buildFiles()
-    local ui = self.ui
-    self.pathBox.text = self.path
     local listing = names(self.path)
     local y = 0
-    local function row(label, thumb, onPress, selected)
-        local x = 0
-        if thumb then
-            self:add(ui:create('ImageRect', {
-                position = { 0, 2, 0, y + 2 },
-                size = { 0, 18, 0, 18 },
-                image = thumb,
-                interactable = false,
-            }, self.scroll))
-            x = 22
-        end
-        local button = self:add(ui:button({
-            position = { 0, x, 0, y },
-            size = { 1, -x, 0, 22 },
-            text = label,
-            align = 'left',
-            fontSize = 13,
-            backgroundColor = selected and Theme.rowSelected or Theme.row_,
-            textColor = Theme.text,
-        }, self.scroll))
-        button:connect('press', onPress)
-        y = y + 22
-    end
+    self.pathBox.text = self.path
     if self.path ~= '' then
-        row('..', nil, function()
+        y = self:row(y, '..', function()
             self.path, self.selected, self.dirty = self.path:match('^(.*)/[^/]+$') or '', nil, true
         end)
     end
     for _, dir in ipairs(listing.dirs) do
-        row('[' .. dir.name .. ']', nil, function()
+        y = self:row(y, '[' .. dir.name .. ']', function()
             self.path, self.selected, self.dirty = dir.path, nil, true
         end)
     end
@@ -216,104 +233,62 @@ function Browser:buildFiles()
         local kind = AssetStore.kind(file.path, Models.supports)
         if kind then
             local isSelected = self.selected and self.selected.path == file.path
-            row(file.name .. (kind == 'model' and '   (model)' or ''), kind == 'image' and file.path or nil, function()
+            y = self:row(y, file.name .. (kind == 'model' and '   (model)' or ''), function()
                 self.selected, self.dirty = file, true
-            end, isSelected)
+            end, isSelected, kind == 'image' and file.path or nil)
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, y }
-    local x = 0
-    for _, spec in ipairs({
-        { 'Add model', 'add' },
-        { 'Sprite quad', 'sprite' },
-        { 'Use as texture', 'texture' },
-    }) do
-        local button = self:add(ui:button({
-            position = { 0, x, 0, 0 },
-            size = { 0, 110, 0, 24 },
-            text = spec[1],
-            fontSize = 13,
-            backgroundColor = Theme.button,
-        }, self.actions))
-        button:connect('press', function()
-            self:act(spec[2])
-        end)
-        x = x + 114
-    end
+    self:footer({
+        { 'Add model', function()
+            self:act('add')
+        end },
+        { 'Sprite quad', function()
+            self:act('sprite')
+        end },
+        { 'Use as texture', function()
+            self:act('texture')
+        end, 120 },
+    })
 end
 
 function Browser:buildLocation()
-    local ui, state = self.ui, self.state
+    local state = self.state
     self.nameBox.text = state.fileName or ''
-    local y = 0
-    local function row(label, onPress)
-        local button = self:add(ui:button({
-            position = { 0, 0, 0, y },
-            size = { 1, 0, 0, 22 },
-            text = label,
-            align = 'left',
-            fontSize = 13,
-            backgroundColor = Theme.row_,
-            textColor = Theme.text,
-        }, self.scroll))
-        button:connect('press', onPress)
-        y = y + 22
-    end
-    local function heading(text)
-        self:add(ui:create('Label', {
-            position = { 0, 4, 0, y },
-            size = { 1, 0, 0, 22 },
-            fontSize = 13,
-            align = 'left',
-            text = text,
-            textColor = Theme.dim,
-            interactable = false,
-        }, self.scroll))
-        y = y + 22
-    end
-    heading('Recent')
+    local y = self:heading(0, 'Recent')
     for _, path in ipairs(state.recent or {}) do
-        row(path, function()
+        y = self:row(y, path, function()
             state:openLocation(path)
             self.dirty = true
         end)
     end
-    heading('Autosave')
-    row(LocationIO.AUTOSAVE .. '  (open the last autosave)', function()
+    y = self:heading(y, 'Autosave')
+    y = self:row(y, LocationIO.AUTOSAVE .. '   (open the last autosave)', function()
         state:openLocation(LocationIO.AUTOSAVE)
         self.dirty = true
     end)
-    heading('Saved locations  (' .. tostring(katsa.filesystem.getSaveDirectory()) .. '/' .. LocationIO.FOLDER .. ')')
+    y = self:heading(y, 'Saved locations   ' .. tostring(katsa.filesystem.getSaveDirectory()) .. '/' .. LocationIO.FOLDER)
     for _, name in ipairs(katsa.filesystem.getDirectoryItems(LocationIO.FOLDER)) do
         if name:match('%.katsa$') then
-            row(name, function()
+            y = self:row(y, name, function()
                 state:openLocation(LocationIO.FOLDER .. '/' .. name)
                 self.dirty = true
             end)
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, y }
-    local x = 0
-    for _, spec in ipairs({ { 'Save', 'save' }, { 'New', 'new' } }) do
-        local button = self:add(ui:button({
-            position = { 0, x, 0, 0 },
-            size = { 0, 110, 0, 24 },
-            text = spec[1],
-            fontSize = 13,
-            backgroundColor = Theme.button,
-        }, self.actions))
-        button:connect('press', function()
-            if spec[2] == 'save' then
-                state:saveLocation(self.nameBox.text ~= '' and self.nameBox.text or nil)
-            else
-                state:clearLevel()
-                state.fileName, state.savedVersion = nil, state.undo.version
-                state:notify('New empty location')
-            end
+    self:footer({
+        { 'Save', function()
+            state:saveLocation(self.nameBox.text ~= '' and self.nameBox.text or nil)
             self.dirty = true
-        end)
-        x = x + 114
-    end
+        end },
+        { 'New', function()
+            state:clearLevel()
+            state.fileName, state.savedVersion = nil, state.undo.version
+            state:notify('New empty location')
+            self.dirty = true
+        end },
+    })
 end
 
 function Browser:update()
@@ -322,8 +297,18 @@ function Browser:update()
     end
     self.dirty = false
     self:clear()
+    for name, button in pairs(self.tabButtons) do
+        if name == self.tab then
+            button:addTag('selected')
+        else
+            button:removeTag('selected')
+        end
+    end
     self.pathBox.visible = self.tab == 'Files'
     self.nameBox.visible = self.tab == 'Location'
+    self.actions.visible = false
+    local footer = self.tab ~= 'Create'
+    self.scroll.size = { 1, -8, 1, -(HEAD + 4 + (footer and FOOT or 0)) }
     if self.tab == 'Create' then
         self:buildCreate()
     elseif self.tab == 'Files' then
@@ -331,6 +316,8 @@ function Browser:update()
     else
         self:buildLocation()
     end
+    local styler = self.state.styler
+    styler:apply(self.frame)
 end
 
 return Browser

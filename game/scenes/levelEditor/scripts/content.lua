@@ -3,6 +3,8 @@
 local Bounds = require('./core.bounds')
 local EditorInput = require('./input.editorInput')
 local FlyCamera = require('./view.flyCamera')
+local EditorSettings = require('./io.editorSettings')
+local Focus = require('source.engine.ui.widgets.textFocus')
 local Grid = require('./view.grid')
 local LocationIO = require('./io.locationIO')
 local Ops = require('./core.levelOps')
@@ -20,6 +22,7 @@ local TOOLS = { 'Select', 'Move', 'Rotate', 'Scale' }
 
 function Content.new(scene)
     local settings = scene.settings.editor
+    local prefs = EditorSettings.parse(katsa.filesystem.read(EditorSettings.FILE))
     local world = scene.world
     local environment = world.environment
     environment.debug.gizmos.enabled = true -- lights and cameras show their engine gizmos
@@ -33,19 +36,24 @@ function Content.new(scene)
         brightness = 1.1,
     })
 
-    local self = setmetatable({ scene = scene, settings = settings }, Content)
+    local self = setmetatable({ scene = scene, settings = settings, prefs = prefs }, Content)
     self.level = world:create('Node3D', { name = 'Level' })
     self.selection = Selection.new()
     self.undo = Undo.new()
     self.treeVersion = 0
     self.tool, self.space, self.pivotMode = 'Select', 'World', 'Center'
     self.snap = {
-        enabled = true,
-        move = settings.snap.move,
-        rotate = settings.snap.rotate,
-        scale = settings.snap.scale,
+        enabled = prefs.snap.enabled,
+        move = prefs.snap.move,
+        rotate = prefs.snap.rotate,
+        scale = prefs.snap.scale,
     }
-    self.grid = Grid.new(world, nil, settings.grid)
+    self.grid = Grid.new(world, nil, {
+        cell = prefs.grid.cell,
+        visible = prefs.grid.visible,
+        major = settings.grid.major,
+        count = settings.grid.count,
+    })
     self.box = SelectionBox.new(world)
     self.ops = Ops.new(self)
     self:seed()
@@ -54,12 +62,20 @@ function Content.new(scene)
     self.savedVersion = 0
 
     local camera = scene.camera
-    camera.near, camera.far, camera.fov = 0.05, 2000, settings.fov
+    camera.near, camera.far, camera.fov = 0.05, 2000, prefs.camera.fov
     camera.drawDistance = 2000
     camera.position = { 9, 7, 9 }
     camera.rotation = { -25, -135, 0 }
     scene.input = EditorInput.new(scene, self)
-    self.fly = FlyCamera.new(camera, scene.input.map, settings)
+    if next(prefs.bindings) then
+        pcall(scene.input.map.loadData, scene.input.map, prefs.bindings)
+    end
+    local fly = {}
+    for key, value in pairs(settings) do
+        fly[key] = value
+    end
+    fly.flySpeed, fly.sensitivity = prefs.camera.flySpeed, prefs.camera.sensitivity
+    self.fly = FlyCamera.new(camera, scene.input.map, fly)
     self.transform = TransformTool.new(self)
     return self
 end
@@ -101,6 +117,28 @@ function Content:placement()
     return { point[1], point[2], point[3] }
 end
 
+-- Writes the editor preferences (theme, dock sizes, snap, grid, camera, rebound keys).
+function Content:savePrefs()
+    local prefs = self.prefs
+    prefs.snap.enabled, prefs.snap.move = self.snap.enabled, self.snap.move
+    prefs.snap.rotate, prefs.snap.scale = self.snap.rotate, self.snap.scale
+    prefs.grid.cell, prefs.grid.visible = self.grid.cell, self.grid.visible
+    prefs.camera.flySpeed = self.fly.speed
+    prefs.camera.sensitivity = self.fly.sensitivity
+    prefs.camera.fov = self.scene.camera.fov
+    if self.dock then
+        prefs.layout = self.dock:sizes()
+    end
+    local bindings = {}
+    for name, entry in pairs(self.scene.input.map:toData()) do
+        if name:sub(1, 6) == 'editor' then
+            bindings[name] = entry
+        end
+    end
+    prefs.bindings = bindings
+    LocationIO.write(EditorSettings.FILE, EditorSettings.serialize(prefs))
+end
+
 -- Removes every object from the Level (used before a file is opened or a new one started).
 function Content:clearLevel()
     self.selection:clear()
@@ -128,6 +166,9 @@ function Content:saveLocation(name)
     end
     self.fileName, self.savedVersion = LocationIO.nameOf(path), self.undo.version
     self.recent = LocationIO.remember(path)
+    if self.panels and self.panels.browser then
+        self.panels.browser.dirty = true
+    end
     self:notify(('Saved %s%s'):format(path, #warnings > 0 and ('  (' .. warnings[1] .. ')') or ''))
     return true
 end
@@ -211,10 +252,7 @@ function Content:frame(nodes)
 end
 
 function Content:setTool(name)
-    self.tool = name
-    for tool, button in pairs(self.toolButtons or {}) do
-        button.backgroundColor = tool == name and { 0.25, 0.5, 0.82 } or { 0.2, 0.22, 0.26 }
-    end
+    self.tool = name -- the toolbar shows the active tool from this field every frame
 end
 
 function Content:handleActions()
@@ -306,12 +344,17 @@ function Content:update(dt)
             self:pick(x, y)
         end
     end
-    self:handleActions()
+    if not Focus.current then -- typing in a field must not trigger editor shortcuts
+        self:handleActions()
+    end
     self:autosave(dt)
     self.transform:update()
     self.box:follow(self.selection:primary())
     for _, panel in pairs(self.panels or {}) do
         panel:update()
+    end
+    if self.dock then
+        self.dock:update()
     end
     self:updateStatus()
 end
