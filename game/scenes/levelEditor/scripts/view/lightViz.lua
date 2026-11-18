@@ -5,6 +5,7 @@
 -- lives outside the level, so it is never saved, copied or undone. The shapes are built in world
 -- space from the engine's own spot direction formula (graphics/debug/gizmos.lua) and rebuilt only
 -- when range, radius, rotation or colour change.
+local Assign = require('../core.assign')
 local Builder = require('./meshBuilder')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
@@ -192,21 +193,21 @@ function LightViz:update(selection, show, camera)
         if not (p and p[3]) then
             p = light.position
         end
-        entry.root.position = { p[1], p[2], p[3] }
+        Assign.vec(entry.root, 'position', p[1], p[2], p[3])
         local color = tint(light)
         local rotation = light.rotation or { 0, 0, 0 }
         local base = ('%s|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f'):format(
             light.className, rotation[1], rotation[2], rotation[3], light.range or 0, light.radius or 0, 0)
         if entry.color ~= color[1] + color[2] * 7 + color[3] * 13 then
             entry.color = color[1] + color[2] * 7 + color[3] * 13
-            entry.pick.color = color
+            Assign.color(entry.pick, color)
             entry.markerKey, entry.reachKey = nil, nil -- new tint: rebuild the lines too
         end
         rebuild(self, entry, base, function()
             return markerVertices(light)
         end, 'marker', 'EditorLightMarker')
         if entry.marker then
-            entry.marker.color = color
+            Assign.color(entry.marker, color)
         end
         -- A point light always shows its radius; every light shows its full reach when selected.
         local selected = selection:has(light)
@@ -215,7 +216,10 @@ function LightViz:update(selection, show, camera)
             return (selected or always) and reachVertices(light, selected) or {}
         end, 'reach', 'EditorLightReach')
         if entry.reach then
-            entry.reach.color = color
+            Assign.color(entry.reach, color)
+        end
+        if not entry.root.visible then
+            entry.root.visible = true
         end
         -- Keep the icon a constant size on screen, however far the light is.
         local unit = 1
@@ -234,7 +238,6 @@ function LightViz:update(selection, show, camera)
                 entry.marker.scale = { unit / 0.24, unit / 0.24, unit / 0.24 }
             end
         end
-        entry.root.visible = true
     end
     for light, entry in pairs(self.entries) do
         if not alive[light] or light.destroyed then

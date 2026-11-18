@@ -1,5 +1,6 @@
 -- Bottom dock with tabs (objects are created from the Create menu: Shift+A, the + button).
--- Files: a browser over the virtual file system; a model is imported into the editor's asset store
+-- Level: the files of the open level (editor/assets in the save directory: everything imported
+-- lands here) with new folder/file, rename and delete. Import (internal name Files): a browser over the virtual file system; a model is imported into the editor's asset store
 -- and placed, an image becomes a sprite quad or the colour map of the selected mesh, with a
 -- thumbnail per image row. Location: recent files, the autosave and saved locations.
 local AssetStore = require('../../io.assetStore')
@@ -7,13 +8,15 @@ local Importer = require('../../core.importer')
 local Clone = require('source.engine.nodes.core.clone')
 local Menus = require('../support.menus')
 local Kit = require('../support.kit')
+local LevelFiles = require('../../io.levelFiles')
 local LocationIO = require('../../io.locationIO')
 local Models = require('source.engine.import.models')
 
 local Browser = {}
 Browser.__index = Browser
 
-local TABS = { 'Files', 'Location' }
+local TABS = { 'Level', 'Files', 'Location' }
+local LABELS = { Level = 'Level files', Files = 'Import', Location = 'Locations' }
 local HEAD = 30
 local FOOT = 30
 
@@ -23,22 +26,23 @@ function Browser.create(state, ui, frame)
         ui = ui,
         frame = frame,
         widgets = {},
-        tab = 'Files',
+        tab = 'Level',
+        levelPath = '',
         menus = {},
         path = '',
         tabButtons = {},
         width = 600,
     }, Browser)
     for index, tab in ipairs(TABS) do
-        local button = Kit.button(ui, frame, tab, 80, 24, function()
+        local button = Kit.button(ui, frame, LABELS[tab], 96, 24, function()
             self:show(tab)
         end, 'tab')
-        button.position = { 0, 6 + (index - 1) * 84, 0, 3 }
+        button.position = { 0, 6 + (index - 1) * 100, 0, 3 }
         self.tabButtons[tab] = button
     end
     self.pathBox = Kit.make(ui, 'TextBox', {
-        position = { 0, 262, 0, 3 },
-        size = { 1, -270, 0, 24 },
+        position = { 0, 312, 0, 3 },
+        size = { 1, -320, 0, 24 },
         fontSize = 13,
         text = '',
         placeholderText = 'folder (empty = root), Enter opens it',
@@ -48,7 +52,7 @@ function Browser.create(state, ui, frame)
         self.path, self.selected, self.dirty = text:gsub('^/+', ''):gsub('/+$', ''), nil, true
     end)
     self.nameBox = Kit.make(ui, 'TextBox', {
-        position = { 0, 262, 0, 3 },
+        position = { 0, 312, 0, 3 },
         size = { 0, 220, 0, 24 },
         fontSize = 13,
         text = '',
@@ -76,12 +80,12 @@ function Browser:show(tab, importMode)
     self.importMode = importMode == true
 end
 
--- Opens the file browser on the level's own assets folder (the one imports are copied into).
+-- Shows the level's own files (the folder imports are copied into) in the Level tab.
 function Browser:openSceneFolder()
     katsa.filesystem.createDirectory('editor')
     katsa.filesystem.createDirectory(AssetStore.ROOT)
-    self.tab, self.path, self.selected, self.dirty = 'Files', AssetStore.ROOT, nil, true
-    self.state:notify(('Scene assets folder: %s/%s  (drop models and images there)'):format(katsa.filesystem.getSaveDirectory(), AssetStore.ROOT))
+    self.tab, self.levelPath, self.levelSelected, self.dirty = 'Level', '', nil, true
+    self.state:notify(('Level files: %s/%s'):format(katsa.filesystem.getSaveDirectory(), AssetStore.ROOT))
 end
 
 function Browser:resize(width, height)
@@ -145,12 +149,31 @@ function Browser:heading(y, text)
     return y + 22
 end
 
+-- Imports the selected file of the Import tab into the level files, then uses it.
 function Browser:act(kind)
     if not self.selected then
         self.state:notify('Select a file first')
         return
     end
-    Importer.import(self.state, self.selected.path, kind)
+    local ok, stored = Importer.import(self.state, self.selected.path, kind)
+    if ok and type(stored) == 'string' and stored:sub(1, #LevelFiles.ROOT) == LevelFiles.ROOT then
+        self:reveal(stored)
+    end
+end
+
+-- Makes the Level tab show `stored` (a store path) so the author can see where an import went.
+function Browser:reveal(stored)
+    local relative = stored:sub(#LevelFiles.ROOT + 2)
+    self.levelPath = LevelFiles.parent(relative)
+    self.levelSelected = stored
+    self.dirty = true
+    self.state:notify('Saved as assets/' .. relative)
+end
+
+-- Uses an asset that is already in the level files (a model into the level, an image as a
+-- sprite quad or the colour map of the selected mesh).
+function Browser:use(kind, stored, fileKind)
+    Importer.place(self.state, stored, fileKind, kind)
 end
 
 function Browser:footer(specs)
@@ -161,6 +184,132 @@ function Browser:footer(specs)
         x = x + (spec[3] or 110) + 4
     end
     self.actions.visible = true
+end
+
+-- The Level tab: the files of this level, with folders, rename and delete.
+function Browser:buildLevel()
+    local state = self.state
+    local path = LevelFiles.clean(self.levelPath) or ''
+    local listing = LevelFiles.list(path)
+    self.pathBox.text = 'assets' .. (path ~= '' and ('/' .. path) or '')
+    local y = 0
+    if path ~= '' then
+        y = self:row(y, '..', function()
+            self.levelPath, self.levelSelected, self.dirty = LevelFiles.parent(path), nil, true
+        end)
+    end
+    local function menu(entry)
+        return function(x, my)
+            self.levelSelected, self.dirty = entry.store, true
+            state:popup(Menus.levelEntry(state, self, entry), x, my, { width = 230 })
+        end
+    end
+    for _, dir in ipairs(listing.dirs) do
+        y = self:row(y, '[' .. dir.name .. ']', function()
+            self.levelPath, self.levelSelected, self.dirty = dir.path, nil, true
+        end, nil, nil, menu(dir))
+    end
+    for _, file in ipairs(listing.files) do
+        local kind = AssetStore.kind(file.store, Models.supports)
+        local label = file.name .. (kind == 'model' and '   (model)' or '')
+        y = self:row(y, label, function()
+            self.levelSelected, self.dirty = file.store, true
+        end, self.levelSelected == file.store, kind == 'image' and file.store or nil, menu(file))
+    end
+    if #listing.dirs + #listing.files == 0 then
+        y = self:heading(y, 'Empty. Import files, or create a folder or a file below.')
+    end
+    self.scroll.canvasSize = { 0, 0, 0, y }
+    local function selectedEntry()
+        for _, group in ipairs({ listing.dirs, listing.files }) do
+            for _, entry in ipairs(group) do
+                if entry.store == self.levelSelected then
+                    return entry
+                end
+            end
+        end
+    end
+    self:footer({
+        { 'New folder', function()
+            self:ask('New folder', '', function(name)
+                local made, message = LevelFiles.createFolder(path, name)
+                if not made then
+                    state:notify(message)
+                end
+                self.dirty = true
+            end)
+        end },
+        { 'New file', function()
+            self:ask('New file name', 'notes.txt', function(name)
+                local made, message = LevelFiles.createFile(path, name)
+                if made then
+                    self.levelSelected = LevelFiles.full(made)
+                else
+                    state:notify(message)
+                end
+                self.dirty = true
+            end)
+        end },
+        { 'Rename', function()
+            local entry = selectedEntry()
+            if entry then
+                self:rename(entry)
+            else
+                state:notify('Select a file first (right-click a folder to rename it)')
+            end
+        end },
+        { 'Delete', function()
+            local entry = selectedEntry()
+            if entry then
+                self:delete(entry)
+            else
+                state:notify('Select a file first (right-click a folder to delete it)')
+            end
+        end },
+        { 'Import...', function()
+            self:show('Files')
+        end },
+    })
+end
+
+function Browser:ask(title, default, callback)
+    self.state.panels.prompt:ask(title, default, callback)
+end
+
+function Browser:rename(entry)
+    local state = self.state
+    self:ask('Rename ' .. entry.name, entry.name, function(name)
+        local new, message = LevelFiles.rename(entry.path, name)
+        if new then
+            if self.levelSelected == entry.store then
+                self.levelSelected = LevelFiles.full(new)
+            end
+            -- Objects keep the path they were given: tell the author instead of failing silently.
+            state:notify('Renamed. Objects that used the old name show a placeholder until re-assigned')
+        else
+            state:notify(message)
+        end
+        self.dirty = true
+    end)
+end
+
+-- Deletes after a confirmation: type the word to confirm (the prompt is the only modal we have).
+function Browser:delete(entry)
+    local state = self.state
+    self:ask('Delete ' .. entry.name .. '? Type yes to confirm', '', function(answer)
+        if answer:lower() ~= 'yes' then
+            state:notify('Delete cancelled')
+            return
+        end
+        local ok, message = LevelFiles.delete(entry.path)
+        if ok then
+            self.levelSelected = nil
+            state:notify('Deleted ' .. entry.name)
+        else
+            state:notify(message)
+        end
+        self.dirty = true
+    end)
 end
 
 function Browser:buildFiles()
@@ -305,11 +454,14 @@ function Browser:update()
             button:removeTag('selected')
         end
     end
-    self.pathBox.visible = self.tab == 'Files'
+    self.pathBox.visible = self.tab == 'Files' or self.tab == 'Level'
+    self.pathBox.interactable = self.tab == 'Files'
     self.nameBox.visible = self.tab == 'Location'
     self.actions.visible = false
     self.scroll.size = { 1, -8, 1, -(HEAD + 4 + FOOT) }
-    if self.tab == 'Files' then
+    if self.tab == 'Level' then
+        self:buildLevel()
+    elseif self.tab == 'Files' then
         self:buildFiles()
     else
         self:buildLocation()

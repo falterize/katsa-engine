@@ -2,7 +2,9 @@
 -- its items fresh each time it opens, so check marks, the recent list and enabled states are
 -- current. An item is { label, run, shortcut, checked, enabled } or { separator = true } or
 -- { heading = text }.
+local AssetStore = require('../../io.assetStore')
 local Catalog = require('../../builders.catalog')
+local Models = require('source.engine.import.models')
 local Shortcut = require('./shortcut')
 local Importer = require('../../core.importer')
 
@@ -213,6 +215,38 @@ function Menus.asset(state, browser, file, kind)
         item('Add as sprite quad', act('sprite')),
         item('Use as texture of the selection', act('texture'), { enabled = state.selection:primary() ~= nil }),
     }
+end
+
+-- Right-click menu of a row of the Level tab (a file or a folder of the level).
+function Menus.levelEntry(state, browser, entry)
+    local items = {}
+    if entry.dir then
+        items[#items + 1] = item('Open', function()
+            browser.levelPath, browser.dirty = entry.path, true
+        end)
+    else
+        local kind = AssetStore.kind(entry.store, Models.supports)
+        if kind == 'model' then
+            items[#items + 1] = item('Add to level', function()
+                browser:use('add', entry.store, 'model')
+            end)
+        elseif kind == 'image' then
+            items[#items + 1] = item('Add as sprite quad', function()
+                browser:use('sprite', entry.store, 'image')
+            end)
+            items[#items + 1] = item('Use as texture of the selection', function()
+                browser:use('texture', entry.store, 'image')
+            end, { enabled = state.selection:primary() ~= nil })
+        end
+    end
+    items[#items + 1] = SEPARATOR
+    items[#items + 1] = item('Rename...', function()
+        browser:rename(entry)
+    end)
+    items[#items + 1] = item('Delete...', function()
+        browser:delete(entry)
+    end)
+    return items
 end
 
 -- Right-click menu of a row of the Location tab.

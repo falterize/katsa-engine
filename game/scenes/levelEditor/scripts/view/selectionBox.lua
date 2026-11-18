@@ -1,5 +1,6 @@
 -- The selection outline: twelve thin bars around a unit cube, placed over the primary selected
 -- node every frame. One mesh, no per-frame allocation except the transform tables.
+local Assign = require('../core.assign')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
 local SelectionBox = {}
@@ -69,10 +70,10 @@ function SelectionBox:follow(target)
         end
         return
     end
-    node.position = { target.position[1], target.position[2], target.position[3] }
-    node.rotation = { target.rotation[1], target.rotation[2], target.rotation[3] }
-    local size = target.size or { 1, 1, 1 }
-    node.size = { size[1], size[2], size[3] }
+    local p, r, size = target.position, target.rotation, target.size or { 1, 1, 1 }
+    Assign.vec(node, 'position', p[1], p[2], p[3])
+    Assign.vec(node, 'rotation', r[1], r[2], r[3])
+    Assign.vec(node, 'size', size[1], size[2], size[3])
     if not node.visible then
         node.visible = true
     end

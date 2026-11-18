@@ -11,6 +11,8 @@ local Shapes = require('game.scenes.levelEditor.scripts.builders.shapes')
 local PackagePaths = require('game.scenes.levelEditor.scripts.io.packagePaths')
 local Recent = require('game.scenes.levelEditor.scripts.io.recent')
 local EditorSettings = require('game.scenes.levelEditor.scripts.io.editorSettings')
+local Assign = require('game.scenes.levelEditor.scripts.core.assign')
+local LevelFiles = require('game.scenes.levelEditor.scripts.io.levelFiles')
 local Flow = require('game.scenes.levelEditor.scripts.ui.support.flow')
 local Layout = require('game.scenes.levelEditor.scripts.ui.support.layout')
 local PropertyGroups = require('game.scenes.levelEditor.scripts.ui.support.propertyGroups')
@@ -319,7 +321,70 @@ function Module.menus(self)
     self:check(PropertyGroups.COLLAPSED.Rendering and not PropertyGroups.COLLAPSED.Transform and PropertyGroups.of('maxDistance') == 'Rendering', 'maxDistance sits in the collapsed Rendering group')
 end
 
+-- A tiny in-memory file system with the calls LevelFiles uses.
+local function fakeFs()
+    local files, dirs = {}, { [''] = true }
+    local fs = {}
+    function fs.createDirectory(path)
+        dirs[path] = true
+        return true
+    end
+    function fs.getInfo(path, filter)
+        if dirs[path] and filter ~= 'file' then
+            return { type = 'directory' }
+        end
+        if files[path] and filter ~= 'directory' then
+            return { type = 'file' }
+        end
+    end
+    function fs.write(path, data)
+        files[path] = data
+        return true
+    end
+    function fs.getDirectoryItems(path)
+        local names = {}
+        local function scan(set)
+            for key in pairs(set) do
+                local parent, name = key:match('^(.*)/([^/]+)$')
+                if parent == path and name then
+                    names[#names + 1] = name
+                end
+            end
+        end
+        scan(files)
+        scan(dirs)
+        table.sort(names)
+        return names
+    end
+    function fs.remove(path)
+        files[path], dirs[path] = nil, nil
+        return true
+    end
+    function fs.rename(a, b)
+        files[b], files[a] = files[a], nil
+        if dirs[a] then
+            dirs[b], dirs[a] = true, nil
+        end
+        return true
+    end
+    return fs
+end
+
+function Module.levelFiles(self)
+    local fs = fakeFs()
+    self:check(LevelFiles.createFolder('', 'models', fs) == 'models' and LevelFiles.createFile('models', 'a.txt', fs) == 'models/a.txt', 'A folder and a file are created inside the level assets')
+    self:check(LevelFiles.createFile('models', 'a.txt', fs) == nil and LevelFiles.createFolder('', '../x', fs) == nil, 'Existing names and path tricks are refused')
+    self:check(LevelFiles.clean('a/../b') == nil and LevelFiles.clean('/a//b/') == 'a/b', 'Paths cannot leave the assets folder')
+    self:check(LevelFiles.rename('models/a.txt', 'b.txt', fs) == 'models/b.txt' and #LevelFiles.list('models', fs).files == 1, 'A file is renamed in place')
+    LevelFiles.createFile('models', 'c.txt', fs)
+    self:check(LevelFiles.rename('models/c.txt', 'b.txt', fs) == nil, 'Renaming onto an existing file is refused')
+    self:check(LevelFiles.delete('models', fs) and #LevelFiles.list('', fs).dirs == 0 and not LevelFiles.delete('', fs), 'A folder is deleted with its files, the root never')
+    local node = { position = { 1, 2, 3 } }
+    self:check(not Assign.vec(node, 'position', 1, 2, 3) and Assign.vec(node, 'position', 1, 2, 4) and node.position[3] == 4, 'Per-frame writes only happen when a value changed')
+end
+
 function Module.run(self)
+    Module.levelFiles(self)
     Module.menus(self)
     Module.interface(self)
     Module.package(self)

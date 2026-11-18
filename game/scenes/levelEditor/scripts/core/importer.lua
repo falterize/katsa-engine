@@ -29,6 +29,11 @@ function Importer.import(state, path, action, slot)
         state:notify(tostring(kind))
         return false
     end
+    return Importer.place(state, stored, kind, action, slot), stored
+end
+
+-- Uses an asset that is already stored (a store path or a shared:// URL) of the given kind.
+function Importer.place(state, stored, kind, action, slot)
     local position = state:placement()
     local x = position[1] + (slot or 0) * 3
     if kind == 'model' and (action == nil or action == 'add') then

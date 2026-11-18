@@ -2,6 +2,7 @@
 -- arrows with end cubes and a centre cube (Scale). The meshes are built once in unit size; each
 -- frame the root only moves, turns and scales so the gizmo keeps a constant size on screen.
 -- Hit testing is geometric (core/gizmoMath), not mesh picking.
+local Assign = require('../core.assign')
 local Builder = require('./meshBuilder')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
@@ -96,9 +97,9 @@ end
 -- `size` world units for the unit gizmo.
 function Gizmo:place(position, rotation, size)
     local root = self.root
-    root.position = { position[1], position[2], position[3] }
-    root.rotation = { rotation[1], rotation[2], rotation[3] }
-    root.scale = { size, size, size }
+    Assign.vec(root, 'position', position[1], position[2], position[3])
+    Assign.vec(root, 'rotation', rotation[1], rotation[2], rotation[3])
+    Assign.vec(root, 'scale', size, size, size)
     if not root.visible then
         root.visible = true
     end
