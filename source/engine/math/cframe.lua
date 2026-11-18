@@ -48,7 +48,7 @@ function CFrame.fromMatrix(position, right, up, forward)
     })
 end
 
-function CFrame.Angles(x, y, z)
+function CFrame.angles(x, y, z)
     return wrap(Math.compose({ 0, 0, 0 }, { math.deg(x), math.deg(y), math.deg(z) }, { 1, 1, 1 }))
 end
 

@@ -1,7 +1,7 @@
 return function(test, scene)
     local C = require('source.engine.math.cframe')
     local V = require('source.engine.math.vector3')
-    local frame = C.new(3, 8, -2) * C.Angles(0.3, -0.7, 0.9)
+    local frame = C.new(3, 8, -2) * C.angles(0.3, -0.7, 0.9)
     local point = V.new(2, 4, 8)
     test:check(
         (frame:pointToObjectSpace(frame * point) - point):magnitude() < 1e-8,
@@ -9,7 +9,7 @@ return function(test, scene)
     )
     local x, y, z = frame:toEulerAngles()
     test:check(
-        (C.Angles(x, y, z):lookVector() - frame:lookVector()):magnitude() < 1e-8,
+        (C.angles(x, y, z):lookVector() - frame:lookVector()):magnitude() < 1e-8,
         'CFrame Euler conversion matches engine convention'
     )
     local mid = C.new():lerp(C.fromAxisAngle({ 0, 1, 0 }, math.pi / 2), 0.5)
@@ -30,11 +30,11 @@ return function(test, scene)
         'Spatial transforms pass through organizational folders'
     )
     parent.size = { 4, 4, 4 }
-    parent:setCFrame(C.new(10, 20, 30) * C.Angles(0, math.pi / 2, 0))
+    parent:setCFrame(C.new(10, 20, 30) * C.angles(0, math.pi / 2, 0))
     child.position = { 0, 3, 0 }
-    child:setCFrame(C.new(0, 3, 0) * C.Angles(0.2, 0, 0))
+    child:setCFrame(C.new(0, 3, 0) * C.angles(0.2, 0, 0))
     local camera = scene.world:create('Camera3D', { name = 'SocketCamera' }, child)
-    local offset = C.new(1, 2, 3) * C.Angles(0.1, 0.3, 0.2)
+    local offset = C.new(1, 2, 3) * C.angles(0.1, 0.3, 0.2)
     camera:setCFrame(offset)
     camera:update(katsa.graphics.getDimensions())
     local expected = child:getWorldCFrame() * offset
