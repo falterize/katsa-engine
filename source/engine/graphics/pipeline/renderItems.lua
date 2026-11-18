@@ -19,6 +19,11 @@ function RenderItems.install(Renderer)
     -- Cull mode of a draw: a material's render_mode wins over the object's doubleSided.
     local function cullMode(o)
         local material = o._resolvedMaterial
+        if o._decalMode ~= nil then
+            -- A decal's quad winds the other way round from its outward normal; the side test
+            -- (Faces.update, `doubleSided`) already decides whether it is drawn at all.
+            return material and material.cull or 'none'
+        end
         return material and material.cull or (o.doubleSided == false and 'back' or 'none')
     end
 
