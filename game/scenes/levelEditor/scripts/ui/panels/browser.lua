@@ -4,6 +4,7 @@
 -- the selected mesh. Image rows show a thumbnail.
 local AssetStore = require('../../io.assetStore')
 local Catalog = require('../../builders.catalog')
+local LocationIO = require('../../io.locationIO')
 local Models = require('source.engine.import.models')
 local Theme = require('../theme')
 
@@ -21,7 +22,7 @@ function Browser.create(state, ui)
         backgroundColor = Theme.panel,
         zIndex = 5,
     }, ui.content)
-    for index, tab in ipairs({ 'Create', 'Files' }) do
+    for index, tab in ipairs({ 'Create', 'Files', 'Location' }) do
         local button = ui:button({
             position = { 0, 6 + (index - 1) * 84, 0, 4 },
             size = { 0, 80, 0, 22 },
@@ -45,6 +46,15 @@ function Browser.create(state, ui)
     self.pathBox:connect('submitted', function(_, text)
         self.path, self.selected, self.dirty = text:gsub('^/+', ''):gsub('/+$', ''), nil, true
     end)
+    self.nameBox = ui:create('TextBox', {
+        position = { 0, 270, 0, 4 },
+        size = { 0, 220, 0, 22 },
+        fontSize = 13,
+        text = '',
+        backgroundColor = Theme.field,
+        placeholderText = 'file name',
+        visible = false,
+    }, self.frame)
     self.scroll = ui:scroll({
         position = { 0, 4, 0, 30 },
         size = { 1, -8, 1, -62 },
@@ -232,6 +242,80 @@ function Browser:buildFiles()
     end
 end
 
+function Browser:buildLocation()
+    local ui, state = self.ui, self.state
+    self.nameBox.text = state.fileName or ''
+    local y = 0
+    local function row(label, onPress)
+        local button = self:add(ui:button({
+            position = { 0, 0, 0, y },
+            size = { 1, 0, 0, 22 },
+            text = label,
+            align = 'left',
+            fontSize = 13,
+            backgroundColor = Theme.row_,
+            textColor = Theme.text,
+        }, self.scroll))
+        button:connect('press', onPress)
+        y = y + 22
+    end
+    local function heading(text)
+        self:add(ui:create('Label', {
+            position = { 0, 4, 0, y },
+            size = { 1, 0, 0, 22 },
+            fontSize = 13,
+            align = 'left',
+            text = text,
+            textColor = Theme.dim,
+            interactable = false,
+        }, self.scroll))
+        y = y + 22
+    end
+    heading('Recent')
+    for _, path in ipairs(state.recent or {}) do
+        row(path, function()
+            state:openLocation(path)
+            self.dirty = true
+        end)
+    end
+    heading('Autosave')
+    row(LocationIO.AUTOSAVE .. '  (open the last autosave)', function()
+        state:openLocation(LocationIO.AUTOSAVE)
+        self.dirty = true
+    end)
+    heading('Saved locations  (' .. tostring(katsa.filesystem.getSaveDirectory()) .. '/' .. LocationIO.FOLDER .. ')')
+    for _, name in ipairs(katsa.filesystem.getDirectoryItems(LocationIO.FOLDER)) do
+        if name:match('%.katsa$') then
+            row(name, function()
+                state:openLocation(LocationIO.FOLDER .. '/' .. name)
+                self.dirty = true
+            end)
+        end
+    end
+    self.scroll.canvasSize = { 0, 0, 0, y }
+    local x = 0
+    for _, spec in ipairs({ { 'Save', 'save' }, { 'New', 'new' } }) do
+        local button = self:add(ui:button({
+            position = { 0, x, 0, 0 },
+            size = { 0, 110, 0, 24 },
+            text = spec[1],
+            fontSize = 13,
+            backgroundColor = Theme.button,
+        }, self.actions))
+        button:connect('press', function()
+            if spec[2] == 'save' then
+                state:saveLocation(self.nameBox.text ~= '' and self.nameBox.text or nil)
+            else
+                state:clearLevel()
+                state.fileName, state.savedVersion = nil, state.undo.version
+                state:notify('New empty location')
+            end
+            self.dirty = true
+        end)
+        x = x + 114
+    end
+end
+
 function Browser:update()
     if not self.dirty then
         return
@@ -239,10 +323,13 @@ function Browser:update()
     self.dirty = false
     self:clear()
     self.pathBox.visible = self.tab == 'Files'
+    self.nameBox.visible = self.tab == 'Location'
     if self.tab == 'Create' then
         self:buildCreate()
-    else
+    elseif self.tab == 'Files' then
         self:buildFiles()
+    else
+        self:buildLocation()
     end
 end
 

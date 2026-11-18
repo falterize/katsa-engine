@@ -114,9 +114,25 @@ return {
 }
 ```
 
-Rules: paths inside `properties` that point to package files are relative to the package root
-(`assets/textures/brick.png`); node references are stored as `{ ref = 'Parent/Child' }` paths;
-unknown versions fail with `Unsupported location version N (this editor reads 1)`.
+Each node entry also carries `attributes` (editor markers such as `EditorShape`, `EditorLocked`,
+`SpawnPoint`; never the runtime `EditorId`) and, for an imported model, `model` (its file) instead
+of its meshes. The top level may hold `camera = { position, rotation, fov }`.
+
+Rules: paths inside `properties` and `model` that point to package files are relative to the
+package root (`assets/textures/brick.png`); while editing they live under `editor/assets/` in the
+save directory and are rewritten both ways. Unknown versions fail with
+`Unsupported location version N (this editor reads 1)`; a bad file leaves the open location
+untouched.
+
+### Save, open, autosave
+
+- **Ctrl+S** saves to `editor/locations/<name>.katsa` in the save directory (name from the
+  Location tab, default `untitled`); **Ctrl+O** opens the most recent file. The Location tab also
+  lists recent files, the autosave and every saved location, with Save and New.
+- Autosave writes `editor/autosave.katsa` every `editor.autosaveSeconds` (60) when the undo
+  version changed. The recent list is `editor/recent.lua`.
+- The package carries its own `scripts/loader.lua` (source: `scripts/package/loader.lua`), plus
+  `scripts/shapes.lua` and `scripts/luaText.lua`, so it runs as a scene without the editor.
 
 ## Engine APIs reused
 
@@ -129,7 +145,12 @@ style files.
 ## Not serialized (kept honest)
 
 Runtime caches, signal connections, scripts attached by code, physics state, anything the
-inspector schema does not list. The exact list is kept next to the serializer once stage e lands.
+inspector schema does not list, node-reference properties and attributes (`isAttributeReference`),
+values that are not plain data (functions, userdata, NaN; each export reports how many were
+dropped), and the editor's own sun, grid and gizmos. An imported model copies only the chosen
+file: companion files of a glTF (`.bin`, textures) are not copied yet, so prefer `.glb`.
+Lights, the sun and ambient colour of the editor are not exported; the package loader adds a
+default sun when the level has no directional light.
 
 ## Gizmo notes and limits
 

@@ -9,6 +9,7 @@ function Scene.create(scene, context)
     local Content = context:require('scripts.content')
     local state = Content.new(scene)
     state.scene = scene
+    state.context = context
     context.instance = state
     scene:preparePresentation()
     context:require('scripts.ui.interface').create(state)

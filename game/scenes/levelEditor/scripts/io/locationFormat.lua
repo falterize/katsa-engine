@@ -3,8 +3,9 @@
 -- through an adapter, so this module stays pure and testable.
 --
 -- Adapter for encode:  adapter.className(node), adapter.name(node), adapter.properties(node),
---                      adapter.children(node), adapter.assets(node) (optional list of package paths)
--- Builder for decode:  builder.create(class, name, properties, parentHandle) -> handle
+--                      adapter.children(node); optional adapter.attributes(node) and
+--                      adapter.model(node) (a model node keeps its file instead of its meshes)
+-- Builder for decode:  builder.create(class, name, properties, parentHandle, entry) -> handle
 local LuaText = require('./luaText')
 local ZipWriter = require('./zipWriter')
 
@@ -37,6 +38,8 @@ local function encodeNode(node, adapter)
         class = adapter.className(node),
         name = adapter.name(node),
         properties = adapter.properties(node),
+        attributes = adapter.attributes and adapter.attributes(node) or nil,
+        model = adapter.model and adapter.model(node) or nil,
         children = {},
     }
     for index, child in ipairs(adapter.children(node)) do
@@ -77,7 +80,7 @@ end
 
 local function decodeNode(entry, builder, parent, count)
     assert(type(entry) == 'table' and type(entry.class) == 'string', 'Corrupt node entry')
-    local handle = builder.create(entry.class, entry.name, entry.properties or {}, parent)
+    local handle = builder.create(entry.class, entry.name, entry.properties or {}, parent, entry)
     count = count + 1
     for _, child in ipairs(entry.children or {}) do
         count = decodeNode(child, builder, handle, count)

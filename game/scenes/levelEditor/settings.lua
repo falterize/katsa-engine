@@ -48,6 +48,7 @@ local Settings = {
         editorPlay = { 'key:f5' },
     },
     editor = {
+        autosaveSeconds = 60,
         flySpeed = 10,
         flyFastFactor = 4,
         flySpeedMin = 0.5,

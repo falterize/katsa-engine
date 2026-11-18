@@ -1,12 +1,13 @@
 -- Undo/redo command stack. A command is { name, redo = fn, undo = fn, key = optional }.
 -- Commands pushed with the same `key` in a row merge into one (a drag or a typed value becomes
 -- one step): the merged command keeps the first undo and takes the latest redo.
--- Transactions group several commands into one step. Pure Lua.
+-- Transactions group several commands into one step. `version` counts every change (push,
+-- undo, redo) so the editor can tell when a file is out of date. Pure Lua.
 local Undo = {}
 Undo.__index = Undo
 
 function Undo.new(limit)
-    return setmetatable({ done = {}, undone = {}, limit = limit or 200, depth = 0 }, Undo)
+    return setmetatable({ done = {}, undone = {}, limit = limit or 200, depth = 0, version = 0 }, Undo)
 end
 
 local function trim(self)
@@ -22,6 +23,7 @@ function Undo:push(command, applied)
     if not applied then
         command.redo()
     end
+    self.version = self.version + 1
     if self.group then
         self.group[#self.group + 1] = command
         return command
@@ -93,6 +95,7 @@ function Undo:undo()
         return false
     end
     command.undo()
+    self.version = self.version + 1
     self.undone[#self.undone + 1] = command
     return true, command.name
 end
@@ -103,6 +106,7 @@ function Undo:redo()
         return false
     end
     command.redo()
+    self.version = self.version + 1
     self.done[#self.done + 1] = command
     return true, command.name
 end

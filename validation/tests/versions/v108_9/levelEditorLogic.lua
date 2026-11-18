@@ -8,6 +8,8 @@ local Bounds = require('game.scenes.levelEditor.scripts.core.bounds')
 local GizmoMath = require('game.scenes.levelEditor.scripts.core.gizmoMath')
 local AssetStore = require('game.scenes.levelEditor.scripts.io.assetStore')
 local Shapes = require('game.scenes.levelEditor.scripts.builders.shapes')
+local PackagePaths = require('game.scenes.levelEditor.scripts.io.packagePaths')
+local Recent = require('game.scenes.levelEditor.scripts.io.recent')
 local Builder = require('game.scenes.levelEditor.scripts.view.meshBuilder')
 local Selection = require('game.scenes.levelEditor.scripts.core.selection')
 local Snap = require('game.scenes.levelEditor.scripts.core.snap')
@@ -241,7 +243,34 @@ function Module.assets(self)
     self:check(AssetStore.packagePath('editor/assets/models/a.glb') == 'assets/models/a.glb' and AssetStore.storePath('assets/models/a.glb') == 'editor/assets/models/a.glb', 'Store and package paths convert both ways')
 end
 
+function Module.package(self)
+    local tree = { a = 'editor/assets/models/x.glb', b = { 'editor/assets/textures/t.png', 'keep' }, n = 3 }
+    local moved = PackagePaths.rewrite(tree, 'editor/assets/', 'assets/')
+    self:check(moved.a == 'assets/models/x.glb' and moved.b[1] == 'assets/textures/t.png' and moved.b[2] == 'keep' and tree.a:sub(1, 6) == 'editor', 'Store paths become package paths without touching the original')
+    local used = PackagePaths.collect(tree, 'editor/assets/', {})
+    self:check(used['editor/assets/models/x.glb'] and used['editor/assets/textures/t.png'] and not used.keep, 'Asset paths are collected')
+    local clean, dropped = PackagePaths.sanitize({ ok = { 1, 2 }, bad = print, nan = 0 / 0, text = 'x' })
+    self:check(dropped == 2 and clean.ok[2] == 2 and clean.text == 'x' and clean.bad == nil, 'Unsavable values are dropped and counted')
+    local list = Recent.push(Recent.push(Recent.push({}, 'a'), 'b'), 'a')
+    self:check(#list == 2 and list[1] == 'a' and list[2] == 'b', 'A recent entry moves to the front without duplicates')
+    for index = 1, 12 do
+        list = Recent.push(list, 'f' .. index)
+    end
+    self:check(#list == Recent.LIMIT and list[1] == 'f12' and #Recent.remove(list, 'f12') == Recent.LIMIT - 1, 'The recent list is capped and entries can be removed')
+    local data = Format.encode({ { c = 'Mesh3D', n = 'M', a = { EditorShape = 'cone' }, m = 'assets/models/x.glb' } }, {
+        className = function(node) return node.c end,
+        name = function(node) return node.n end,
+        properties = function() return {} end,
+        attributes = function(node) return node.a end,
+        model = function(node) return node.m end,
+        children = function() return {} end,
+    })
+    local parsed = Format.parse(LuaText.serialize(data))
+    self:check(parsed and parsed.nodes[1].attributes.EditorShape == 'cone' and parsed.nodes[1].model == 'assets/models/x.glb', 'Attributes and model files survive the location format')
+end
+
 function Module.run(self)
+    Module.package(self)
     Module.shapes(self)
     Module.assets(self)
     Module.builder(self)

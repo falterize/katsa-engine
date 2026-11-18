@@ -1,6 +1,9 @@
 -- levelEditor scene smoke test: the scene loads, the InputMap actions exist, the fly camera
 -- moves from actions, a click on an object selects it and the grid can be toggled.
 local Application = require('game.runtime.application')
+local Archive = require('source.katsa.core.archive')
+local Catalog = require('game.scenes.levelEditor.scripts.builders.catalog')
+local LocationIO = require('game.scenes.levelEditor.scripts.io.locationIO')
 
 local Module = {}
 
@@ -110,6 +113,42 @@ function Module.run(self)
     undo:undo()
     self:check(math.abs(box.position[1] - startX) < 1e-6, 'Undo of a move restores the position')
     state:setTool('Select')
+
+    -- Export and import: a cylinder (editor shape) survives, the package is a readable ZIP.
+    for _, item in ipairs(Catalog.items()) do
+        if item.label == 'Cylinder' then
+            item.make(state, { 4, 0, 4 })
+        end
+    end
+    local count = #state.level.children
+    local names = {}
+    for index, node in ipairs(state.level.children) do
+        names[index] = node.name
+    end
+    local bytes, warnings = LocationIO.export(state)
+    local archive = Archive.fromString(bytes, 'export')
+    self:check(archive:has('assets/location.lua') and archive:has('main.lua') and archive:has('scripts/loader.lua'), 'An export holds settings, main, the location and the loader')
+    self:check(LocationIO.import(state, bytes) == count and #state.level.children == count, 'Importing an export restores the object count')
+    local same = true
+    for index, node in ipairs(state.level.children) do
+        same = same and node.name == names[index]
+    end
+    self:check(same, 'Importing an export restores names and order')
+    self:check(state:saveLocation('smoke') and state:openLocation(LocationIO.pathFor('smoke')), 'A location saves into the save directory and opens again')
+    self:check(LocationIO.readRecent()[1] == LocationIO.pathFor('smoke'), 'The saved file is first in the recent list')
+
+    -- The package's own loader builds the same objects from the unpacked files.
+    LocationIO.write('editor/pkgtest/assets/location.lua', archive:read('assets/location.lua'))
+    local modules = { ['scripts.luaText'] = 'io.luaText', ['scripts.shapes'] = 'builders.shapes' }
+    local context = {
+        root = 'editor/pkgtest',
+        require = function(_, name)
+            return require('game.scenes.levelEditor.scripts.' .. modules[name])
+        end,
+    }
+    local loaded = require('game.scenes.levelEditor.scripts.package.loader').create(state.scene, context)
+    self:check(#loaded.level.children == count, 'The package loader builds the exported objects')
+    loaded.level:destroy()
 
     local visible = state.grid.visible
     state.grid:setVisible(not visible)

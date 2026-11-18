@@ -4,6 +4,7 @@ local Bounds = require('./core.bounds')
 local EditorInput = require('./input.editorInput')
 local FlyCamera = require('./view.flyCamera')
 local Grid = require('./view.grid')
+local LocationIO = require('./io.locationIO')
 local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
@@ -49,6 +50,8 @@ function Content.new(scene)
     self.ops = Ops.new(self)
     self:seed()
     self.ops:adopt(self.level)
+    self.recent = LocationIO.readRecent()
+    self.savedVersion = 0
 
     local camera = scene.camera
     camera.near, camera.far, camera.fov = 0.05, 2000, settings.fov
@@ -96,6 +99,76 @@ function Content:placement()
         point[1], point[3] = Snap.value(point[1], self.snap.move), Snap.value(point[3], self.snap.move)
     end
     return { point[1], point[2], point[3] }
+end
+
+-- Removes every object from the Level (used before a file is opened or a new one started).
+function Content:clearLevel()
+    self.selection:clear()
+    for index = #self.level.children, 1, -1 do
+        local node = self.level.children[index]
+        self.ops:forget(node)
+        node:destroy()
+    end
+    self.undo:clear()
+    self:refresh()
+end
+
+-- Saves under `name` (or the current file). Returns true or false plus a message.
+function Content:saveLocation(name)
+    local path = LocationIO.pathFor(name or self.fileName or 'untitled')
+    local ok, bytes, warnings = pcall(LocationIO.export, self)
+    if not ok then
+        self:notify('Save failed: ' .. tostring(bytes))
+        return false
+    end
+    local written, message = LocationIO.write(path, bytes)
+    if not written then
+        self:notify('Save failed: ' .. tostring(message))
+        return false
+    end
+    self.fileName, self.savedVersion = LocationIO.nameOf(path), self.undo.version
+    self.recent = LocationIO.remember(path)
+    self:notify(('Saved %s%s'):format(path, #warnings > 0 and ('  (' .. warnings[1] .. ')') or ''))
+    return true
+end
+
+-- Opens a `.katsa` from the virtual file system (the save directory or a project folder).
+function Content:openLocation(path)
+    local bytes = katsa.filesystem.read(path)
+    if not bytes then
+        self:notify('Cannot read ' .. path)
+        LocationIO.forget(path)
+        return false
+    end
+    local count, message = LocationIO.import(self, bytes)
+    if not count then
+        self:notify(tostring(message))
+        return false
+    end
+    self.fileName, self.savedVersion = LocationIO.nameOf(path), self.undo.version
+    self.recent = LocationIO.remember(path)
+    self:notify(('Opened %s (%d objects)'):format(path, count))
+    return true
+end
+
+-- Writes the autosave when something changed since the last one.
+function Content:autosave(dt)
+    self.autosaveTimer = (self.autosaveTimer or 0) + dt
+    if self.autosaveTimer < (self.settings.autosaveSeconds or 60) then
+        return
+    end
+    self.autosaveTimer = 0
+    if self.autosavedVersion == self.undo.version then
+        return
+    end
+    local ok, bytes = pcall(LocationIO.export, self)
+    if ok and LocationIO.write(LocationIO.AUTOSAVE, bytes) then
+        self.autosavedVersion = self.undo.version
+    end
+end
+
+function Content:isDirty()
+    return self.undo.version ~= (self.savedVersion or 0)
 end
 
 function Content:overUI()
@@ -171,6 +244,15 @@ function Content:handleActions()
         self:notify(('Copied %d'):format(ops:copy(selection:items())))
     elseif map:justPressed('editorPaste') then
         ops:paste(self.level)
+    elseif map:justPressed('editorSave') then
+        self:saveLocation()
+    elseif map:justPressed('editorOpen') then
+        local latest = (self.recent or LocationIO.readRecent())[1]
+        if latest then
+            self:openLocation(latest)
+        else
+            self:notify('No recent files')
+        end
     end
     -- Q/W/E/R pick tools only when they are not fly keys (the look button is up).
     if not self.fly:isLooking() then
@@ -225,6 +307,7 @@ function Content:update(dt)
         end
     end
     self:handleActions()
+    self:autosave(dt)
     self.transform:update()
     self.box:follow(self.selection:primary())
     for _, panel in pairs(self.panels or {}) do
