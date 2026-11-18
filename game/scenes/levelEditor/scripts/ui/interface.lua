@@ -1,5 +1,6 @@
 -- Editor UI entry: top toolbar, Workspace tree (left), Properties (right) and the status bar.
 -- Only the viewport between the panels stays free, so a click there reaches the 3D world.
+local Browser = require('./panels.browser')
 local Properties = require('./panels.properties')
 local Theme = require('./theme')
 local Tree = require('./panels.tree')
@@ -78,6 +79,7 @@ function Interface.create(state)
     state.panels = {
         tree = Tree.create(state, ui),
         properties = Properties.create(state, ui),
+        browser = Browser.create(state, ui),
     }
     ui:container({
         name = 'StatusBar',

@@ -18,7 +18,7 @@ function Panel.create(state, ui)
         name = 'PropertiesPanel',
         position = { 1, 0, 0, Theme.top },
         anchorPoint = { 1, 0 },
-        size = { 0, Theme.right, 1, -(Theme.top + Theme.bottom) },
+        size = { 0, Theme.right, 1, -(Theme.top + Theme.bottom + Theme.browser) },
         backgroundColor = Theme.panel,
         zIndex = 5,
     }, ui.content)

@@ -16,6 +16,13 @@ local function parentOf(node)
     return node.parent
 end
 
+local function uniqueNames(world, data)
+    data.name = Clone.uniqueName(world, data.name)
+    for _, child in ipairs(data.children) do
+        uniqueNames(world, child)
+    end
+end
+
 function Ops.new(content)
     local self = setmetatable({ content = content, nextId = 1, byId = {} }, Ops)
     self:adopt(content.level)
@@ -172,8 +179,11 @@ function Ops:record(name, nodes)
 end
 
 -- Creates a node under `parent` (the Level by default) and records it.
-function Ops:create(class, properties, parent)
+function Ops:create(class, properties, parent, attributes)
     local node = self:world():create(class, properties or {}, parent or self.content.level)
+    for name, value in pairs(attributes or {}) do
+        node:setAttribute(name, value)
+    end
     self:adopt(node)
     self:record('Create ' .. class, { node })
     self.content.selection:set({ node })
@@ -221,7 +231,9 @@ function Ops:duplicate(nodes)
     local copies = {}
     for _, node in ipairs(TreeModel.topLevel(nodes, parentOf)) do
         if node ~= self.content.level then
-            local copy = Clone.node(node)
+            local snapshot = NodeData.capture(node)
+            uniqueNames(self:world(), snapshot)
+            local copy = NodeData.build(self:world(), snapshot, node.parent)
             self:adopt(copy, true)
             copies[#copies + 1] = copy
         end
@@ -427,13 +439,6 @@ function Ops:copy(nodes)
     return #clipboard
 end
 
-local function uniqueNames(world, data)
-    data.name = Clone.uniqueName(world, data.name)
-    for _, child in ipairs(data.children) do
-        uniqueNames(world, child)
-    end
-end
-
 function Ops:paste(parent)
     local pasted = {}
     for _, data in ipairs(self.clipboard or {}) do
@@ -448,6 +453,32 @@ function Ops:paste(parent)
         self.content.selection:set(pasted)
     end
     return pasted
+end
+
+-- Loads a stored model file into the Level as one node that remembers its file (EditorModel).
+function Ops:placeModel(path, position)
+    local world = self:world()
+    local root = world:loadModel(path)
+    root:setParent(self.content.level)
+    root.name = Clone.uniqueName(world, (path:match('([^/]+)%.[^%.]+$') or 'Model'))
+    root.position = { position[1], position[2], position[3] }
+    root:setAttribute('EditorModel', path)
+    self:adopt(root)
+    self:record('Import model', { root })
+    self.content.selection:set({ root })
+    return root
+end
+
+-- Gives a Mesh3D a colour map: reuses its SurfaceAppearance3D child or creates one.
+function Ops:applyTexture(mesh, path)
+    for _, child in ipairs(mesh.children) do
+        if child.className == 'SurfaceAppearance3D' then
+            return self:setProperty({ child }, 'colorMap', nil, path)
+        end
+    end
+    self:create('SurfaceAppearance3D', { colorMap = path }, mesh)
+    self.content.selection:set({ mesh })
+    return true
 end
 
 return Ops

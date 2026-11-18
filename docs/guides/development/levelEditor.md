@@ -76,6 +76,14 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 | `editorDuplicate/Copy/Paste/Delete` | `Ctrl+D` / `Ctrl+C` / `Ctrl+V` / `Delete` |
 | `editorSave/Open` | `Ctrl+S` / `Ctrl+O` |
 
+## Content creation and import (stage d)
+
+- `scripts/builders/catalog.lua` lists the Create tab items. Each item builds itself through `ops:create` (one undo step) at `content:placement()`: the view centre meets the ground plane `y = 0` (otherwise eight units ahead), snapped to the move step.
+- Cylinder and cone are meshes made by `builders/shapes.lua` (24 segments, outward normals) and marked with the `EditorShape` attribute so undo, duplicate and export rebuild them.
+- Trigger and Collider create a `Body3D` (Static) with a `Collider3D` (`isTrigger` for triggers) and a translucent box so they can be seen and picked.
+- The Files tab uses `katsa.filesystem`. `io/assetStore.lua` copies a chosen file to `editor/assets/models|textures/` in the save directory (unique, safe names); the same path without `editor/` is used inside the exported package. Models remember their file in the `EditorModel` attribute; images become sprite quads or the colour map of the selected mesh.
+- Dropped files are not used for import: the engine's `katsa.filedropped` switches scenes.
+
 ## `.katsa` location format
 
 A location is a **ZIP archive** (the engine reads ZIP; the scene writes it with its own stored

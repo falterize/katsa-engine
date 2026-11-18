@@ -2,6 +2,7 @@
 local Theme = {
     top = 34,
     bottom = 26,
+    browser = 176,
     left = 270,
     right = 340,
     row = 22,

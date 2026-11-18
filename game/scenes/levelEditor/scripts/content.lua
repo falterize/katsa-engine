@@ -7,6 +7,7 @@ local Grid = require('./view.grid')
 local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
+local Snap = require('./core.snap')
 local SelectionBox = require('./view.selectionBox')
 local TransformTool = require('./tools.transformTool')
 local Undo = require('./core.undo')
@@ -20,7 +21,7 @@ function Content.new(scene)
     local settings = scene.settings.editor
     local world = scene.world
     local environment = world.environment
-    environment.debug.gizmos.enabled = false
+    environment.debug.gizmos.enabled = true -- lights and cameras show their engine gizmos
     environment.shadows.enabled = false
     environment.ambient = { 130, 136, 150 }
     environment.sky.enabled = true
@@ -78,6 +79,25 @@ function Content:seed()
 end
 
 -- The direct child of Level that contains a picked mesh (a group when it is inside one).
+-- A point in front of the camera for new objects: where the view centre meets the ground, or
+-- eight units ahead; snapped to the move step when snapping is on.
+function Content:placement()
+    local camera = self.scene.camera
+    local ray = self.transform:ray((camera.width or 1280) / 2, (camera.height or 720) / 2)
+    local point = Snap.planePoint(ray[1], ray[2], { 0, 0, 0 }, { 0, 1, 0 })
+    if not point or (point[1] - ray[1][1]) ^ 2 + (point[3] - ray[1][3]) ^ 2 > 60 ^ 2 then
+        point = {
+            ray[1][1] + ray[2][1] * 8,
+            ray[1][2] + ray[2][2] * 8,
+            ray[1][3] + ray[2][3] * 8,
+        }
+    end
+    if self.snap.enabled then
+        point[1], point[3] = Snap.value(point[1], self.snap.move), Snap.value(point[3], self.snap.move)
+    end
+    return { point[1], point[2], point[3] }
+end
+
 function Content:overUI()
     local ui = self.scene.root:find('World3D/World2D')
     return ui ~= nil and ui:hit(katsa.mouse.getX(), katsa.mouse.getY()) ~= nil

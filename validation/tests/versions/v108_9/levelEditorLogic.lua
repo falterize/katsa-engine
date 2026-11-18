@@ -6,6 +6,8 @@ local Format = require('game.scenes.levelEditor.scripts.io.locationFormat')
 local LuaText = require('game.scenes.levelEditor.scripts.io.luaText')
 local Bounds = require('game.scenes.levelEditor.scripts.core.bounds')
 local GizmoMath = require('game.scenes.levelEditor.scripts.core.gizmoMath')
+local AssetStore = require('game.scenes.levelEditor.scripts.io.assetStore')
+local Shapes = require('game.scenes.levelEditor.scripts.builders.shapes')
 local Builder = require('game.scenes.levelEditor.scripts.view.meshBuilder')
 local Selection = require('game.scenes.levelEditor.scripts.core.selection')
 local Snap = require('game.scenes.levelEditor.scripts.core.snap')
@@ -212,7 +214,36 @@ function Module.builder(self)
     self:check(#ring == 12 * #vertices and far < 0.05, 'A ring around Y stays in the XZ plane')
 end
 
+function Module.shapes(self)
+    for _, name in ipairs(Shapes.NAMES) do
+        local list = Shapes.vertices(name)
+        local outward = true
+        for i = 1, #list, 3 do
+            local a, b, c = list[i], list[i + 1], list[i + 2]
+            local ux, uy, uz = b[1] - a[1], b[2] - a[2], b[3] - a[3]
+            local vx, vy, vz = c[1] - a[1], c[2] - a[2], c[3] - a[3]
+            local nx, ny, nz = uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx
+            local dot = nx * a[6] + ny * a[7] + nz * a[8]
+            outward = outward and dot > 0
+        end
+        self:check(#list % 3 == 0 and outward, name .. ' triangles wind counter-clockwise around their normals')
+    end
+end
+
+function Module.assets(self)
+    local function never()
+        return false
+    end
+    self:check(AssetStore.kind('a/b/Crate.PNG') == 'image' and AssetStore.kind('x.glb') == 'model' and AssetStore.kind('x.txt') == nil, 'Asset kinds follow the file extension')
+    self:check(AssetStore.targetPath('dir/my crate.glb', 'model', never) == 'editor/assets/models/my_crate.glb', 'Store names are made safe')
+    local taken = { ['editor/assets/textures/a.png'] = true, ['editor/assets/textures/a_2.png'] = true }
+    self:check(AssetStore.targetPath('a.png', 'image', function(path) return taken[path] end) == 'editor/assets/textures/a_3.png', 'A clashing name gets the next free number')
+    self:check(AssetStore.packagePath('editor/assets/models/a.glb') == 'assets/models/a.glb' and AssetStore.storePath('assets/models/a.glb') == 'editor/assets/models/a.glb', 'Store and package paths convert both ways')
+end
+
 function Module.run(self)
+    Module.shapes(self)
+    Module.assets(self)
     Module.builder(self)
     Module.gizmo(self)
     Module.tree(self)

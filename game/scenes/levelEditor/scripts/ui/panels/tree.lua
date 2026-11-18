@@ -22,7 +22,7 @@ function Tree.create(state, ui)
     self.frame = ui:container({
         name = 'WorkspacePanel',
         position = { 0, 0, 0, Theme.top },
-        size = { 0, Theme.left, 1, -(Theme.top + Theme.bottom) },
+        size = { 0, Theme.left, 1, -(Theme.top + Theme.bottom + Theme.browser) },
         backgroundColor = Theme.panel,
         zIndex = 5,
     }, ui.content)

@@ -7,7 +7,10 @@ local Clone = require('source.engine.nodes.core.clone')
 local NodeData = {}
 
 -- Runtime-only keys that Clone.collect may return but a rebuilt node must not receive.
-local SKIPPED = { name = true }
+-- `geometry` and `material` are runtime resources: primitives are rebuilt from `kind`, editor
+-- shapes from the EditorShape attribute and models from EditorModel.
+local SKIPPED = { name = true, geometry = true, material = true }
+local Shapes = require('../builders.shapes')
 
 function NodeData.capture(node)
     local properties = Clone.collect(node)
@@ -27,6 +30,11 @@ function NodeData.capture(node)
         if not node:isAttributeReference(name) then
             data.attributes[name] = node:getAttribute(name)
         end
+    end
+    -- A loaded model is rebuilt by loading the file again, so its meshes are not captured.
+    if node:getAttribute('EditorModel') then
+        data.model = node:getAttribute('EditorModel')
+        return data
     end
     for _, child in ipairs(node.children) do
         if not child.destroyed and not child._transientClone then
@@ -56,7 +64,24 @@ end
 function NodeData.build(world, data, parent)
     local properties = copy(data.properties)
     properties.name = data.name
-    local node = world:create(data.class, properties, parent)
+    local node
+    if data.model then
+        local root = world:loadModel(data.model)
+        root:setParent(parent)
+        root.name = data.name
+        for key, value in pairs(properties) do
+            if key ~= 'parent' then
+                root[key] = value
+            end
+        end
+        node = root
+    else
+        local shape = data.attributes and data.attributes.EditorShape
+        if shape then
+            properties.geometry = Shapes.geometry(world, shape)
+        end
+        node = world:create(data.class, properties, parent)
+    end
     for name, value in pairs(data.attributes or {}) do
         node:setAttribute(name, copy(value))
     end
