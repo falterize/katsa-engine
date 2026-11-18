@@ -141,7 +141,13 @@ return function(Platform, K)
         elseif mode then
             flag = K.FULLSCREEN_DESKTOP
         end
-        return self.sdl.SDL_SetWindowFullscreen(self.window, flag) == 0
+        local visible = self:isCursorVisible()
+        local ok = self.sdl.SDL_SetWindowFullscreen(self.window, flag) == 0
+        -- Windows can drop the cursor image and its visibility when the window changes mode; set
+        -- both again (the scene's own cursor when it chose one, otherwise the system arrow).
+        self.sdl.SDL_SetCursor(self.activeCursor or self.sdl.SDL_GetDefaultCursor())
+        self.sdl.SDL_ShowCursor(visible and 1 or 0)
+        return ok
     end
 
     -- SDL_SetWindowAlwaysOnTop needs SDL 2.0.16; older libraries keep the creation-time flag only.

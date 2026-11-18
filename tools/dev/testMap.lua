@@ -7,7 +7,7 @@ return {
 
     -- Anything else under these prefixes runs `fallback`.
     code = { 'source/', 'assets/shaders/', 'main.lua', 'conf.lua', 'native/' },
-    fallback = { '--test-v108.8', '--test' },
+    fallback = { '--test-v108.9', '--test' },
 
     rules = {
         { prefix = 'game/scenes/levelEditor/', flags = { '--test-v108.9' } },

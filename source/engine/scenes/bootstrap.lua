@@ -150,6 +150,9 @@ function Bootstrap.install(project, options)
 
     function katsa.resize(w, h)
         Runtime.windowFrameDirty = true
+        -- The desktop compositor may discard the old contents more than once while a window
+        -- changes mode, so a reused frame would show black: draw a few frames at the new size.
+        Runtime.windowRedrawFrames = 4
         katsa.graphics.refreshViewport()
         for _, scene in ipairs(manager.stack) do
             if scene.input then

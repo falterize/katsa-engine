@@ -120,6 +120,7 @@ int SDL_GetWindowGrab(SDL_Window* window);
 typedef struct SDL_Cursor SDL_Cursor;
 SDL_Cursor* SDL_CreateSystemCursor(int id);
 void SDL_SetCursor(SDL_Cursor* cursor);
+SDL_Cursor* SDL_GetDefaultCursor(void);
 void SDL_FreeCursor(SDL_Cursor* cursor);
 int SDL_GetCPUCount(void);
 const uint8_t* SDL_GetKeyboardState(int* numkeys);

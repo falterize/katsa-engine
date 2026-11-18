@@ -61,6 +61,7 @@ function FrameLoop.run()
         local reused = false
         if not Runtime.headless and katsa.graphics and katsa.graphics.isActive() then
             reused = not Runtime.windowFrameDirty
+                    and not Runtime.windowRedrawFrames
                     and Runtime.canReuseWindowFrame
                     and Runtime.canReuseWindowFrame()
                 or false
@@ -75,6 +76,11 @@ function FrameLoop.run()
                 katsa.graphics.present()
                 present = (katsa.timer.getTime() - presented) * 1000
                 Runtime.windowFrameDirty = false
+                if Runtime.windowRedrawFrames then
+                    Runtime.windowRedrawFrames = Runtime.windowRedrawFrames > 1
+                            and Runtime.windowRedrawFrames - 1
+                        or nil
+                end
             end
         end
         local limit = Runtime.frameRateLimit or 0
