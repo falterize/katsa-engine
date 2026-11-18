@@ -571,7 +571,7 @@ function Content:update(dt)
         self:handleActions()
     end
     self:autosave(dt)
-    self.lightViz:update(self.selection, true)
+    self.lightViz:update(self.selection, true, self.camera)
     self.transform:update()
     self:followOutlines(self.selection:items())
     for _, panel in pairs(self.panels or {}) do

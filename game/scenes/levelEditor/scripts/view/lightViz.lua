@@ -8,6 +8,8 @@
 local Builder = require('./meshBuilder')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
+local ICON_PIXELS = 18 -- on-screen radius of the light icon
+
 local LightViz = {}
 LightViz.__index = LightViz
 
@@ -139,6 +141,7 @@ local function rebuild(self, entry, key, build, field, name)
         return
     end
     entry[field .. 'Key'] = key
+    entry.unit = nil -- new geometry: rescale on the next pass
     if entry[field] and not entry[field].destroyed then
         entry[field]:destroy()
     end
@@ -172,7 +175,7 @@ local function collect(node, out)
 end
 
 -- Called every frame. `selection` is the editor selection; `show` hides every marker.
-function LightViz:update(selection, show)
+function LightViz:update(selection, show, camera)
     local lights, alive = {}, {}
     if show and self.enabled then
         collect(self.level, lights)
@@ -213,6 +216,22 @@ function LightViz:update(selection, show)
         end, 'reach', 'EditorLightReach')
         if entry.reach then
             entry.reach.color = color
+        end
+        -- Keep the icon a constant size on screen, however far the light is.
+        local unit = 1
+        if camera then
+            local _, _, depth = camera:project({ p[1], p[2], p[3] })
+            local perUnit = depth and camera:pixelsPerUnitAt(depth)
+            if perUnit and perUnit > 0 then
+                unit = math.max(ICON_PIXELS / perUnit, 0.05)
+            end
+        end
+        if entry.unit ~= unit then
+            entry.unit = unit
+            entry.pick.size = { 0.28 * unit / 0.24, 0.28 * unit / 0.24, 0.28 * unit / 0.24 }
+            if entry.marker then
+                entry.marker.scale = { unit / 0.24, unit / 0.24, unit / 0.24 }
+            end
         end
         entry.root.visible = true
     end
