@@ -16,6 +16,7 @@ function Tests:draw()
     require('validation.tests.versions.v108_9.levelEditorLogic').run(self)
     require('validation.tests.versions.v108_9.levelEditorScene').run(self)
     require('validation.tests.versions.v108_9.fullscreen').run(self)
+    require('validation.tests.versions.v108_9.carsAccelProbe').runPush(self)
     print('PASSED ' .. self.count .. ' v108.9 focused checks')
     katsa.event.quit()
 end

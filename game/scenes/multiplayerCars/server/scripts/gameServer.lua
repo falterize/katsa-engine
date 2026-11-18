@@ -637,6 +637,22 @@ function GameServer:onTick(dt)
         end
     end
     self:broadcastBotPath(now)
+    -- Cars struck by a client-driven car's stand-in keep only the equal-mass share of the hit.
+    local pushers = {}
+    for _, netId in ipairs(self.order) do
+        local body = self.bodies[netId]
+        if body and body.mode == 'follow' then
+            pushers[#pushers + 1] = body
+        end
+    end
+    if #pushers > 0 then
+        for _, netId in ipairs(self.order) do
+            local body = self.bodies[netId]
+            if body then
+                body:limitPush(pushers)
+            end
+        end
+    end
     local removed
     for _, netId in ipairs(self.order) do
         local car = self.cars[netId]

@@ -16,6 +16,7 @@ local entries = {
     ['--test-v108.7.styler'] = { module = 'validation.tests.versions.v108_7.uiStylerNode', mode = 'default' },
     ['--test-v108.7.menushots'] = { module = 'validation.tests.versions.v108_7.menuShots', mode = 'default' },
     ['--test-v108.7.actorlab'] = { module = 'validation.tests.versions.v108_7.actorLab', mode = 'default' },
+    ['--test-v108.9.cars.accel'] = { module = 'validation.tests.versions.v108_9.carsAccelProbe', mode = 'default' },
     ['--test-v108.7.shapekeys'] = { module = 'validation.tests.versions.v108_7.shapeKeys', mode = 'default' },
     ['--test-v108.7.menusearch'] = { module = 'validation.tests.versions.v108_7.menuSearch', mode = 'default' },
     ['--test-v108.7.botmemory'] = { module = 'validation.tests.versions.v108_7.botMemoryProbe', mode = 'default' },

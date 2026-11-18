@@ -35,7 +35,10 @@ local TUNING = {
     flipAfter = 0.7, -- seconds on the side or roof before the car rights itself
     flipTorque = 38, -- righting acceleration (1/s^2) and ...
     flipDamping = 5, -- ... spin damping (1/s) of the automatic flip
-    impactSpeed = 3.5, -- sudden velocity change that counts as a collision
+    impactSpeed = 3.5,
+    pushRestitution = 0.1, -- bounce of a hit by a stand-in car, for the momentum share below
+    maxHitSpeed = 40, -- a collision never sends a car faster than this (m/s) ...
+    maxHitLift = 8, -- ... or upward faster than this -- sudden velocity change that counts as a collision
 }
 
 local function approach(value, target, rate, dt)
@@ -145,18 +148,19 @@ end
 function PhysicsCar:follow(dt, source)
     self:syncCollision()
     local model = source or self.model
-    -- A teleported kinematic body has no velocity of its own; derive it from the pose change so
-    -- characters standing on this car are carried along (Body3D:getPointVelocity reads it).
-    local last = self.lastFollow
-    if last and dt and dt > 0 then
-        local velocity = self.followVelocity or {}
-        self.followVelocity = velocity
+    -- A teleported kinematic body has no velocity of its own, and a collision uses it as the
+    -- pusher's speed (Body3D:getPointVelocity reads it for characters standing on the car too).
+    -- Poses arrive at the network rate, not the step rate: a velocity derived from the pose change
+    -- is zero on most steps and several times the real speed on the step a new pose lands, which
+    -- launched whatever the stand-in touched. The replicated speed is the real one.
+    local velocity = self.followVelocity or {}
+    self.followVelocity = velocity
+    if model.speed then
+        local heading = math.rad(model.heading)
         velocity[1], velocity[2], velocity[3] =
-            (model.x - last[1]) / dt, (model.y - last[2]) / dt, (model.z - last[3]) / dt
+            math.sin(heading) * model.speed, model.vertical or 0, math.cos(heading) * model.speed
         self.node.physics:setVelocity(velocity)
     end
-    self.lastFollow = last or {}
-    self.lastFollow[1], self.lastFollow[2], self.lastFollow[3] = model.x, model.y, model.z
     local angles = orientation(model.heading, model.pitch or 0, model.roll or 0, self.angles)
     self.node.position = { model.x, model.y, model.z }
     self.node.rotation = { angles[1], angles[2], angles[3] }
@@ -432,6 +436,55 @@ function PhysicsCar:autoFlip(dt, up, forward, grounded)
     local k = (sign * t.flipTorque - along * t.flipDamping) * inertia
     body:applyTorque({ forward[1] * k, forward[2] * k, forward[3] * k })
     body:applyForce({ 0, mass * 9.81 * 0.5, 0 })
+end
+
+-- A stand-in (follow-mode body) is kinematic: to the solver it has infinite mass and keeps its
+-- speed whatever it hits, while the car it stands for was stopped by the same hit in its own
+-- process. The same impact is thus counted twice and the struck car left much faster than two
+-- cars of equal mass could leave each other. After the step, the speed this car gained along a
+-- pusher's direction is limited to the equal-mass collision result, and no hit sends a car
+-- beyond maxHitSpeed or maxHitLift (a client running at a high time scale reports a speed
+-- several times the real one).
+function PhysicsCar:limitPush(pushers)
+    if self.mode ~= 'dynamic' then
+        return
+    end
+    local t = self.tuning
+    local body = self.node.physics
+    local v = body:getVelocity(self.velocity)
+    local changed = false
+    local contacts = body:getContacts()
+    for _, other in ipairs(contacts) do
+        for _, pusher in ipairs(pushers) do
+            local u = pusher.followVelocity
+            if u and pusher.node.physics == other then
+                local length = math.sqrt(u[1] * u[1] + u[3] * u[3])
+                if length > 1 then
+                    local nx, nz = u[1] / length, u[3] / length
+                    local along = v[1] * nx + v[3] * nz
+                    local e = t.pushRestitution
+                    local allowed = (length * (1 + e) + along * (1 - e)) / 2
+                    if along > allowed then
+                        v[1], v[3] = v[1] - nx * (along - allowed), v[3] - nz * (along - allowed)
+                        changed = true
+                    end
+                end
+            end
+        end
+    end
+    if #contacts > 0 then
+        local flat = math.sqrt(v[1] * v[1] + v[3] * v[3])
+        if flat > t.maxHitSpeed and self.lastSpeed and flat > math.abs(self.lastSpeed) + 2 then
+            local k = math.max(t.maxHitSpeed, math.abs(self.lastSpeed)) / flat
+            v[1], v[3], changed = v[1] * k, v[3] * k, true
+        end
+        if v[2] > t.maxHitLift then
+            v[2], changed = t.maxHitLift, true
+        end
+    end
+    if changed then
+        body:setVelocity(v)
+    end
 end
 
 -- Refreshes the replicated model from the body and queues collision impacts.
