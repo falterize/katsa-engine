@@ -1,5 +1,8 @@
 -- Fixed-size numeric values. Weak keys/owners avoid retaining detached values or nodes.
 local Managed = {}
+-- Counts every component write of every managed value; cheap change evidence for caches
+-- (UI:layoutOnce) that must not rescan the whole tree to learn that nothing moved.
+Managed.epoch = 0
 local empty = {}
 local records = setmetatable({}, { __mode = 'k' })
 local prototypes = setmetatable({}, { __mode = 'k' })
@@ -68,6 +71,7 @@ function Managed.create(class, components, aliases, count, owned)
             if record.values[index] ~= component then
                 record.values[index] = component
                 record.revision = record.revision + 1
+                Managed.epoch = Managed.epoch + 1
                 for owner in pairs(record.owners or empty) do
                     rawset(
                         owner,

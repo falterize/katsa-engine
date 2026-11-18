@@ -134,7 +134,7 @@ function Interaction.install(UI)
     end
 
     function UI:position(node)
-        self:layout()
+        self:layoutOnce()
         return node._x, node._y
     end
 

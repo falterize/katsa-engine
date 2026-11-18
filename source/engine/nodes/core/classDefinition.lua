@@ -178,6 +178,11 @@ function ClassDefinition.install(Node)
                 elseif key == 'parent' then
                     instance:setParent(value)
                 else
+                    -- A key that was absent is now set: a scanned UI node must rebuild its key
+                    -- list (ui/layout/changeTracking.lua).
+                    if rawget(instance, '_snapshot') then
+                        rawset(instance, '_watchDirty', true)
+                    end
                     rawset(instance, key, value)
                 end
             end,

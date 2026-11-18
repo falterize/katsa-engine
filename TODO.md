@@ -9,6 +9,10 @@ going through `node:isA`), and it runs on every call of `getAbsolutePosition()`,
 `getAbsoluteSize()`, `UI:hit()`, `UI:pointer()` and once per draw. The cost grows with the node
 count, so large UIs (the level editor) pay for it several times per frame.
 
+Status (v108.9): the absolute getters scan once per frame (`UI:layoutOnce`) and the scan is sparse
+(0.36 ms at 611 nodes). The event-driven redesign below is only worth doing if profiles on real
+hardware still show `UI:changed()`.
+
 Goal: make `layout()` nearly free when nothing changed.
 
 - Mark a node dirty when a layout-relevant property is written: through `__newindex` for absent

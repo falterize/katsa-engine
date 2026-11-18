@@ -100,6 +100,61 @@ function ChangeTracking.install(UI)
     -- Schemas are cached by table identity, so these must be stable (a literal leaks per call).
     local noKeys, sizeVectors = {}, { 'size' }
 
+    -- Sparse scan: a node only reads the observed keys it actually has (set on the node, typed, or
+    -- seen before). Every other key is the class default, which cannot change, so reading it
+    -- every layout was wasted work. A key that appears later arrives through `__newindex`
+    -- (it sets `_watchDirty`) or `ValueTypes.assign` (it bumps `_propertyRevision`); both make
+    -- the node rebuild its key list on the next scan. Lists are shared by signature, so the
+    -- compiled snapshot schemas stay few.
+    local schemas = {}
+
+    local function schemaFor(node, snapshot, fixed)
+        local revision = rawget(node, '_propertyRevision')
+        if
+            snapshot._schema
+            and snapshot._schemaRevision == revision
+            and not rawget(node, '_watchDirty')
+        then
+            return snapshot._schema
+        end
+        rawset(node, '_watchDirty', nil)
+        local typed = rawget(node, '_typedValues')
+        local class = rawget(node, '_class')
+        local source = fixed and fixedObserved or observed
+        local keys, vectors, names = {}, {}, {}
+        for _, key in ipairs(source) do
+            if
+                rawget(node, key) ~= nil
+                or (typed and typed[key] ~= nil)
+                or snapshot[key] ~= nil
+                or (key == 'enabled' and class and class.getEnabled)
+            then
+                keys[#keys + 1] = key
+                names[#names + 1] = key
+            end
+        end
+        names[#names + 1] = '|'
+        for _, key in ipairs(colorFields) do
+            if
+                rawget(node, key) ~= nil
+                or (typed and typed[key] ~= nil)
+                or snapshot[key] ~= nil
+                or (class and class[key] ~= nil)
+            then
+                vectors[#vectors + 1] = key
+                names[#names + 1] = key
+            end
+        end
+        local signature = table.concat(names, ',')
+        local schema = schemas[signature]
+        if not schema then
+            schema = { keys = keys, vectors = vectors }
+            schemas[signature] = schema
+        end
+        snapshot._schema, snapshot._schemaRevision = schema, revision
+        return schema
+    end
+
     local function changed(list, paint)
         local result, animated = false, false
         for _, node in ipairs(list) do
@@ -122,12 +177,8 @@ function ChangeTracking.install(UI)
                     paint.changed = true
                 end
                 local fixed = node._fixedTextLayout
-                result = Snapshot.fields(
-                    snapshot,
-                    node,
-                    fixed and fixedObserved or observed,
-                    colorFields
-                ) or result
+                local schema = schemaFor(node, snapshot, fixed)
+                result = Snapshot.fields(snapshot, node, schema.keys, schema.vectors) or result
                 if fixed and Snapshot.scalar(snapshot, 'text', rawget(node, 'text')) then
                     -- Only explicitly fixed-layout diagnostics opt out of text-driven layout.
                     paint.changed = true

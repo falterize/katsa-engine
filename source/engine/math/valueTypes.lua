@@ -142,6 +142,7 @@ function Types.assign(node, key, value, kind)
     local converted = Types.convert(kind or Types.kind(node, key), value)
     Managed.unbind(old, node)
     values[key] = Managed.bind(converted, node)
+    Managed.epoch = Managed.epoch + 1
     rawset(node, '_propertyRevision', (rawget(node, '_propertyRevision') or 0) + 1)
     return converted
 end

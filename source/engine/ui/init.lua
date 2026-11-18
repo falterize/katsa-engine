@@ -403,6 +403,7 @@ function UI:updatePhysics(dt)
 end
 
 function UI:update(realDt, simulationDt)
+    self._frame = (self._frame or 0) + 1 -- see UI:layoutOnce
     local sceneDt = simulationDt == nil and realDt or simulationDt
     self._simulationDelta = require('source.engine.world.clock').delta(self, sceneDt)
     self.time = self.time + require('source.engine.world.clock').delta(self, realDt)

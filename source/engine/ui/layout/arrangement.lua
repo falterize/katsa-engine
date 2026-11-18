@@ -3,6 +3,7 @@ local Metrics = require('./metrics')
 local Length = require('./scrollLength')
 local Canvas = require('./scrollCanvas')
 local Display = require('../../core.displayDpi')
+local Managed = require('../../math.managedValue')
 local Arrangement = {}
 
 function Arrangement.install(UI)
@@ -120,6 +121,24 @@ function Arrangement.install(UI)
         self._layoutRevision, self._layoutWidth, self._layoutHeight =
             self.revision, self.width, self.height
         self.layoutPasses = (self.layoutPasses or 0) + 1
+    end
+
+    -- Lays out at most once per frame unless something known changed (a vector write, a
+    -- structural change: `epoch` and `revision`). The absolute getters use it, so reading the
+    -- layout of many nodes costs one scan instead of one per call. A plain scalar write
+    -- (`node.text = ...`) is seen by the next frame's scan, or at once with `ui:layout()`.
+    function UI:layoutOnce()
+        local frame = self._frame
+        if
+            frame
+            and self._onceFrame == frame
+            and self._onceEpoch == Managed.epoch
+            and self._onceRevision == self.revision
+        then
+            return
+        end
+        self:layout()
+        self._onceFrame, self._onceEpoch, self._onceRevision = frame, Managed.epoch, self.revision
     end
 
     function UI:scrollBy(node, deltaY, deltaX)

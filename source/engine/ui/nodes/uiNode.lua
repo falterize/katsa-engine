@@ -33,7 +33,7 @@ function UINode:getAbsoluteSize()
     if not ui then
         return 0, 0
     end
-    ui:layout()
+    ui:layoutOnce()
     return self._width or 0, self._height or 0
 end
 

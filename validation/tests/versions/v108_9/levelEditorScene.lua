@@ -421,6 +421,37 @@ function Module.run(self)
         end
     end
 
+    -- Layout reads: one scan per frame for the absolute getters, and a sparse scan that still
+    -- sees a key set for the first time.
+    local ui = state.ui
+    local panel = ui:create('Frame', { size = { 0, 40, 0, 30 } }, ui.content)
+    frame(scene)
+    local scans, original = 0, ui.changed
+    ui.changed = function(...)
+        scans = scans + 1
+        return original(...)
+    end
+    for _ = 1, 20 do
+        panel:getAbsoluteSize()
+        panel:getAbsolutePosition()
+    end
+    self:check(scans <= 1, 'Twenty absolute reads in one frame scan the UI at most once')
+    panel.size = { 0, 90, 0, 30 }
+    local width = panel:getAbsoluteSize()
+    self:check(width == 90, 'A vector write is seen by the next absolute read in the same frame')
+    ui.changed = original
+    local passes = ui.layoutPasses or 0
+    panel.visible = false
+    ui:layout()
+    self:check((ui.layoutPasses or 0) > passes, 'A changed scalar is seen by a full layout')
+    panel.visible = true
+    ui:layout()
+    passes = ui.layoutPasses or 0
+    panel.clip = true -- a key the node did not have before
+    ui:layout()
+    self:check((ui.layoutPasses or 0) > passes, 'A key set for the first time is seen by the sparse scan')
+    panel:destroy()
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')
