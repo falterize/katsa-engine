@@ -90,6 +90,27 @@ function Module.run(self)
     end
     self:check(#state.panels.tree.rows == 5 and state.panels.properties.name.visible ~= nil, 'The Workspace tree lists the level and its objects')
 
+    -- Move tool: grab the X arrow and drag it along the screen.
+    state:setTool('Move')
+    state.selection:set({ box })
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    local tool = state.transform
+    local pivot = tool.frame.world
+    local grab = { pivot[1] + tool.length * 0.6, pivot[2], pivot[3] }
+    local gx, gy = camera:project(grab)
+    local startX = box.position[1]
+    state.snap.enabled = false
+    self:check(tool:begin(gx, gy), 'A press on the X arrow starts a move drag')
+    local tx, ty = camera:project({ grab[1] + 2, grab[2], grab[3] })
+    tool:move(tx, ty)
+    tool:finish()
+    self:check(math.abs(box.position[1] - (startX + 2)) < 0.05, 'Dragging the X arrow moves the object along X')
+    undo:undo()
+    self:check(math.abs(box.position[1] - startX) < 1e-6, 'Undo of a move restores the position')
+    state:setTool('Select')
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')

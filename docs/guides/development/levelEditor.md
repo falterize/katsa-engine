@@ -14,7 +14,7 @@ editor key through the shared map. See `docs/guides/input/inputMap.md`.
 | --- | --- | --- |
 | a | Scene shell, fly camera, ground grid, picking and selection | in progress |
 | b | Workspace tree and Properties panel | done (needs hardware check); drag-reparent is a *Move into...* button for now |
-| c | Gizmos (move, rotate, scale), snapping | planned |
+| c | Gizmos (move, rotate, scale), snapping | done except snap-to-surface; needs hardware check |
 | d | Creation palette, model and image import | planned |
 | e | `.katsa` location export and import | pure parts done (format, ZIP writer) |
 | f | Undo/redo, copy/paste, play-test, polish | pure undo stack done |
@@ -34,6 +34,10 @@ game/scenes/levelEditor/
     scripts/ui/panels/tree.lua        Workspace panel
     scripts/ui/panels/properties.lua  Properties panel (rows from the engine inspector list)
     scripts/ui/theme.lua    colours and sizes (replaced by uiStyler style files in the UI stage)
+    scripts/core/gizmoMath.lua  handle hit testing and rotation math (pure)
+    scripts/tools/transformTool.lua  gizmo placement, drag, snapping, one undo step per drag
+    scripts/view/gizmo.lua      gizmo meshes (built once, scaled to a constant screen size)
+    scripts/view/meshBuilder.lua  bars, plates and rings for the gizmo parts (pure)
     scripts/core/snap.lua   snap and drag math (pure)
     scripts/core/selection.lua   ordered selection set with a primary item (pure)
     scripts/core/bounds.lua bounding sphere of a node list (pure)
@@ -118,3 +122,15 @@ style files.
 
 Runtime caches, signal connections, scripts attached by code, physics state, anything the
 inspector schema does not list. The exact list is kept next to the serializer once stage e lands.
+
+## Gizmo notes and limits
+
+* Handles are tested geometrically against the mouse ray (not by mesh picking); the gizmo keeps
+  `Gizmo.PIXELS` (120) radius on screen through `camera:pixelsPerUnitAt`.
+* The gizmo meshes are depth-tested: a handle inside a large object can be partly hidden, though
+  it still picks. Drawing it on top needs a shader the engine's `render_mode` list cannot express
+  yet (no depth-test-off mode), so it is left for later.
+* Snapping: `Snap` toolbar button; holding Ctrl inverts it. Move snaps to world grid coordinates
+  in World space and to relative steps in Local space; rotation and scale use the steps from
+  `settings.editor.snap`. Snap-to-surface is not implemented yet.
+* Edited nodes are assumed to have translation-only parents (true for the Level and editor groups).

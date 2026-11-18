@@ -5,6 +5,8 @@ local Crc32 = require('game.scenes.levelEditor.scripts.io.crc32')
 local Format = require('game.scenes.levelEditor.scripts.io.locationFormat')
 local LuaText = require('game.scenes.levelEditor.scripts.io.luaText')
 local Bounds = require('game.scenes.levelEditor.scripts.core.bounds')
+local GizmoMath = require('game.scenes.levelEditor.scripts.core.gizmoMath')
+local Builder = require('game.scenes.levelEditor.scripts.view.meshBuilder')
 local Selection = require('game.scenes.levelEditor.scripts.core.selection')
 local Snap = require('game.scenes.levelEditor.scripts.core.snap')
 local TreeModel = require('game.scenes.levelEditor.scripts.core.treeModel')
@@ -151,7 +153,68 @@ function Module.tree(self)
     self:check(range and #range == 3 and range[1] == a and range[3] == b, 'A range selects the rows between two nodes')
 end
 
+-- The engine's euler convention (math3d.compose, Affine.euler), restated for the pure test.
+local function compose(_, r)
+    local x, y, z = math.rad(r[1]), math.rad(r[2]), math.rad(r[3])
+    local cx, sx, cy, sy, cz, sz = math.cos(x), math.sin(x), math.cos(y), math.sin(y), math.cos(z), math.sin(z)
+    return {
+        cz * cy, -cz * sy * sx - sz * cx, -cz * sy * cx + sz * sx, 0,
+        sz * cy, -sz * sy * sx + cz * cx, -sz * sy * cx - cz * sx, 0,
+        sy, cy * sx, cy * cx, 0,
+        0, 0, 0, 1,
+    }
+end
+
+local function euler(m)
+    local y = math.asin(math.max(-1, math.min(1, m[9])))
+    local x, z = math.atan2 and math.atan2(m[10], m[11]) or math.atan(m[10], m[11]), nil
+    z = math.atan2 and math.atan2(m[5], m[1]) or math.atan(m[5], m[1])
+    return { math.deg(x), math.deg(y), math.deg(z) }
+end
+
+function Module.gizmo(self)
+    local axes = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } }
+    local pivot = { 0, 0, 0 }
+    -- a camera 10 units in front looking down -Z at the pivot
+    local function ray(x, y)
+        local length = math.sqrt(x * x + y * y + 100)
+        return { { x, y, 10 }, { 0, 0, -1 } }, length
+    end
+    local r = ray(0.6, 0)
+    self:check(GizmoMath.pick('Move', r, pivot, axes, 1, 0.1) == 'x', 'A ray near the X arrow picks the X handle')
+    self:check(GizmoMath.pick('Move', ray(0, 0.7), pivot, axes, 1, 0.1) == 'y', 'A ray near the Y arrow picks the Y handle')
+    self:check(GizmoMath.pick('Move', ray(0.9, 0.9), pivot, axes, 1, 0.1) == nil, 'A ray far from every handle picks nothing')
+    self:check(GizmoMath.pick('Move', ray(0.35, 0.35), pivot, axes, 1, 0.1) == 'xy', 'A ray through the plane square picks the plane handle')
+    self:check(GizmoMath.pick('Rotate', ray(0, 0), pivot, axes, 1, 0.1) == nil, 'The middle of a rotation ring picks nothing')
+    local through = { { 0, 0, 10 }, { 0, 0, -1 } }
+    self:check(GizmoMath.pick('Rotate', { { 1, 0, 10 }, { 0, 0, -1 } }, pivot, axes, 1, 0.1) == 'z', 'A ray through the Z ring picks it')
+    self:check(GizmoMath.pick('Scale', through, pivot, axes, 1, 0.1) == 'all', 'The centre of the scale gizmo is the uniform handle')
+    local m = GizmoMath.axisAngle({ 0, 1, 0 }, 90)
+    local p = GizmoMath.rotatePoint({ 1, 0, 0 }, pivot, { 0, 1, 0 }, 90)
+    self:check(math.abs(p[3] + 1) < 1e-9 and math.abs(p[1]) < 1e-9 and math.abs(m[15]) < 1e-9, 'A point turns about the world Y axis')
+    local turned = GizmoMath.rotateEuler({ 0, 0, 0 }, { 0, 0, 1 }, 30, false, compose, euler)
+    self:check(math.abs(turned[3] - 30) < 1e-6 and math.abs(turned[1]) < 1e-6, 'Turning a node about world Z changes its Z rotation')
+    local local_ = GizmoMath.rotateEuler({ 0, 0, 40 }, { 1, 0, 0 }, 25, true, compose, euler)
+    local world = GizmoMath.rotateEuler({ 0, 0, 40 }, { 1, 0, 0 }, 25, false, compose, euler)
+    self:check(math.abs(local_[1] - world[1]) > 1 or math.abs(local_[3] - world[3]) > 1, 'Local and world turns differ for a rotated node')
+end
+
+function Module.builder(self)
+    local vertices = {}
+    Builder.bar(vertices, { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 }, 0.1)
+    self:check(#vertices == 6 * 6 * 2 and #vertices[1] == 8, 'A bar has six double-sided faces of engine vertices')
+    local ring = {}
+    Builder.ring(ring, 2, 1, 0.01, 12)
+    local far = 0
+    for _, v in ipairs(ring) do
+        far = math.max(far, math.abs(v[2]))
+    end
+    self:check(#ring == 12 * #vertices and far < 0.05, 'A ring around Y stays in the XZ plane')
+end
+
 function Module.run(self)
+    Module.builder(self)
+    Module.gizmo(self)
     Module.tree(self)
     Module.selection(self)
     Module.zip(self)

@@ -53,6 +53,20 @@ local function bar(state, ui)
         content:notify('Click the new parent in the Workspace (Level = top)')
     end)
     x = x + 10
+    local snap = button('Snap', 48, function() end)
+    snap:connect('press', function()
+        content.snap.enabled = not content.snap.enabled
+    end)
+    local space = button('World', 56, function() end)
+    space:connect('press', function()
+        content.space = content.space == 'World' and 'Local' or 'World'
+        space.text = content.space
+    end)
+    local pivot = button('Center', 56, function() end)
+    pivot:connect('press', function()
+        content.pivotMode = content.pivotMode == 'Center' and 'Origin' or 'Center'
+        pivot.text = content.pivotMode
+    end)
     button('Grid', 44, function() content.grid:setVisible(not content.grid.visible) end)
     button('Frame all', 70, function() content:frame(content.level.children) end)
 end

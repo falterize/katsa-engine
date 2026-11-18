@@ -8,6 +8,7 @@ local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
 local SelectionBox = require('./view.selectionBox')
+local TransformTool = require('./tools.transformTool')
 local Undo = require('./core.undo')
 
 local Content = {}
@@ -35,7 +36,13 @@ function Content.new(scene)
     self.selection = Selection.new()
     self.undo = Undo.new()
     self.treeVersion = 0
-    self.tool, self.space = 'Select', 'World'
+    self.tool, self.space, self.pivotMode = 'Select', 'World', 'Center'
+    self.snap = {
+        enabled = true,
+        move = settings.snap.move,
+        rotate = settings.snap.rotate,
+        scale = settings.snap.scale,
+    }
     self.grid = Grid.new(world, nil, settings.grid)
     self.box = SelectionBox.new(world)
     self.ops = Ops.new(self)
@@ -49,6 +56,7 @@ function Content.new(scene)
     camera.rotation = { -25, -135, 0 }
     scene.input = EditorInput.new(scene, self)
     self.fly = FlyCamera.new(camera, scene.input.map, settings)
+    self.transform = TransformTool.new(self)
     return self
 end
 
@@ -70,6 +78,11 @@ function Content:seed()
 end
 
 -- The direct child of Level that contains a picked mesh (a group when it is inside one).
+function Content:overUI()
+    local ui = self.scene.root:find('World3D/World2D')
+    return ui ~= nil and ui:hit(katsa.mouse.getX(), katsa.mouse.getY()) ~= nil
+end
+
 function Content:levelChild(object)
     local node = object
     while node and node.parent ~= self.level do
@@ -151,6 +164,7 @@ function Content:handleActions()
             self:setTool('Scale')
         elseif map:justPressed('editorToggleSpace') then
             self.space = self.space == 'World' and 'Local' or 'World'
+            self:notify('Space: ' .. self.space)
         end
     end
 end
@@ -185,9 +199,13 @@ function Content:update(dt)
     self.grid:follow(position[1], position[3])
     if self.viewportPressed then
         self.viewportPressed = false
-        self:pick(katsa.mouse.getX(), katsa.mouse.getY())
+        local x, y = katsa.mouse.getX(), katsa.mouse.getY()
+        if not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
+            self:pick(x, y)
+        end
     end
     self:handleActions()
+    self.transform:update()
     self.box:follow(self.selection:primary())
     for _, panel in pairs(self.panels or {}) do
         panel:update()
@@ -201,9 +219,11 @@ function Content:updateStatus()
         return
     end
     local primary = self.selection:primary()
-    local text = ('Tool %s (%s)   Grid %s %.2f   Fly speed %.1f   Selected %d%s'):format(
+    local text = ('Tool %s (%s, %s pivot)   Snap %s   Grid %s %.2f   Fly speed %.1f   Selected %d%s'):format(
         self.tool,
         self.space,
+        self.pivotMode:lower(),
+        self.snap.enabled and 'on' or 'off',
         self.grid.visible and 'on' or 'off',
         self.grid.cell,
         self.fly.speed,
@@ -219,6 +239,7 @@ function Content:updateStatus()
 end
 
 function Content:release()
+    self.transform:release()
     self.grid:release()
     self.box:release()
     katsa.mouse.setRelativeMode(false)
