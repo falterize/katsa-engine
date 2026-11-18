@@ -93,7 +93,8 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 - Gizmos and the selection outline draw **on top of everything** (`assets/shaders/onTop.glsl`, a scene `Shader3D` that squeezes the clip depth), so they stay usable inside large objects. Picking handles geometrically, so it is unaffected.
 - **Settings window** (toolbar): Appearance (dark/light theme through the uiStyler plugin), Interface (dock sizes, reset), Snap & Grid, Camera (fly speed, look sensitivity, FOV) and Shortcuts: **Rebind** any editor InputMap action (a modifier first makes a chord, Esc cancels) or **Reset** it. Everything is stored in `editor/settings.lua`.
 - Styling: widgets carry tags (`dock`, `bar`, `tool`, `row`, `selected`, `on`, `field`, `list`, ...); `assets/styles/editor.lua` maps them to theme tokens, so a theme switch restyles the whole editor. Helpers are in `ui/kit.lua`.
-- Known limits: the 3D view still renders under the docks (the camera centre is the window centre, not the viewport centre); the Workspace does not auto-scroll while dragging near its edges; a rebind replaces all bindings of the action.
+- The 3D view is a **ViewportFrame** with its own World3D and camera (`content.world`, `content.camera`), sized by the dock layout; the scene's main World3D stays empty and only carries the UI. Pointer positions are converted to viewport pixels (`content:viewportPoint`) before picking and gizmo drags, so the camera centre is the viewport centre and clicks on panels never reach the 3D view.
+- Known limits: the Workspace does not auto-scroll while dragging near its edges; a rebind replaces all bindings of the action.
 
 ## `.katsa` location format
 

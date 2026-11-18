@@ -187,7 +187,7 @@ function Browser:act(kind)
         end
     elseif fileKind == 'image' and kind == 'sprite' then
         local mesh = state.ops:create('Mesh3D', {
-            name = Clone.uniqueName(state.scene.world, 'Sprite'),
+            name = Clone.uniqueName(state.world, 'Sprite'),
             kind = 'quad',
             position = { position[1], position[2] + 1, position[3] },
             size = { 2, 2, 1 },

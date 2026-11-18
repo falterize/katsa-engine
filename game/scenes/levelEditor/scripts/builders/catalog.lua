@@ -16,7 +16,7 @@ local function primitive(label, kind, size)
         group = 'Primitives',
         label = label,
         make = function(content, position)
-            local world = content.scene.world
+            local world = content.world
             local properties = {
                 name = Clone.uniqueName(world, label),
                 position = lifted(position, size[2]),
@@ -40,7 +40,7 @@ local function plain(group, label, class, extra)
         group = group,
         label = label,
         make = function(content, position)
-            local properties = { name = Clone.uniqueName(content.scene.world, label), position = { position[1], position[2] + 2, position[3] } }
+            local properties = { name = Clone.uniqueName(content.world, label), position = { position[1], position[2] + 2, position[3] } }
             for key, value in pairs(extra or {}) do
                 properties[key] = value
             end
@@ -55,7 +55,7 @@ local function volume(label, trigger)
         group = 'Objects',
         label = label,
         make = function(content, position)
-            local ops, undo, world = content.ops, content.undo, content.scene.world
+            local ops, undo, world = content.ops, content.undo, content.world
             local name = Clone.uniqueName(world, label)
             local color = trigger and { 0.2, 0.9, 0.45, 0.25 } or { 0.6, 0.6, 0.65, 0.35 }
             undo:begin('Create ' .. label)
@@ -91,7 +91,7 @@ function Catalog.items()
             label = 'Spawn point',
             make = function(content, position)
                 return content.ops:create('Mesh3D', {
-                    name = Clone.uniqueName(content.scene.world, 'SpawnPoint'),
+                    name = Clone.uniqueName(content.world, 'SpawnPoint'),
                     kind = 'capsule',
                     position = lifted(position, 1.8),
                     size = { 0.6, 1.8, 0.6 },
@@ -106,7 +106,7 @@ function Catalog.items()
             label = 'Billboard',
             make = function(content, position)
                 return content.ops:create('BillboardUI', {
-                    name = Clone.uniqueName(content.scene.world, 'Billboard'),
+                    name = Clone.uniqueName(content.world, 'Billboard'),
                     position = { position[1], position[2] + 2, position[3] },
                 })
             end,

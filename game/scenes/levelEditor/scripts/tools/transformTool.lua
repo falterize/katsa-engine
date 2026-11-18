@@ -22,7 +22,7 @@ end
 
 function Tool.new(content)
     local self = setmetatable({ content = content }, Tool)
-    self.gizmo = Gizmo.new(content.scene.world)
+    self.gizmo = Gizmo.new(content.world)
     self.origin, self.direction = {}, {}
     return self
 end
@@ -77,7 +77,7 @@ end
 
 -- The mouse ray in world space with a unit direction, reusing two tables.
 function Tool:ray(x, y)
-    local origin, direction = self.content.scene.camera:screenRay(x, y, self.origin, self.direction)
+    local origin, direction = self.content.camera:screenRay(x, y, self.origin, self.direction)
     local length = math.sqrt(direction[1] ^ 2 + direction[2] ^ 2 + direction[3] ^ 2)
     direction[1], direction[2], direction[3] = direction[1] / length, direction[2] / length, direction[3] / length
     return { origin, direction }
@@ -99,7 +99,7 @@ function Tool:update()
         self.gizmo:hide()
         return
     end
-    local camera = content.scene.camera
+    local camera = content.camera
     local _, _, depth = camera:project(frame.world)
     if not depth then
         self.gizmo:hide()
@@ -108,14 +108,15 @@ function Tool:update()
     local perUnit = camera:pixelsPerUnitAt(depth)
     self.length, self.tolerance = Gizmo.PIXELS / perUnit, 10 / perUnit
     self.gizmo:place(frame.world, frame.rotation, self.length)
-    local x, y = katsa.mouse.getX(), katsa.mouse.getY()
+    local mouseX, mouseY = katsa.mouse.getX(), katsa.mouse.getY()
+    local x, y = content:viewportPoint(mouseX, mouseY, true)
     if self.drag then
-        if content.fly.map:isDown('editorPick') then
+        if content.fly.map:isDown('editorPick') and x then
             self:move(x, y)
         else
             self:finish()
         end
-    elseif content.fly:isLooking() or content:overUI() then
+    elseif not x or content.fly:isLooking() or content:overUI() or not content:viewportPoint(mouseX, mouseY) then
         self.gizmo:highlight(nil)
     else
         self.gizmo:highlight((GizmoMath.pick(tool, self:ray(x, y), frame.world, frame.axes, self.length, self.tolerance)))

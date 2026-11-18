@@ -30,7 +30,7 @@ function Ops.new(content)
 end
 
 function Ops:world()
-    return self.content.scene.world
+    return self.content.world
 end
 
 function Ops:touch()

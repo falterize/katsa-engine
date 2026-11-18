@@ -30,6 +30,7 @@ function Interface.create(state)
         return Kit.make(ui, 'Frame', { name = name, zIndex = z }, ui.content, ...)
     end
     local frames = {
+        view = state.viewport,
         top = frame('Toolbar', 6, 'bar'),
         left = frame('WorkspacePanel', 5, 'dock'),
         right = frame('PropertiesPanel', 5, 'dock'),

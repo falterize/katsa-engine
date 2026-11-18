@@ -7,7 +7,7 @@ Dock.__index = Dock
 
 Dock.STATUS = 24
 
--- frames: { top, left, right, bottom, status, splitLeft, splitRight, splitBottom }
+-- frames: { view, top, left, right, bottom, status, splitLeft, splitRight, splitBottom }
 function Dock.new(state, ui, frames, sizes)
     local self = setmetatable({ state = state, ui = ui, frames = frames, drag = nil }, Dock)
     self.preferred = { left = sizes.left, right = sizes.right, bottom = sizes.bottom }
@@ -61,6 +61,7 @@ function Dock:apply()
     local rects = Layout.compute(width, height, p, barHeight, Dock.STATUS)
     self.current = rects.sizes
     local frames = self.frames
+    place(frames.view, rects.view)
     place(frames.top, rects.top)
     place(frames.left, rects.left)
     place(frames.right, rects.right)

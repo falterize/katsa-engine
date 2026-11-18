@@ -213,9 +213,9 @@ function Settings:buildCamera()
         state.fly.sensitivity = value
     end, 0.001)
     return self:numberRow(y, 'Field of view (degrees)', function()
-        return state.scene.camera.fov
+        return state.camera.fov
     end, function(value)
-        state.scene.camera.fov = math.max(10, math.min(150, value))
+        state.camera.fov = math.max(10, math.min(150, value))
     end, 10)
 end
 

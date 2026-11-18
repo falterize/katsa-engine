@@ -82,7 +82,7 @@ function LocationIO.export(content)
             return node.children
         end,
     })
-    local camera = content.scene.camera
+    local camera = content.camera
     data.camera = {
         position = { camera.position[1], camera.position[2], camera.position[3] },
         rotation = { camera.rotation[1], camera.rotation[2], camera.rotation[3] },
@@ -173,7 +173,7 @@ function LocationIO.import(content, bytes)
     end
     local nodes = mapPaths(data.nodes, importAssets(archive))
     content:clearLevel()
-    local world = content.scene.world
+    local world = content.world
     local count = 0
     local function walk(entry)
         count = count + 1
@@ -190,8 +190,8 @@ function LocationIO.import(content, bytes)
         content.ops:adopt(node)
     end
     if data.camera then
-        content.scene.camera.position = data.camera.position
-        content.scene.camera.rotation = data.camera.rotation
+        content.camera.position = data.camera.position
+        content.camera.rotation = data.camera.rotation
     end
     return count
 end

@@ -16,11 +16,6 @@ function Input.new(scene, state)
     return self
 end
 
-local function overUI(scene)
-    local ui = scene.root:find('World3D/World2D')
-    return ui and ui:hit(katsa.mouse.getX(), katsa.mouse.getY()) ~= nil
-end
-
 function Input:update(dt)
     local fly = self.state.fly
     local looking = self.lookActive and self.map:isDown('editorLook') and fly ~= nil
@@ -34,8 +29,8 @@ function Input:mapMouseButton(button, down)
     Base.mapMouseButton(self, button, down)
     if button == 2 then
         -- Looking starts only from a press in the viewport, never on a panel.
-        self.lookActive = down and not overUI(self.scene) or false
-    elseif button == 1 and down and not overUI(self.scene) then
+        self.lookActive = down and not self.state:overUI() or false
+    elseif button == 1 and down and not self.state:overUI() then
         self.state.viewportPressed = true
     end
 end

@@ -23,7 +23,17 @@ local TOOLS = { 'Select', 'Move', 'Rotate', 'Scale' }
 function Content.new(scene)
     local settings = scene.settings.editor
     local prefs = EditorSettings.parse(katsa.filesystem.read(EditorSettings.FILE))
-    local world = scene.world
+    -- The 3D view is a ViewportFrame with its own World3D and camera, so it can be sized and
+    -- placed between the docks. The scene's main World3D stays empty and only carries the UI.
+    local ui = scene.root:find('World3D/World2D')
+    local viewport = ui:create('ViewportFrame', {
+        name = 'Viewport',
+        position = { 0, 0, 0, 0 },
+        size = { 1, 0, 1, 0 },
+        zIndex = 1,
+    }, ui.content)
+    local root3D = ui:create('World3D', { name = 'EditorWorld' }, viewport)
+    local world = root3D._world
     local environment = world.environment
     environment.debug.gizmos.enabled = true -- lights and cameras show their engine gizmos
     environment.shadows.enabled = false
@@ -36,7 +46,14 @@ function Content.new(scene)
         brightness = 1.1,
     })
 
-    local self = setmetatable({ scene = scene, settings = settings, prefs = prefs }, Content)
+    local self = setmetatable({
+        scene = scene,
+        settings = settings,
+        prefs = prefs,
+        ui = ui,
+        viewport = viewport,
+        world = world,
+    }, Content)
     self.level = world:create('Node3D', { name = 'Level' })
     self.selection = Selection.new()
     self.undo = Undo.new()
@@ -61,7 +78,9 @@ function Content.new(scene)
     self.recent = LocationIO.readRecent()
     self.savedVersion = 0
 
-    local camera = scene.camera
+    local camera = root3D:create('Camera3D', { name = 'EditorCamera' })
+    root3D.currentCamera = camera
+    self.camera = camera
     camera.near, camera.far, camera.fov = 0.05, 2000, prefs.camera.fov
     camera.drawDistance = 2000
     camera.position = { 9, 7, 9 }
@@ -82,7 +101,7 @@ end
 
 -- A few starter objects so a fresh editor is not an empty void.
 function Content:seed()
-    local world = self.scene.world
+    local world = self.world
     local function mesh(name, kind, position, size, color)
         return world:create('Mesh3D', {
             name = name,
@@ -101,8 +120,8 @@ end
 -- A point in front of the camera for new objects: where the view centre meets the ground, or
 -- eight units ahead; snapped to the move step when snapping is on.
 function Content:placement()
-    local camera = self.scene.camera
-    local ray = self.transform:ray((camera.width or 1280) / 2, (camera.height or 720) / 2)
+    local camera = self.camera
+    local ray = self.transform:ray((self.viewport._canvasWidth or 1280) / 2, (self.viewport._canvasHeight or 720) / 2)
     local point = Snap.planePoint(ray[1], ray[2], { 0, 0, 0 }, { 0, 1, 0 })
     if not point or (point[1] - ray[1][1]) ^ 2 + (point[3] - ray[1][3]) ^ 2 > 60 ^ 2 then
         point = {
@@ -125,7 +144,7 @@ function Content:savePrefs()
     prefs.grid.cell, prefs.grid.visible = self.grid.cell, self.grid.visible
     prefs.camera.flySpeed = self.fly.speed
     prefs.camera.sensitivity = self.fly.sensitivity
-    prefs.camera.fov = self.scene.camera.fov
+    prefs.camera.fov = self.camera.fov
     if self.dock then
         prefs.layout = self.dock:sizes()
     end
@@ -212,9 +231,35 @@ function Content:isDirty()
     return self.undo.version ~= (self.savedVersion or 0)
 end
 
+-- True when the pointer is over a panel; the viewport itself does not count as UI.
 function Content:overUI()
-    local ui = self.scene.root:find('World3D/World2D')
-    return ui ~= nil and ui:hit(katsa.mouse.getX(), katsa.mouse.getY()) ~= nil
+    local node = self.ui:hit(katsa.mouse.getX(), katsa.mouse.getY())
+    if not node then
+        return false
+    end
+    while node do
+        if node == self.viewport then
+            return false
+        end
+        node = node.parent
+    end
+    return true
+end
+
+-- Window pixels to the viewport's own pixels (what the camera and Picking use); nil when the
+-- pointer is outside the viewport (unless `free`, used while dragging) or it has not been drawn yet.
+function Content:viewportPoint(x, y, free)
+    local viewport, ui = self.viewport, self.ui
+    local canvasWidth, canvasHeight = viewport._canvasWidth, viewport._canvasHeight
+    if not canvasWidth then
+        return nil
+    end
+    local lx = ((x - ui.offsetX) / ui.scale - viewport._x) * canvasWidth / math.max(1, viewport._width)
+    local ly = ((y - ui.offsetY) / ui.scale - viewport._y) * canvasHeight / math.max(1, viewport._height)
+    if not free and (lx < 0 or ly < 0 or lx > canvasWidth or ly > canvasHeight) then
+        return nil
+    end
+    return lx, ly
 end
 
 function Content:levelChild(object)
@@ -226,8 +271,8 @@ function Content:levelChild(object)
 end
 
 function Content:pick(x, y)
-    local scene, map = self.scene, self.fly.map
-    local hit = Picking.raycast(scene.world, scene.camera, x, y)
+    local map = self.fly.map
+    local hit = Picking.raycast(self.world, self.camera, x, y)
     local node = hit and self:levelChild(hit)
     if node and self.ops:isLocked(node) then
         node = nil
@@ -332,15 +377,13 @@ function Content:notify(text)
 end
 
 function Content:update(dt)
-    local scene = self.scene
-    scene.world:updateNodes(dt)
     self.fly:update(dt)
-    local position = scene.camera.position
+    local position = self.camera.position
     self.grid:follow(position[1], position[3])
     if self.viewportPressed then
         self.viewportPressed = false
-        local x, y = katsa.mouse.getX(), katsa.mouse.getY()
-        if not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
+        local x, y = self:viewportPoint(katsa.mouse.getX(), katsa.mouse.getY())
+        if x and not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
             self:pick(x, y)
         end
     end

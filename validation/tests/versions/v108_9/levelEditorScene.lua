@@ -36,7 +36,11 @@ function Module.run(self)
     self:check(missing == nil, 'Every editor control is an InputMap action ' .. tostring(missing or ''))
     self:check(#state.level.children == 3 and state.grid.nodes.minor ~= nil, 'The level and the grid are created')
 
-    local camera = state.scene.camera
+    local camera = state.camera
+    self:check(state.viewport:getWorld() == state.world and state.viewport._canvasWidth ~= nil, 'The editor world lives in the Viewport frame and has rendered')
+    local vx, vy = state.viewport._x + 4, state.viewport._y + 4
+    local lx, ly = state:viewportPoint(vx * state.ui.scale + state.ui.offsetX, vy * state.ui.scale + state.ui.offsetY)
+    self:check(lx ~= nil and lx >= 0 and lx < 20 and ly >= 0 and ly < 20, 'Window pixels convert to viewport pixels')
     local before = camera.position[1] * 1000 + camera.position[2] * 100 + camera.position[3]
     map:pressAction('editorLook')
     map:pressAction('editorForward')
