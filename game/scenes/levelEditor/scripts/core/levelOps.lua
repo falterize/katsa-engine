@@ -288,16 +288,21 @@ function Ops:reparent(nodes, newParent, before)
         node:setParent(parent)
         local siblings = parent.children
         if anchor and not anchor.destroyed and anchor ~= node then
-            local at
+            -- setParent to the same parent leaves the node where it was, so take it out by
+            -- identity (it is not necessarily last) and insert it in front of the anchor.
             for position, child in ipairs(siblings) do
-                if child == anchor then
-                    at = position
+                if child == node then
+                    table.remove(siblings, position)
+                    break
                 end
             end
-            if at then
-                table.remove(siblings, #siblings)
-                table.insert(siblings, at, node)
+            for position, child in ipairs(siblings) do
+                if child == anchor then
+                    table.insert(siblings, position, node)
+                    return
+                end
             end
+            siblings[#siblings + 1] = node
         end
     end
     local function apply(forward)

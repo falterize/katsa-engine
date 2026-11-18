@@ -178,7 +178,11 @@ function LightViz:update(selection, show)
             entry = self:create(light)
             self.entries[light] = entry
         end
-        local p = light.worldPosition or light.position
+        -- worldPosition is an empty cache until the renderer has seen the light.
+        local p = light.worldPosition
+        if not (p and p[3]) then
+            p = light.position
+        end
         entry.root.position = { p[1], p[2], p[3] }
         local color = tint(light)
         local rotation = light.rotation or { 0, 0, 0 }
