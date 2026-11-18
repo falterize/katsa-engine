@@ -298,13 +298,15 @@ function Module.run(self)
     state.panels.toolbar.tab = 'home'
     state.panels.toolbar:relayout(1280)
     self:check(#tabs == 4, 'Every ribbon tab lays out')
-    state.importTarget = 'shared'
-    self:check(state.importTarget == 'shared', 'Imports can target shared://')
-    state.importTarget = 'scene'
     local Importer = require('game.scenes.levelEditor.scripts.core.importer')
     local before = #state.level.children
     local imported = Importer.many(state, { 'assets/models/characters/player.glb', 'README.md' })
-    self:check(imported == 2 and #state.level.children == before + 1, 'Any file imports: a model is placed, other files are copied')
+    local browser = state.panels.browser
+    self:check(imported == 2 and #state.level.children == before, 'Import copies files into the level files and places nothing')
+    self:check(browser.view == 'level' and browser.levelSelected ~= nil, 'The Assets tab shows where the import went')
+    local LevelFiles = require('game.scenes.levelEditor.scripts.io.levelFiles')
+    local listed = LevelFiles.list(browser.levelPath)
+    self:check(#listed.files >= 1, 'The imported file is listed in its level folder')
     self:check(katsa.dropHandler ~= nil and katsa.dropHandler('README.md') == true, 'Files dropped on the window are imported')
     local Catalog = require('game.scenes.levelEditor.scripts.builders.catalog')
     local made = 0

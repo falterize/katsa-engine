@@ -42,6 +42,13 @@ function LevelFiles.parent(path)
     return path:match('^(.*)/[^/]+$') or ''
 end
 
+-- Folder an import lands in when the author is not looking at a level folder.
+local FOLDERS = { model = 'models', image = 'textures', audio = 'audio', font = 'fonts', file = 'files' }
+
+function LevelFiles.folderFor(kind)
+    return FOLDERS[kind] or 'files'
+end
+
 local function ensure(fs, path)
     local folder = ''
     for part in path:gmatch('[^/]+') do
@@ -135,6 +142,40 @@ local function removeAll(fs, store)
         end
     end
     return fs.remove(store) and true or false
+end
+
+-- Copies the bytes of `source` (any readable path) into level folder `folder` under a clean,
+-- unused name (a.png, a_2.png, ...). Returns the new relative path or nil, message.
+function LevelFiles.importFile(source, folder, fs)
+    fs = fs or katsa.filesystem
+    folder = LevelFiles.clean(folder)
+    if not folder then
+        return nil, 'Invalid folder'
+    end
+    local bytes, message = fs.read(source)
+    if not bytes then
+        return nil, tostring(message or ('Cannot read ' .. tostring(source)))
+    end
+    local name = (source:match('([^/\\]+)$') or 'file'):gsub('[^%w%._%-]', '_')
+    if name:sub(1, 1) == '.' then
+        name = '_' .. name
+    end
+    local stem, ext = name:match('^(.*)(%.[^%.]+)$')
+    stem, ext = stem or name, ext or ''
+    local relative, index = LevelFiles.join(folder, name), 1
+    while fs.getInfo(LevelFiles.full(relative)) do
+        if fs.read(LevelFiles.full(relative)) == bytes then
+            return relative -- the same file is already there
+        end
+        index = index + 1
+        relative = LevelFiles.join(folder, ('%s_%d%s'):format(stem, index, ext))
+    end
+    ensure(fs, LevelFiles.full(folder))
+    local ok, writeMessage = fs.write(LevelFiles.full(relative), bytes)
+    if not ok then
+        return nil, tostring(writeMessage)
+    end
+    return relative
 end
 
 -- Deletes a file, or a folder with everything in it. Never the root itself.

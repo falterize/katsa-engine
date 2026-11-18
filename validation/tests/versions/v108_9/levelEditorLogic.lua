@@ -337,6 +337,9 @@ local function fakeFs()
             return { type = 'file' }
         end
     end
+    function fs.read(path)
+        return files[path]
+    end
     function fs.write(path, data)
         files[path] = data
         return true
@@ -379,6 +382,14 @@ function Module.levelFiles(self)
     LevelFiles.createFile('models', 'c.txt', fs)
     self:check(LevelFiles.rename('models/c.txt', 'b.txt', fs) == nil, 'Renaming onto an existing file is refused')
     self:check(LevelFiles.delete('models', fs) and #LevelFiles.list('', fs).dirs == 0 and not LevelFiles.delete('', fs), 'A folder is deleted with its files, the root never')
+    local sourceFs = fakeFs()
+    sourceFs.write('level/a.png', 'one')
+    local first = LevelFiles.importFile('level/a.png', 'textures', sourceFs)
+    sourceFs.write(LevelFiles.full('textures/a.png'), 'other')
+    local second = LevelFiles.importFile('level/a.png', 'textures', sourceFs)
+    local third = LevelFiles.importFile('level/a.png', 'textures', sourceFs)
+    self:check(first == 'textures/a.png' and second == 'textures/a_2.png' and third == second, 'An import gets a free name, and the same file is not copied twice')
+    self:check(LevelFiles.importFile('level/a.png', '../x', sourceFs) == nil and LevelFiles.folderFor('model') == 'models' and LevelFiles.folderFor('xyz') == 'files', 'Imports stay inside the assets folder and default to a folder by type')
     local node = { position = { 1, 2, 3 } }
     self:check(not Assign.vec(node, 'position', 1, 2, 3) and Assign.vec(node, 'position', 1, 2, 4) and node.position[3] == 4, 'Per-frame writes only happen when a value changed')
 end

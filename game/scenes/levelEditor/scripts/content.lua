@@ -63,7 +63,6 @@ function Content.new(scene)
     self.undo = Undo.new()
     self.treeVersion = 0
     self.tool, self.space, self.pivotMode = 'Select', 'World', 'Center'
-    self.importTarget = 'scene' -- 'scene' copies imports into the level's assets, 'shared' references shared://
     self.snap = {
         enabled = prefs.snap.enabled,
         move = prefs.snap.move,

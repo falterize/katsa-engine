@@ -259,6 +259,78 @@ function Toolbar.create(state, ui, parent)
 
     ---------------------------------------------------------------- Assets
     group = 'assets'
+    big('Import', 'import', function()
+        Importer.dialog(state)
+    end, 'Choose files on your computer to import: models, images, audio, fonts, anything (you can also drop files on the window)')
+
+    ---------------------------------------------------------------- View
+    group = 'view'
+    toggle('Grid', 'grid', function()
+        state.grid:setVisible(not state.grid.visible)
+        state:savePrefs()
+    end, function()
+        return state.grid.visible
+    end, 'Show or hide the ground grid (G)')
+    stack({
+        {
+            label = 'Cell',
+            hint = 'Grid cell size in units',
+            get = function()
+                return state.grid.cell
+            end,
+            set = function(value)
+                state.grid:setCell(value)
+            end,
+        },
+        {
+            label = 'Major',
+            hint = 'A bright line every N cells',
+            get = function()
+                return state.grid.settings.major
+            end,
+            set = function(value)
+                state.grid:setMajor(value)
+            end,
+        },
+        {
+            label = 'Extent',
+            hint = 'How many cells the grid covers in each direction',
+            get = function()
+                return state.grid.settings.count
+            end,
+            set = function(value)
+                state.grid:setCount(value)
+            end,
+        },
+    }, 44, 52)
+    divider()
+    local environment = state.world.environment
+    toggle('Lights', 'light', function()
+        state.lightViz.enabled = not state.lightViz.enabled
+    end, function()
+        return state.lightViz.enabled
+    end, 'Show the light markers: icon, radius and range', nil, 6)
+    toggle('Shadows', 'shadow', function()
+        environment.shadows.enabled = not environment.shadows.enabled
+    end, function()
+        return environment.shadows.enabled
+    end, 'Turn shadows on or off in the viewport')
+    toggle('Wireframe', 'wire', function()
+        environment.debug.wireframe = not environment.debug.wireframe
+    end, function()
+        return environment.debug.wireframe
+    end, 'Draw every mesh as lines')
+    divider()
+    big('Frame', 'frame', function()
+        local nodes = state.selection:items()
+        state:frame(#nodes > 0 and nodes or state.level.children)
+    end, 'Move the camera to see the selection, or everything (F)', nil, 6)
+    big('All', 'cube', function()
+        state:frame(state.level.children)
+    end, 'Move the camera to see the whole level (Home)')
+
+    ---------------------------------------------------------------- Assets
+    group = 'assets'
     local _, targetCaption = toggle('Scene', 'folder', function()
         state.importTarget = state.importTarget == 'shared' and 'scene' or 'shared'
     end, function()
@@ -270,10 +342,10 @@ function Toolbar.create(state, ui, parent)
     end, 'Show the level\'s own assets folder in the file browser; drop models and images there', 72, 6)
     big('Import', 'import', function()
         Importer.dialog(state)
-    end, 'Choose files on your computer to import (or drop them on the window)', nil, 6)
-    big('Files', 'folder', function()
-        state.panels.browser:show('Files')
-    end, 'Open the file browser')
+    end, 'Copy files from your computer into the level files (you can also drop files on the window)', nil, 6)
+    big('Assets', 'folder', function()
+        state.panels.browser:openAssets()
+    end, 'Browse the level files and the project assets')
     return self
 end
 
@@ -333,10 +405,6 @@ function Toolbar:update()
     end
     if self.pivotCaption.text ~= state.pivotMode then
         self.pivotCaption.text = state.pivotMode
-    end
-    local target = state.importTarget == 'shared' and 'Shared' or 'Scene'
-    if self.targetCaption.text ~= target then
-        self.targetCaption.text = target
     end
     for _, refresh in ipairs(self.refreshers) do
         refresh()

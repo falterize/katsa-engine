@@ -249,6 +249,28 @@ function Menus.levelEntry(state, browser, entry)
     return items
 end
 
+-- Right-click menu of a row of the Project assets view.
+function Menus.projectEntry(state, browser, file, kind)
+    local url = browser.sharedUrl(file)
+    local items = {}
+    if kind == 'model' then
+        items[#items + 1] = item('Add to level (use in place)', function()
+            browser:use('add', url, kind)
+        end)
+    elseif kind == 'image' then
+        items[#items + 1] = item('Add as sprite quad (use in place)', function()
+            browser:use('sprite', url, kind)
+        end)
+        items[#items + 1] = item('Use as texture of the selection', function()
+            browser:use('texture', url, kind)
+        end, { enabled = state.selection:primary() ~= nil })
+    end
+    items[#items + 1] = item('Copy into level files', function()
+        browser:copyToLevel(file)
+    end)
+    return items
+end
+
 -- Right-click menu of a row of the Location tab.
 function Menus.location(state, browser, path)
     return {

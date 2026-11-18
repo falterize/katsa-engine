@@ -1,38 +1,28 @@
--- Brings an outside file into the level. The file is copied into the level's assets (scene) or,
--- for a project file under assets/, referenced as shared://. A model is placed, an image becomes
--- a sprite quad or the colour map of the selected mesh, anything else (audio, fonts, data) is
--- copied and reported so it can be used from scripts.
+-- Brings outside files into the level. An import only COPIES the file into the level's own files
+-- (the folder the Assets tab is showing, else a folder by file type) and shows where it went;
+-- placing it in the scene is a separate step (Add to level, Use as texture), so nothing appears
+-- in the level that the author did not ask for. Project files can also be used in place
+-- (shared://) without a copy.
 local AssetStore = require('../io.assetStore')
 local Clone = require('source.engine.nodes.core.clone')
+local LevelFiles = require('../io.levelFiles')
 local Models = require('source.engine.import.models')
 
 local Importer = {}
 
--- Where `path` ends up and what it is: the store path (or shared:// URL) and the file kind.
-function Importer.store(state, path)
+-- Copies `path` into the level files. `folder` is relative to the assets root; nil picks a folder
+-- by file type. Returns the store path and the file kind, or nil plus a message.
+function Importer.copy(path, folder)
     local kind = AssetStore.kind(path, Models.supports)
-    local relative = path:match('^assets/(.+)$')
-    if state.importTarget == 'shared' and relative then
-        return 'shared://' .. relative, kind
+    local relative, message = LevelFiles.importFile(path, folder or LevelFiles.folderFor(kind))
+    if not relative then
+        return nil, message
     end
-    if state.importTarget == 'shared' then
-        state:notify('Shared needs a file under assets/; it was copied into the scene folder instead')
-    end
-    return AssetStore.import(path, Models.supports)
+    return LevelFiles.full(relative), kind
 end
 
--- action: 'add' (model), 'sprite' (image as a quad), 'texture' (image on the selected mesh) or
--- nil to pick by file type. `slot` spreads several files side by side. Returns true on success.
-function Importer.import(state, path, action, slot)
-    local stored, kind = Importer.store(state, path)
-    if not stored then
-        state:notify(tostring(kind))
-        return false
-    end
-    return Importer.place(state, stored, kind, action, slot), stored
-end
-
--- Uses an asset that is already stored (a store path or a shared:// URL) of the given kind.
+-- A stored asset (store path or shared:// URL) placed in the level. action: 'add' (model),
+-- 'sprite' (image as a quad), 'texture' (image on the selected mesh) or nil to pick by type.
 function Importer.place(state, stored, kind, action, slot)
     local position = state:placement()
     local x = position[1] + (slot or 0) * 3
@@ -59,32 +49,35 @@ function Importer.place(state, stored, kind, action, slot)
         end
         state:notify('Select a mesh to texture')
         return false
-    elseif action == nil or action == 'file' then
-        state:notify(('Imported %s: %s'):format(kind, stored))
-        return true
     end
-    state:notify('That action does not fit this file type')
+    state:notify('A ' .. tostring(kind) .. ' cannot be placed in the scene; use it from scripts')
     return false
 end
 
--- Several files at once (the native dialog, drag and drop).
+-- Several files at once (the file dialog, drag and drop): copied into the folder the Assets tab
+-- shows, then revealed there. Returns how many were copied.
 function Importer.many(state, paths)
-    local done = 0
-    for index, path in ipairs(paths) do
-        if Importer.import(state, path, nil, index - 1) then
-            done = done + 1
+    local browser = state.panels.browser
+    local folder = browser and browser:importFolder()
+    local done, last = 0, nil
+    for _, path in ipairs(paths) do
+        local stored, result = Importer.copy(path, folder)
+        if stored then
+            done, last = done + 1, stored
+        else
+            state:notify(tostring(result))
         end
     end
-    if #paths > 1 then
-        state:notify(('Imported %d of %d files'):format(done, #paths))
+    if last and browser then
+        browser:reveal(last, done)
     end
     return done
 end
 
--- Opens the system file dialog; falls back to the in-app browser when there is none.
+-- Opens the system file dialog; falls back to the Assets tab when there is none.
 function Importer.dialog(state)
     local paths, reason = katsa.system.openFileDialog({
-        title = 'Import assets',
+        title = 'Import assets into the level files',
         multiple = true,
         filters = {
             { 'All files', '*' },
@@ -94,8 +87,8 @@ function Importer.dialog(state)
         },
     })
     if not paths then
-        state:notify(tostring(reason or 'No file dialog here') .. ' - use the file browser')
-        state.panels.browser:show('Files')
+        state:notify(tostring(reason or 'No file dialog here') .. ' - copy files into the level folder shown in Assets, or drop them on the window')
+        state.panels.browser:openAssets()
         return
     end
     Importer.many(state, paths)
