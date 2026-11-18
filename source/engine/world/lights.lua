@@ -87,6 +87,9 @@ end
 
 function Lights:update(world, camera, visible, time, dependencies)
     self.poseUpdates = 0
+    -- Selection cadence, hold timers and upload rates are wall-clock concerns: the world clock
+    -- stands still while a world is paused (timeScale 0), and lights must still be reselected.
+    time = katsa.timer.getTime()
     for _, light in ipairs(world.lights) do
         local snapshot = dependencies and dependencies.meshSnapshots and dependencies.nodes[light]
         if
@@ -106,7 +109,12 @@ function Lights:update(world, camera, visible, time, dependencies)
     end
     local settings = world.lighting.lightSettings
     local limit = math.max(0, math.min(32, math.floor(settings.maxActiveLights)))
-    if time >= self.nextSelection or self.limit ~= limit then
+    -- `time` is the world clock and stands still while the world is paused (timeScale 0), so a
+    -- light added or removed meanwhile must force a new selection or it would never be lit.
+    local count = #world.lights
+    local membershipChanged = self.lightCount ~= count
+    self.lightCount = count
+    if time >= self.nextSelection or self.limit ~= limit or membershipChanged then
         self.selectionRevision = (self.selectionRevision or 0) + 1
         self.holdingUntil = nil
         self.nextSelection = time + 1 / math.max(0.01, settings.selectionHz)

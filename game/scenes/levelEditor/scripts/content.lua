@@ -39,7 +39,7 @@ function Content.new(scene)
     local world = root3D._world
     local environment = world.environment
     environment.debug.gizmos.enabled = false -- the editor draws its own light visualisation (view/lightViz)
-    environment.shadows.enabled = false
+    environment.shadows.enabled = true
     environment.ambient = { 130, 136, 150 }
     environment.sky.enabled = true
     world:create('DirectionalLight3D', {
@@ -121,6 +121,21 @@ function Content:seed()
     mesh('Floor', 'cube', { 0, -0.25, 0 }, { 20, 0.5, 20 }, { 0.55, 0.58, 0.62, 1 })
     mesh('Box', 'cube', { -3, 1, 2 }, { 2, 2, 2 }, { 0.85, 0.35, 0.3, 1 })
     mesh('Ball', 'sphere', { 2.5, 1, -1 }, { 2, 2, 2 }, { 0.3, 0.6, 0.9, 1 })
+    -- Coloured point lights so lighting and shadows are visible from the first frame.
+    for _, light in ipairs({
+        { 'Red Light', { -6, 3, -3 }, { 255, 70, 60 } },
+        { 'Green Light', { 1, 3.5, -5 }, { 70, 255, 110 } },
+        { 'Blue Light', { 6, 3, 3 }, { 70, 130, 255 } },
+    }) do
+        world:create('PointLight3D', {
+            name = light[1],
+            position = light[2],
+            color = light[3],
+            brightness = 2,
+            range = 14,
+            radius = 1.2,
+        }, self.level)
+    end
 end
 
 -- The direct child of Level that contains a picked mesh (a group when it is inside one).

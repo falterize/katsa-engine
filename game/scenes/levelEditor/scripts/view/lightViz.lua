@@ -220,8 +220,9 @@ function LightViz:update(selection, show, camera)
         -- Keep the icon a constant size on screen, however far the light is.
         local unit = 1
         if camera then
-            local _, _, depth = camera:project({ p[1], p[2], p[3] })
-            local perUnit = depth and camera:pixelsPerUnitAt(depth)
+            -- Not ready before the camera has a view size (first frames, tests): keep the last size.
+            local ok, _, _, depth = pcall(camera.project, camera, { p[1], p[2], p[3] })
+            local perUnit = ok and depth and camera:pixelsPerUnitAt(depth)
             if perUnit and perUnit > 0 then
                 unit = math.max(ICON_PIXELS / perUnit, 0.05)
             end

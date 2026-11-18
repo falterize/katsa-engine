@@ -34,7 +34,7 @@ function Module.run(self)
         end
     end
     self:check(missing == nil, 'Every editor control is an InputMap action ' .. tostring(missing or ''))
-    self:check(#state.level.children == 3 and state.grid.nodes.minor ~= nil, 'The level and the grid are created')
+    self:check(#state.level.children == 6 and state.grid.nodes.minor ~= nil, 'The level and the grid are created')
 
     local camera = state.camera
     self:check(state.viewport:getWorld() == state.world and state.viewport._canvasWidth ~= nil, 'The editor world lives in the Viewport frame and has rendered')
@@ -100,17 +100,18 @@ function Module.run(self)
 
     local ops, undo = state.ops, state.undo
     state.selection:set({ box })
+    local base = #state.level.children
     ops:duplicate({ box })
-    self:check(#state.level.children == 4, 'Duplicate adds a copy of the selected object')
+    self:check(#state.level.children == base + 1, 'Duplicate adds a copy of the selected object')
     undo:undo()
-    self:check(#state.level.children == 3, 'Undo removes the duplicate')
+    self:check(#state.level.children == base, 'Undo removes the duplicate')
     undo:redo()
-    self:check(#state.level.children == 4, 'Redo brings the duplicate back')
+    self:check(#state.level.children == base + 1, 'Redo brings the duplicate back')
     local copy = state.selection:primary()
     ops:delete({ copy })
-    self:check(#state.level.children == 3, 'Delete removes the selected object')
+    self:check(#state.level.children == base, 'Delete removes the selected object')
     undo:undo()
-    self:check(#state.level.children == 4, 'Undo of a delete rebuilds the object')
+    self:check(#state.level.children == base + 1, 'Undo of a delete rebuilds the object')
     ops:group({ box })
     local group = state.selection:primary()
     self:check(group.className == 'Node3D' and box.parent == group, 'Group moves the selection under a new Node3D')
@@ -123,7 +124,7 @@ function Module.run(self)
     for _ = 1, 2 do
         frame(scene)
     end
-    self:check(#state.panels.tree.rows == 5 and state.panels.properties.name.visible ~= nil, 'The Workspace tree lists the level and its objects')
+    self:check(#state.panels.tree.rows == base + 2 and state.panels.properties.name.visible ~= nil, 'The Workspace tree lists the level and its objects')
 
     -- Move tool: grab the X arrow and drag it along the screen.
     state:setTool('Move')
@@ -220,6 +221,26 @@ function Module.run(self)
     state.undo:undo()
     state:refresh()
     self:check(#state.level.children == before, 'Undo removes an import in one step')
+
+    local lights = 0
+    for _, node in ipairs(state.level.children) do
+        lights = lights + (node.className == 'PointLight3D' and 1 or 0)
+    end
+    self:check(lights >= 3 and state.world.environment.shadows.enabled, 'The default level has coloured lights and shadows on')
+    local light = state.ops:create('PointLight3D', { name = 'Probe' }, state.level)
+    for _ = 1, 3 do
+        frame(scene)
+    end
+    local lit = false
+    for _, selected in ipairs(state.world.renderer.lights.selected or {}) do
+        lit = lit or selected == light
+    end
+    self:check(lit, 'A light added to the paused editor world is selected for rendering')
+    local picker = state.panels.colorPicker
+    picker:show({ key = 'color', value = { 255, 70, 60 } }, 100, 100)
+    self:check(picker:isOpen() and picker.scale == 255, 'The colour picker opens on a colour property')
+    picker:close()
+    self:check(not picker:isOpen(), 'The colour picker closes')
 
     local visible = state.grid.visible
     state.grid:setVisible(not visible)

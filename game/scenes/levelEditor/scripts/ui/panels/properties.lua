@@ -147,20 +147,46 @@ function Panel:rebuild()
                     fontSize = 13,
                 }, self.scroll, 'tool'))
                 button:connect('press', function()
-                    local list, index = row.options, 1
-                    for position, option in ipairs(list) do
-                        if option == row.value then
-                            index = position
-                        end
+                    -- A scrolling list (searchable when long) instead of cycling by clicks.
+                    local items = {}
+                    for _, option in ipairs(row.options) do
+                        items[#items + 1] = {
+                            label = tostring(option),
+                            checked = option == row.value,
+                            run = function()
+                                self:commit(key, nil, option)
+                            end,
+                        }
                     end
-                    self:commit(key, nil, list[index % #list + 1])
+                    local x, y = button:getAbsolutePosition()
+                    local _, h = button:getAbsoluteSize()
+                    state.panels.popup:show(items, x, y + h + 1, {
+                        width = button:getAbsoluteSize(),
+                        search = #items > 10,
+                    })
                 end)
             elseif kind == 'vector' and editable then
                 local count = #row.value
+                local isColor = key:lower():find('color', 1, true) and (count == 3 or count == 4)
+                local swatch = isColor and 24 or 0
+                if isColor then
+                    local c = row.value
+                    local scale = (c[1] > 1 or c[2] > 1 or c[3] > 1) and 255 or 1
+                    local button = add(Kit.make(ui, 'Button', {
+                        position = { 0.4, 0, 0, y },
+                        size = { 0, 22, 0, ROW - 2 },
+                        text = '',
+                        backgroundColor = { c[1] / scale, c[2] / scale, c[3] / scale, 1 },
+                    }, self.scroll, 'swatch'))
+                    button:connect('press', function()
+                        local x, py = button:getAbsolutePosition()
+                        state.panels.colorPicker:show(row, math.max(2, x - 190), py)
+                    end)
+                end
                 for index = 1, count do
                     local box = add(Kit.make(ui, 'TextBox', {
-                        position = { 0.4 + 0.6 * (index - 1) / count, 0, 0, y },
-                        size = { 0.6 / count, -4, 0, ROW - 2 },
+                        position = { 0.4 + 0.6 * (index - 1) / count, swatch * (1 - (index - 1) / count), 0, y },
+                        size = { 0.6 / count, -4 - swatch / count, 0, ROW - 2 },
                         fontSize = 12,
                         text = format(row.value[index]),
                     }, self.scroll, 'field'))
