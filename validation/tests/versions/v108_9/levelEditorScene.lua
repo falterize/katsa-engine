@@ -54,6 +54,19 @@ function Module.run(self)
     local after = camera.position[1] * 1000 + camera.position[2] * 100 + camera.position[3]
     self:check(math.abs(after - before) > 0.01, 'The fly camera moves from InputMap actions')
 
+    local lightNode = state.ops:create('PointLight3D', { name = 'VizLight', position = { 0, 3, 0 } })
+    state.selection:set({ lightNode })
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    local lightEntry = state.lightViz.entries[lightNode]
+    self:check(lightEntry ~= nil and lightEntry.reach ~= nil and state.lightViz:ownerOf(lightEntry.pick) == lightNode, 'A selected light shows its marker, its reach and can be picked by the marker')
+    state.selection:clear()
+    state.ops:delete({ lightNode })
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    self:check(state.lightViz.entries[lightNode] == nil, 'The visualisation of a deleted light goes away')
     self:check(#state.boxes >= 0 and state.panels.popup ~= nil, 'The shared pop-up panel exists')
     for _ = 1, 2 do
         frame(scene)

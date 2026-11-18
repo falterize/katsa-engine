@@ -60,7 +60,8 @@ function Tool:targets()
     for _, node in ipairs(TreeModel.topLevel(content.selection:items(), function(n)
         return n.parent
     end)) do
-        if not content.ops:isLocked(node) then
+        -- Nodes without a position (a few non-spatial ones) cannot be transformed.
+        if node.position and not content.ops:isLocked(node) then
             result[#result + 1] = node
         end
     end
@@ -168,7 +169,7 @@ function Tool:begin(x, y)
             node = node,
             id = content.ops:idOf(node),
             position = copy(node.position),
-            rotation = copy(node.rotation),
+            rotation = copy(node.rotation or ZERO),
             size = copy(node[key] or ONE),
         }
     end
@@ -204,10 +205,11 @@ local function write(entry, position, rotation, size, key)
     if position then
         node.position = copy(position)
     end
-    if rotation then
+    -- Lights and similar nodes have no rotation or size of their own: skip what they lack.
+    if rotation and node.rotation then
         node.rotation = copy(rotation)
     end
-    if size then
+    if size and node[key] ~= nil then
         node[key] = copy(size)
     end
 end
@@ -340,7 +342,7 @@ function Tool:finish()
         if not node.destroyed then
             local after = {
                 position = copy(node.position),
-                rotation = copy(node.rotation),
+                rotation = copy(node.rotation or ZERO),
                 size = copy(node[drag.key] or ONE),
             }
             for _, name in ipairs({ 'position', 'rotation', 'size' }) do

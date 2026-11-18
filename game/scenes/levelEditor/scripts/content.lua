@@ -13,6 +13,7 @@ local Picking = require('source.engine.world.picking')
 local Selection = require('./core.selection')
 local Snap = require('./core.snap')
 local Menus = require('./ui.menus')
+local LightViz = require('./view.lightViz')
 local SelectionBox = require('./view.selectionBox')
 local TransformTool = require('./tools.transformTool')
 local Undo = require('./core.undo')
@@ -37,7 +38,7 @@ function Content.new(scene)
     local root3D = ui:create('World3D', { name = 'EditorWorld', timeScale = 0 }, viewport)
     local world = root3D._world
     local environment = world.environment
-    environment.debug.gizmos.enabled = true -- lights and cameras show their engine gizmos
+    environment.debug.gizmos.enabled = false -- the editor draws its own light visualisation (view/lightViz)
     environment.shadows.enabled = false
     environment.ambient = { 130, 136, 150 }
     environment.sky.enabled = true
@@ -75,6 +76,7 @@ function Content.new(scene)
         major = settings.grid.major,
         count = settings.grid.count,
     })
+    self.lightViz = LightViz.new(world, self.level)
     self.boxes = {} -- outline pool: [1] is the primary selection, the rest are the others
     self.ops = Ops.new(self)
     self:seed()
@@ -431,7 +433,7 @@ end
 function Content:pick(x, y)
     local map = self.fly.map
     local hit = Picking.raycast(self.world, self.camera, x, y)
-    local node = hit and self:levelChild(hit)
+    local node = self.lightViz:ownerOf(hit) or (hit and self:levelChild(hit))
     if node and self.ops:isLocked(node) then
         node = nil
     end
@@ -471,7 +473,7 @@ function Content:viewportMenu(tap)
         return
     end
     local hit = Picking.raycast(self.world, self.camera, vx, vy)
-    local node = hit and self:levelChild(hit)
+    local node = self.lightViz:ownerOf(hit) or (hit and self:levelChild(hit))
     if node and self.ops:isLocked(node) then
         node = nil
     end
@@ -606,6 +608,7 @@ function Content:update(dt)
         self:handleActions()
     end
     self:autosave(dt)
+    self.lightViz:update(self.selection, not self.playing)
     if self.playing then
         self.transform.gizmo:hide()
         self:followOutlines({})
@@ -628,14 +631,16 @@ function Content:followOutlines(items)
     local boxes, primary = self.boxes, self.selection:primary()
     local used = 0
     for _, node in ipairs(items) do
-        used = used + 1
-        local box = boxes[used]
-        if not box then
-            box = SelectionBox.new(self.world, nil, used)
-            boxes[used] = box
+        if not LightViz.isLight(node) then -- lights are shown by the light visualisation
+            used = used + 1
+            local box = boxes[used]
+            if not box then
+                box = SelectionBox.new(self.world, nil, used)
+                boxes[used] = box
+            end
+            box:setPrimary(node == primary)
+            box:follow(node)
         end
-        box:setPrimary(node == primary)
-        box:follow(node)
     end
     for index = used + 1, #boxes do
         boxes[index]:follow(nil)
@@ -670,6 +675,7 @@ end
 function Content:release()
     self.transform:release()
     self.grid:release()
+    self.lightViz:release()
     for _, box in ipairs(self.boxes) do
         box:release()
     end

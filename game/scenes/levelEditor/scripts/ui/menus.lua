@@ -235,9 +235,9 @@ local function view(state)
             state.grid:setVisible(not state.grid.visible)
             state:savePrefs()
         end, { checked = state.grid.visible, shortcut = shortcut(state, 'editorToggleGrid') }),
-        item('Light and camera gizmos', function()
-            environment.debug.gizmos.enabled = not environment.debug.gizmos.enabled
-        end, { checked = environment.debug.gizmos.enabled }),
+        item('Light gizmos', function()
+            state.lightViz.enabled = not state.lightViz.enabled
+        end, { checked = state.lightViz.enabled }),
         item('Shadows', function()
             environment.shadows.enabled = not environment.shadows.enabled
         end, { checked = environment.shadows.enabled }),
