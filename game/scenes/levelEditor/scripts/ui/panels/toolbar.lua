@@ -1,5 +1,5 @@
--- Top bar: file, edit, tools, space/pivot, snap with editable steps, grid and view buttons, and
--- Settings at the right. Items wrap onto more rows when the window is narrow (Flow), so no
+-- Tool strip under the menu bar: undo/redo, tools, space/pivot, snap with editable steps, surface
+-- snap, grid and play-test. Items wrap onto more rows when the window is narrow (Flow), so no
 -- button ever leaves the screen. Toggle buttons carry the `on` tag while active.
 local Flow = require('../flow')
 local Kit = require('../kit')
@@ -8,6 +8,7 @@ local Toolbar = {}
 Toolbar.__index = Toolbar
 
 local ROW, GAP, PAD = 26, 4, 5
+local MENU = 28 -- height of the menu row above the tool strip
 
 function Toolbar.create(state, ui, parent)
     local self = setmetatable({ state = state, ui = ui, items = {}, toggles = {}, refreshers = {} }, Toolbar)
@@ -38,21 +39,10 @@ function Toolbar.create(state, ui, parent)
         add({ w = labelWidth + 4 + fieldWidth, nodes = { { node = text, dx = 0 }, { node = box, dx = labelWidth + 4, dy = 1 } } })
     end
 
-    tool('New', 44, function()
-        state:clearLevel()
-        state.fileName, state.savedVersion = nil, state.undo.version
-        state:notify('New empty location')
-    end)
-    tool('Open', 48, function()
-        state.panels.browser:show('Location')
-    end)
-    tool('Save', 48, function()
-        state:saveLocation()
-    end)
     tool('Undo', 48, function()
         state.undo:undo()
         state:refresh()
-    end, 12)
+    end)
     tool('Redo', 48, function()
         state.undo:redo()
         state:refresh()
@@ -85,34 +75,35 @@ function Toolbar.create(state, ui, parent)
     field('Move', 36, 50, 'move')
     field('Rotate', 44, 44, 'rotate')
     field('Scale', 38, 44, 'scale')
+    toggle('Surface', 62, function()
+        state.snap.surface = not state.snap.surface
+    end, function()
+        return state.snap.surface
+    end)
     toggle('Grid', 44, function()
         state.grid:setVisible(not state.grid.visible)
         state:savePrefs()
     end, function()
         return state.grid.visible
     end, 12)
-    tool('Frame all', 70, function()
-        state:frame(state.level.children)
-    end)
-
-    self.settings = Kit.button(ui, parent, 'Settings', 70, ROW, function()
-        state.panels.settings:toggle()
-    end, 'tool')
-    self.settingsWidth = 70
+    toggle('Play', 52, function()
+        state:togglePlay()
+    end, function()
+        return state.playing == true
+    end, 12)
     return self
 end
 
--- Positions every item for a bar `width` wide; returns the bar height.
+-- Positions every item for a bar `width` wide (below the menu row); returns the bar height.
 function Toolbar:relayout(width)
-    local positions, height = Flow.place(self.items, width - self.settingsWidth - 14, GAP, ROW, PAD)
+    local positions, height = Flow.place(self.items, width, GAP, ROW, PAD)
     for index, item in ipairs(self.items) do
         local at = positions[index]
         for _, part in ipairs(item.nodes) do
-            part.node.position = { 0, at.x + part.dx, 0, at.y + (part.dy or 0) }
+            part.node.position = { 0, at.x + part.dx, 0, MENU + at.y + (part.dy or 0) }
         end
     end
-    self.settings.position = { 1, -(self.settingsWidth + PAD), 0, PAD }
-    return height
+    return MENU + height
 end
 
 function Toolbar:update()

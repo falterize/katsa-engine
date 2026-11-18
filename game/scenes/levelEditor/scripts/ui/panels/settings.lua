@@ -51,6 +51,22 @@ function Settings.create(state, ui)
     return self
 end
 
+function Settings:open_(category)
+    self.category = category or self.category
+    if not self.open then
+        self.open = true
+        self.dim.visible, self.window.visible = true, true
+    end
+    self.dirty = true
+end
+
+function Settings:setTheme(name)
+    self.state.prefs.theme = name
+    self.state.stylerNode:setTheme(name)
+    self.state:savePrefs()
+    self.dirty = true
+end
+
 function Settings:toggle()
     if self.open then
         self:hide()
@@ -135,10 +151,7 @@ function Settings:buildAppearance()
                 fontSize = 13,
             }, self.scroll, 'tool', state.prefs.theme == name and 'on' or nil))
             button:connect('press', function()
-                state.prefs.theme = name
-                state.stylerNode:setTheme(name)
-                state:savePrefs()
-                self.dirty = true
+                self:setTheme(name)
             end)
         end
     end)

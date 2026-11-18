@@ -13,6 +13,8 @@ local Recent = require('game.scenes.levelEditor.scripts.io.recent')
 local EditorSettings = require('game.scenes.levelEditor.scripts.io.editorSettings')
 local Flow = require('game.scenes.levelEditor.scripts.ui.flow')
 local Layout = require('game.scenes.levelEditor.scripts.ui.layout')
+local PropertyGroups = require('game.scenes.levelEditor.scripts.ui.propertyGroups')
+local Shortcut = require('game.scenes.levelEditor.scripts.ui.shortcut')
 local Builder = require('game.scenes.levelEditor.scripts.view.meshBuilder')
 local Selection = require('game.scenes.levelEditor.scripts.core.selection')
 local Snap = require('game.scenes.levelEditor.scripts.core.snap')
@@ -298,7 +300,24 @@ function Module.interface(self)
     self:check(again.snap.move == 2 and again.theme == 'dark', 'Settings survive a save and load')
 end
 
+function Module.menus(self)
+    self:check(Shortcut.format('key:lctrl+key:s') == 'Ctrl+S' and Shortcut.format('key:delete') == 'Del' and Shortcut.format('key:f5') == 'F5', 'Bindings read as shortcut text')
+    local rows = {}
+    for index, key in ipairs({ 'maxDistance', 'position', 'color', 'visible', 'brightness', 'mystery', 'size' }) do
+        rows[index] = { key = key }
+    end
+    local groups = PropertyGroups.group(rows)
+    local names = {}
+    for index, group in ipairs(groups) do
+        names[index] = group.name
+    end
+    self:check(table.concat(names, ',') == 'Transform,Appearance,Light,Node,Rendering,Other', 'Inspector rows are grouped in a fixed category order')
+    self:check(groups[1].rows[1].key == 'position' and groups[1].rows[2].key == 'size', 'Rows keep their order inside a group')
+    self:check(PropertyGroups.COLLAPSED.Rendering and not PropertyGroups.COLLAPSED.Transform and PropertyGroups.of('maxDistance') == 'Rendering', 'maxDistance sits in the collapsed Rendering group')
+end
+
 function Module.run(self)
+    Module.menus(self)
     Module.interface(self)
     Module.package(self)
     Module.shapes(self)

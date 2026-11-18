@@ -1,10 +1,12 @@
--- Editor UI entry, laid out like the Godot editor: a toolbar on top, the Workspace tree on the
+-- Editor UI entry, laid out like the Godot editor: a menu bar and a tool strip on top, the Workspace tree on the
 -- left, the Properties inspector on the right, a dock with tabs (Create, Files, Location) under
 -- the viewport and a status bar. Every dock edge is a draggable splitter. Look and colours come
 -- from the uiStyler style sheet (assets/styles/editor.lua) and the theme in Settings.
 local Browser = require('./panels.browser')
 local Dock = require('./dock')
 local Kit = require('./kit')
+local Menubar = require('./panels.menubar')
+local Prompt = require('./panels.prompt')
 local Properties = require('./panels.properties')
 local Settings = require('./panels.settings')
 local Toolbar = require('./panels.toolbar')
@@ -42,6 +44,7 @@ function Interface.create(state)
     end
 
     state.panels = {}
+    state.panels.menubar = Menubar.create(state, ui, frames.top)
     state.panels.toolbar = Toolbar.create(state, ui, frames.top)
     state.panels.tree = Tree.create(state, ui, frames.left)
     state.panels.properties = Properties.create(state, ui, frames.right)
@@ -51,8 +54,10 @@ function Interface.create(state)
         position = { 0, 10, 0, 2 },
         size = { 1, -20, 1, -4 },
     }, 'text')
+    state.marqueeFrame = Kit.make(ui, 'Frame', { name = 'Marquee', zIndex = 30, visible = false, interactable = false }, ui.content, 'marquee')
     state.dock = Dock.new(state, ui, frames, state.prefs.layout)
     state.panels.settings = Settings.create(state, ui)
+    state.panels.prompt = Prompt.create(state, ui)
     state.dock:apply()
     state.styler:apply(ui.content)
 end

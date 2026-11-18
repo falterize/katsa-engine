@@ -11,6 +11,7 @@ local Tree = {}
 Tree.__index = Tree
 
 local INDENT, EXPANDER, ROW = 14, 18, 22
+local CLASS_WIDTH = 84 -- room for the small class label at the right of a row
 local DRAG_DISTANCE = 6
 
 local function childrenOf(node)
@@ -137,7 +138,7 @@ function Tree:rebuild()
             .. (ops:isLocked(node) and '  (locked)' or '')
         local name = add(Kit.make(ui, 'Button', {
             position = { 0, x + EXPANDER, 0, y },
-            size = { 1, -(x + EXPANDER + 52), 0, ROW },
+            size = { 1, -(x + EXPANDER + 52 + CLASS_WIDTH), 0, ROW },
             text = label,
             align = 'left',
             fontSize = 13,
@@ -157,6 +158,14 @@ function Tree:rebuild()
             end
         end)
         if node ~= state.level then
+            -- The class (Mesh3D, PointLight3D, ...) as a small dim detail, right-aligned.
+            local kind = add(Kit.label(ui, self.scroll, node.className or '', {
+                position = { 1, -(52 + CLASS_WIDTH), 0, y },
+                size = { 0, CLASS_WIDTH - 4, 0, ROW },
+                align = 'right',
+                fontSize = 11,
+            }, 'classTag'))
+            kind.interactable = false
             local eye = add(Kit.button(ui, self.scroll, hidden and 'h' or 'V', 24, ROW, function()
                 local ok, message = ops:setProperty({ node }, 'visible', nil, hidden)
                 if not ok then

@@ -11,6 +11,7 @@ return {
     { 'ScrollFrame.list', { backgroundColor = '$background', backgroundTransparency = 0 } },
     { 'Label.title', { textColor = '$text', fontSize = 14 } },
     { 'Label.text', { textColor = '$text', fontSize = 13 } },
+    { 'Label.classTag', { textColor = '$muted', fontSize = 11 } },
     { 'Label.muted', { textColor = '$muted', fontSize = 13 } },
     { 'TextBox.field', { backgroundColor = '$background', textColor = '$text', corner = 3, stroke = { color = '$border', thickness = 1 } } },
     { 'Button.tool', { backgroundColor = '$button', backgroundTransparency = 0, textColor = '$text', corner = '$corner' } },
@@ -20,6 +21,8 @@ return {
     { 'Button.danger', { textColor = '$danger' } },
     { 'Button.on', { backgroundColor = '$accent', backgroundTransparency = 0, textColor = '$accentText' } },
     { 'Button.selected', { backgroundColor = '$selection', backgroundTransparency = 0, textColor = '$text' } },
+    { 'Button.disabled', { textColor = '$muted' } },
+    { 'Frame.marquee', { backgroundColor = '$accent', backgroundTransparency = 0.8, stroke = { color = '$accent', thickness = 1 } } },
     { 'Frame.dropLine', { backgroundColor = '$accent', backgroundTransparency = 0 } },
     { 'Frame.dropInto', { backgroundColor = '$accent', backgroundTransparency = 0.7 } },
 }

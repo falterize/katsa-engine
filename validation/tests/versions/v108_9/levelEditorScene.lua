@@ -169,6 +169,35 @@ function Module.run(self)
     state.snap.rotate = 15
     toolbar:relayout(scene.root:find('World3D/World2D').width)
 
+    -- Menus build, select all, box select, play-test restore, export and merge import.
+    local builtMenus = true
+    for _, menu in ipairs(require('game.scenes.levelEditor.scripts.ui.menus').list) do
+        builtMenus = builtMenus and #menu.items(state) > 0
+    end
+    self:check(builtMenus, 'Every menu builds its items')
+    state:selectAll()
+    self:check(state.selection:count() == #state.level.children, 'Select all selects every unlocked object')
+    state:frame(state.level.children)
+    for _ = 1, 2 do
+        frame(scene)
+    end
+    state.selection:clear()
+    local vp = state.viewport
+    state:boxSelect(0, 0, vp._canvasWidth, vp._canvasHeight)
+    self:check(state.selection:count() > 0, 'A rectangle over the whole view selects objects')
+    state.selection:clear()
+    local before = #state.level.children
+    state:togglePlay()
+    local running = state.playing and state.root3D.timeScale == 1
+    state.level.children[1].position = { 50, 50, 50 }
+    state:togglePlay()
+    self:check(running and not state.playing and #state.level.children == before and state.level.children[1].position[1] ~= 50, 'Play-test restores the level when it stops')
+    self:check(state:exportLocation('smokeExport') and katsa.filesystem.getInfo('editor/exports/smokeExport.katsa', 'file') ~= nil, 'Export writes a .katsa into the exports folder')
+    self:check(state:importLocation('editor/exports/smokeExport.katsa') and #state.level.children == before * 2, 'Importing a .katsa adds its objects')
+    state.undo:undo()
+    state:refresh()
+    self:check(#state.level.children == before, 'Undo removes an import in one step')
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')

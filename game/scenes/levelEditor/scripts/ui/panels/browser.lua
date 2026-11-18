@@ -70,8 +70,9 @@ function Browser.create(state, ui, frame)
     return self
 end
 
-function Browser:show(tab)
+function Browser:show(tab, importMode)
     self.tab, self.dirty = tab, true
+    self.importMode = importMode == true
 end
 
 function Browser:resize(width, height)
@@ -255,25 +256,37 @@ end
 function Browser:buildLocation()
     local state = self.state
     self.nameBox.text = state.fileName or ''
-    local y = self:heading(0, 'Recent')
+    -- In import mode a click adds the file's objects to the level; otherwise it opens the file.
+    local function choose(path)
+        if self.importMode then
+            state:importLocation(path)
+        else
+            state:openLocation(path)
+        end
+        self.dirty = true
+    end
+    local y = 0
+    if self.importMode then
+        y = self:heading(y, 'Import: click a .katsa file to add its objects to the level')
+    end
+    y = self:heading(y, 'Recent')
     for _, path in ipairs(state.recent or {}) do
         y = self:row(y, path, function()
-            state:openLocation(path)
-            self.dirty = true
+            choose(path)
         end)
     end
     y = self:heading(y, 'Autosave')
-    y = self:row(y, LocationIO.AUTOSAVE .. '   (open the last autosave)', function()
-        state:openLocation(LocationIO.AUTOSAVE)
-        self.dirty = true
+    y = self:row(y, LocationIO.AUTOSAVE, function()
+        choose(LocationIO.AUTOSAVE)
     end)
-    y = self:heading(y, 'Saved locations   ' .. tostring(katsa.filesystem.getSaveDirectory()) .. '/' .. LocationIO.FOLDER)
-    for _, name in ipairs(katsa.filesystem.getDirectoryItems(LocationIO.FOLDER)) do
-        if name:match('%.katsa$') then
-            y = self:row(y, name, function()
-                state:openLocation(LocationIO.FOLDER .. '/' .. name)
-                self.dirty = true
-            end)
+    for _, folder in ipairs({ LocationIO.FOLDER, LocationIO.EXPORTS }) do
+        y = self:heading(y, tostring(katsa.filesystem.getSaveDirectory()) .. '/' .. folder)
+        for _, name in ipairs(katsa.filesystem.getDirectoryItems(folder)) do
+            if name:match('%.katsa$') then
+                y = self:row(y, name, function()
+                    choose(folder .. '/' .. name)
+                end)
+            end
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, y }

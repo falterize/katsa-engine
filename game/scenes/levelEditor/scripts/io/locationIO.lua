@@ -1,6 +1,7 @@
 -- Engine-facing half of `.katsa` export/import: turns the Level into a package (bytes) and a
 -- package back into a Level. Pure parts live in locationFormat, packagePaths and recent.
 local Archive = require('source.katsa.core.archive')
+local Clone = require('source.engine.nodes.core.clone')
 local AssetStore = require('./assetStore')
 local Format = require('./locationFormat')
 local LuaText = require('./luaText')
@@ -11,6 +12,7 @@ local Recent = require('./recent')
 local LocationIO = {}
 
 LocationIO.FOLDER = 'editor/locations'
+LocationIO.EXPORTS = 'editor/exports'
 LocationIO.AUTOSAVE = 'editor/autosave.katsa'
 LocationIO.RECENT = 'editor/recent.lua'
 
@@ -156,9 +158,9 @@ local function mapPaths(value, map)
     return value
 end
 
--- Replaces the Level with the package's content. Returns the node count or nil plus a message;
--- on a bad file the current Level is left untouched.
-function LocationIO.import(content, bytes)
+-- Replaces the Level with the package's content, or with `merge` adds the objects to it as one
+-- undo step. Returns the node count or nil plus a message; on a bad file the Level is untouched.
+function LocationIO.import(content, bytes, merge)
     local ok, archive = pcall(Archive.fromString, bytes, 'location')
     if not ok then
         return nil, 'Not a valid .katsa file: ' .. tostring(archive)
@@ -172,9 +174,12 @@ function LocationIO.import(content, bytes)
         return nil, message
     end
     local nodes = mapPaths(data.nodes, importAssets(archive))
-    content:clearLevel()
+    if not merge then
+        content:clearLevel()
+    end
     local world = content.world
     local count = 0
+    local created = {}
     local function walk(entry)
         count = count + 1
         for _, child in ipairs(entry.children or {}) do
@@ -186,14 +191,22 @@ function LocationIO.import(content, bytes)
         entry.children = entry.children or {}
         entry.properties = entry.properties or {}
         walk(entry)
+        if merge then
+            entry.name = Clone.uniqueName(world, entry.name or entry.class)
+            entry.attributes.EditorId = nil
+        end
         local node = NodeData.build(world, entry, content.level)
-        content.ops:adopt(node)
+        content.ops:adopt(node, merge)
+        created[#created + 1] = node
     end
-    if data.camera then
+    if merge then
+        content.ops:record('Import location', created)
+        content.selection:set(created)
+    elseif data.camera then
         content.camera.position = data.camera.position
         content.camera.rotation = data.camera.rotation
     end
-    return count
+    return count, created
 end
 
 local function safeName(name)

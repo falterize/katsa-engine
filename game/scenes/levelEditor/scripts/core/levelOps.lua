@@ -180,7 +180,11 @@ end
 
 -- Creates a node under `parent` (the Level by default) and records it.
 function Ops:create(class, properties, parent, attributes)
-    local node = self:world():create(class, properties or {}, parent or self.content.level)
+    properties = properties or {}
+    if class == 'Mesh3D' and properties.maxDistance == nil then
+        properties.maxDistance = 0 -- an editor never culls objects by distance
+    end
+    local node = self:world():create(class, properties, parent or self.content.level)
     for name, value in pairs(attributes or {}) do
         node:setAttribute(name, value)
     end

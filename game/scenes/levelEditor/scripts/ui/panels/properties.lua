@@ -4,6 +4,7 @@
 -- written to all of them. Edits go through `ops:setProperty` (the engine's validation, one undo
 -- step). The panel rebuilds when the selection changes or after an edit, never every frame.
 local Properties = require('source.engine.editor.inspectors.properties')
+local Groups = require('../propertyGroups')
 local Kit = require('../kit')
 
 local Panel = {}
@@ -13,7 +14,7 @@ local ROW = 24
 local HIDDEN = { parent = true, ['add attribute'] = true }
 
 function Panel.create(state, ui, frame)
-    local self = setmetatable({ state = state, ui = ui, widgets = {}, frame = frame }, Panel)
+    local self = setmetatable({ state = state, ui = ui, widgets = {}, frame = frame, open = {} }, Panel)
     self.title = Kit.label(ui, frame, 'Properties', {
         position = { 0, 8, 0, 4 },
         size = { 1, -16, 0, 20 },
@@ -117,7 +118,7 @@ function Panel:rebuild()
         return widget
     end
     local y = 0
-    for _, row in ipairs(sharedRows(nodes)) do
+    local function drawRow(row)
         local key, kind = row.key, row.kind
         local editable = not row.readOnly and not HIDDEN[key]
         local shown = not HIDDEN[key]
@@ -191,6 +192,37 @@ function Panel:rebuild()
                 add(Kit.label(ui, self.scroll, text, { position = at, size = width }, 'muted'))
             end
             y = y + ROW
+        end
+    end
+    local visibleRows = {}
+    for _, row in ipairs(sharedRows(nodes)) do
+        local kind = row.kind
+        if not HIDDEN[row.key] and (kind == 'boolean' or kind == 'number' or kind == 'string' or kind == 'vector' or kind == 'node') then
+            visibleRows[#visibleRows + 1] = row
+        end
+    end
+    for _, group in ipairs(Groups.group(visibleRows)) do
+        local open = self.open[group.name]
+        if open == nil then
+            open = not Groups.COLLAPSED[group.name]
+        end
+        local header = add(Kit.make(ui, 'Button', {
+            position = { 0, 2, 0, y },
+            size = { 1, -4, 0, ROW },
+            text = ('%s  %s  (%d)'):format(open and 'v' or '>', group.name, #group.rows),
+            align = 'left',
+            fontSize = 13,
+        }, self.scroll, 'tab'))
+        header:connect('press', function()
+            self.open[group.name] = not open
+            self.dirty = true
+        end)
+        y = y + ROW + 2
+        if open then
+            for _, row in ipairs(group.rows) do
+                drawRow(row)
+            end
+            y = y + 4
         end
     end
     self.scroll.canvasSize = { 0, 0, 0, y }

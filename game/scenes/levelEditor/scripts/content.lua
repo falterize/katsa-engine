@@ -4,6 +4,7 @@ local Bounds = require('./core.bounds')
 local EditorInput = require('./input.editorInput')
 local FlyCamera = require('./view.flyCamera')
 local EditorSettings = require('./io.editorSettings')
+local NodeData = require('./core.nodeData')
 local Focus = require('source.engine.ui.widgets.textFocus')
 local Grid = require('./view.grid')
 local LocationIO = require('./io.locationIO')
@@ -32,7 +33,7 @@ function Content.new(scene)
         size = { 1, 0, 1, 0 },
         zIndex = 1,
     }, ui.content)
-    local root3D = ui:create('World3D', { name = 'EditorWorld' }, viewport)
+    local root3D = ui:create('World3D', { name = 'EditorWorld', timeScale = 0 }, viewport)
     local world = root3D._world
     local environment = world.environment
     environment.debug.gizmos.enabled = true -- lights and cameras show their engine gizmos
@@ -52,6 +53,7 @@ function Content.new(scene)
         prefs = prefs,
         ui = ui,
         viewport = viewport,
+        root3D = root3D,
         world = world,
     }, Content)
     self.level = world:create('Node3D', { name = 'Level' })
@@ -64,6 +66,7 @@ function Content.new(scene)
         move = prefs.snap.move,
         rotate = prefs.snap.rotate,
         scale = prefs.snap.scale,
+        surface = false,
     }
     self.grid = Grid.new(world, nil, {
         cell = prefs.grid.cell,
@@ -109,6 +112,7 @@ function Content:seed()
             position = position,
             size = size,
             color = color,
+            maxDistance = 0,
         }, self.level)
     end
     mesh('Floor', 'cube', { 0, -0.25, 0 }, { 20, 0.5, 20 }, { 0.55, 0.58, 0.62, 1 })
@@ -158,14 +162,167 @@ function Content:savePrefs()
     LocationIO.write(EditorSettings.FILE, EditorSettings.serialize(prefs))
 end
 
--- Removes every object from the Level (used before a file is opened or a new one started).
-function Content:clearLevel()
-    self.selection:clear()
+-- Selection by rectangle (viewport pixels): a top-level object is taken when its centre projects
+-- inside; Ctrl adds to the current selection.
+function Content:boxSelect(x0, y0, x1, y1)
+    local left, right = math.min(x0, x1), math.max(x0, x1)
+    local top, bottom = math.min(y0, y1), math.max(y0, y1)
+    local picked = {}
+    for _, node in ipairs(self.level.children) do
+        if not node.destroyed and node.visible ~= false and not self.ops:isLocked(node) then
+            local center = Bounds.sphere({ node })
+            if center then
+                local x, y, depth = self.camera:project(center)
+                if depth and x >= left and x <= right and y >= top and y <= bottom then
+                    picked[#picked + 1] = node
+                end
+            end
+        end
+    end
+    if self.fly.map:isDown('editorAdd') then
+        for _, node in ipairs(self.selection:items()) do
+            picked[#picked + 1] = node
+        end
+    end
+    self.selection:set(picked)
+end
+
+-- A press in the viewport either grabs a gizmo handle or starts a click / rectangle selection;
+-- the click is resolved on release so a drag can become a box.
+function Content:updateSelectionDrag()
+    local map = self.fly.map
+    if self.viewportPressed then
+        self.viewportPressed = false
+        local mx, my = katsa.mouse.getX(), katsa.mouse.getY()
+        local x, y = self:viewportPoint(mx, my)
+        if x and not self.playing then
+            if not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
+                self.marquee = { x = x, y = y, mx = mx, my = my, active = false }
+            end
+        end
+    end
+    local marquee = self.marquee
+    if not marquee then
+        return
+    end
+    local mx, my = katsa.mouse.getX(), katsa.mouse.getY()
+    local frame, ui = self.marqueeFrame, self.ui
+    if map:isDown('editorPick') then
+        if not marquee.active and math.abs(mx - marquee.mx) + math.abs(my - marquee.my) > 6 then
+            marquee.active = true
+        end
+        if marquee.active and frame then
+            local ax, ay = (marquee.mx - ui.offsetX) / ui.scale, (marquee.my - ui.offsetY) / ui.scale
+            local bx, by = (mx - ui.offsetX) / ui.scale, (my - ui.offsetY) / ui.scale
+            frame.position = { 0, math.min(ax, bx), 0, math.min(ay, by) }
+            frame.size = { 0, math.abs(bx - ax), 0, math.abs(by - ay) }
+            frame.visible = true
+        end
+    else
+        self.marquee = nil
+        if frame then
+            frame.visible = false
+        end
+        if marquee.active then
+            local x, y = self:viewportPoint(mx, my, true)
+            if x then
+                self:boxSelect(marquee.x, marquee.y, x, y)
+            end
+        else
+            self:pick(marquee.x, marquee.y)
+        end
+    end
+end
+
+function Content:selectAll()
+    local all = {}
+    for _, node in ipairs(self.level.children) do
+        if not self.ops:isLocked(node) then
+            all[#all + 1] = node
+        end
+    end
+    self.selection:set(all)
+end
+
+local function destroyLevelChildren(self)
     for index = #self.level.children, 1, -1 do
         local node = self.level.children[index]
         self.ops:forget(node)
         node:destroy()
     end
+end
+
+-- Play-test: the world runs (physics, animation) with the editor overlays hidden; stopping
+-- rebuilds the level from the snapshot taken at the start, so nothing the run changed is kept.
+function Content:togglePlay()
+    if not self.playing then
+        self.playSnapshot = {}
+        for index, node in ipairs(self.level.children) do
+            self.playSnapshot[index] = NodeData.capture(node)
+        end
+        self.playGrid = self.grid.visible
+        self.selection:clear()
+        self.grid:setVisible(false)
+        self.root3D.timeScale = 1
+        self.playing = true
+        self:notify('Play-test running: press F5 to stop and restore the level')
+    else
+        self.root3D.timeScale = 0
+        destroyLevelChildren(self)
+        for _, data in ipairs(self.playSnapshot) do
+            self.ops:adopt(NodeData.build(self.world, data, self.level))
+        end
+        self.playSnapshot, self.playing = nil, false
+        self.grid:setVisible(self.playGrid)
+        self:refresh()
+        self:notify('Play-test stopped, level restored')
+    end
+end
+
+function Content:newLocation()
+    self:clearLevel()
+    self.fileName, self.savedVersion = nil, self.undo.version
+    self:notify('New empty location')
+end
+
+-- Writes a package to editor/exports/<name>.katsa (the same format as Save, a separate folder).
+function Content:exportLocation(name)
+    local safe = LocationIO.pathFor(name):match('([^/]+)$')
+    local path = LocationIO.EXPORTS .. '/' .. safe
+    local ok, bytes, warnings = pcall(LocationIO.export, self)
+    if not ok then
+        self:notify('Export failed: ' .. tostring(bytes))
+        return false
+    end
+    local written, message = LocationIO.write(path, bytes)
+    if not written then
+        self:notify('Export failed: ' .. tostring(message))
+        return false
+    end
+    self:notify(('Exported %s/%s%s'):format(katsa.filesystem.getSaveDirectory(), path, #warnings > 0 and ('  (' .. warnings[1] .. ')') or ''))
+    return true
+end
+
+-- Adds the objects of a .katsa file to the current level (one undo step).
+function Content:importLocation(path)
+    local bytes = katsa.filesystem.read(path)
+    if not bytes then
+        self:notify('Cannot read ' .. path)
+        return false
+    end
+    local count, message = LocationIO.import(self, bytes, true)
+    if not count then
+        self:notify(tostring(message))
+        return false
+    end
+    self:notify(('Imported %d objects from %s'):format(count, path))
+    return true
+end
+
+-- Removes every object from the Level (used before a file is opened or a new one started).
+function Content:clearLevel()
+    self.selection:clear()
+    destroyLevelChildren(self)
     self.undo:clear()
     self:refresh()
 end
@@ -302,6 +459,12 @@ end
 
 function Content:handleActions()
     local map = self.fly.map
+    if self.playing then -- only Play stops it; every edit shortcut is ignored meanwhile
+        if map:justPressed('editorPlay') then
+            self:togglePlay()
+        end
+        return
+    end
     if map:justPressed('editorToggleGrid') then
         self.grid:setVisible(not self.grid.visible)
     end
@@ -327,6 +490,10 @@ function Content:handleActions()
         self:notify(('Copied %d'):format(ops:copy(selection:items())))
     elseif map:justPressed('editorPaste') then
         ops:paste(self.level)
+    elseif map:justPressed('editorSelectAll') then
+        self:selectAll()
+    elseif map:justPressed('editorPlay') then
+        self:togglePlay()
     elseif map:justPressed('editorSave') then
         self:saveLocation()
     elseif map:justPressed('editorOpen') then
@@ -380,19 +547,18 @@ function Content:update(dt)
     self.fly:update(dt)
     local position = self.camera.position
     self.grid:follow(position[1], position[3])
-    if self.viewportPressed then
-        self.viewportPressed = false
-        local x, y = self:viewportPoint(katsa.mouse.getX(), katsa.mouse.getY())
-        if x and not (self.tool ~= 'Select' and self.transform:begin(x, y)) then
-            self:pick(x, y)
-        end
-    end
+    self:updateSelectionDrag()
     if not Focus.current then -- typing in a field must not trigger editor shortcuts
         self:handleActions()
     end
     self:autosave(dt)
-    self.transform:update()
-    self.box:follow(self.selection:primary())
+    if self.playing then
+        self.transform.gizmo:hide()
+        self.box:follow(nil)
+    else
+        self.transform:update()
+        self.box:follow(self.selection:primary())
+    end
     for _, panel in pairs(self.panels or {}) do
         panel:update()
     end

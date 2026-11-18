@@ -43,6 +43,7 @@ local Settings = {
         editorDuplicate = ctrl('d'),
         editorCopy = ctrl('c'),
         editorPaste = ctrl('v'),
+        editorSelectAll = ctrl('a'),
         editorDelete = { 'key:delete' },
         editorSave = ctrl('s'),
         editorOpen = ctrl('o'),

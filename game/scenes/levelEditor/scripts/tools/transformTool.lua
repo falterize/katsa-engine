@@ -6,6 +6,7 @@ local Affine = require('source.engine.math.affine')
 local Gizmo = require('../view.gizmo')
 local GizmoMath = require('../core.gizmoMath')
 local M = require('source.engine.math.math3d')
+local Picking = require('source.engine.world.picking')
 local Snap = require('../core.snap')
 local TreeModel = require('../core.treeModel')
 
@@ -18,6 +19,32 @@ local PLANE = { xy = { 1, 2 }, yz = { 2, 3 }, xz = { 1, 3 } }
 
 local function copy(v)
     return { v[1], v[2], v[3] }
+end
+
+-- While a node is dragged onto a surface the node itself must not be hit by the pick ray.
+local function setQueryable(drag, queryable)
+    if not queryable then
+        drag.queried = {}
+        local function visit(node)
+            if node.canQuery ~= nil then
+                drag.queried[#drag.queried + 1] = { node = node, value = node.canQuery }
+                node.canQuery = false
+            end
+            for _, child in ipairs(node.children) do
+                visit(child)
+            end
+        end
+        for _, entry in ipairs(drag.nodes) do
+            visit(entry.node)
+        end
+    else
+        for _, saved in ipairs(drag.queried or {}) do
+            if not saved.node.destroyed then
+                saved.node.canQuery = saved.value
+            end
+        end
+        drag.queried = nil
+    end
 end
 
 function Tool.new(content)
@@ -165,6 +192,9 @@ function Tool:begin(x, y)
         end
         drag.normal = normal
     end
+    if drag.tool == 'Move' and PLANE[handle] then
+        setQueryable(drag, false)
+    end
     self.drag = drag
     return true
 end
@@ -211,6 +241,19 @@ function Tool:move(x, y)
                 return
             end
             delta = { point[1] - drag.p0[1], point[2] - drag.p0[2], point[3] - drag.p0[3] }
+            -- Surface snap: the pivot follows the first surface under the pointer instead.
+            if Snap.active(content.snap.surface, content.fly.map:isDown('editorAdd')) then
+                local hit, depth = Picking.raycast(content.world, content.camera, x, y)
+                if hit then
+                    local origin, direction = content.camera:screenRay(x, y)
+                    delta = {
+                        origin[1] + direction[1] * depth - frame.world[1],
+                        origin[2] + direction[2] * depth - frame.world[2],
+                        origin[3] + direction[3] * depth - frame.world[3],
+                    }
+                    on = false
+                end
+            end
             if on then
                 local pair = PLANE[drag.handle]
                 local a, b = frame.axes[pair[1]], frame.axes[pair[2]]
@@ -290,6 +333,7 @@ end
 function Tool:finish()
     local drag, content = self.drag, self.content
     self.drag = nil
+    setQueryable(drag, true)
     local entries, changed = {}, false
     for index, entry in ipairs(drag.nodes) do
         local node = entry.node
