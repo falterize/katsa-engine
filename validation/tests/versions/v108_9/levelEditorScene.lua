@@ -242,6 +242,28 @@ function Module.run(self)
     picker:close()
     self:check(not picker:isOpen(), 'The colour picker closes')
 
+    local group = state.ops:create('Node3D', { name = 'RoundTrip', position = { 4, 0, 4 }, rotation = { 0, 30, 0 } }, state.level)
+    state.ops:create('Mesh3D', { name = 'RoundInner', kind = 'cube', position = { 1, 1, 1 }, size = { 1, 2, 3 }, color = { 0.1, 0.2, 0.3, 1 } }, group)
+    local ok, bytes, warnings = pcall(LocationIO.export, state)
+    self:check(ok and #warnings == 0, 'Saving drops no values')
+    self:check(state:saveLocation('roundTrip') and state:openLocation(LocationIO.pathFor('roundTrip')), 'A saved location opens again')
+    local function find(parent, name)
+        for _, child in ipairs(parent.children) do
+            if child.name == name then
+                return child
+            end
+        end
+    end
+    local inner = find(find(state.level, 'RoundTrip') or { children = {} }, 'RoundInner')
+    self:check(
+        inner ~= nil and inner.position[1] == 1 and inner.size[3] == 3 and math.abs(inner.color[3] - 0.3) < 1e-6,
+        'Position, size and colour survive Save and Open'
+    )
+    local box = find(state.level, 'Box')
+    self:check(box ~= nil and box.position[1] == -3 and box.size[1] == 2, 'Objects keep their transforms after Open')
+    local red = find(state.level, 'Red Light')
+    self:check(red ~= nil and red.color[1] == 255 and red.range == 14, 'Light colour and range survive Save and Open')
+
     local visible = state.grid.visible
     state.grid:setVisible(not visible)
     self:check(state.grid.nodes.major.visible == (not visible), 'The grid can be toggled')

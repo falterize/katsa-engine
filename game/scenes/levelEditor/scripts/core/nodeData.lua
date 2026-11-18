@@ -9,7 +9,14 @@ local NodeData = {}
 -- Runtime-only keys that Clone.collect may return but a rebuilt node must not receive.
 -- `geometry` and `material` are runtime resources: primitives are rebuilt from `kind`, editor
 -- shapes from the EditorShape attribute and models from EditorModel.
-local SKIPPED = { name = true, geometry = true, material = true }
+local SKIPPED = {
+    name = true,
+    geometry = true,
+    material = true,
+    -- Derived runtime statistics, not authored values.
+    skinDrawCount = true,
+    effectiveBonePaletteLimit = true,
+}
 local Shapes = require('../builders.shapes')
 
 function NodeData.capture(node)

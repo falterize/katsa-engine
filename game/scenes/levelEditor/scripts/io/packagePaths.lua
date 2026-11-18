@@ -33,7 +33,7 @@ function PackagePaths.collect(value, prefix, out)
     return out
 end
 
--- A copy holding only numbers, strings, booleans and tables of those; returns the copy and the
+-- A copy holding only numbers, strings, booleans and tables of those (engine vectors become arrays); returns the copy and the
 -- number of dropped values (functions, userdata, NaN/inf, cyclic references).
 function PackagePaths.sanitize(value, seen)
     seen = seen or {}
@@ -45,6 +45,24 @@ function PackagePaths.sanitize(value, seen)
         return value, 0
     elseif kind == 'string' or kind == 'boolean' then
         return value, 0
+    elseif kind == 'userdata' then
+        -- Engine vectors and colours (position, size, color...) are userdata with numeric
+        -- components; a file holds them as plain arrays.
+        local ok, count = pcall(function()
+            return #value
+        end)
+        if not ok or type(count) ~= 'number' or count < 2 or count > 4 then
+            return nil, 1
+        end
+        local result = {}
+        for index = 1, count do
+            local component = value[index]
+            if type(component) ~= 'number' or component ~= component or component == math.huge or component == -math.huge then
+                return nil, 1
+            end
+            result[index] = component
+        end
+        return result, 0
     elseif kind == 'table' then
         if seen[value] then
             return nil, 1

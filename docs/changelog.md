@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.9
 
+- levelEditor: Save/Open lost every vector property (position, size, colour, rotation, scale) because engine vectors were dropped as unsupported values; they are now written as arrays. Derived runtime statistics are no longer saved.
 - Engine: light selection no longer depends on the world clock, so lights added or moved in a paused world (timeScale 0) are lit and shadowed (`world/lights.lua`).
 - levelEditor: shadows on by default; three coloured point lights in the starter level; colour wheel picker for colour properties; option properties open a scrolling, searchable list instead of cycling on click.
 - `levelEditor`: removed the Play button and F5 (a run changed the scene and rebuilding it afterwards turned a sphere into a cube); the editor is always in edit mode. Light markers are always drawn; a point light always shows its radius and, when selected, its range as well, spot lights and the sun show their reach when selected. Fixed the light marker crash (`worldPosition` is an empty cache before the first render) and drag-and-drop reordering in the tree.
