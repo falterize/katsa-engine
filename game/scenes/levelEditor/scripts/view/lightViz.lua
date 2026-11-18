@@ -8,13 +8,13 @@
 local Builder = require('./meshBuilder')
 local Geometry = require('source.engine.graphics.geometry.primitives')
 
-local ICON_PIXELS = 18 -- on-screen radius of the light icon
+local ICON_PIXELS = 28 -- on-screen radius of the light icon
 
 local LightViz = {}
 LightViz.__index = LightViz
 
 local TYPES = { PointLight3D = true, SpotLight3D = true, DirectionalLight3D = true }
-local HALF = 0.012 -- half width of the thin bars
+local HALF = 0.02 -- half width of the thin bars
 
 function LightViz.isLight(node)
     return node ~= nil and TYPES[node.className] == true
@@ -228,7 +228,7 @@ function LightViz:update(selection, show, camera)
         end
         if entry.unit ~= unit then
             entry.unit = unit
-            entry.pick.size = { 0.28 * unit / 0.24, 0.28 * unit / 0.24, 0.28 * unit / 0.24 }
+            entry.pick.size = { unit * 1.1, unit * 1.1, unit * 1.1 }
             if entry.marker then
                 entry.marker.scale = { unit / 0.24, unit / 0.24, unit / 0.24 }
             end
