@@ -66,6 +66,25 @@ function Browser.create(state, ui, frame)
         canvasSize = { 0, 0, 0, 0 },
         scrollBarThickness = 6,
     }, frame, 'list')
+    -- Drag feedback, as in the object tree: the folder row that would receive the file is
+    -- highlighted and a small label with the file name follows the pointer.
+    self.markInto = Kit.make(ui, 'Frame', {
+        size = { 1, 0, 0, 22 },
+        visible = false,
+        interactable = false,
+        zIndex = 19,
+    }, self.scroll, 'dropInto')
+    self.ghost = Kit.make(ui, 'Frame', {
+        size = { 0, 180, 0, 22 },
+        visible = false,
+        interactable = false,
+        zIndex = 45,
+    }, ui.content, 'window')
+    self.ghostLabel = Kit.label(ui, self.ghost, '', {
+        position = { 0, 8, 0, 2 },
+        size = { 1, -16, 1, -4 },
+        fontSize = 12,
+    }, 'text')
     self.actions = Kit.make(ui, 'Frame', {
         position = { 0, 4, 1, -(FOOT) },
         size = { 1, -8, 0, 26 },
@@ -312,6 +331,23 @@ function Browser:moveInto(entry, folder)
     self.dirty = true
 end
 
+-- Highlights the folder under the pointer (when a drop there is valid) and moves the name label.
+function Browser:showDrag(drag, mx, my, index)
+    if not (drag and drag.moved) then
+        self.markInto.visible, self.ghost.visible = false, false
+        return
+    end
+    local target = index and self.drops[index]
+    local valid = target ~= nil and target ~= false and self.sources[index] ~= drag.entry
+    self.markInto.visible = valid
+    if valid then
+        self.markInto.position = { 0, 0, 0, (index - 1) * 22 }
+    end
+    self.ghostLabel.text = (valid and 'Move to ' or '') .. tostring(drag.entry.name)
+    self.ghost.position = { 0, mx + 14, 0, my + 18 }
+    self.ghost.visible = true
+end
+
 -- Drag a row onto a folder row (or ".." for the parent folder) to move it. The press is noted,
 -- the release decides; a drag shorter than a few pixels is an ordinary click.
 function Browser:pollDrag()
@@ -329,9 +365,11 @@ function Browser:pollDrag()
         if math.abs(mx - self.drag.x) + math.abs(my - self.drag.y) > 8 then
             self.drag.moved, self.dragMoved = true, true
         end
+        self:showDrag(self.drag, mx, my, index)
     elseif not down and self.wasLeft and self.drag then
         local drag = self.drag
         self.drag = nil
+        self:showDrag(nil)
         local target = drag.moved and index and self.drops[index]
         if target ~= nil and target ~= false then
             self:moveInto(drag.entry, target)

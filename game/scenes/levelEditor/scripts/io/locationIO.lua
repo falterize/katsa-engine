@@ -173,6 +173,9 @@ function LocationIO.import(content, bytes, merge)
     if not data then
         return nil, message
     end
+    if not merge then
+        content:resetFiles() -- the opened level brings its own files
+    end
     local nodes = mapPaths(data.nodes, importAssets(archive))
     if not merge then
         content:clearLevel()

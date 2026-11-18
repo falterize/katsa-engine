@@ -4,6 +4,7 @@ local Application = require('game.runtime.application')
 local Archive = require('source.katsa.core.archive')
 local Catalog = require('game.scenes.levelEditor.scripts.builders.catalog')
 local LocationIO = require('game.scenes.levelEditor.scripts.io.locationIO')
+local LevelFiles = require('game.scenes.levelEditor.scripts.io.levelFiles')
 
 local Module = {}
 
@@ -162,6 +163,23 @@ function Module.run(self)
     local archive = Archive.fromString(bytes, 'export')
     self:check(archive:has('assets/location.lua') and archive:has('main.lua') and archive:has('scripts/loader.lua'), 'An export holds settings, main, the location and the loader')
     self:check(LocationIO.import(state, bytes) == count and #state.level.children == count, 'Importing an export restores the object count')
+    do
+        local Importer = require('game.scenes.levelEditor.scripts.core.importer')
+        for _, item in ipairs(Catalog.items()) do
+            if item.label == 'Decal' then
+                local decal = item.make(state, { 0, 0, 0 })
+                state.selection:set({ decal })
+                self:check(Importer.place(state, 'shared://textures/engine/sky/dayCross.png', 'image', 'texture') and decal.image == 'shared://textures/engine/sky/dayCross.png', 'An image can be put on a selected decal')
+            end
+        end
+        LevelFiles.createFile('', 'leftover.txt')
+        state:newLocation()
+        self:check(not katsa.filesystem.getInfo(LevelFiles.full('leftover.txt')), 'A new location starts with empty level files')
+        self:check(state.panels.browser.markInto and state.panels.browser.ghost, 'The Files tab has drag feedback widgets')
+        count = #state.level.children
+        LocationIO.import(state, bytes)
+        count = #state.level.children
+    end
     local same = true
     for index, node in ipairs(state.level.children) do
         same = same and node.name == names[index]

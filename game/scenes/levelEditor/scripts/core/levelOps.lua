@@ -530,8 +530,12 @@ function Ops:placeModel(path, position)
     return root
 end
 
--- Gives a Mesh3D a colour map: reuses its SurfaceAppearance3D child or creates one.
+-- Gives a Mesh3D a colour map (reuses its SurfaceAppearance3D child or creates one); a Decal3D
+-- takes the image directly.
 function Ops:applyTexture(mesh, path)
+    if mesh.className == 'Decal3D' then
+        return self:setProperty({ mesh }, 'image', nil, path)
+    end
     for _, child in ipairs(mesh.children) do
         if child.className == 'SurfaceAppearance3D' then
             return self:setProperty({ child }, 'colorMap', nil, path)

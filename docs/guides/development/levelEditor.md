@@ -203,3 +203,10 @@ default sun when the level has no directional light.
 - **Import** (Create and Assets tabs, Create menu, file browser) calls `katsa.system.openFileDialog`; several files can be picked. Without a native dialog (no zenity/kdialog) the editor says so and opens the file browser; dropping files on the window always works.
 - `core/importer.lua`: models are placed, images become sprite quads (or the colour map of the selected mesh from the browser), other files are copied to `editor/assets/{audio,fonts,files}` and reported.
 - **Create > Visual**: Billboard, Surface UI, Decal, Surface appearance, Particles, Attachment. The text of a Billboard/Surface UI is the `EditorText` attribute (inspector row `text`); the label inside the board is rebuilt from it on load.
+
+## Level files, texture target and drag feedback
+
+- The level files (`editor/assets`) belong to the open level: they are emptied when the editor starts, on File > New (example or empty) and when a location is opened (the opened package brings its own files). Save packs the referenced assets into the `.katsa`, so nothing is lost for saved work.
+- "Use as texture of the selection" works on a selected Mesh3D (colour map through `SurfaceAppearance3D`) and on a selected Decal3D (its `image`).
+- Dragging a file in the Level files tab highlights the folder it would move into and shows a label with its name at the pointer, like the Workspace drop marks.
+- The scene's own (empty) World3D is rendered at the lowest density without a sky, so full-screen passes are spent only on the editor view. Probe: `--test-v108.9.editor` (per-stage frame cost; software GL, so relative numbers only).

@@ -144,6 +144,21 @@ local function removeAll(fs, store)
     return fs.remove(store) and true or false
 end
 
+-- Empties the level files (a new level starts without the files of the previous one).
+-- Returns how many top-level entries were removed.
+function LevelFiles.reset(fs)
+    fs = fs or katsa.filesystem
+    local removed = 0
+    if fs.getInfo(LevelFiles.ROOT, 'directory') then
+        for _, name in ipairs(fs.getDirectoryItems(LevelFiles.ROOT)) do
+            if removeAll(fs, LevelFiles.ROOT .. '/' .. name) then
+                removed = removed + 1
+            end
+        end
+    end
+    return removed
+end
+
 -- Bytes of a file: through the virtual file system first, then straight from disk for an absolute
 -- path (the system file dialog returns those, and the virtual file system does not see them).
 local function readSource(fs, source)

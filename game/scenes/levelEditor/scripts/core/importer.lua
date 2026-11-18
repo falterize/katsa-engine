@@ -43,11 +43,11 @@ function Importer.place(state, stored, kind, action, slot)
         return true
     elseif kind == 'image' and action == 'texture' then
         local target = state.selection:primary()
-        if target and target.className == 'Mesh3D' then
+        if target and (target.className == 'Mesh3D' or target.className == 'Decal3D') then
             state.ops:applyTexture(target, stored)
             return true
         end
-        state:notify('Select a mesh to texture')
+        state:notify('Select a mesh or a decal to put the image on')
         return false
     end
     state:notify('A ' .. tostring(kind) .. ' cannot be placed in the scene; use it from scripts')

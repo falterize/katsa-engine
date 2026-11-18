@@ -8,6 +8,7 @@ local EditorSettings = require('./io.editorSettings')
 local NodeData = require('./core.nodeData')
 local Focus = require('source.engine.ui.widgets.textFocus')
 local Grid = require('./view.grid')
+local LevelFiles = require('./io.levelFiles')
 local LocationIO = require('./io.locationIO')
 local Ops = require('./core.levelOps')
 local Picking = require('source.engine.world.picking')
@@ -37,6 +38,10 @@ function Content.new(scene)
         size = { 1, 0, 1, 0 },
         zIndex = 1,
     }, ui.content)
+    -- The scene's own world is empty: skip its sky pass and render it at the lowest density, so
+    -- the full-screen work is spent only on the editor view.
+    local host = scene.world.environment
+    host.sky.enabled, host.shadows.enabled, host.render.renderDensity = false, false, 0.5
     local root3D = ui:create('World3D', { name = 'EditorWorld', timeScale = 0 }, viewport)
     local world = root3D._world
     local environment = world.environment
@@ -82,6 +87,7 @@ function Content.new(scene)
     self.perf = Profiler.new(nil, katsa.profiler)
     self.boxes = {} -- outline pool: [1] is the primary selection, the rest are the others
     self.ops = Ops.new(self)
+    LevelFiles.reset() -- a new editor session starts with an empty files folder
     self:seed()
     self.ops:adopt(self.level)
     self.recent = LocationIO.readRecent()
@@ -320,6 +326,7 @@ end
 
 function Content:newExample()
     self:clearLevel()
+    self:resetFiles()
     local ops, world = self.ops, self.world
     local Clone = require('source.engine.nodes.core.clone')
     local function mesh(name, kind, position, size, color)
@@ -353,8 +360,19 @@ end
 
 function Content:newLocation()
     self:clearLevel()
+    self:resetFiles()
     self.fileName, self.savedVersion = nil, self.undo.version
     self:notify('New empty location')
+end
+
+-- Empties the level files folder and the Files tab: a new level never inherits the files of the
+-- previous one.
+function Content:resetFiles()
+    LevelFiles.reset()
+    local browser = self.panels and self.panels.browser
+    if browser then
+        browser.levelPath, browser.levelSelected, browser.dirty = '', nil, true
+    end
 end
 
 -- Writes a package to editor/exports/<name>.katsa (the same format as Save, a separate folder).
