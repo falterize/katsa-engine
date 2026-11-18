@@ -112,6 +112,11 @@ function Bootstrap.install(project, options)
     end
 
     function katsa.filedropped(file)
+        -- A scene that takes dropped files itself (the level editor imports them as assets)
+        -- sets `katsa.dropHandler(path) -> boolean`; otherwise a dropped file is loaded as a scene.
+        if katsa.dropHandler and katsa.dropHandler(file:getFilename()) then
+            return
+        end
         file:open('r')
         local bytes = file:read()
         file:close()

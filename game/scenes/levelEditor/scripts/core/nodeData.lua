@@ -18,6 +18,7 @@ local SKIPPED = {
     effectiveBonePaletteLimit = true,
 }
 local Shapes = require('../builders.shapes')
+local UiText = require('./uiText')
 
 -- A root name for a model about to be built: parts are named '<root>.<part>', so no registered
 -- name may already start with it.
@@ -62,6 +63,11 @@ function NodeData.capture(node)
     -- A loaded model is rebuilt by loading the file again, so its meshes are not captured.
     if node:getAttribute('EditorModel') then
         data.model = node:getAttribute('EditorModel')
+        return data
+    end
+    -- A board's children are its own UI tree (Environment, label); its text is the EditorText
+    -- attribute, and the tree is rebuilt from that.
+    if UiText.supports(node) then
         return data
     end
     for _, child in ipairs(node.children) do
@@ -113,6 +119,9 @@ function NodeData.build(world, data, parent)
     end
     for name, value in pairs(data.attributes or {}) do
         node:setAttribute(name, copy(value))
+    end
+    if UiText.supports(node) then
+        UiText.apply(node)
     end
     for _, child in ipairs(data.children) do
         NodeData.build(world, child, node)

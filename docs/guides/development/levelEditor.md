@@ -194,3 +194,9 @@ default sun when the level has no directional light.
 - The ribbon (`panels/toolbar.lua`) has four tabs: **Home** (undo, tools, space/pivot, snapping), **Create** (create list, lights, import), **View** (grid cell/major/extent, light markers, shadows, wireframe, frame) and **Assets**.
 - `panels/tooltip.lua`: any widget registers a description; it appears after the pointer rests on it. Property names use the engine hint texts (`editor/hints`).
 - Assets: `scene` (default) copies an imported file into `editor/assets/` (written into the package as `assets/...`); `shared` stores `shared://<path under assets/>` and copies nothing. **Scene folder** opens the editor assets folder in the file browser so files can be dropped there directly.
+
+## Importing and visual nodes
+
+- **Import** (Create and Assets tabs, Create menu, file browser) calls `katsa.system.openFileDialog`; several files can be picked. Without a native dialog (no zenity/kdialog) the editor says so and opens the file browser; dropping files on the window always works.
+- `core/importer.lua`: models are placed, images become sprite quads (or the colour map of the selected mesh from the browser), other files are copied to `editor/assets/{audio,fonts,files}` and reported.
+- **Create > Visual**: Billboard, Surface UI, Decal, Surface appearance, Particles, Attachment. The text of a Billboard/Surface UI is the `EditorText` attribute (inspector row `text`); the label inside the board is rebuilt from it on load.

@@ -30,6 +30,11 @@ function System.setClipboardText(text)
     end
 end
 
+-- Native open-file dialog: returns a list of paths ({} when cancelled) or nil plus a reason.
+function System.openFileDialog(options)
+    return require('source.katsa.core.fileDialog').open(options)
+end
+
 function System.openURL(url)
     return platform ~= nil and platform:openURL(url)
 end

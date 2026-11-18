@@ -9,6 +9,7 @@ local Menubar = require('./panels.menubar')
 local Popup = require('./panels.popup')
 local ColorPicker = require('./panels.colorPicker')
 local Tooltip = require('./panels.tooltip')
+local Importer = require('../core.importer')
 local Prompt = require('./panels.prompt')
 local Properties = require('./panels.properties')
 local Settings = require('./panels.settings')
@@ -50,6 +51,12 @@ function Interface.create(state)
     state.panels.popup = Popup.create(state, ui)
     state.panels.colorPicker = ColorPicker.create(state, ui)
     state.panels.tooltip = Tooltip.create(state, ui)
+    -- Files dropped on the window are imported as assets (see bootstrap's katsa.dropHandler).
+    katsa.dropHandler = function(path)
+        Importer.many(state, { path })
+        return true
+    end
+    state.dropHandler = katsa.dropHandler
     state.panels.menubar = Menubar.create(state, ui, frames.top)
     state.panels.toolbar = Toolbar.create(state, ui, frames.top)
     state.panels.tree = Tree.create(state, ui, frames.left)

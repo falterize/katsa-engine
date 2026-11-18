@@ -244,7 +244,7 @@ function Module.assets(self)
     local function never()
         return false
     end
-    self:check(AssetStore.kind('a/b/Crate.PNG') == 'image' and AssetStore.kind('x.glb') == 'model' and AssetStore.kind('x.txt') == nil, 'Asset kinds follow the file extension')
+    self:check(AssetStore.kind('a/b/Crate.PNG') == 'image' and AssetStore.kind('x.glb') == 'model' and AssetStore.kind('x.txt') == 'file', 'Asset kinds follow the file extension')
     self:check(AssetStore.targetPath('dir/my crate.glb', 'model', never) == 'editor/assets/models/my_crate.glb', 'Store names are made safe')
     local taken = { ['editor/assets/textures/a.png'] = true, ['editor/assets/textures/a_2.png'] = true }
     self:check(AssetStore.targetPath('a.png', 'image', function(path) return taken[path] end) == 'editor/assets/textures/a_3.png', 'A clashing name gets the next free number')

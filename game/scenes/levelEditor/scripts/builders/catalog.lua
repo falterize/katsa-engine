@@ -2,6 +2,7 @@
 -- `ops:create`. Positions come from the editor's placement point (in front of the camera).
 local Clone = require('source.engine.nodes.core.clone')
 local Shapes = require('./shapes')
+local UiText = require('../core.uiText')
 
 local Catalog = {}
 
@@ -73,6 +74,41 @@ local function volume(label, trigger)
     }
 end
 
+-- A node that lives on a surface (Decal3D, SurfaceUI, SurfaceAppearance3D): it goes under the
+-- selected mesh, or under a new cube when nothing suitable is selected. `child` is an optional
+-- first child, so the node shows something at once.
+local function surfaceNode(group, label, class, extra, child, needsHost, text)
+    return {
+        group = group,
+        label = label,
+        make = function(content, position)
+            local ops, world = content.ops, content.world
+            content.undo:begin('Create ' .. label)
+            local host = content.selection:primary()
+            if not (host and (host:isA('Mesh3D') or (not needsHost and host:isA('Node3D')))) then
+                host = ops:create('Mesh3D', {
+                    name = Clone.uniqueName(world, label .. ' host'),
+                    kind = 'cube',
+                    position = lifted(position, 2),
+                    size = { 2, 2, 2 },
+                    color = { GREY[1], GREY[2], GREY[3], 1 },
+                })
+            end
+            local properties = { name = Clone.uniqueName(world, label) }
+            for key, value in pairs(extra or {}) do
+                properties[key] = value
+            end
+            local node = ops:create(class, properties, host)
+            if text then
+                UiText.set(node, text)
+            end
+            content.undo:commit()
+            content.selection:set({ node })
+            return node
+        end,
+    }
+end
+
 function Catalog.items()
     return {
         primitive('Cube', 'cube', { 2, 2, 2 }),
@@ -102,15 +138,25 @@ function Catalog.items()
         volume('Trigger', true),
         volume('Collider', false),
         {
-            group = 'Objects',
-            label = 'Billboard',
+            group = 'Visual',
+            label = 'Billboard (always faces camera)',
             make = function(content, position)
-                return content.ops:create('BillboardUI', {
+                content.undo:begin('Create Billboard')
+                local node = content.ops:create('BillboardUI', {
                     name = Clone.uniqueName(content.world, 'Billboard'),
                     position = { position[1], position[2] + 2, position[3] },
                 })
+                UiText.set(node, 'Billboard')
+                content.undo:commit()
+                content.selection:set({ node })
+                return node
             end,
         },
+        surfaceNode('Visual', 'Surface UI', 'SurfaceUI', nil, nil, nil, 'Surface UI'),
+        surfaceNode('Visual', 'Decal', 'Decal3D'),
+        surfaceNode('Visual', 'Surface appearance', 'SurfaceAppearance3D', nil, nil, true),
+        plain('Visual', 'Particles', 'ParticleEmitter3D'),
+        plain('Visual', 'Attachment', 'Attachment3D'),
     }
 end
 

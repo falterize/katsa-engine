@@ -39,8 +39,11 @@ local function lines(text)
 end
 
 function Tooltip:show(entry, mx, my)
-    local text = type(entry.text) == 'function' and entry.text() or entry.text
-    if not text or text == '' then
+    local text = entry.text
+    if type(text) == 'function' then
+        text = text()
+    end
+    if type(text) ~= 'string' or text == '' then
         return
     end
     local ui = self.ui

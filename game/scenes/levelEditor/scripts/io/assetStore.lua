@@ -9,6 +9,8 @@ AssetStore.ROOT = 'editor/assets'
 
 local IMAGES = { png = true, jpg = true, jpeg = true, bmp = true, tga = true }
 local MODELS = { obj = true, glb = true, gltf = true, blend = true }
+local AUDIO = { wav = true, ogg = true, mp3 = true, flac = true }
+local FONTS = { ttf = true, otf = true }
 
 local function extension(path)
     return (path:match('%.([^%./\\]+)$') or ''):lower()
@@ -18,17 +20,30 @@ local function baseName(path)
     return path:match('([^/\\]+)$')
 end
 
--- 'image', 'model' or nil by file extension (models: what the engine importer registry reads).
+-- 'image', 'model', 'audio', 'font' or 'file' (anything else: xml, json, shaders, ...) by file
+-- extension (models: what the engine importer registry reads). Every file can be imported.
 function AssetStore.kind(path, supports)
     local ext = extension(path)
     if IMAGES[ext] then
         return 'image'
     end
-    if supports then
-        return supports(path) and 'model' or nil
+    if AUDIO[ext] then
+        return 'audio'
     end
-    return MODELS[ext] and 'model' or nil
+    if FONTS[ext] then
+        return 'font'
+    end
+    if supports then
+        if supports(path) then
+            return 'model'
+        end
+    elseif MODELS[ext] then
+        return 'model'
+    end
+    return 'file'
 end
+
+local FOLDERS = { model = 'models', image = 'textures', audio = 'audio', font = 'fonts', file = 'files' }
 
 local function safe(name)
     name = name:gsub('[^%w%._%-]', '_')
@@ -38,7 +53,7 @@ end
 -- Where a source file is stored: editor/assets/models|textures/<safe name>. `taken` is a
 -- function(path) -> boolean that says whether a different file already uses that path.
 function AssetStore.targetPath(source, kind, taken)
-    local folder = kind == 'model' and 'models' or 'textures'
+    local folder = FOLDERS[kind] or 'files'
     local name = safe(baseName(source))
     local stem, ext = name:match('^(.*)(%.[^%.]+)$')
     stem, ext = stem or name, ext or ''

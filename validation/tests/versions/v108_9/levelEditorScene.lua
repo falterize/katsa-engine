@@ -301,6 +301,33 @@ function Module.run(self)
     state.importTarget = 'shared'
     self:check(state.importTarget == 'shared', 'Imports can target shared://')
     state.importTarget = 'scene'
+    local Importer = require('game.scenes.levelEditor.scripts.core.importer')
+    local before = #state.level.children
+    local imported = Importer.many(state, { 'assets/models/characters/player.glb', 'README.md' })
+    self:check(imported == 2 and #state.level.children == before + 1, 'Any file imports: a model is placed, other files are copied')
+    self:check(katsa.dropHandler ~= nil and katsa.dropHandler('README.md') == true, 'Files dropped on the window are imported')
+    local Catalog = require('game.scenes.levelEditor.scripts.builders.catalog')
+    local made = 0
+    for _, entry in ipairs(Catalog.items()) do
+        if entry.group == 'Visual' or entry.group == 'Audio' then
+            state.selection:set({})
+            made = made + (pcall(entry.make, state, { 0, 0, 0 }) and 1 or 0)
+        end
+    end
+    self:check(made >= 6, 'Decal, Surface UI, Billboard, Surface appearance, Particles and Attachment can be created')
+    self:check(state:saveLocation('visual') and state:openLocation(LocationIO.pathFor('visual')), 'A level with visual nodes saves and opens')
+    local UiText = require('game.scenes.levelEditor.scripts.core.uiText')
+    local board
+    local function search(node)
+        if UiText.supports(node) and not board then
+            board = node
+        end
+        for _, child in ipairs(node.children) do
+            search(child)
+        end
+    end
+    search(state.level)
+    self:check(board ~= nil and UiText.get(board) ~= '', 'Board text survives Save and Open')
 
     local visible = state.grid.visible
     state.grid:setVisible(not visible)

@@ -6,6 +6,7 @@
 local Flow = require('../support.flow')
 local Icons = require('../widgets.icons')
 local Kit = require('../support.kit')
+local Importer = require('../../core.importer')
 local Menus = require('../support.menus')
 
 local Toolbar = {}
@@ -187,8 +188,8 @@ function Toolbar.create(state, ui, parent)
     quick('Sun', 'Sun', 'light', 'Add a directional light (sun)')
     divider()
     big('Import', 'import', function()
-        state.panels.browser:show('Files')
-    end, 'Open the file browser to import models and images')
+        Importer.dialog(state)
+    end, 'Choose files on your computer to import: models, images, audio, fonts, anything (you can also drop files on the window)')
 
     ---------------------------------------------------------------- View
     group = 'view'
@@ -267,7 +268,10 @@ function Toolbar.create(state, ui, parent)
     big('Scene folder', 'folder', function()
         state.panels.browser:openSceneFolder()
     end, 'Show the level\'s own assets folder in the file browser; drop models and images there', 72, 6)
-    big('Files', 'import', function()
+    big('Import', 'import', function()
+        Importer.dialog(state)
+    end, 'Choose files on your computer to import (or drop them on the window)', nil, 6)
+    big('Files', 'folder', function()
         state.panels.browser:show('Files')
     end, 'Open the file browser')
     return self

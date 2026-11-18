@@ -648,6 +648,9 @@ function Content:updateStatus()
 end
 
 function Content:release()
+    if katsa.dropHandler == self.dropHandler then
+        katsa.dropHandler = nil
+    end
     self.transform:release()
     self.grid:release()
     self.lightViz:release()

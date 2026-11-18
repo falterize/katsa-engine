@@ -3,6 +3,7 @@
 -- and placed, an image becomes a sprite quad or the colour map of the selected mesh, with a
 -- thumbnail per image row. Location: recent files, the autosave and saved locations.
 local AssetStore = require('../../io.assetStore')
+local Importer = require('../../core.importer')
 local Clone = require('source.engine.nodes.core.clone')
 local Menus = require('../support.menus')
 local Kit = require('../support.kit')
@@ -145,50 +146,11 @@ function Browser:heading(y, text)
 end
 
 function Browser:act(kind)
-    local state, file = self.state, self.selected
-    if not file then
-        state:notify('Select a file first')
+    if not self.selected then
+        self.state:notify('Select a file first')
         return
     end
-    local stored, fileKind
-    local relative = file.path:match('^assets/(.+)$')
-    if state.importTarget == 'shared' and relative and AssetStore.kind(file.path, Models.supports) then
-        -- Shared: refer to the project's own file (shared://) instead of copying it.
-        stored, fileKind = 'shared://' .. relative, AssetStore.kind(file.path, Models.supports)
-    else
-        if state.importTarget == 'shared' then
-            state:notify('Shared needs a file under assets/; it was copied into the scene folder instead')
-        end
-        stored, fileKind = AssetStore.import(file.path, Models.supports)
-    end
-    if not stored then
-        state:notify(tostring(fileKind))
-        return
-    end
-    local position = state:placement()
-    if fileKind == 'model' and kind == 'add' then
-        local ok, message = pcall(state.ops.placeModel, state.ops, stored, { position[1], position[2], position[3] })
-        if not ok then
-            state:notify('Cannot load the model: ' .. tostring(message))
-        end
-    elseif fileKind == 'image' and kind == 'sprite' then
-        local mesh = state.ops:create('Mesh3D', {
-            name = Clone.uniqueName(state.world, 'Sprite'),
-            kind = 'quad',
-            position = { position[1], position[2] + 1, position[3] },
-            size = { 2, 2, 1 },
-        })
-        state.ops:applyTexture(mesh, stored)
-    elseif fileKind == 'image' and kind == 'texture' then
-        local target = state.selection:primary()
-        if target and target.className == 'Mesh3D' then
-            state.ops:applyTexture(target, stored)
-        else
-            state:notify('Select a mesh to texture')
-        end
-    else
-        state:notify('That action does not fit this file type')
-    end
+    Importer.import(self.state, self.selected.path, kind)
 end
 
 function Browser:footer(specs)
@@ -217,7 +179,7 @@ function Browser:buildFiles()
     end
     for _, file in ipairs(listing.files) do
         local kind = AssetStore.kind(file.path, Models.supports)
-        if kind then
+        do
             local isSelected = self.selected and self.selected.path == file.path
             y = self:row(y, file.name .. (kind == 'model' and '   (model)' or ''), function()
                 self.selected, self.dirty = file, true
@@ -229,6 +191,9 @@ function Browser:buildFiles()
     end
     self.scroll.canvasSize = { 0, 0, 0, y }
     self:footer({
+        { 'Import files...', function()
+            Importer.dialog(self.state)
+        end, 120 },
         { 'Add model', function()
             self:act('add')
         end },

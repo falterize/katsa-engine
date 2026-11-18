@@ -4,6 +4,7 @@
 -- { heading = text }.
 local Catalog = require('../../builders.catalog')
 local Shortcut = require('./shortcut')
+local Importer = require('../../core.importer')
 
 local Menus = {}
 
@@ -119,8 +120,8 @@ function Menus.createItems(state, point)
         end, { icon = entry.group == 'Lights' and 'light' or nil })
     end
     items[#items + 1] = SEPARATOR
-    items[#items + 1] = item('Import model or image...', function()
-        state.panels.browser:show('Files')
+    items[#items + 1] = item('Import assets...', function()
+        Importer.dialog(state)
     end)
     return items
 end

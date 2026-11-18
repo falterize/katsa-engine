@@ -7,6 +7,7 @@ local Properties = require('source.engine.editor.inspectors.properties')
 local Schema = require('source.engine.editor.inspectors.schema')
 local Groups = require('../support.propertyGroups')
 local Kit = require('../support.kit')
+local UiText = require('../../core.uiText')
 
 local Panel = {}
 Panel.__index = Panel
@@ -208,7 +209,11 @@ function Panel:rebuild()
                     text = format(row.value),
                 }, self.scroll, 'field'))
                 box:connect('submitted', function(_, text)
-                    self:commit(key, nil, kind == 'number' and text or text)
+                    if row.set then
+                        row.set(text)
+                    else
+                        self:commit(key, nil, text)
+                    end
                 end)
             else
                 local text = kind == 'vector' and '' or format(row.value)
@@ -225,6 +230,18 @@ function Panel:rebuild()
             end
             y = y + ROW
         end
+    end
+    if #nodes == 1 and UiText.supports(primary) then
+        drawRow({
+            key = 'text',
+            kind = 'string',
+            value = UiText.get(primary),
+            set = function(text)
+                UiText.set(primary, text)
+                state:refresh()
+            end,
+        })
+        y = y + 4
     end
     local visibleRows = {}
     for _, row in ipairs(sharedRows(nodes)) do

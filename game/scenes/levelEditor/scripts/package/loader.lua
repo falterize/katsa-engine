@@ -65,6 +65,17 @@ local function build(world, entry, parent, root, Shapes)
     for name, value in pairs(entry.attributes or {}) do
         node:setAttribute(name, value)
     end
+    -- Billboard and surface text: the label is rebuilt from the EditorText attribute.
+    local boardText = entry.attributes and entry.attributes.EditorText
+    if boardText and node.ui then
+        node.ui:text({
+            size = { 1, 0, 1, 0 },
+            text = boardText,
+            fontSize = 28,
+            backgroundColor = { 0.04, 0.06, 0.1 },
+            backgroundTransparency = 0.35,
+        }, node.ui.content)
+    end
     for _, child in ipairs(entry.children or {}) do
         build(world, child, node, root, Shapes)
     end
