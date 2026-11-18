@@ -216,3 +216,7 @@ default sun when the level has no directional light.
 - Nodes name level files `scene://textures/a.png`, not `editor/assets/...`: the editor world resolves `scene://` to the level files folder, the same name the exported package uses (`assets/...` inside the `.katsa`, mapped back on Open). The editor's own overlay shader is `editor://shaders/onTop.glsl`.
 - `UI:layout()` scans the whole tree for changed properties, so `getAbsolutePosition()`/`getAbsoluteSize()` cost about 1 ms each in this UI. Per-frame polling (tooltips, ribbon hints, drag targets, pop-ups) uses `Kit.rect(node)`, which lays out once per editor frame. Do not call the getters in loops.
 - Edit > Drop to ground puts the bottom of the selected objects on y = 0.
+
+## View tab
+
+Grouped by purpose: the ground grid (Grid toggle, Cell size, Bright line every N, Squares), what the viewport draws (Lights markers, Shadows, Sky, Wireframe) and the camera (Selected, Everything, Reset view).

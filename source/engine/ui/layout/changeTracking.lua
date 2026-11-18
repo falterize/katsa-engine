@@ -103,12 +103,15 @@ function ChangeTracking.install(UI)
     local function changed(list, paint)
         local result, animated = false, false
         for _, node in ipairs(list) do
-            if node:isA('Node2D') then
+            -- Type tests read the class table directly: node:isA() goes through the property
+            -- lookup of every node, and this scan visits every node of the UI every layout.
+            local types = rawget(node, '_class')._types
+            if types.Node2D then
                 node._spatialSnapshot = node._spatialSnapshot or {}
                 result = Snapshot.fields(node._spatialSnapshot, node, noKeys, sizeVectors) or result
                 local childChanged, childAnimated = changed(node.children, paint)
                 result, animated = childChanged or result, childAnimated or animated
-            elseif node:isA('UINode') or node:isA('Ramp') then
+            elseif types.UINode or types.Ramp then
                 local snapshot = node._snapshot
                 if not snapshot then
                     snapshot = {}
@@ -148,7 +151,7 @@ function ChangeTracking.install(UI)
                     result = Snapshot.fields(snapshot.canvas, node, emptyKeys, canvasVectors)
                         or result
                 end
-                if node:isA('UICorner') then
+                if types.UICorner then
                     local old = snapshot.corner or {}
                     snapshot.corner = old
                     for i = 1, 2 do
@@ -158,7 +161,7 @@ function ChangeTracking.install(UI)
                         end
                     end
                 end
-                if node:isA('Ramp') then
+                if types.Ramp then
                     local old = snapshot.gradient or {}
                     snapshot.gradient = old
                     local index = 0
@@ -234,10 +237,10 @@ function ChangeTracking.install(UI)
                     result = true
                 end
                 if
-                    node:isA('UINode')
+                    types.UINode
                     and node.visible ~= false
                     and (
-                        (node:isA('Shader2D') and node.enabled ~= false and node.shaderPath ~= '')
+                        (types.Shader2D and node.enabled ~= false and node.shaderPath ~= '')
                         or (node.material and node.material.animated)
                         or childAnimated
                     )

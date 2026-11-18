@@ -106,8 +106,7 @@ function Content.new(scene)
     self.camera = camera
     camera.near, camera.far, camera.fov = 0.05, 2000, prefs.camera.fov
     camera.drawDistance = 2000
-    camera.position = { 9, 7, 9 }
-    camera.rotation = { -25, -135, 0 }
+    self:resetCamera()
     scene.input = EditorInput.new(scene, self)
     if next(prefs.bindings) then
         pcall(scene.input.map.loadData, scene.input.map, prefs.bindings)
@@ -159,6 +158,11 @@ end
 -- A point in front of the camera for new objects: where the view centre meets the ground, or
 -- eight units ahead; snapped to the move step when snapping is on.
 -- Where a new object goes: under the viewport point (vx, vy) when given, else the view centre.
+function Content:resetCamera()
+    self.camera.position = { 9, 7, 9 }
+    self.camera.rotation = { -25, -135, 0 }
+end
+
 function Content:placement(vx, vy)
     local ray = self.transform:ray(vx or (self.viewport._canvasWidth or 1280) / 2, vy or (self.viewport._canvasHeight or 720) / 2)
     local point = Snap.planePoint(ray[1], ray[2], { 0, 0, 0 }, { 0, 1, 0 })

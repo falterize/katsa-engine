@@ -193,6 +193,7 @@ function Toolbar.create(state, ui, parent)
     end, 'Choose files on your computer to import: models, images, audio, fonts, anything (you can also drop files on the window)')
 
     ---------------------------------------------------------------- View
+    -- Grouped by purpose: the ground grid, what the viewport draws, and where the camera looks.
     group = 'view'
     toggle('Grid', 'grid', function()
         state.grid:setVisible(not state.grid.visible)
@@ -202,8 +203,8 @@ function Toolbar.create(state, ui, parent)
     end, 'Show or hide the ground grid (G)')
     stack({
         {
-            label = 'Cell',
-            hint = 'Grid cell size in units',
+            label = 'Cell size',
+            hint = 'Size of one grid square, in units',
             get = function()
                 return state.grid.cell
             end,
@@ -212,8 +213,8 @@ function Toolbar.create(state, ui, parent)
             end,
         },
         {
-            label = 'Major',
-            hint = 'A bright line every N cells',
+            label = 'Bright line',
+            hint = 'Every N-th grid line is drawn brighter (N squares apart)',
             get = function()
                 return state.grid.settings.major
             end,
@@ -222,8 +223,8 @@ function Toolbar.create(state, ui, parent)
             end,
         },
         {
-            label = 'Extent',
-            hint = 'How many cells the grid covers in each direction',
+            label = 'Squares',
+            hint = 'How many squares the grid extends in each direction from the centre',
             get = function()
                 return state.grid.settings.count
             end,
@@ -231,104 +232,40 @@ function Toolbar.create(state, ui, parent)
                 state.grid:setCount(value)
             end,
         },
-    }, 44, 52)
+    }, 62, 52)
     divider()
     local environment = state.world.environment
     toggle('Lights', 'light', function()
         state.lightViz.enabled = not state.lightViz.enabled
     end, function()
         return state.lightViz.enabled
-    end, 'Show the light markers: icon, radius and range', nil, 6)
+    end, 'Show the light markers: icon, radius and range (the lights themselves keep working)', nil, 6)
     toggle('Shadows', 'shadow', function()
         environment.shadows.enabled = not environment.shadows.enabled
     end, function()
         return environment.shadows.enabled
     end, 'Turn shadows on or off in the viewport')
+    toggle('Sky', 'sky', function()
+        environment.sky.enabled = not environment.sky.enabled
+    end, function()
+        return environment.sky.enabled
+    end, 'Show the sky, or a plain background')
     toggle('Wireframe', 'wire', function()
         environment.debug.wireframe = not environment.debug.wireframe
     end, function()
         return environment.debug.wireframe
     end, 'Draw every mesh as lines')
     divider()
-    big('Frame', 'frame', function()
+    big('Selected', 'frame', function()
         local nodes = state.selection:items()
         state:frame(#nodes > 0 and nodes or state.level.children)
-    end, 'Move the camera to see the selection, or everything (F)', nil, 6)
-    big('All', 'cube', function()
+    end, 'Move the camera to see the selected objects, or everything when nothing is selected (F)', nil, 6)
+    big('Everything', 'cube', function()
         state:frame(state.level.children)
-    end, 'Move the camera to see the whole level (Home)')
-
-    ---------------------------------------------------------------- Assets
-    group = 'assets'
-    big('Import', 'import', function()
-        Importer.dialog(state)
-    end, 'Choose files on your computer to import: models, images, audio, fonts, anything (you can also drop files on the window)')
-
-    ---------------------------------------------------------------- View
-    group = 'view'
-    toggle('Grid', 'grid', function()
-        state.grid:setVisible(not state.grid.visible)
-        state:savePrefs()
-    end, function()
-        return state.grid.visible
-    end, 'Show or hide the ground grid (G)')
-    stack({
-        {
-            label = 'Cell',
-            hint = 'Grid cell size in units',
-            get = function()
-                return state.grid.cell
-            end,
-            set = function(value)
-                state.grid:setCell(value)
-            end,
-        },
-        {
-            label = 'Major',
-            hint = 'A bright line every N cells',
-            get = function()
-                return state.grid.settings.major
-            end,
-            set = function(value)
-                state.grid:setMajor(value)
-            end,
-        },
-        {
-            label = 'Extent',
-            hint = 'How many cells the grid covers in each direction',
-            get = function()
-                return state.grid.settings.count
-            end,
-            set = function(value)
-                state.grid:setCount(value)
-            end,
-        },
-    }, 44, 52)
-    divider()
-    local environment = state.world.environment
-    toggle('Lights', 'light', function()
-        state.lightViz.enabled = not state.lightViz.enabled
-    end, function()
-        return state.lightViz.enabled
-    end, 'Show the light markers: icon, radius and range', nil, 6)
-    toggle('Shadows', 'shadow', function()
-        environment.shadows.enabled = not environment.shadows.enabled
-    end, function()
-        return environment.shadows.enabled
-    end, 'Turn shadows on or off in the viewport')
-    toggle('Wireframe', 'wire', function()
-        environment.debug.wireframe = not environment.debug.wireframe
-    end, function()
-        return environment.debug.wireframe
-    end, 'Draw every mesh as lines')
-    divider()
-    big('Frame', 'frame', function()
-        local nodes = state.selection:items()
-        state:frame(#nodes > 0 and nodes or state.level.children)
-    end, 'Move the camera to see the selection, or everything (F)', nil, 6)
-    big('All', 'cube', function()
-        state:frame(state.level.children)
-    end, 'Move the camera to see the whole level (Home)')
+    end, 'Move the camera to see the whole level (Home)', 70)
+    big('Reset view', 'camera', function()
+        state:resetCamera()
+    end, 'Put the camera back where it was when the editor started', 70)
 
     ---------------------------------------------------------------- Assets
     group = 'assets'

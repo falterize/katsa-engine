@@ -196,6 +196,16 @@ function Module.run(self)
             state.ops:dropToGround({ box })
             self:check(math.abs(box.position[2] - box.size[2] / 2) < 1e-3, 'Drop to ground puts the bottom of an object on y = 0')
         end
+        do
+            local counts = {}
+            for _, item in ipairs(state.panels.toolbar.items) do
+                counts[item.tab] = (counts[item.tab] or 0) + 1
+            end
+            self:check(counts.view == 11 and counts.assets and counts.assets <= 6, 'Each ribbon tab is built once')
+            state.camera.position = { 1, 2, 3 }
+            state:resetCamera()
+            self:check(state.camera.position[1] == 9 and state.camera.rotation[2] == -135, 'Reset view restores the start camera')
+        end
         LevelFiles.createFile('', 'leftover.txt')
         state:newLocation()
         self:check(not katsa.filesystem.getInfo(LevelFiles.full('leftover.txt')), 'A new location starts with empty level files')
