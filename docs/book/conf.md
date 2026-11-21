@@ -8,7 +8,7 @@ return {
     -- application (game or project; a scene run on its own may set these too)
     identity = 'my-game',          -- save folder name (Katsa/<identity>); never change it
     title = 'My Game',             -- window title
-    version = '1.0.8b',            -- engine version it was made for; a mismatch only warns
+    version = '1.0.9a',            -- engine version it was made for; a mismatch only warns
     frameRateLimit = 0,            -- 0 = uncapped, otherwise frames per second
     console = true,                -- console window (Windows)
     externalStorage = true,        -- save to external storage (Android)

@@ -2,7 +2,7 @@ name: tests
 on:
   workflow_dispatch:
   push:
-    branches: ['v108*']
+    branches: ['v1[0-9][0-9]*']
     paths: ['source/**', 'assets/**', 'validation/**', 'tools/**', 'conf.lua', 'main.lua', '.github/**']
   pull_request:
 env:

@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     tags: ['v*']
-    branches: ['v108*']
+    branches: ['v1[0-9][0-9]*']
     paths: ['native/**', 'tools/**', 'android/**', '.github/workflows/native.yml']
   pull_request:
     paths: ['native/**', 'tools/native/**', 'tools/build/**', 'android/**', '.github/workflows/native.yml']

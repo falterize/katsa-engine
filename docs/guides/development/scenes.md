@@ -83,7 +83,7 @@ katsa path/to/exampleScene
 ```lua
 -- conf.lua: what the engine needs to know before the scene runs (see docs/book/conf.md)
 return {
-    version = '1.0.8b',
+    version = '1.0.9a',
     nodes = { 'bouncePad' },
     plugins = { pathfinding = true },
 }
@@ -116,7 +116,7 @@ as its only tag. Filtering lives in `game/sceneTags.lua`.
 The category folders are a convention, not a requirement (empty folders are lost by Git and GitHub ZIPs); `main.lua` must export the five lifecycle hooks `create`, `update`, `update3D`, `update2D` and `destroy`.
 
 `version` (optional) is the engine version the scene was made for, written like `Version.release` in
-`source/engine/core/version.lua` (now `1.0.8b`: `MAJOR.MINOR.PATCH` plus `a` alpha, `b` beta or `rc`;
+`source/engine/core/version.lua` (now `1.0.9a`: `MAJOR.MINOR.PATCH` plus `a` alpha, `b` beta or `rc`;
 no letter is stable). The loader compares it with the running engine (`Version.check`): any
 difference, older or newer, writes a console warning about possible incompatibility, and
 `package.compatibility` holds `{ status, message, declared }` (`same`, `older`, `newer`, `unknown`)

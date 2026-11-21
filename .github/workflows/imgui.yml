@@ -2,7 +2,7 @@ name: imgui
 on:
   workflow_dispatch:
   push:
-    branches: ['v108*']
+    branches: ['v1[0-9][0-9]*']
     paths: ['source/plugins/imgui/vendor/**', 'source/plugins/imgui/build/**', '.github/workflows/imgui.yml']
 env:
   PYTHONUNBUFFERED: '1'
