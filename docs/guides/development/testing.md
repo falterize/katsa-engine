@@ -182,6 +182,15 @@ backends, including SliderConstraint3D.
 
 </details>
 
+## Continuous integration
+
+`.github/workflows/tests.yml` runs on every push to a `v108*` branch and on pull requests: it clones
+the examples project (same branch name, else `main`), builds LuaJIT and the native libraries through
+the shared `.github/actions/setup-engine` action, checks that the book is up to date and runs
+`tools/ci/runSuites.sh` (the regression suites, failing when any suite does). The examples repository
+has its own `tests.yml` that checks the engine out the same way, so a change to a scene is tested
+against the engine of the same version. Locally: `KATSA_PROJECT=../katsa-engine-examples tools/ci/runSuites.sh`.
+
 <!-- book:nav -->
 ---
 **Katsa book** · chapter 10, Tools and workflow · page 11 of 12

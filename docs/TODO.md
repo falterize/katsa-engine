@@ -33,7 +33,7 @@ fix, say plainly what only real hardware can confirm, and the launcher UI is the
 
 - Pick a single `*.katsa` automatically when the launcher finds only one.
 - `tools/project/newGame.py` to scaffold a game.
-- A CI job that runs `tools/dev/testChanged.lua --since <base> --run` and the full suites.
+- CI: run `tools/dev/testChanged.lua --since <base> --run` on pull requests instead of the full suites.
 - Input action map follow-ups.
 - **LOD follow-ups** (LODGroup with names, quality bias, zoom compensation, cross-fade, animation rates, shadow level and billboard level is done): automatic mesh simplification at import (pure Lua, static meshes first, cached next to the model; skinned meshes and shape keys later); choosing the level for several cameras (split screen); switching physics by distance; a dithered fade (screen-door) instead of the transparency fade; shadows from a coarser mesh instead of no shadow; billboards from several angles (impostors).
 - **Temporal effects follow-ups** (history and velocity hints for `Shader2D` are done): velocity for user-shader vertex displacement, blend shapes, particles and transparent meshes, a built-in TAA pass on top of both. Check on real hardware: `rgba16f` canvases on mobile and the look of the Datamosh.

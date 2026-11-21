@@ -60,7 +60,7 @@ relative to the body (physics units, Y up). Call it again after editing and the 
 table as a Lua file for `mapFile`.
 
 Examples: scene `tileMapLab` (paint, layers, collision overlay, snapshot) and the ground of `abilityRunner2D`.
-Tests: `validation/tests/versions/v108_7/tileMap.lua`. The example tileset is made by `tools/import/makeTileset.py`.
+Tests: `validation/tests/versions/v108_7/tileMap.lua`. The example tileset is made by `python tools/import/makeTileset.py <examples project>` (default `../katsa-engine-examples`).
 
 <!-- book:nav -->
 ---

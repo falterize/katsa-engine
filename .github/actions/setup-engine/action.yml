@@ -1,0 +1,25 @@
+name: Set up the Katsa engine for tests
+description: Builds LuaJIT and the native libraries and installs the system libraries the tests need (Linux).
+runs:
+  using: composite
+  steps:
+    - name: Build LuaJIT
+      shell: bash
+      run: |
+        git clone --depth 1 --branch v2.1 https://github.com/LuaJIT/LuaJIT.git "$RUNNER_TEMP/luajit"
+        make -C "$RUNNER_TEMP/luajit" -j4 PREFIX="$HOME/lj" install
+        echo "$HOME/lj/bin" >> "$GITHUB_PATH"
+        echo "LUAJIT_PREFIX=$HOME/lj" >> "$GITHUB_ENV"
+    - name: System libraries
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y libsdl2-2.0-0 libopenal1 xvfb libegl1 libgl1-mesa-dri
+    - name: Build native libraries and host
+      shell: bash
+      working-directory: ${{ inputs.engine }}
+      run: tools/ci/annotate.sh build python3 tools/native/build.py linux
+      env:
+        LUAJIT_PREFIX: ${{ env.LUAJIT_PREFIX }}
+inputs:
+  engine:
+    description: Engine checkout folder
+    default: .

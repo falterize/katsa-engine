@@ -3,9 +3,12 @@
 Tiles 0-15 are the 4-neighbour autotile "ground": the index is the bitmask of neighbouring
 ground cells (N=1, E=2, S=4, W=8), so tile 15 is fully surrounded and tile 0 is alone.
 Tiles 16-23: water, brick, crate, spike, coin, ladder, sign, flag.
-Run: python tools/import/makeTileset.py
+The tileset belongs to the examples project: pass its folder (default ../katsa-engine-examples).
+Run: python tools/import/makeTileset.py [project folder]
 """
+import os
 import random
+import sys
 from PIL import Image
 
 T = 16
@@ -99,7 +102,10 @@ def main():
                 img.putpixel((7 * T + x, base + y), (210, 210, 210, 255))
             if 4 <= x <= 12 and 1 <= y <= 7 and x - 4 <= (7 - abs(y - 4)) * 2:
                 img.putpixel((7 * T + x, base + y), (230, 70, 70, 255))
-    img.save('assets/textures/examples/tileset.png')
+    project = sys.argv[1] if len(sys.argv) > 1 else '../katsa-engine-examples'
+    target = os.path.join(project, 'assets', 'textures', 'examples', 'tileset.png')
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    img.save(target)
 
 
 main()
