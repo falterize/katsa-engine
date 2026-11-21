@@ -44,3 +44,10 @@ katsa.gamepad.byIndex(2):setVibration(0.4, 0.4, 0.2)          -- second pad rumb
 
 Rumble needs SDL 2.0.9 and sensors SDL 2.0.14. With an older `SDL2.dll` those calls return
 false/nil instead of failing.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 8, Input · page 3 of 3
+
+[← InputMap: named actions](inputMap.md) · [Contents](../../book/README.md) · [katsa.net: transport →](../katsa/net.md)
+<!-- /book:nav -->

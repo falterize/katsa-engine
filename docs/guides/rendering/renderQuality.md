@@ -88,3 +88,10 @@ still pass `unlit = true/false` when creating a node are converted once by `comp
 Renderers must read the value only through `Lighting.influence(node)` (it also forces 0 for billboards and for
 system layers without lighting). In the world program (`assets/shaders/engine/world.glsl`), `lightInfluence = 0` compiles the unlit variant, other values
 use the `lightDetach` uniform (1 - influence) to blend toward the flat colour.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 1 of 10
+
+[← TileMap](../ui/tileMap.md) · [Contents](../../book/README.md) · [Camera3D projection →](camera3D.md)
+<!-- /book:nav -->

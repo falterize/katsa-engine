@@ -37,3 +37,10 @@ traceback and the wheel scrolls it. Reports are saved in the save directory,
 crashes/crash-01.log through crash-10.log, newest first, each with the last 50 console lines;
 `last-error.log` is a copy of the newest report. See the [console and logs guide](console.md). Automated test/smoke modes still exit
 on failure. A native driver/process fault cannot be kept alive by Lua's handler.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 6 of 12
+
+[← Console, logs and crash reports](console.md) · [Contents](../../book/README.md) · [Hot reload →](hotReload.md)
+<!-- /book:nav -->

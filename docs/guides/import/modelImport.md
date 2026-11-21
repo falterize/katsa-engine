@@ -12,3 +12,10 @@ not passed directly to Models.load. Skeletons, skinning and clips are now suppor
 See [skin limits](../rendering/skinLimits.md) for runtime `MaxBoneInfluences`
 and `BonePaletteLimit`, Workspace editing and palette batching. Models retain
 all imported weights; lowering instance limits does not modify source assets.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 1 of 11
+
+[← Android shader link fix — v35 (retained in v36)](../rendering/androidShaderFix.md) · [Contents](../../book/README.md) · [Models, opacity and surface materials — v64 →](models.md)
+<!-- /book:nav -->

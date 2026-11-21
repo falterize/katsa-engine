@@ -104,3 +104,10 @@ These tools diagnose smoothness; they do not impose a 60 FPS cap or promise a
 minimum frame rate on every device. The [Stats guide](statistics.md) explains
 why schema-1 arithmetic FPS exports cannot be compared directly to corrected
 FPS means.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 12 of 12
+
+[← Testing and build verification](testing.md) · [Contents](../../book/README.md) · [Scene data: folders and files →](persistence.md)
+<!-- /book:nav -->

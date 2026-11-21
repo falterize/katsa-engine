@@ -34,3 +34,10 @@ scaled by World3D `timeScale`: a world running at 0.1x still re-poses every rend
 while track time advances at the scaled speed. The scene hosts publish the unscaled frame time as
 `world.frameRealDelta` for throttles like this; code that gates work on it falls back to the scaled delta when
 no host sets it.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 9 of 11
+
+[← Ramp and Tween](rampTween.md) · [Contents](../../book/README.md) · [Inverse kinematics (`ik` plugin) →](ik.md)
+<!-- /book:nav -->

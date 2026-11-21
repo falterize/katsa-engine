@@ -96,3 +96,10 @@ local other = vehicle:clone(nil, spawnFolder) -- same properties, different pare
 - The copy is created through the scene's normal `world:create`, so it registers with the world, NodeTree and UI like any other node. Signal connections and runtime caches are not copied.
 - Properties come from the same schema as the Workspace inspector. Node references and resources are shared; plain tables and vectors are copied.
 - A world keeps mesh names unique, so a copy named `Wheel` is created as `Wheel_2`, `Wheel_3`, ... when `Wheel` is alive. Pass `Name` for the root to choose its name.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 2 of 8
+
+[← Scene authoring](scenes.md) · [Contents](../../book/README.md) · [Node classes and naming →](classSystem.md)
+<!-- /book:nav -->

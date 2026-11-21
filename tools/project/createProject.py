@@ -7,13 +7,19 @@ import shutil
 import tempfile
 
 
-def create(source: Path, target: Path, name: str, identity: str | None = None):
+def create(source: Path, target: Path, name: str, identity: str | None = None,
+           examples: Path | None = None):
     if not re.fullmatch(r'[a-z][a-z0-9-]{0,59}', name):
         raise ValueError('Use a lowercase game name containing letters, digits and hyphens')
     identity = identity or 'katsa-' + name
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}', identity):
         raise ValueError('Use a stable save identity with letters, digits, underscores or hyphens')
     source, target = source.resolve(), target.resolve()
+    # The starter scene lives in the examples project (a sibling checkout by default).
+    examples = (examples or source.parent / 'katsa-engine-examples').resolve()
+    starter = examples / 'game/scenes/starterGame'
+    if not starter.is_dir():
+        raise FileNotFoundError(f'Starter scene not found, pass --examples <folder>: {starter}')
     if target.exists():
         raise FileExistsError(f'Destination already exists: {target}')
     if target.is_relative_to(source):
@@ -24,7 +30,7 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
         shutil.copytree(source / 'tools/project/templates/game', stage)
         shutil.copy2(source / 'conf.lua', stage / 'conf.lua')
         scene = stage / 'game/scenes/start'
-        shutil.copytree(source / 'game/scenes/starterGame', scene)
+        shutil.copytree(starter, scene)
         scene_settings = scene / 'menu-settings.lua'
         scene_settings.write_text(
             scene_settings.read_text(encoding='utf-8').replace(
@@ -33,7 +39,7 @@ def create(source: Path, target: Path, name: str, identity: str | None = None):
             encoding='utf-8', newline='\n',
         )
         for directory in (
-            'source/engine', 'vendor', 'assets/shaders',
+            'source/engine', 'source/runtime', 'vendor', 'assets/shaders',
             'assets/textures/engine', 'assets/fonts/engine', 'tools/run',
             'tools/build',
         ):
@@ -59,8 +65,10 @@ def main():
     parser.add_argument('destination', type=Path)
     parser.add_argument('--name', required=True)
     parser.add_argument('--identity', help='Stable application save identity, reused across game updates')
+    parser.add_argument('--examples', type=Path, help='The katsa-engine-examples folder (default: next to the engine)')
     args = parser.parse_args()
-    print(create(Path(__file__).resolve().parents[2], args.destination, args.name, args.identity))
+    print(create(Path(__file__).resolve().parents[2], args.destination, args.name, args.identity,
+                 args.examples))
 
 
 if __name__ == '__main__':

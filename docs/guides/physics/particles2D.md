@@ -95,3 +95,10 @@ moving attachment, while existing particles remain in world coordinates.
 
 ParticleEmitter3D exposes the same simulationSpace setting and semantics. Changing
 space affects new births; existing particles keep the space selected at birth.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 9 of 9
+
+[← Parallel physics](parallel.md) · [Contents](../../book/README.md) · [ParticleEmitter3D →](../particles/api.md)
+<!-- /book:nav -->

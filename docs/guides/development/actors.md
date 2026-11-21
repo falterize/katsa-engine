@@ -150,3 +150,10 @@ worker, compute with plain data and apply the result in the main-thread callback
 After changing `native/src/threads`, run `sh validation/native/threadsStress.sh` on Linux: it
 builds a stress test with ThreadSanitizer and AddressSanitizer (hundreds of actors destroyed at
 random moments) and must report `races=0` and no ASan errors.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 7 of 8
+
+[← Spatial transforms (v45)](spatialTransforms.md) · [Contents](../../book/README.md) · [Localization →](localization.md)
+<!-- /book:nav -->

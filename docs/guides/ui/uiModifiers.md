@@ -42,3 +42,10 @@ nesting remains invalid. Custom visual material and gradient on the same element
 are mutually exclusive; rounded ancestor/scissor clipping remains supported.
 
 See [UI layout](uiLayout.md) for units and [Workspace](../editor/workspace.md) for inspector editing.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 6 of 9
+
+[← ScrollFrame](scrolling.md) · [Contents](../../book/README.md) · [UIStyler plugin →](uiStyler.md)
+<!-- /book:nav -->

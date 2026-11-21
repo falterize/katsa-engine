@@ -86,3 +86,10 @@ Roblox Content objects; these are not exposed as nonfunctional settings.
 | `dragWithMouse` | false | Lets the mouse swipe the content. Touch always swipes; the wheel and the scrollbar thumb work regardless. |
 
 A flung frame that reaches an end keeps its speed into the stretch and springs back. The wheel and `scrollBy` stop any glide and are always instant.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 5 of 9
+
+[← TextBox](textBox.md) · [Contents](../../book/README.md) · [UI modifiers →](uiModifiers.md)
+<!-- /book:nav -->

@@ -59,3 +59,10 @@ Custom code that projects points should call `camera:project`, `camera:viewToScr
 `camera.focal` remains available as the perspective lens value.
 
 See the focused checks in `validation/tests/versions/v108/camera3D.lua` (run with `katsa . --test-v108`).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 2 of 10
+
+[← Render quality](renderQuality.md) · [Contents](../../book/README.md) · [Katsa v83 — Shared directional lights and physics debug →](lighting.md)
+<!-- /book:nav -->

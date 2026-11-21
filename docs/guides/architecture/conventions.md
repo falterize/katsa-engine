@@ -19,3 +19,10 @@
   notes, historical reports and migration plans belong outside the project source.
 - Vendor dependencies retain upstream layout. Do not rewrite external identifiers
   or scatter compatibility modules merely to preserve old require paths.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 1, First steps · page 6 of 7
+
+[← Framework and scenes](../development/framework.md) · [Contents](../../book/README.md) · [Project architecture →](../../architecture.md)
+<!-- /book:nav -->

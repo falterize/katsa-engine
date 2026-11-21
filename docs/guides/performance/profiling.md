@@ -105,3 +105,10 @@ katsa.profiler.start('Loading scene')
 katsa.profiler.stop('Loading scene')              -- adds a sample; shows in stages and exports
 local pathMs = katsa.profiler.scope('Bot plan', function() return map:findPath(a, b) end)
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 10 of 12
+
+[← Runtime performance](../development/performance.md) · [Contents](../../book/README.md) · [Testing and build verification →](../development/testing.md)
+<!-- /book:nav -->

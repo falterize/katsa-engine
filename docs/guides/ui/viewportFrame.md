@@ -82,3 +82,10 @@ Node3D, Mesh3D or Attachment3D. The emitter's position/rotation/scale are local 
 that support. Without it, the nearest spatial parent is used. Removing an explicit
 support stops births until cleared/reassigned. Existing world particles drain;
 local particles retain the last support pose. Adornee never reparents the node.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 8 of 9
+
+[← UIStyler plugin](uiStyler.md) · [Contents](../../book/README.md) · [TileMap →](tileMap.md)
+<!-- /book:nav -->

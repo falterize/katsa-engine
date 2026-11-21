@@ -38,3 +38,10 @@ local pad = world:create('BouncePad', { position = { 0, 0.5, 0 }, force = 20 })
 local connection = pad:connect('destroying', function() print('pad removed') end)
 connection:disconnect()      -- every connect returns a connection with :disconnect()
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 3 of 8
+
+[← Nodes, hierarchy and lifecycle](nodeLifecycle.md) · [Contents](../../book/README.md) · [Node authoring and API reference →](nodeAuthoring.md)
+<!-- /book:nav -->

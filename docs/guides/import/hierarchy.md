@@ -154,3 +154,10 @@ still uses the rest geometry; use proxy colliders/targets for gameplay interacti
 
 References: [glTF 2.0 specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
 and [Blender glTF exporter](https://docs.blender.org/api/current/bpy.ops.export_scene.html).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 3 of 11
+
+[← Models, opacity and surface materials — v64](models.md) · [Contents](../../book/README.md) · [Blend shapes (Blender Shape Keys) →](blendShapes.md)
+<!-- /book:nav -->

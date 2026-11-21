@@ -139,3 +139,10 @@ Mixamo downloads without animation contain a skeleton but no motion clip. Downlo
 separate animation-bearing assets to obtain real clips; loading a skeleton does not
 create Idle/Walk automatically. The included XBot states are procedural examples.
 Blender conversion was not executed in this update because Blender is unavailable.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 2 of 11
+
+[← Model import](modelImport.md) · [Contents](../../book/README.md) · [Hierarchical models and skeleton animation →](hierarchy.md)
+<!-- /book:nav -->

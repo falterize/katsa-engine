@@ -203,3 +203,10 @@ Shared categories are shared within the same application's identity and OS user,
 not across unrelated games or cloud accounts. The former independent Starter's
 files remain in `katsa-starter-game`; removing its duplicate project directory did
 not delete that directory. See [save data](saveData.md) and [new games](newGame.md).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 1 of 10
+
+[← Repeatable validation](validation.md) · [Contents](../../book/README.md) · [Save data →](saveData.md)
+<!-- /book:nav -->

@@ -172,3 +172,10 @@ local label = ui:text({ text = 'status' }, panel)                  -- also not i
 should keep a click or wheel away from the world; pass `true` to ignore non-interactable
 branches. `ui:wheel(x, y, dy, dx)` returns `true` when a scroll frame consumed the wheel, so a
 camera zoom should only act when neither returned true.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 1 of 9
+
+[← Localization](../development/localization.md) · [Contents](../../book/README.md) · [Shared image component and viewport resolution →](images.md)
+<!-- /book:nav -->

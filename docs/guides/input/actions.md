@@ -65,3 +65,10 @@ A scene's own widgets win a touch over the joystick, so after the second frame t
 moves the joystick to the nearest spot no widget covers (`Game:clearJoystickSpot`). Scenes whose UI
 fills the whole bottom area (galleries, viewport demos) hide it instead. `validation/tests/versions/v108_4/mobileControls.lua`
 presses the joystick in every catalog scene.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 8, Input · page 1 of 3
+
+[← SoundManager, AudioListener and AudioSource (v108.1)](../audio/audioModules.md) · [Contents](../../book/README.md) · [InputMap: named actions →](inputMap.md)
+<!-- /book:nav -->

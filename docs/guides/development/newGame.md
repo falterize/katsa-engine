@@ -138,3 +138,10 @@ not attach demonstration Workspace/Tools/navigation behavior. When runtime is
 omitted, the collection uses its existing demonstration host; `kind = 'interface'`
 selects the camera-free interface adapter. This field does not choose LuaJIT,
 physics backend or frame rate. Generated games use the standalone host directly.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 1, First steps · page 4 of 7
+
+[← Running and building Katsa](../katsa/building.md) · [Contents](../../book/README.md) · [Framework and scenes →](framework.md)
+<!-- /book:nav -->

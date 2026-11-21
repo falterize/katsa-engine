@@ -137,3 +137,10 @@ settings preserve their values when hidden. Numeric range/curve fields show Min/
 or Start/50%/End labels. Invalid edited settings are rejected with previous values retained.
 
 The renderer uses dynamic Mesh vertex updates (`Mesh:setVertices`) and draw ranges (`Mesh:setDrawRange`).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 7, Particles and audio · page 1 of 5
+
+[← 2D and 3D particles](../physics/particles2D.md) · [Contents](../../book/README.md) · [Particle collisions and lighting →](collisionsLighting.md)
+<!-- /book:nav -->

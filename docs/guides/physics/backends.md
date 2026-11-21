@@ -134,3 +134,10 @@ upstream joltc/Jolt remain pinned under `vendor/joltPhysics`. See the
 [parallel physics guide](parallel.md) for configuration, ownership and rebuilding.
 
 2D uses the separate `source.engine.physics.2d` integration; see the [2D physics guide](physics2D.md).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 7 of 9
+
+[← Reaching the physics of a node](nodeAccess.md) · [Contents](../../book/README.md) · [Parallel physics →](parallel.md)
+<!-- /book:nav -->

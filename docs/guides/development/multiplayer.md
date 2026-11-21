@@ -188,3 +188,10 @@ retransmitted. See [multiplayerCars](multiplayerCars.md) for chat, voice, host-o
 (`remote:onRequest`) and console events.
 
 Node replication (Roblox-style server to client mirroring): see [replication](replication.md).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 9, Multiplayer · page 2 of 5
+
+[← katsa.net: transport](../katsa/net.md) · [Contents](../../book/README.md) · [Node replication →](replication.md)
+<!-- /book:nav -->

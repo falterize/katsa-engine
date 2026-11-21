@@ -40,3 +40,10 @@ world:create('ParticleEmitter3D', {
     brightness = 1.5,
 })
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 7, Particles and audio · page 2 of 5
+
+[← ParticleEmitter3D](api.md) · [Contents](../../book/README.md) · [Particle visibility and material composition — v69 →](visibility.md)
+<!-- /book:nav -->

@@ -220,3 +220,10 @@ default sun when the level has no directional light.
 ## View tab
 
 Grouped by purpose: the ground grid (Grid toggle, Cell size, Bright line every N, Squares), what the viewport draws (Lights markers, Shadows, Sky, Wireframe) and the camera (Selected, Everything, Reset view).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 2 of 12
+
+[← Workspace editor](../editor/workspace.md) · [Contents](../../book/README.md) · [Plugins →](plugins.md)
+<!-- /book:nav -->

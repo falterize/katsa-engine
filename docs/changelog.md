@@ -2,6 +2,16 @@
 
 Per-version notes. Test results and logs for each release live in Git history and tags.
 
+## v108.10
+
+- The examples moved to their own repository, `katsa-engine-examples`, a project of its own. The engine has no root `game/` folder and ships only what it needs in `assets/` (engine shaders, default font, fallback textures, click sound). The collection runtime and dev tools moved to `source/runtime` and `source/devtools`, so any scene gets Workspace, F4 and the pause menu; the scene catalog is optional.
+- Starting with nothing to run shows a black window and a console message. A scene (`katsa <folder or archive>`) or a project runs directly; several scenes of a project switch by path or ID, and a project without a start scene opens a plain picker.
+- Projects: a folder or archive with a `conf.lua` (window settings plus `startScene`, `scenes`, `sharedAssets`). It is mounted over the engine, so its `game/` modules and `assets/` resolve like engine files.
+- `shared://` resolves through a list of folders (engine `assets` first, first folder holding the file wins). `--shared <folder>` and `sharedAssets` add folders.
+- A scene folder outside the game source opens by path; `FS.mount` accepts relative real paths such as `../examples`.
+- Documentation is a book: `docs/book` holds the contents, a "Projects and scenes" page and the order of all guides; every page ends with previous/next links. `tools/docs/buildBook.py` keeps them current (`--check` for CI).
+- `tools/project/createProject.py` takes the starter scene from the examples (`--examples`); its template path was fixed. `tools/dev/runTests.sh` mounts the examples.
+
 ## v108.9
 
 - Engine UI: `getAbsoluteSize()` / `getAbsolutePosition()` no longer scan the whole UI on every call. `UI:layoutOnce()` scans at most once per `UI:update` frame unless a known change happened (a managed vector write or `ValueTypes.assign` raises `Managed.epoch`, a structural change raises `ui.revision`); `ui:layout()` stays exact. A scalar written mid-frame (`node.text = ...`) is seen by the next frame, or at once through `ui:layout()`. The scan itself is sparse: a node reads only the observed keys it has (raw, typed or seen before); a key set for the first time marks the node (`_watchDirty`) and the key list is rebuilt. `ui:changed()` at 611 editor nodes: 1.08 ms to 0.36 ms. Test in `v108_9/levelEditorScene.lua`.

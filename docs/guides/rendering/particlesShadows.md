@@ -60,3 +60,10 @@ Maximum Graphics Laboratory requests high render density, MSAA, shadow resolutio
 sampling, mapped materials, lit shadowed/colliding particles and fog. Renderer device,
 pixel/memory and shadow-atlas limits remain enforced; requested maxima can be clamped.
 Animation & Physics Laboratory and all earlier examples are available in menu categories.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 9 of 10
+
+[← Level of detail: LODGroup](lod.md) · [Contents](../../book/README.md) · [Android shader link fix — v35 (retained in v36) →](androidShaderFix.md)
+<!-- /book:nav -->

@@ -90,3 +90,10 @@ automatic. Its three-second mono probe includes silence so tails are audible.
 The probe was generated for this release; no third-party library/audio was added.
 
 Primary API: `katsa.audio.setEffect`, `katsa.audio.isEffectsSupported`, `katsa.audio.getMaxSourceEffects`, `Source:setEffect`, `Source:setFilter`, `Source:setPitch`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 7, Particles and audio · page 4 of 5
+
+[← Particle visibility and material composition — v69](../particles/visibility.md) · [Contents](../../book/README.md) · [SoundManager, AudioListener and AudioSource (v108.1) →](audioModules.md)
+<!-- /book:nav -->

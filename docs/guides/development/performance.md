@@ -157,3 +157,10 @@ return {
     frameRateLimit = 60,   -- 0 = uncapped; the scene value wins over the project value
 }
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 9 of 12
+
+[← Statistics and history](statistics.md) · [Contents](../../book/README.md) · [Profiling and budgets →](../performance/profiling.md)
+<!-- /book:nav -->

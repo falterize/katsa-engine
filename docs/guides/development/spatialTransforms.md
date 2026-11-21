@@ -113,3 +113,10 @@ local point = socket:pointToWorldSpace({ 0, 0, 1 })
 mesh:setParent(world.folders.Geometry, { keepWorldTransform = true })
 mesh:setWorldTransform({ position = point, rotation = { 0, 0, 0 }, scale = { 2, 2, 2 } })
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 6 of 8
+
+[← Scenes as prefabs](prefabs.md) · [Contents](../../book/README.md) · [Actors and worker threads →](actors.md)
+<!-- /book:nav -->

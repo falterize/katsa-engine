@@ -107,3 +107,10 @@ Love2D-style pointer API (window units, the same as `getPosition`):
 
 Callbacks `mousepressed`, `mousereleased`, `mousemoved(x, y, dx, dy, istouch)` and `wheelmoved`
 match Love2D. Custom image cursors (`newCursor`) are not implemented yet.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 4 of 10
+
+[← Background execution and time scale](../development/backgroundExecution.md) · [Contents](../../book/README.md) · [Windows: transparency and extra OS windows →](windows.md)
+<!-- /book:nav -->

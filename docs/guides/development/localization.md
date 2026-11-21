@@ -36,3 +36,10 @@ The inspector shows `textKey`. Fonts: choose a font per language yourself from `
 Hot reload re-reads locale files while the game runs (see `hotReload.md`).
 
 Example scene: `localizationLab`. Tests: `validation/tests/versions/v108_7/localization.lua`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 8 of 8
+
+[← Actors and worker threads](actors.md) · [Contents](../../book/README.md) · [Responsive UI →](../ui/uiLayout.md)
+<!-- /book:nav -->

@@ -30,3 +30,10 @@ sound.Enabled = false -- Inaudible while the source keeps running.
 ```
 
 The Ramp/Tween and Sound example panels demonstrate these switches separately.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 6 of 11
+
+[← Mesh skin limits](../rendering/skinLimits.md) · [Contents](../../book/README.md) · [AnimationTree and retargeting →](animationTree.md)
+<!-- /book:nav -->

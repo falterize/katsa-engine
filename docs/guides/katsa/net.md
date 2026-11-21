@@ -45,3 +45,10 @@ local servers = browser:update()       -- { address, port, info, seen }, entries
 
 `info` is an opaque string chosen by the game (the engine layer stores name, game port, player
 count). Discovery works on a local network; internet matchmaking needs a separate service.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 9, Multiplayer · page 1 of 5
+
+[← Gamepads, vibration and gyro](../input/gamepad.md) · [Contents](../../book/README.md) · [Multiplayer (engine networking) →](../development/multiplayer.md)
+<!-- /book:nav -->

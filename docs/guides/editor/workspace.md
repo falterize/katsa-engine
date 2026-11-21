@@ -15,3 +15,10 @@ inactive values. User types registered in a World3D supply propertySchema descri
 to the same inspector. New ClickDetector3D nodes expose radius, enabled and explicit
 positionSource. Parent remains read-only; Adornee and positionSource have node pickers.
 The drawer is a debugging tool: no source rewriting, undo stack or scene serialization.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 1 of 12
+
+[← multiplayerCars: the networked sample scene](../development/multiplayerCars.md) · [Contents](../../book/README.md) · [Level editor scene (`levelEditor`, v108.9) →](../development/levelEditor.md)
+<!-- /book:nav -->

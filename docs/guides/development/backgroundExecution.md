@@ -53,3 +53,10 @@ TimeScale 10.
 1. `runInBackground = true` or an `updateInBackground` that steps physics and the server.
 2. Use `realDt` for connection timers; `dt` for gameplay.
 3. Do not rely on window focus callbacks: query `scene.manager.focused`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 3 of 10
+
+[← Save data](saveData.md) · [Contents](../../book/README.md) · [katsa runtime layer →](../katsa/platform.md)
+<!-- /book:nav -->

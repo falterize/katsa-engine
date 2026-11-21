@@ -37,3 +37,10 @@ level `error`. A native process fault cannot be logged by Lua.
 Standalone scenes (`Host`) own a console panel (`source/engine/debug/consolePanel.lua`).
 F1 toggles it. Buttons: All / Warn+ / Errors filter, JSON and CSV export of the filtered
 view, Clear. The panel redraws only while visible and only after new entries arrive.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 5 of 12
+
+[← ImGui plugin](imgui.md) · [Contents](../../book/README.md) · [Debug settings and error reports →](debugging.md)
+<!-- /book:nav -->

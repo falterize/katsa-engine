@@ -54,3 +54,10 @@ waiting for `Shadows.updateHz`. Stable maps remain cached; face budgets still
 bound updates across multiple lights. Resolution, bias, normal bias and filter
 settings retain their existing meaning. This prevents an old character pose in
 the depth map from self-shadowing the current color-pass pose.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 5 of 11
+
+[← Blend shapes (Blender Shape Keys)](../import/blendShapes.md) · [Contents](../../book/README.md) · [Playing and Enabled →](../animation/playback.md)
+<!-- /book:nav -->

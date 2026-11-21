@@ -119,3 +119,10 @@ Missing 3D material maps use an object-local diagnostic checker with twelve cell
 across the largest rest-mesh dimension. It remains visible on small models, needs
 no UVs and follows movement, scaling and skeletal deformation without sliding
 through world-space cells. Valid material texture sizing is unchanged.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 2 of 9
+
+[← Responsive UI](uiLayout.md) · [Contents](../../book/README.md) · [Text rendering →](textRendering.md)
+<!-- /book:nav -->

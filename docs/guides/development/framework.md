@@ -27,3 +27,10 @@ manager:pop()                      -- back to the scene below
 manager:switch(createPause)        -- replaces the whole stack
 manager:requestSwitch(createPause) -- the same, but safe inside physics callbacks
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 1, First steps · page 5 of 7
+
+[← Create an independent game](newGame.md) · [Contents](../../book/README.md) · [Project conventions →](../architecture/conventions.md)
+<!-- /book:nav -->

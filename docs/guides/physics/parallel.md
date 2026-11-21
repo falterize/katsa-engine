@@ -93,3 +93,10 @@ Rebuild every distributed target after changing the bridge or header. Zig and
 formatters are development tools and are not bundled with the game.
 
 </details>
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 8 of 9
+
+[← 3D physics backends](backends.md) · [Contents](../../book/README.md) · [2D and 3D particles →](particles2D.md)
+<!-- /book:nav -->

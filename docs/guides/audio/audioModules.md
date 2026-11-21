@@ -74,3 +74,10 @@ voice:release()
 With the null driver (servers, tests, `KATSA_AUDIO=null`) `openCapture` returns nil and the queue
 source swallows data. `source/engine/audio/muLaw.lua` compresses 16-bit samples to one byte
 (`MuLaw.encode(samples, count)` / `MuLaw.decode(bytes)`), enough for speech at 8-16 kHz.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 7, Particles and audio · page 5 of 5
+
+[← Sound nodes in v46](audioNodes.md) · [Contents](../../book/README.md) · [Scene-owned input actions →](../input/actions.md)
+<!-- /book:nav -->

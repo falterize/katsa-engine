@@ -124,3 +124,10 @@ sit inside a widget, another World2D or a different World3D.
 Inside a `ViewportFrame` it is the interface of that viewport: a prefab copy placed in the
 viewport's World3D keeps its World2D there (drawn into the viewport, clickable in it), and the
 viewport world loads packed scenes with the scene manager of the world that holds the frame.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 5 of 8
+
+[← Node authoring and API reference](nodeAuthoring.md) · [Contents](../../book/README.md) · [Spatial transforms (v45) →](spatialTransforms.md)
+<!-- /book:nav -->

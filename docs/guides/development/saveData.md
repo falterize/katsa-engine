@@ -23,3 +23,10 @@ Use the [persistence API](persistence.md) for versioned progress slots and setti
 Identity migration and gameplay schema migration are separate operations.
 A [generated game](newGame.md) receives its own identity and does not import
 the example collection's saves automatically.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 2 of 10
+
+[← Scene data: folders and files](persistence.md) · [Contents](../../book/README.md) · [Background execution and time scale →](backgroundExecution.md)
+<!-- /book:nav -->

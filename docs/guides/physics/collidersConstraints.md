@@ -72,3 +72,10 @@ triangle-mesh collider (Jolt backend, `Static` bodies only). Indices are 1-based
 triangle, and triangles must be wound counter-clockwise when seen from the side that should
 collide: back faces are ignored, so a mesh viewed from behind lets bodies through. Use it for
 terrain, ramps and level geometry; a dynamic body should use boxes, spheres, capsules or Convex.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 3 of 9
+
+[← Hierarchy, UI and physics](nodesPhysics.md) · [Contents](../../book/README.md) · [Editable and image-derived collision geometry →](pointColliders.md)
+<!-- /book:nav -->

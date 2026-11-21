@@ -30,3 +30,10 @@ Open `assets/locales/en.lua` in the scene folder, change a string and save: the 
 without a restart. Change a scene script and the scene is created again from disk.
 Limits: game state is not kept on a scene restart (position, score), and shaders cause a scene restart rather than an
 in-place rebuild. `source/engine/debug/hotReload.lua` has the details; test: `v108_7/hotReload.lua`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 7 of 12
+
+[← Debug settings and error reports](debugging.md) · [Contents](../../book/README.md) · [Statistics and history →](statistics.md)
+<!-- /book:nav -->

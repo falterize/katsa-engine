@@ -563,3 +563,10 @@ assets/shaders/engine/
   user shader found under `game` and the test fixtures with each template of its type, on desktop and ES.
 
 </details>
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 4 of 10
+
+[← Katsa v83 — Shared directional lights and physics debug](lighting.md) · [Contents](../../book/README.md) · [SurfaceUI and Decal →](surfaces.md)
+<!-- /book:nav -->

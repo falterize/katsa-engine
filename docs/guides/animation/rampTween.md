@@ -132,3 +132,10 @@ Each emitter owns a Static LifetimeRamp. bindings `size` multiply birth size;
 `color` is RGB, `transparency` is 0..1, `rotation` adds degrees to particle spin.
 Curve color/alpha output is clamped for rendering. Lifetime is sampled by each
 particle's normalized age and does not have independent Animated playback.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 8 of 11
+
+[← AnimationTree and retargeting](animationTree.md) · [Contents](../../book/README.md) · [Smoothing per-tick state →](stepValue.md)
+<!-- /book:nav -->

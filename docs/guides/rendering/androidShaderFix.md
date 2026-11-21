@@ -6,3 +6,10 @@ v35 and v36 declare these matrices only inside VERTEX. WorldPosition and WorldNo
 
 The runtime suite validates both shaders as GLSL ES before opening a 3D scene. Desktop shader validation and actual Mesa rendering cannot certify compatibility with every Android GPU. Repeat the menu-to-game transition on the affected device.
 
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 10 of 10
+
+[← v70 rendering, particles, UI and audio](particlesShadows.md) · [Contents](../../book/README.md) · [Model import →](../import/modelImport.md)
+<!-- /book:nav -->

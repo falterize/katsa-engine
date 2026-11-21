@@ -120,3 +120,10 @@ separation is bounded; extreme zIndex does not move an image far from its face.
 The SurfaceUI + Decal gallery demonstrates six faces, Attachment3D, normal/onTop
 panels, rounded gradients/strokes, floor litter and tinted rotated tiled images.
 The included transparent litter illustration is generated for this project.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 5 of 10
+
+[← Shaders](shaders.md) · [Contents](../../book/README.md) · [Post-processing →](postProcessing.md)
+<!-- /book:nav -->

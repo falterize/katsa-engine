@@ -55,3 +55,10 @@ keep-world reparent and migration.
 F4 > 3D Physics > "Debug pose" cycles the modes. In a hosted network game the host draws
 server-simulated entities from the server (see the multiplayer guide), so the gap is only this
 one step.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 2 of 9
+
+[← 2D physics and Camera2D](physics2D.md) · [Contents](../../book/README.md) · [Collider3D and attachment constraints →](collidersConstraints.md)
+<!-- /book:nav -->

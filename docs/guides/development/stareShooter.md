@@ -88,3 +88,10 @@ Package the scene with
 `python tools/build/packageScene.py game/scenes/stareShooter dist/Stare-Shooter.zip`.
 It can then run through `katsa . --scene-package dist/Stare-Shooter.zip` on this
 engine. Godot and its project files are not runtime dependencies.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 10 of 10
+
+[← Dependencies and licenses](licenses.md) · [Contents](../../book/README.md)
+<!-- /book:nav -->

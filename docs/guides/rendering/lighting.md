@@ -120,3 +120,10 @@ are not Android/device FPS measurements. Multiple directional lights add both
 pixel work and shadow passes; one slot does not mean a negligible GPU cost.
 Historical version-specific test commands and guides describe their older API;
 use `--test-v83` and this guide for the current directional-light API.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 3 of 10
+
+[← Camera3D projection](camera3D.md) · [Contents](../../book/README.md) · [Shaders →](shaders.md)
+<!-- /book:nav -->

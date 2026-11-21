@@ -21,3 +21,10 @@ and explicit game-specific data validation. The standalone scene host supplies
 engine resources and UI routing without example navigation. Games implement
 their own menus, input bindings and gameplay systems. See [persistence](persistence.md)
 and [new games](newGame.md).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 8 of 10
+
+[← Code conventions](codeStyle.md) · [Contents](../../book/README.md) · [Dependencies and licenses →](licenses.md)
+<!-- /book:nav -->

@@ -160,3 +160,10 @@ The mixed Physics 2D + 3D example demonstrates an image with a transparent hole,
 a manually authored concave polygon, and a 3D hull extracted and edited from a
 mesh. Point authoring is a Lua API; no new graphical vertex-manipulation tool is
 introduced by these methods.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 4 of 9
+
+[← Collider3D and attachment constraints](collidersConstraints.md) · [Contents](../../book/README.md) · [Collision levels →](collisionLevels.md)
+<!-- /book:nav -->

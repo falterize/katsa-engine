@@ -189,3 +189,10 @@ actions; both receive the same keyboard, gamepad and mouse events.
 
 Gamepad rumble and sensors are in `katsa.gamepad` (see `gamepad.md`). Not included: a Workspace
 editor for the map.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 8, Input · page 2 of 3
+
+[← Scene-owned input actions](actions.md) · [Contents](../../book/README.md) · [Gamepads, vibration and gyro →](gamepad.md)
+<!-- /book:nav -->

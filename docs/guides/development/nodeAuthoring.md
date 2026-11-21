@@ -315,3 +315,10 @@ may receive start, update, update3D, update2D and release callbacks.
 Interface scenes import `scripts.ui.controller`. Panels/previews stay beneath
 scripts/ui. A UI controller that needs independent scheduled behavior can have a
 system that uses these modules; the whole UI folder does not need to be a system.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 4 of 8
+
+[← Node classes and naming](classSystem.md) · [Contents](../../book/README.md) · [Scenes as prefabs →](prefabs.md)
+<!-- /book:nav -->

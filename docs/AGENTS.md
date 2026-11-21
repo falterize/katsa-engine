@@ -27,13 +27,15 @@ Sections: 1 Working with the owner · 2 Repository map · 3 Code style · 4 Modu
 | `source/engine/components/` | Shared property groups of nodes, one definition per rule, grouped by category folder: `rendering/` (layering, renderRange, brightness, tint), `illumination/` (lighting, light, shadowing), `media/` (image), `ordering/` (priority). A new component goes into a fitting category, never into the root |
 | `source/engine/graphics/{materials,shaders,lighting}` | Material resolution, shader layers and shader source loading, light orientation defaults |
 | `source/katsa/` | The runtime layer: graphics on GL, window, audio, filesystem, net, platform |
-| `game/` | The project that ships with the repo, outside `source/`: scenes (`scenes/<name>`), the common collection runtime (`runtime/`), shared characters (`characters/`), game data (`data/project.lua`), `sceneCatalog.lua`, `sceneTags.lua`. Required as `game.*` |
+| `source/runtime/`, `source/devtools/` | The runtime any scene gets: collection `Game` host, pause menu, optional scene `catalog`, Workspace/F4/navigation overlays. No scene content |
 | `source/plugins/<name>/` | Optional features: `ads`, `ik`, `lod`, `pathfinding`, `ragdoll`, `uiStyler` |
-| `assets/` | Shared models, textures, shaders (`assets/shaders/engine/*.glsl`), audio, fonts |
+| `assets/` | Only what the engine needs: `shaders/engine`, `fonts/engine`, `textures/engine`, `audio/effects/click.wav`. Example assets live in the examples repo |
 | `validation/tests/` | **All** tests; versioned suites in `validation/tests/versions/vNNN/`, registry in `validation/tests/registry.lua` |
 | `native/`, `vendor/` | Project C/C++ sources / pinned third-party code (never hand-format vendor code) |
 | `tools/` | `dev/katsa.lua` (dev host), `dev/runTests.sh`, `build/`, `project/`, `import/` |
-| `docs/` | Current guides (`docs/guides/<area>/`), `architecture.md`, `changelog.md`, this file |
+| `docs/` | The book (`docs/book/book.json` order; `python tools/docs/buildBook.py` writes the contents and the previous/next footers; `--check` for CI), guides (`docs/guides/<area>/`), `architecture.md`, `changelog.md`, this file |
+
+**Examples are a separate project** (`falterize/katsa-engine-examples`, same branch name as the engine version, checked out next to the engine). The engine has no root `game/` and ships no scenes: with nothing to run it shows a black window and logs a message. A *scene* (folder/archive with `settings.lua` + `main.lua`) runs as `luajit tools/dev/katsa.lua <scene>`; a *project* (folder/archive with `conf.lua`, no `main.lua`) as `luajit tools/dev/katsa.lua <project>`: the engine mounts it at `_project` (settings) and at the virtual root (its `game/` modules and `assets/` answer like engine files; engine files win). `conf.lua` keys: `startScene`, `scenes` (scene folder), `sharedAssets` (extra `shared://` folders); see `docs/book/projects.md`. `shared://` resolves through a list of folders (engine `assets` first), also `--shared <folder>`. Tests run with the examples mounted: `tools/dev/runTests.sh` uses `../katsa-engine-examples` (or `KATSA_PROJECT`). Never require `game.*` from `source/`; optional project modules go through `source/runtime/optional.lua`.
 
 One README in the repository root. Screenshots go to `docs/images`, never the root. Per-version notes go to `docs/changelog.md` (there is no `releases` folder).
 

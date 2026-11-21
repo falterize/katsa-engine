@@ -64,3 +64,10 @@ end
 -- Or just use a Label; rich text is a documented subset of tags.
 ui:create('Label', { text = '<b>Score</b> 120', richText = true, fontSize = 18 }, panel)
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 3 of 9
+
+[← Shared image component and viewport resolution](images.md) · [Contents](../../book/README.md) · [TextBox →](textBox.md)
+<!-- /book:nav -->

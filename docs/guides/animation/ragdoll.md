@@ -32,3 +32,10 @@ without a recognised skeleton reports the reason in the read-only `status` prope
 `ragdoll:getBody('Hips')` returns the `Body3D` of a segment (nil while off). The stareShooter
 scene shows it: press R or the Ragdoll button; the walking capsule is paused and follows the
 pelvis, and switching back stands the character up above where it lay.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 11 of 11
+
+[← Inverse kinematics (`ik` plugin)](ik.md) · [Contents](../../book/README.md) · [2D physics and Camera2D →](../physics/physics2D.md)
+<!-- /book:nav -->

@@ -171,3 +171,10 @@ levels and two skinned levels on one skeleton with a clip).
 - The animation of the bones is calculated whichever level is shown.
 - Choose the level for several cameras at once (split screen); the world's current camera decides.
 - Switch physics by distance; colliders stay as they are.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 8 of 10
+
+[← Beam3D and Trail3D](ribbons.md) · [Contents](../../book/README.md) · [v70 rendering, particles, UI and audio →](particlesShadows.md)
+<!-- /book:nav -->

@@ -157,3 +157,10 @@ counts, sleeping bodies and dropped simulation time. These use the same plots,
 retention and selected/all 5/30-second exports as existing 3D metrics.
 
 World2D and World3D time-scale rows expose each scene world independently of the existing application-wide scale row.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 8 of 12
+
+[← Hot reload](hotReload.md) · [Contents](../../book/README.md) · [Runtime performance →](performance.md)
+<!-- /book:nav -->

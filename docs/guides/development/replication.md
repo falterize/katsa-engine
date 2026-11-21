@@ -42,3 +42,10 @@ client.nodeCreated:connect(function(node) end)
 
 Code: `source/engine/net/replication/` (`values`, `operations`, `storage`, `server`, `client`).
 Example: the `replicationLab` scene (`docs/guides/development/replicationLab.md`).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 9, Multiplayer · page 3 of 5
+
+[← Multiplayer (engine networking)](multiplayer.md) · [Contents](../../book/README.md) · [replicationLab →](replicationLab.md)
+<!-- /book:nav -->

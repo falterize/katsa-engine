@@ -63,13 +63,13 @@ There are three ways to start a game:
 
 | Way | Command | When |
 | --- | --- | --- |
-| From source | `luajit tools/dev/katsa.lua .` | developing: edit Lua, restart, no host build needed |
+| From source | `luajit tools/dev/katsa.lua <scene or project>` | developing: edit Lua, restart, no host build needed |
 | Generic runtime | `katsa <game folder or .katsa>` | one installed engine, several games |
 | Fused executable | `MyGame.exe` | shipping one file (plus the libraries) |
 
 A `.katsa` file is a plain ZIP of the game folder. Folders, `.katsa`/`.zip` archives and fused
-executables behave the same. Useful flags: `--scene <id>` starts a scene directly (ids are in
-`game/sceneCatalog.lua`), `--physics-jolt` / `--physics-oimo` pick the 3D physics backend,
+executables behave the same. Useful flags: `--scene <id or path>` starts a scene directly, `--shared <folder>` adds a
+`shared://` folder, `--physics-jolt` / `--physics-oimo` pick the 3D physics backend,
 `--test-<name>` runs a test suite (see [testing](../development/testing.md)).
 
 ## Quick start (run from source)
@@ -79,7 +79,10 @@ executables behave the same. Useful flags: `--scene <id>` starts a scene directl
 2. `git clone https://github.com/falterize/katsa-engine` and `cd katsa-engine`.
 3. Get the native libraries for your platform: build them (`python tools/native/build.py <platform>`,
    see your platform below) and add SDL2 and OpenAL Soft.
-4. `luajit tools/dev/katsa.lua .` opens the scene menu.
+4. `luajit tools/dev/katsa.lua .` opens a black window: the engine ships no scenes. Clone
+   [katsa-engine-examples](https://github.com/falterize/katsa-engine-examples) next to it and run
+   `luajit tools/dev/katsa.lua ../katsa-engine-examples` for the scene menu (see
+   [Projects and scenes](../../book/projects.md)).
 
 ## Windows
 
@@ -326,3 +329,10 @@ SDL2), image, sound (WAV and Ogg Vorbis), audio (OpenAL, silent fallback), physi
 Verified by the maintainers: Linux (libraries, host, packaged executables, test suites) and Windows
 (libraries and `katsa.exe` on the owner's PC). Not yet verified on real hardware: macOS and the
 Android APK build.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 1, First steps · page 3 of 7
+
+[← Getting started](../development/gettingStarted.md) · [Contents](../../book/README.md) · [Create an independent game →](../development/newGame.md)
+<!-- /book:nav -->

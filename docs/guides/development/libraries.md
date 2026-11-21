@@ -29,3 +29,10 @@ local half = CFrame.new(0, 0, 0):lerp(frame, 0.5)
 scene.audio:play('assets/audio/effects/click.wav', { group = 'ui', volume = 0.6 })
 scene.audio:play('assets/audio/effects/hit.wav', { position = { 4, 0, 2 }, maxDistance = 60 })
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 6 of 10
+
+[← Windows: transparency and extra OS windows](../katsa/windows.md) · [Contents](../../book/README.md) · [Code conventions →](codeStyle.md)
+<!-- /book:nav -->

@@ -1,0 +1,160 @@
+{
+  "title": "Katsa book",
+  "chapters": [
+    {
+      "title": "First steps",
+      "about": "Install the engine, run a project or a scene, and understand how a game is organised.",
+      "pages": [
+        "docs/book/projects.md",
+        "docs/guides/development/gettingStarted.md",
+        "docs/guides/katsa/building.md",
+        "docs/guides/development/newGame.md",
+        "docs/guides/development/framework.md",
+        "docs/guides/architecture/conventions.md",
+        "docs/architecture.md"
+      ]
+    },
+    {
+      "title": "Scenes and nodes",
+      "about": "How a scene is laid out, how nodes live and how you write your own.",
+      "pages": [
+        "docs/guides/development/scenes.md",
+        "docs/guides/development/nodeLifecycle.md",
+        "docs/guides/development/classSystem.md",
+        "docs/guides/development/nodeAuthoring.md",
+        "docs/guides/development/prefabs.md",
+        "docs/guides/development/spatialTransforms.md",
+        "docs/guides/development/actors.md",
+        "docs/guides/development/localization.md"
+      ]
+    },
+    {
+      "title": "User interface",
+      "about": "Layout, text, images, scrolling, styling and world-space UI.",
+      "pages": [
+        "docs/guides/ui/uiLayout.md",
+        "docs/guides/ui/images.md",
+        "docs/guides/ui/textRendering.md",
+        "docs/guides/ui/textBox.md",
+        "docs/guides/ui/scrolling.md",
+        "docs/guides/ui/uiModifiers.md",
+        "docs/guides/ui/uiStyler.md",
+        "docs/guides/ui/viewportFrame.md",
+        "docs/guides/ui/tileMap.md"
+      ]
+    },
+    {
+      "title": "Rendering",
+      "about": "Cameras, lights, shadows, shaders, surfaces and render quality.",
+      "pages": [
+        "docs/guides/rendering/renderQuality.md",
+        "docs/guides/rendering/camera3D.md",
+        "docs/guides/rendering/lighting.md",
+        "docs/guides/rendering/shaders.md",
+        "docs/guides/rendering/surfaces.md",
+        "docs/guides/rendering/postProcessing.md",
+        "docs/guides/rendering/ribbons.md",
+        "docs/guides/rendering/lod.md",
+        "docs/guides/rendering/particlesShadows.md",
+        "docs/guides/rendering/androidShaderFix.md"
+      ]
+    },
+    {
+      "title": "Models and animation",
+      "about": "Import models, play animations, blend them and solve inverse kinematics.",
+      "pages": [
+        "docs/guides/import/modelImport.md",
+        "docs/guides/import/models.md",
+        "docs/guides/import/hierarchy.md",
+        "docs/guides/import/blendShapes.md",
+        "docs/guides/rendering/skinLimits.md",
+        "docs/guides/animation/playback.md",
+        "docs/guides/animation/animationTree.md",
+        "docs/guides/animation/rampTween.md",
+        "docs/guides/animation/stepValue.md",
+        "docs/guides/animation/ik.md",
+        "docs/guides/animation/ragdoll.md"
+      ]
+    },
+    {
+      "title": "Physics",
+      "about": "2D and 3D physics, colliders, constraints and backends.",
+      "pages": [
+        "docs/guides/physics/physics2D.md",
+        "docs/guides/physics/nodesPhysics.md",
+        "docs/guides/physics/collidersConstraints.md",
+        "docs/guides/physics/pointColliders.md",
+        "docs/guides/physics/collisionLevels.md",
+        "docs/guides/physics/nodeAccess.md",
+        "docs/guides/physics/backends.md",
+        "docs/guides/physics/parallel.md",
+        "docs/guides/physics/particles2D.md"
+      ]
+    },
+    {
+      "title": "Particles and audio",
+      "about": "Particle systems and sound.",
+      "pages": [
+        "docs/guides/particles/api.md",
+        "docs/guides/particles/collisionsLighting.md",
+        "docs/guides/particles/visibility.md",
+        "docs/guides/audio/audioNodes.md",
+        "docs/guides/audio/audioModules.md"
+      ]
+    },
+    {
+      "title": "Input",
+      "about": "Actions, input maps and gamepads.",
+      "pages": [
+        "docs/guides/input/actions.md",
+        "docs/guides/input/inputMap.md",
+        "docs/guides/input/gamepad.md"
+      ]
+    },
+    {
+      "title": "Multiplayer",
+      "about": "The network layer, replication and a complete sample.",
+      "pages": [
+        "docs/guides/katsa/net.md",
+        "docs/guides/development/multiplayer.md",
+        "docs/guides/development/replication.md",
+        "docs/guides/development/replicationLab.md",
+        "docs/guides/development/multiplayerCars.md"
+      ]
+    },
+    {
+      "title": "Tools and workflow",
+      "about": "Editors, plugins, debugging, profiling and tests.",
+      "pages": [
+        "docs/guides/editor/workspace.md",
+        "docs/guides/development/levelEditor.md",
+        "docs/guides/development/plugins.md",
+        "docs/guides/development/imgui.md",
+        "docs/guides/development/console.md",
+        "docs/guides/development/debugging.md",
+        "docs/guides/development/hotReload.md",
+        "docs/guides/development/statistics.md",
+        "docs/guides/development/performance.md",
+        "docs/guides/performance/profiling.md",
+        "docs/guides/development/testing.md",
+        "docs/guides/development/validation.md"
+      ]
+    },
+    {
+      "title": "Reference",
+      "about": "Saved data, platform layer, conventions, limits and licenses.",
+      "pages": [
+        "docs/guides/development/persistence.md",
+        "docs/guides/development/saveData.md",
+        "docs/guides/development/backgroundExecution.md",
+        "docs/guides/katsa/platform.md",
+        "docs/guides/katsa/windows.md",
+        "docs/guides/development/libraries.md",
+        "docs/guides/development/codeStyle.md",
+        "docs/guides/development/limitations.md",
+        "docs/guides/development/licenses.md",
+        "docs/guides/development/stareShooter.md"
+      ]
+    }
+  ]
+}

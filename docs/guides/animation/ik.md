@@ -174,3 +174,10 @@ end
 solver as a node type too, add it to `TYPES` and `SOLVERS` in `nodes/inverseKinematics3D.lua`, show
 its settings with `visibleWhen = only('MyType')`, and add a test next to `v108_5/ikNode.lua`. The
 scene `ikLab` shows the solvers on the XBot with an influence and debug toggle.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 10 of 11
+
+[← Smoothing per-tick state](stepValue.md) · [Contents](../../book/README.md) · [Ragdoll →](ragdoll.md)
+<!-- /book:nav -->

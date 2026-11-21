@@ -61,3 +61,10 @@ table as a Lua file for `mapFile`.
 
 Examples: scene `tileMapLab` (paint, layers, collision overlay, snapshot) and the ground of `abilityRunner2D`.
 Tests: `validation/tests/versions/v108_7/tileMap.lua`. The example tileset is made by `tools/import/makeTileset.py`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 9 of 9
+
+[← Independent worlds and ViewportFrame](viewportFrame.md) · [Contents](../../book/README.md) · [Render quality →](../rendering/renderQuality.md)
+<!-- /book:nav -->

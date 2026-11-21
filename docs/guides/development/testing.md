@@ -1,5 +1,10 @@
 # Testing and build verification
 
+Many suites build the example scenes, so run them with the examples project mounted:
+`tools/dev/runTests.sh --test-v108.9` does it for you (a sibling `katsa-engine-examples`, or
+`KATSA_PROJECT=<folder>`); by hand: `luajit tools/dev/katsa.lua ../katsa-engine-examples --test-v108.9`.
+The commands below show a bare `katsa . --test-...` for brevity.
+
 From the source root:
 
 ```text
@@ -176,3 +181,10 @@ backends, including SliderConstraint3D.
 (`KATSA_SHOT=<dir>`, `KATSA_SCENE=<id>`, default `animationPhysicsLab`) so shadow stability can be compared frame to frame.
 
 </details>
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 11 of 12
+
+[← Profiling and budgets](../performance/profiling.md) · [Contents](../../book/README.md) · [Repeatable validation →](validation.md)
+<!-- /book:nav -->

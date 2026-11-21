@@ -141,3 +141,10 @@ The top bar of a scene is an ImGui toolbar (Menu, Pause, Stats, Debug, Explorer,
 ## Scene control panels
 
 Panels registered through `ui/widgets/collapsible` (or `Collapsible.adopt`) show up as ImGui windows when the library loads; the engine panel stays hidden and keeps the behaviour, the window only mirrors its buttons, sliders, text boxes and labels in order. Open the editor from a scene with `local editor = scene:module('editor'); if editor then editor:inspect(node) end`: the editor is the optional module `source/devtools/editor.lua` (see `source/runtime/modules.lua`), so a scene must work when `scene:module('editor')` is nil. A new scene panel needs no ImGui code: build the panel and call `Collapsible.create` (toggle) or `Collapsible.adopt`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 4 of 12
+
+[← Plugins](plugins.md) · [Contents](../../book/README.md) · [Console, logs and crash reports →](console.md)
+<!-- /book:nav -->

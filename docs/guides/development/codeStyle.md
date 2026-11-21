@@ -43,3 +43,10 @@ Split a module by responsibility before it passes about 400 lines; `tools/testin
 ## Style tooling
 
 `python3 tools/testing/checkStyle.py` checks the katsa runtime and its tests for over-long lines, double-quoted strings, one-line function bodies, missing blank lines between functions and oversized modules. `python3 tools/testing/fixStyle.py <paths>` applies the mechanical fixes (expands one-line functions and inline `if` bodies, separates functions, wraps calls, packed tables, long strings and comments); review its output and run the tests afterwards. Lines it cannot split safely are fixed by hand.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 7 of 10
+
+[← Public libraries](libraries.md) · [Contents](../../book/README.md) · [Current limitations →](limitations.md)
+<!-- /book:nav -->

@@ -63,8 +63,8 @@ loads them. Helpers used by those modules belong under categorized `scripts/`.
 
 ## Starting a game
 
-Set `startScene` in `game/data/project.lua` to a scene ID, project-relative
-scene directory or archive. The default `menu` is an example selector for testing;
+Set `settings.startScene` in the project's `conf.lua` (or `startScene` in `game/data/project.lua`
+of a standalone game) to a scene ID, project-relative scene directory or archive. The default `menu` is an example selector for testing;
 a game can start directly in its own scene without loading the selector.
 
 The optional `game/sceneCatalog.lua` maps stable IDs to folders or archives.
@@ -437,3 +437,10 @@ local Nav = require('./nodes.navMap3D')       -- subfolder: nodes/navMap3D.lua
   relative to the plugin folder.
 - Implementation: `source/katsa/core/relativeRequire.lua`, installed over `require` by the host
   boot and by the standalone katsa test runner.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 2, Scenes and nodes · page 1 of 8
+
+[← Project architecture](../../architecture.md) · [Contents](../../book/README.md) · [Nodes, hierarchy and lifecycle →](nodeLifecycle.md)
+<!-- /book:nav -->

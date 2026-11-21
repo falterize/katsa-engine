@@ -159,3 +159,10 @@ flipped bone axes is not). Not included: additive blending and IK-aware retarget
 `InverseKinematics3D` node on top for foot placement.
 
 Tests: `validation/tests/versions/v108_7/animationTree.lua`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 5, Models and animation · page 7 of 11
+
+[← Playing and Enabled](playback.md) · [Contents](../../book/README.md) · [Ramp and Tween →](rampTween.md)
+<!-- /book:nav -->

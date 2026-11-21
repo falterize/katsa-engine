@@ -105,3 +105,10 @@ every machine from it.
 
 A car on its side or roof rights itself (`PhysicsCar:autoFlip`: a torque about the forward axis
 after 0.7 s plus a lift). Only falling below the arena (`y < -30`) respawns a car.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 9, Multiplayer · page 5 of 5
+
+[← replicationLab](replicationLab.md) · [Contents](../../book/README.md) · [Workspace editor →](../editor/workspace.md)
+<!-- /book:nav -->

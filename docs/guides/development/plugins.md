@@ -345,3 +345,10 @@ A client claim is not proof that an ad was watched. The multiplayerCars server g
 through `options.verifyReward(player, token)` (plug in the network's server-side verification)
 and limits refills with a per-player cooldown. Keep your ids in
 `scenes/multiplayerCars/scripts/game/adsConfig.lua`; the file ships Google's public test unit.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 10, Tools and workflow · page 3 of 12
+
+[← Level editor scene (`levelEditor`, v108.9)](levelEditor.md) · [Contents](../../book/README.md) · [ImGui plugin →](imgui.md)
+<!-- /book:nav -->

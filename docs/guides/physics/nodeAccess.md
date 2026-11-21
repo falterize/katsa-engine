@@ -144,3 +144,10 @@ updates, unit conversion and interpolation. Prefer `node.physics`.
 | `hit.body` | `hit.node` (and `hit.node.physics`) |
 | 2D event `body0` / `body1` | `node0` / `node1` |
 | 3D `contactBegin(other)` / `triggerEntered(other)` with a physics object | `other` is the node: `other.physics` |
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 6 of 9
+
+[← Collision levels](collisionLevels.md) · [Contents](../../book/README.md) · [3D physics backends →](backends.md)
+<!-- /book:nav -->

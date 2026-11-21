@@ -48,3 +48,10 @@ One scratch RGBA canvas is reused across channels. Maximum blend-buffer storage 
 256 pixels and RGBA16F is about 3.5 MiB for six maps plus scratch, excluding source
 textures. Stable blends do not submit new composition draws. Basic visibility/list
 checks still run; invisible components are not literally zero CPU cost.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 7, Particles and audio · page 3 of 5
+
+[← Particle collisions and lighting](collisionsLighting.md) · [Contents](../../book/README.md) · [Sound nodes in v46 →](../audio/audioNodes.md)
+<!-- /book:nav -->

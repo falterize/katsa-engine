@@ -427,3 +427,10 @@ Y-down spatial data must negate Y and rotation, while ordinary HUD UDim2 stays u
 Camera2D `followTarget` tracks the pose that is drawn. With Physics2D interpolation enabled this is the blend of the
 previous and current solver step, so the camera and interpolated spatial visuals move together at any frame rate or
 World2D timeScale. Disable `interpolate` to follow the raw solver pose.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 6, Physics · page 1 of 9
+
+[← Ragdoll](../animation/ragdoll.md) · [Contents](../../book/README.md) · [Hierarchy, UI and physics →](nodesPhysics.md)
+<!-- /book:nav -->

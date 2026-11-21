@@ -66,3 +66,10 @@ Automated test/smoke commands still exit on failure so validation cannot hang.
 UI Gallery includes single-line/multiline inputs and a Test world TextBoxes button.
 It reveals editable BillboardUI and SurfaceUI examples. Both use the same input
 node and shared focus/clipboard routing as screen-space fields.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 3, User interface · page 4 of 9
+
+[← Text rendering](textRendering.md) · [Contents](../../book/README.md) · [ScrollFrame →](scrolling.md)
+<!-- /book:nav -->

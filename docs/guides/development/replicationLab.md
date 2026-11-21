@@ -44,3 +44,10 @@ rotate) and mesh names unique.
 </details>
 
 - Test: `validation/tests/versions/v108_8/replicationLab.lua`.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 9, Multiplayer · page 4 of 5
+
+[← Node replication](replication.md) · [Contents](../../book/README.md) · [multiplayerCars: the networked sample scene →](multiplayerCars.md)
+<!-- /book:nav -->

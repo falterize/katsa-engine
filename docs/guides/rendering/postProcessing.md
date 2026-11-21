@@ -63,3 +63,10 @@ early depth pass already ran.
 
 Tests: `--test-v108.7.post` (`v108_7/postProcessing.lua`). The reference scene is
 `graphicsLab` ("Maximum graphics"), which has a switch per effect.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 6 of 10
+
+[← SurfaceUI and Decal](surfaces.md) · [Contents](../../book/README.md) · [Beam3D and Trail3D →](ribbons.md)
+<!-- /book:nav -->

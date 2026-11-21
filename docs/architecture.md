@@ -130,3 +130,10 @@ spatial UI and 3D material contributions. Scene systems own example physics upda
 `graphics/debug/orientation.lua` draws optional camera-relative axis overlays in both
 collection and minimal hosts. The scene-owned 2D runner uses `animation/flipbook.lua`
 for its eight-frame 8x8 player atlas.
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 1, First steps · page 7 of 7
+
+[← Project conventions](guides/architecture/conventions.md) · [Contents](book/README.md) · [Scene authoring →](guides/development/scenes.md)
+<!-- /book:nav -->

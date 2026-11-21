@@ -107,3 +107,10 @@ main scene's window quits the application and closes every window scene.
 The example scene `windowsLab` flies three windows around the main one (`T` toggles main window
 opacity, `B` the title bar, `R` resizes the windows, `M` opens a mini game in a window, `Space`
 pauses).
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 11, Reference · page 5 of 10
+
+[← katsa runtime layer](platform.md) · [Contents](../../book/README.md) · [Public libraries →](../development/libraries.md)
+<!-- /book:nav -->

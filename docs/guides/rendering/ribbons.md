@@ -103,3 +103,10 @@ world:create('Beam3D', {
     texture = 'scene://textures/beam.png',
 })
 ```
+
+<!-- book:nav -->
+---
+**Katsa book** · chapter 4, Rendering · page 7 of 10
+
+[← Post-processing](postProcessing.md) · [Contents](../../book/README.md) · [Level of detail: LODGroup →](lod.md)
+<!-- /book:nav -->
