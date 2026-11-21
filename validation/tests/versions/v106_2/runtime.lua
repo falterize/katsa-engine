@@ -1,4 +1,4 @@
-local Game = require('game.runtime.game')
+local Game = require('source.runtime.game')
 local UI = require('source.engine.ui')
 local Tests = {}
 Tests.__index = Tests

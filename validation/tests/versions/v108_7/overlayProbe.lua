@@ -33,7 +33,7 @@ function Tests:draw()
     self.frame = self.frame + 1
     local scene = os.getenv('KATSA_SCENE') or 'physics'
     if self.frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, scene)
+        self.host = require('source.runtime.application').new(self.manager, scene)
         self.host:load()
     end
     self.host:update(1 / 60, 1 / 60)

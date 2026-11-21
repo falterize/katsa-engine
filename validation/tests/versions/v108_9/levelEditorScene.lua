@@ -1,6 +1,6 @@
 -- levelEditor scene smoke test: the scene loads, the InputMap actions exist, the fly camera
 -- moves from actions, a click on an object selects it and the grid can be toggled.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Archive = require('source.katsa.core.archive')
 local Catalog = require('game.scenes.levelEditor.scripts.builders.catalog')
 local LocationIO = require('game.scenes.levelEditor.scripts.io.locationIO')

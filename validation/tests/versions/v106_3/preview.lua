@@ -1,4 +1,4 @@
-local Game = require('game.runtime.game')
+local Game = require('source.runtime.game')
 local Preview = {}
 Preview.__index = Preview
 

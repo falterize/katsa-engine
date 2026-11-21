@@ -63,7 +63,26 @@ local function mountArchive(source)
     return entry
 end
 
+-- A real folder outside the game source (`katsa <folder>`) is mounted once and used from there.
+local function mountFolder(source)
+    -- A path that climbs out of the virtual tree is a real one; getInfo rejects it.
+    local inside, virtual = pcall(katsa.filesystem.getInfo, type(source) == 'string' and source, 'directory')
+    if type(source) ~= 'string' or inside and virtual then
+        return source
+    end
+    if require('source.katsa.core.nativeLib').stat(source) ~= 'directory' then
+        return source
+    end
+    local mount = '_sceneFolders/' .. source:gsub('[^%w]', '_')
+    if not mounts[mount] then
+        assert(katsa.filesystem.mount(source, mount, true))
+        mounts[mount] = true
+    end
+    return sceneRoot(mount)
+end
+
 function Package.open(source)
+    source = mountFolder(source)
     local directory = type(source) == 'string' and katsa.filesystem.getInfo(source, 'directory')
     local archive = not directory and mountArchive(source)
     local root = directory and Paths.normalize(source) or archive.root

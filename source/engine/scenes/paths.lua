@@ -70,8 +70,26 @@ function Paths.name(roots, scheme, root, strict)
     return true
 end
 
+-- `shared://` answers to one folder or to a list of them (engine assets first, then the folders a
+-- project or scene declared): the first root that holds the file wins; a missing file resolves
+-- against the first root so the loader reports a normal "file not found".
+local function sharedPath(shared, relative)
+    if type(shared) ~= 'table' then
+        return Paths.normalize(shared or 'assets') .. '/' .. relative
+    end
+    local first
+    for _, root in ipairs(shared) do
+        local candidate = Paths.normalize(root) .. '/' .. relative
+        first = first or candidate
+        if katsa.filesystem.getInfo(candidate) then
+            return candidate
+        end
+    end
+    return first or ('assets/' .. relative)
+end
+
 -- `roots`: { scene, shared, parent, named }, where `parent` is the roots of the scene that loaded
--- this one.
+-- this one and `shared` is a folder or a list of folders.
 function Paths.resolve(path, roots)
     local scheme, relative, ups = Paths.parse(path)
     if not scheme then
@@ -80,8 +98,10 @@ function Paths.resolve(path, roots)
     for _ = 1, ups do
         roots = assert(roots and roots.parent, 'No parent scene for asset path: ' .. path)
     end
-    local root = scheme == 'shared' and (roots and roots.shared or 'assets')
-        or scheme == 'scene' and roots and roots.scene
+    if scheme == 'shared' then
+        return sharedPath(roots and roots.shared, Paths.normalize(relative))
+    end
+    local root = scheme == 'scene' and roots and roots.scene
         or named(roots, scheme)
     assert(root, 'Unknown or unavailable asset namespace: ' .. scheme)
     return Paths.normalize(root) .. '/' .. Paths.normalize(relative)

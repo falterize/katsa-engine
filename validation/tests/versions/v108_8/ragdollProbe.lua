@@ -1,6 +1,6 @@
 -- Diagnostic: a running player turns into a ragdoll; prints hips speed and the lowest limb point.
 local Previous = require('validation.tests.versions.v107.physics2D')
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Tests = setmetatable({}, { __index = Previous })
 Tests.__index = Tests
 

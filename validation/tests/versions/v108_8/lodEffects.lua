@@ -1,6 +1,6 @@
 -- LODGroup effects: quality bias, zoom compensation, animation rates, shadow level, cross-fade and
 -- the billboard level.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Plugins = require('source.engine.plugins')
 local Models = require('source.engine.import.models')
 local Profiles = require('source.engine.graphics.quality.profiles')
@@ -27,7 +27,7 @@ end
 
 local function checkBillboard(self)
     local resources = Resources.new(require('validation.tests.fixtures.manifest'))
-    local settings = require('game.data.settings').create()
+    local settings = require('source.runtime.settings').create()
     settings.gizmos.enabled, settings.shadows.enabled = false, false
     local world = World3D.new(resources, settings)
     Plugins.activate(world, { 'lod' })

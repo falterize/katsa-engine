@@ -15,12 +15,22 @@ function Bootstrap.install(project, options)
     -- `project.version` is the engine the project was made for; a mismatch only warns.
     require('source.engine.core.version').check(project.version, 'Project')
     Runtime.frameRateLimit = Runtime.validateFrameRateLimit(project.frameRateLimit or 0)
+    -- A project (conf.lua) can add scenes, a start scene and `shared://` folders; the engine's own
+    -- `assets` always come first.
+    local opened = require('source.engine.scenes.project').read(katsa.projectConfig)
+    local shared = opened and opened.shared or { 'assets' }
+    local declared = project.sharedAssets
+    for _, entry in ipairs(type(declared) == 'string' and { declared } or declared or {}) do
+        if entry ~= 'assets' then
+            shared[#shared + 1] = entry
+        end
+    end
     local createScene = options.createScene
         or function(owner, source)
             local Loader = require('source.engine.scenes.loader')
             return require('source.engine.scenes.host').new(
                 owner,
-                Loader.open(source, nil, project.sharedAssets or 'assets')
+                Loader.open(source, require('source.runtime.catalog'), shared)
             )
         end
     Runtime.createScene = createScene
@@ -53,7 +63,19 @@ function Bootstrap.install(project, options)
         arguments = arguments or {}
         -- Scenes read launch options (e.g. --host, --connect) from here.
         katsa.launchArguments = arguments
-        local source = project.startScene
+        local source = opened and opened.start or project.startScene
+        if opened then
+            require('source.runtime.catalog').register(opened.scenes)
+        end
+        -- --shared <folder> (repeatable) adds a folder `shared://` also answers to.
+        for index, argument in ipairs(arguments) do
+            if argument == '--shared' then
+                local folder = assert(arguments[index + 1], '--shared requires a folder')
+                local point = '_sharedArgument/' .. #shared
+                assert(katsa.filesystem.mount(folder, point, true))
+                shared[#shared + 1] = point
+            end
+        end
         testing = options.registry and options.registry.contains(arguments) or false
         for index, argument in ipairs(arguments) do
             if argument == '--scene' or argument == '--scene-package' then
@@ -78,7 +100,7 @@ function Bootstrap.install(project, options)
         end
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
-        manager.sceneFactory, manager.startScene = createScene, project.startScene
+        manager.sceneFactory, manager.startScene = createScene, source
         -- Plain functions for scripts: katsa.profiler.start('name') ... katsa.profiler.stop('name').
         local profiler = manager.profiler
         katsa.profiler = {
@@ -105,7 +127,20 @@ function Bootstrap.install(project, options)
                 })
             end
         end
-        assert(manager:switch(createScene, source))
+        if source then
+            assert(manager:switch(createScene, source))
+        else
+            local scenes = opened and opened.scenes or {}
+            assert(manager:switch(function(owner)
+                return require('source.engine.scenes.empty').new(owner, {
+                    scenes = scenes,
+                    open = function(entry)
+                        manager.startScene = entry.path
+                        manager:switch(createScene, entry.path)
+                    end,
+                })
+            end))
+        end
         if options.registry then
             testRunner = options.registry.create(arguments, manager)
         end
@@ -146,7 +181,7 @@ function Bootstrap.install(project, options)
         if smoke then
             frames = frames + 1
             if frames == 10 then
-                assert(#manager.journal.entries == 0, 'Scene reported runtime errors')
+                assert(#manager.journal.entries == 0, 'Scene reported runtime errors: ' .. tostring(manager.journal.entries[1] and manager.journal.entries[1].message))
                 print('PASSED SMOKE: ten update/render frames')
                 katsa.event.quit()
             end

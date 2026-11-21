@@ -1,6 +1,6 @@
 -- Shader programs: user shaders in the spatial world, shadow, particle and canvas programs,
 -- material draw modes, uniform defaults and error reporting.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Programs = require('source.engine.graphics.shaders.programs')
 local Material = require('source.engine.graphics.materials.material')
 

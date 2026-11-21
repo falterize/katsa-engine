@@ -21,7 +21,7 @@ function T:draw()
         return
     end
     self.done = true
-    local scene = assert(self.manager:switch(require('game.runtime.game').new, 'combined'))
+    local scene = assert(self.manager:switch(require('source.runtime.game').new, 'combined'))
     local env = scene.world.environment
     env.shadows.enabled = false
     env.debug.gizmos.enabled = false

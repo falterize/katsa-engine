@@ -20,10 +20,10 @@ function T:update()
         katsa.math.setRandomSeed(384)
         math.randomseed(384)
         if self.zone == 'menu' then
-            self.manager:switch(require('game.runtime.menu').new)
+            self.manager:switch(require('source.runtime.menu').new)
         else
             local scene =
-                assert(self.manager:switch(require('game.runtime.game').new, self.zone))
+                assert(self.manager:switch(require('source.runtime.game').new, self.zone))
             scene.showStats = false
         end
     end

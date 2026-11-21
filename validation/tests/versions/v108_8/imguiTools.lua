@@ -1,5 +1,5 @@
 -- The Debug, Profiler and Console tool windows of the ImGui plugin, driven through a real scene.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

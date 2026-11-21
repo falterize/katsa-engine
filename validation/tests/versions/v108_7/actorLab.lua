@@ -36,7 +36,7 @@ function Tests:draw()
             local Binding = require('source.katsa.thread.binding')
             Binding.load = function() return nil, 'forced for the test' end
         end
-        self.host = require('game.runtime.application').new(self.manager, 'actorLab')
+        self.host = require('source.runtime.application').new(self.manager, 'actorLab')
         self.host:load()
         self.lab = self.host.demo
         self:check(self.lab and self.lab.actor and self.lab.actor:isRunning(), 'actorLab starts its Actor node')

@@ -52,7 +52,7 @@ function Toolbar.draw(ig, scene, host)
         if ig.button('Menu') then
             click(scene)
             host:defer(function()
-                scene.manager:switch(require('game.runtime.menu').new)
+                scene.manager:switch(require('source.runtime.menu').new)
             end)
         end
         ig.sameLine()

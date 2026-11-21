@@ -1,4 +1,4 @@
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Surface = require('source.engine.graphics.materials.surface')
 local Layers = require('source.engine.world.visibilityLayers')
 local Tests = {}

@@ -1,6 +1,6 @@
 -- voxelWorld scene: visible-face meshing, terrain, ray traversal, walker collision and a scene run
 -- with real Actor workers (generate, mesh, spawn, break a block).
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Raycast = require('game.scenes.voxelWorld.scripts.world.raycast')
 local Walker = require('game.scenes.voxelWorld.scripts.player.walker')
 

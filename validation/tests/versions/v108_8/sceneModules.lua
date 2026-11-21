@@ -1,6 +1,6 @@
 -- Scene modules: the debug and editor UI is an optional module under game/, not part of the
 -- runtime. A scene built without modules still loads, runs and handles input.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 
@@ -43,19 +43,19 @@ function Module.run(self)
     )
     full:release()
 
-    -- The engine and the runtime never name the debug UI directly; only game/runtime/modules.lua does.
+    -- The engine and the runtime never name the debug UI directly; only source/runtime/modules.lua does.
     local hits = {}
-    for _, root in ipairs({ 'source/engine', 'game/runtime' }) do
+    for _, root in ipairs({ 'source/engine', 'source/runtime' }) do
         for _, path in ipairs(sources(root, {})) do
-            if path ~= 'game/runtime/modules.lua' then
+            if path ~= 'source/runtime/modules.lua' then
                 local text = katsa.filesystem.read(path)
-                if text and text:find('game.devtools', 1, true) then
+                if text and text:find('source.devtools', 1, true) then
                     hits[#hits + 1] = path
                 end
             end
         end
     end
-    self:check(#hits == 0, 'Nothing outside the module list requires game.devtools')
+    self:check(#hits == 0, 'Nothing outside the module list requires source.devtools')
 end
 
 return Module

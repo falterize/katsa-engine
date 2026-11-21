@@ -19,7 +19,7 @@ function Module.run(self)
     local World3D = require('source.engine.world.world')
     local Models = require('source.engine.import.models')
     local resources = Resources.new(require('validation.tests.fixtures.manifest'))
-    local world = World3D.new(resources, require('game.data.settings').create())
+    local world = World3D.new(resources, require('source.runtime.settings').create())
     local asset = Models.load('assets/models/characters/player.glb', resources)
     local _, root = Models.instantiate(world, asset, { name = 'Hero' })
     local animator = asset.animator

@@ -23,7 +23,7 @@ function Module.run(self)
         end
     end
     local resources = Resources.new(require('validation.tests.fixtures.manifest'))
-    local world = World3D.new(resources, require('game.data.settings').create())
+    local world = World3D.new(resources, require('source.runtime.settings').create())
     local bone = world:create('Bone3D', {})
     for _, row in ipairs(Properties.list(bone)) do
         self:check(row.key ~= 'transparency', 'Bone3D shows no transparency row')

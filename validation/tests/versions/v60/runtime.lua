@@ -18,7 +18,7 @@ function Test:check(ok, message)
 end
 
 function Test:load(zone)
-    local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
+    local scene, err = self.manager:switch(require('source.runtime.game').new, zone)
     assert(scene, err)
     self.scene = scene
     return scene
@@ -279,7 +279,7 @@ function Test:update()
         )
         self.capture = self.frame == 8 and 'night-player' or nil
     elseif self.frame == 19 then
-        local scene, err = self.manager:switch(require('game.runtime.menu').new)
+        local scene, err = self.manager:switch(require('source.runtime.menu').new)
         assert(scene, err)
         self:check(
             scene.root:find('World3D/World2D').parent == scene.root:find('World3D') and scene.world.activeCamera == nil,

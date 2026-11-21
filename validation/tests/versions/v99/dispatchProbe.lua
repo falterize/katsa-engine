@@ -25,7 +25,7 @@ function T:draw()
     local Shadows = require('source.engine.graphics.shadows.shadows')
     local rIndex, sIndex = Renderer.__index, Shadows.__index
     for _, zone in ipairs({ 'combined', 'animationPhysicsLab' }) do
-        local scene = assert(self.manager:switch(require('game.runtime.game').new, zone))
+        local scene = assert(self.manager:switch(require('source.runtime.game').new, zone))
         local renderer = scene.renderer
         if zone == 'combined' then
             scene.world.environment.shadows.enabled = false

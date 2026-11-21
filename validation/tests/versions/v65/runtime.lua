@@ -21,7 +21,7 @@ function T:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
         katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'original')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'original')
         assert(scene, err)
         self.scene = scene
         local sky = scene.world.environment.sky

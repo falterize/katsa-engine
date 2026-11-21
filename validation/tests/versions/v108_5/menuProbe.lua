@@ -28,7 +28,7 @@ function Tests:draw()
     self.frame = self.frame + 1
     local frame = self.frame
     if frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, 'menu')
+        self.host = require('source.runtime.application').new(self.manager, 'menu')
         self.host:load()
         self.manager.profiler:startRecording({ scene = 'menu' })
     end

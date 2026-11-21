@@ -5,7 +5,7 @@ local PointCollider = require('source.engine.physics.3d.pointCollider')
 local Module = {}
 
 function Module.run(self)
-    local Application = require('game.runtime.application')
+    local Application = require('source.runtime.application')
     local scene = Application.new(self.manager, 'replicationLab')
     scene:load()
     local player = scene.demo.player.body

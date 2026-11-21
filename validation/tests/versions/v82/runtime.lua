@@ -25,7 +25,7 @@ function T:draw()
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     require('validation.tests.integration.shadowCacheRuntime')(self)
-    local scene = self.manager:switch(require('game.runtime.game').new, 'shadows')
+    local scene = self.manager:switch(require('source.runtime.game').new, 'shadows')
     local world, renderer, camera = scene.world, scene.renderer, scene.camera
     local environment = world.environment
     local Tree = require('source.engine.editor.tree.traversal')

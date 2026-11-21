@@ -39,6 +39,7 @@ end
 
 -- Game source choice: first non-option argument, else the fused archive, else the working
 -- directory.
+-- Returns the source and, as the second value, true when the source is a scene to run.
 local function chooseSource(host, FS, nativeLib)
     local args = host.args or {}
     local positional
@@ -56,6 +57,30 @@ local function chooseSource(host, FS, nativeLib)
             return nil, 'Cannot find game source: ' .. positional
         end
         FS.setSource(positional, false)
+        -- A project (conf.lua, no main.lua) holds settings and scenes, not code: the engine runs
+        -- from the working directory and the project is mounted at `_project`.
+        if FS.getInfo('conf.lua', 'file') and not FS.getInfo('main.lua', 'file') then
+            if nativeLib.stat('main.lua') ~= 'file' then
+                return nil, 'A project needs the engine to run it: start katsa from the engine folder.'
+            end
+            FS.setSource('.', false)
+            for _, point in ipairs({ '_project', '' }) do
+                local ok, message = FS.mount(positional, point, true)
+                if not ok then
+                    return nil, message
+                end
+            end
+            return positional, 'project'
+        end
+        -- A scene (settings.lua, no conf.lua) is not a game: run it with the engine's own
+        -- main.lua from the working directory, as `--scene <path>`.
+        if not FS.getInfo('conf.lua', 'file') and FS.getInfo('settings.lua', 'file') then
+            if nativeLib.stat('main.lua') ~= 'file' then
+                return nil, 'A scene needs the engine to run it: start katsa from the engine folder.'
+            end
+            FS.setSource('.', false)
+            return positional, true
+        end
         return positional
     end
     if host.archive and host.archive:has('main.lua') then
@@ -125,17 +150,29 @@ local function run(host)
         end
     end
 
+    local source, asScene = chooseSource(host, FS, nativeLib)
+    if not source then
+        report(asScene)
+        return 1
+    end
     local argv = { [0] = host.exe }
     for i, value in ipairs(host.args or {}) do
         argv[i] = value
     end
-    _G.arg = argv
-
-    local source, problem = chooseSource(host, FS, nativeLib)
-    if not source then
-        report(problem)
-        return 1
+    if asScene == true then
+        -- The scene path stays the "game path" (so a server child process starts the same way)
+        -- and the engine receives it as `--scene`.
+        local at
+        for i, value in ipairs(argv) do
+            if value == source then
+                at = i
+                break
+            end
+        end
+        table.insert(argv, at + 1, '--scene')
+        table.insert(argv, at + 2, source)
     end
+    _G.arg = argv
     installSearcher(FS)
     -- What it takes to start this game again (a server child process): the executable, the dev
     -- launcher script and the game path when one was given.
@@ -156,9 +193,10 @@ local function run(host)
     katsa.process.setLaunchBase(launch, explicit)
 
     local config = defaultConfig()
-    if FS.getInfo('conf.lua', 'file') then
+    local confPath = asScene == 'project' and '_project/conf.lua' or 'conf.lua'
+    if FS.getInfo(confPath, 'file') then
         local ok, err = pcall(function()
-            local chunk = assert(FS.load('conf.lua'))
+            local chunk = assert(FS.load(confPath))
             chunk()
             if katsa.conf then
                 katsa.conf(config)
@@ -169,6 +207,8 @@ local function run(host)
             return 1
         end
     end
+    -- The project's own settings (startScene, sharedAssets, scenes ...) are read by the engine.
+    katsa.projectConfig = asScene == 'project' and config or nil
     local base = source:match('([^/\\]+)%.[%w]+$') or source:match('([^/\\]+)$') or 'game'
     FS.setIdentity(config.identity or base)
 

@@ -67,7 +67,7 @@ function Tests:draw()
         end
     end
     if frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+        self.host = require('source.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
         self.manager.profiler:startRecording({ scene = 'multiplayerCars' })

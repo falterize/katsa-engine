@@ -1,7 +1,7 @@
 local Clock = require('source.engine.world.clock')
 local Properties = require('source.engine.editor.inspectors.properties')
 local References = require('source.engine.editor.inspectors.nodeReferences')
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Tests = {}
 

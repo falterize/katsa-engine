@@ -31,7 +31,7 @@ function T:draw()
         'ShadowCube',
         'ShadowLights',
     }) do
-        local scene = self.manager:switch(require('game.runtime.game').new, 'combined')
+        local scene = self.manager:switch(require('source.runtime.game').new, 'combined')
         local w, r, c = scene.world, scene.renderer, scene.camera
         local e = w.environment
         e.debug.gizmos.enabled = false

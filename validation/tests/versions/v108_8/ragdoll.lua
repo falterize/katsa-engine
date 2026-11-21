@@ -1,5 +1,5 @@
 -- The ragdoll toggle in stareShooter: bodies appear, fall to the floor and are removed again.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

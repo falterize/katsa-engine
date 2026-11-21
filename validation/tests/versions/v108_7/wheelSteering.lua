@@ -42,7 +42,7 @@ function Tests:draw()
         return
     end
     self.done = true
-    self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+    self.host = require('source.runtime.application').new(self.manager, 'multiplayerCars')
     self.host:load()
     local whole, wholeDistance = self:drive(0, 1, 90)
     local noFront, noFrontDistance = self:drive(3, 1, 91)

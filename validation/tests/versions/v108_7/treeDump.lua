@@ -12,7 +12,7 @@ function Tests:update() end
 function Tests:draw()
     self.frame = (self.frame or 0) + 1
     if self.frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, os.getenv('KATSA_SCENE') or 'physics')
+        self.host = require('source.runtime.application').new(self.manager, os.getenv('KATSA_SCENE') or 'physics')
         self.host:load()
     end
     self.host:update(1 / 60, 1 / 60)

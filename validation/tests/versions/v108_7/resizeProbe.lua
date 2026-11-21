@@ -21,7 +21,7 @@ function Tests:update()
     if self.frame == 1 then
         self.scene = assert(
             self.manager:switch(
-                require('game.runtime.game').new,
+                require('source.runtime.game').new,
                 os.getenv('KATSA_SCENE') or 'multiplayerCars'
             )
         )

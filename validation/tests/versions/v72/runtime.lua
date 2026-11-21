@@ -23,7 +23,7 @@ function T:update()
         return
     end
     self.done = true
-    local scene = assert(self.manager:switch(require('game.runtime.game').new, 'combined'))
+    local scene = assert(self.manager:switch(require('source.runtime.game').new, 'combined'))
     scene.world.environment.shadows.enabled = false
     scene.world.environment.gizmos.enabled = false
     self:check(
@@ -149,7 +149,7 @@ function T:update()
         )
     end
     ui:destroy()
-    self.manager:switch(require('game.runtime.menu').new)
+    self.manager:switch(require('source.runtime.menu').new)
     self:check(
         #self.manager.journal.entries == 0,
         'Scene and graphics cleanup has no journal errors'

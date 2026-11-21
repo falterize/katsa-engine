@@ -1,5 +1,5 @@
 -- LODGroup: the level selection (pure), the node in a world, and the model import of -lodN nodes.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Plugins = require('source.engine.plugins')
 local Models = require('source.engine.import.models')
 local Schema = require('source.engine.editor.inspectors.schema')

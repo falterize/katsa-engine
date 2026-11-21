@@ -258,7 +258,7 @@ function T:draw()
         'viewports',
         'nightPlayer',
     }) do
-        local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
+        local scene, err = self.manager:switch(require('source.runtime.game').new, zone)
         assert(scene, err)
         scene.world.environment.shadows.resolution = 64
         scene.world.environment.shadows.maxUpdateFaces = 195

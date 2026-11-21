@@ -1,7 +1,7 @@
 local T = {}
 
 local function extra(test)
-    local scene = test.manager:switch(require('game.runtime.game').new, 'combined')
+    local scene = test.manager:switch(require('source.runtime.game').new, 'combined')
     local mesh = scene.world.byName['Cube10.2']
     local Reference = require('source.engine.core.valueSnapshot')
     local Properties = require('source.engine.graphics.pipeline.propertySnapshot')

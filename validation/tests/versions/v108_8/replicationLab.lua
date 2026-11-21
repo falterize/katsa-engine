@@ -1,6 +1,6 @@
 -- The replicationLab scene end to end: a server in the same process, a client joined to it, rounds,
 -- teleports, coins, the scoreboard, chat and nicknames, all through the network.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

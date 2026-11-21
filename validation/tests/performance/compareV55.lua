@@ -4,7 +4,7 @@ P.__index = P
 
 function P.new(manager)
     katsa.window.setVSync(0)
-    local scene = manager:switch(require('game.runtime.game').new, 'combined')
+    local scene = manager:switch(require('source.runtime.game').new, 'combined')
     scene.world.lighting.gizmos.enabled = false
     scene.showStats = false
     local self = setmetatable(

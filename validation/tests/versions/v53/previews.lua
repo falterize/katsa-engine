@@ -17,7 +17,7 @@ function Preview:update()
             return
         end
         katsa.window.setMode(stage[1], stage[2], { depth = 24, stencil = 8, vsync = 0 })
-        self.scene = self.manager:switch(require('game.runtime.game').new, 'physics')
+        self.scene = self.manager:switch(require('source.runtime.game').new, 'physics')
         self.scene.showStats = true
     elseif self.frame % 6 == 5 then
         self.capture = true

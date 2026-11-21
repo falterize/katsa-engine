@@ -60,7 +60,7 @@ function T:draw()
     end
     local optimized = require('source.engine.graphics.pipeline.frameCache')
     for _, mode in ipairs({ 'Static', 'Cube', 'Camera' }) do
-        local scene = self.manager:switch(require('game.runtime.game').new, 'combined')
+        local scene = self.manager:switch(require('source.runtime.game').new, 'combined')
         local w, r, c = scene.world, scene.renderer, scene.camera
         w.environment.shadows.enabled = false
         w.environment.debug.gizmos.enabled = false

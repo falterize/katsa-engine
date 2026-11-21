@@ -18,7 +18,7 @@ function Tests:draw()
         self.host:draw()
     end
     if self.frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, 'shapeKeysLab')
+        self.host = require('source.runtime.application').new(self.manager, 'shapeKeysLab')
         self.host:load()
         self.lab = self.host.demo
         local mesh = self.lab.mesh

@@ -1,6 +1,6 @@
 -- stareShooter demo: two rows of LODGroups (hard and cross-faded switch) with one slider for the
 -- maximum distance, and a Datamosh screen shader that is off until it is switched on.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

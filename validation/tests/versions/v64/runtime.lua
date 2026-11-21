@@ -19,7 +19,7 @@ end
 
 function T:load(zone)
     local start = katsa.timer.getTime()
-    local scene, err = self.manager:switch(require('game.runtime.game').new, zone)
+    local scene, err = self.manager:switch(require('source.runtime.game').new, zone)
     assert(scene, err)
     self.scene = scene
     scene:update(0.02, 0.02)

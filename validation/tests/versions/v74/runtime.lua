@@ -18,7 +18,7 @@ function T:draw()
         return
     end
     self.done = true
-    local menu = self.manager:switch(require('game.runtime.menu').new)
+    local menu = self.manager:switch(require('source.runtime.menu').new)
     for _, size in ipairs({ { 896, 414 }, { 414, 896 }, { 640, 360 } }) do
         katsa.window.setMode(size[1], size[2], { vsync = 0, stencil = 8, depth = 24 })
         menu:resize(unpack(size))
@@ -41,7 +41,7 @@ function T:draw()
         self:check(menu.category == 'Legacy', 'Last category selects the matching scene')
     end
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    local s = self.manager:switch(require('game.runtime.game').new, 'combined')
+    local s = self.manager:switch(require('source.runtime.game').new, 'combined')
     local r, w, c = s.renderer, s.world, s.camera
     w.environment.shadows.enabled = false
     w.environment.gizmos.enabled = false

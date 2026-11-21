@@ -1,5 +1,5 @@
 -- stareShooter starts with the camera behind the character, not in first person.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

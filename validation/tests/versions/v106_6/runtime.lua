@@ -1,5 +1,5 @@
 local Previous = require('validation.tests.versions.v106_5.runtime')
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Tests = setmetatable({}, { __index = Previous })
 Tests.__index = Tests

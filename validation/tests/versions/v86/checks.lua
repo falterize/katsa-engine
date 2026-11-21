@@ -17,7 +17,7 @@ function T:draw()
         return
     end
     self.done = true
-    local scene = self.manager:switch(require('game.runtime.game').new, 'combined')
+    local scene = self.manager:switch(require('source.runtime.game').new, 'combined')
     local w, r, c = scene.world, scene.renderer, scene.camera
     w.environment.shadows.enabled = false
     for i = 1, 3 do

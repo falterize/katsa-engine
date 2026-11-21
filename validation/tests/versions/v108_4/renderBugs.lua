@@ -41,7 +41,7 @@ function Tests:shot(name)
 end
 
 local function open(self, id)
-    local host = require('game.runtime.application').new(self.manager, id)
+    local host = require('source.runtime.application').new(self.manager, id)
     host:load()
     self.host = host
     return host

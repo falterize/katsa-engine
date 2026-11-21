@@ -3,7 +3,7 @@ local Settings = require('source.engine.persistence.settings')
 local History = require('source.engine.debug.statistics.history')
 local FrameTimes = require('source.engine.debug.statistics.frameTimes')
 local Export = require('source.engine.debug.statistics.export')
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Tests = {}
 

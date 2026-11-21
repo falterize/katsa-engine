@@ -22,7 +22,7 @@ function R:update()
     if self.frame == 1 then
         katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
         local scene, err =
-            self.manager:switch(require('game.runtime.game').new, 'nightPlayer')
+            self.manager:switch(require('source.runtime.game').new, 'nightPlayer')
         assert(scene, err)
         self.scene = scene
         self:check(eyeError(scene) < 0.001, 'First-person camera starts at Head world position')

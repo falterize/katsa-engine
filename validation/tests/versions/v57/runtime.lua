@@ -15,7 +15,7 @@ function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
         katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'particles')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'particles')
         assert(scene, err)
         self.scene = scene
         local world = scene.world
@@ -142,7 +142,7 @@ function R:update()
         self.scene.demo.emitters[3].orientation = 'Axes'
     elseif self.frame == 3 then
         local scene, err =
-            self.manager:switch(require('game.runtime.game').new, 'nightPlayer')
+            self.manager:switch(require('source.runtime.game').new, 'nightPlayer')
         assert(scene, err)
         self.scene = scene
         local rig = scene.demo.firstController
@@ -207,7 +207,7 @@ function R:update()
         )
     elseif self.frame == 4 then
         local scene, err =
-            self.manager:switch(require('game.runtime.game').new, 'surfaceGallery')
+            self.manager:switch(require('source.runtime.game').new, 'surfaceGallery')
         assert(scene, err)
         self:check(
             scene.zone == 'surfaceGallery',

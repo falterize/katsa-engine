@@ -19,7 +19,7 @@ function T:draw()
     end
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    local scene = self.manager:switch(require('game.runtime.game').new, 'combined')
+    local scene = self.manager:switch(require('source.runtime.game').new, 'combined')
     local r, w, c = scene.renderer, scene.world, scene.camera
     local settings = w.environment.shadows
     settings.enabled, settings.visibleFacesOnly, settings.sourceFadeSeconds = true, false, 0

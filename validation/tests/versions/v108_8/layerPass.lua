@@ -1,5 +1,5 @@
 -- Shader2D viewLayers: a render of only some layer groups for hint_layer_texture.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local LayerPass = require('source.engine.graphics.pipeline.layerPass')
 
 local Module = {}

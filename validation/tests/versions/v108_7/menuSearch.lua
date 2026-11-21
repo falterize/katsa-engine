@@ -14,7 +14,7 @@ function Tests:draw()
         return
     end
     self.done = true
-    local host = require('game.runtime.application').new(self.manager, 'menu')
+    local host = require('source.runtime.application').new(self.manager, 'menu')
     host:load()
     local function rows()
         return #host.root:find('World3D/World2D'):find('LevelList', true).children

@@ -23,7 +23,7 @@ function T:draw()
     for _, zone in ipairs({ 'combined', 'animationPhysicsLab', 'viewports', 'occlusion' }) do
         katsa.math.setRandomSeed(384)
         math.randomseed(384)
-        local scene = assert(self.manager:switch(require('game.runtime.game').new, zone))
+        local scene = assert(self.manager:switch(require('source.runtime.game').new, zone))
         scene.world.debug.bones = false
         for _, a in ipairs(scene.world.animators or {}) do
             a.debugEnabled = false

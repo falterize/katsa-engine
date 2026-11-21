@@ -22,7 +22,7 @@ function Module:draw()
 end
 
 function Module.run(self)
-    local scene = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+    local scene = require('source.runtime.application').new(self.manager, 'multiplayerCars')
     scene:load()
     local Session = getmetatable(scene.demo).__index
     local host = Session.ServerHost.new(scene.world.resources, { port = 47900 + math.floor(os.clock() * 1000) % 90, name = 'Probe', bot = false })
@@ -128,7 +128,7 @@ end
 -- Focused check: a car rammed at four times the real speed (a client running at time scale 4)
 -- must not be sent flying; unfixed it left at 28 m/s.
 function Module.runPush(self)
-    local scene = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+    local scene = require('source.runtime.application').new(self.manager, 'multiplayerCars')
     scene:load()
     Module.scale = 4
     local peak = Module.runClient(self, scene, true)

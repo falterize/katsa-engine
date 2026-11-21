@@ -18,7 +18,7 @@ function Benchmark.new(manager)
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Resources = require('source.engine.core.resources')
     local resources = Resources.new(require('validation.tests.fixtures.manifest'))
-    local settings = require('game.data.settings').create()
+    local settings = require('source.runtime.settings').create()
     settings.sun.enabled = false
     settings.fog.enabled = false
     settings.sky.enabled = false

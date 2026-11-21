@@ -19,7 +19,7 @@ function T:draw()
     end
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-    local s = self.manager:switch(require('game.runtime.game').new, 'combined')
+    local s = self.manager:switch(require('source.runtime.game').new, 'combined')
     local r, w, c = s.renderer, s.world, s.camera
     w.environment.gizmos.enabled = false
     w.environment.shadows.enabled = true
@@ -117,7 +117,7 @@ function T:draw()
         not c:visible(farCaster.worldPosition, farCaster.radius) and submitted,
         'Off-camera caster remains in the Sun depth pass'
     )
-    local original = self.manager:switch(require('game.runtime.game').new, 'original')
+    local original = self.manager:switch(require('source.runtime.game').new, 'original')
     r, w, c = original.renderer, original.world, original.camera
     w.environment.gizmos.enabled = false
     -- Establish spatial UI canvases first, then prohibit all material/light paths.

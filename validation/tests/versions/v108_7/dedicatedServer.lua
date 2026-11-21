@@ -4,7 +4,7 @@ local Module = {}
 
 function Module.run(self)
     -- The scene package provides the `scene.` modules the car game requires.
-    local scene = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+    local scene = require('source.runtime.application').new(self.manager, 'multiplayerCars')
     scene:load()
     local Session = getmetatable(scene.demo).__index
     local ServerHost, GameClient, ArenaStatics = Session.ServerHost, Session.GameClient, Session.ArenaStatics

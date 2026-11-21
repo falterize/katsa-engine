@@ -4,7 +4,7 @@
 -- 1.0.0rc (release candidate); no letter means a stable release.
 -- Projects and scenes may declare the engine they were made for (`version = '1.0.0a'`);
 -- compatible() tells a launcher or the loader whether that declaration matches this engine.
-local Version = { name = 'Katsa', value = 'v108.9', release = '1.0.8b' }
+local Version = { name = 'Katsa', value = 'v108.10', release = '1.0.8b' }
 
 local STAGES = { a = 1, b = 2, rc = 3, [''] = 4 }
 Version.stageNames = { a = 'alpha', b = 'beta', rc = 'release candidate', [''] = 'stable' }

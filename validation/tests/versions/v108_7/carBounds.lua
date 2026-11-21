@@ -10,7 +10,7 @@ end
 function Tests:update() end
 
 function Tests:draw()
-    self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+    self.host = require('source.runtime.application').new(self.manager, 'multiplayerCars')
     self.host:load()
     local scene = self.host
     local asset = require('source.engine.import.models').load('scene://models/duke69.glb', scene.resources)

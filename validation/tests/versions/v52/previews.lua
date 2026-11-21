@@ -23,7 +23,7 @@ function Preview:update()
             return
         end
         katsa.window.setMode(stage[2], stage[3], { depth = 24, stencil = 8, vsync = 0 })
-        self.scene = self.manager:switch(require('game.runtime.game').new, stage[1])
+        self.scene = self.manager:switch(require('source.runtime.game').new, stage[1])
         if stage[1] == 'physics' then
             self.scene.workspace:toggle(true)
             self.scene.workspace:update(0.3)

@@ -1,5 +1,5 @@
 -- A scene used as a prefab: loaded from a folder or an archive, instantiated many times.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Paths = require('source.engine.scenes.paths')
 
 local Module = {}

@@ -1,7 +1,7 @@
 local History = require('source.engine.debug.statistics.history')
 local Export = require('source.engine.debug.statistics.export')
 local Text = require('source.engine.ui.drawing.text')
-local Game = require('game.runtime.game')
+local Game = require('source.runtime.game')
 local Runtime = require('source.engine.core.runtime')
 
 local Tests = {}

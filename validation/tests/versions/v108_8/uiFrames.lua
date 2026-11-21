@@ -1,6 +1,6 @@
 -- Interface drawing checked by pixels: logic tests pass on a tree that draws nothing, so the draw
 -- path of a World2D (the scene's own and one a prefab copy brings) is read back from a canvas.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

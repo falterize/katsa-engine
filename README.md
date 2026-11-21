@@ -91,7 +91,7 @@ Use `scene.data:scope('shooter'):scope('extra')` or `scope('shooter/extra')` for
 nested folders. `read/write` handles progress/preferences `.json` tables and raw
 text/binary files through one API under `saves/`. Root `main.lua` and `conf.lua`
 only install the shared engine bootstrap/window configuration; demo-only startup
-adapters stay in `game/runtime/startup.lua`.
+adapters stay in `source/runtime/startup.lua`.
 
 ## Credits
 

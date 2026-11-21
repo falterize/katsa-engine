@@ -26,7 +26,7 @@ function Runtime:update()
     local manager = self.manager
     local scene = manager.stack[#manager.stack]
     if self.frame == 2 then
-        manager:switch(require('game.runtime.game').new, 'audioNodes')
+        manager:switch(require('source.runtime.game').new, 'audioNodes')
     elseif self.frame == 3 then
         scene.renderer.renderDensity = 2
     elseif self.frame == 4 then
@@ -43,7 +43,7 @@ function Runtime:update()
         self:check(scene.demo.sound:isPlaying(), 'Listening preset starts a native source')
         self:capture('audio')
     elseif self.frame == 6 then
-        manager:switch(require('game.runtime.game').new, 'collisionBox')
+        manager:switch(require('source.runtime.game').new, 'collisionBox')
     elseif self.frame == 8 then
         local demo = scene.demo
         for i = 1, 9 do
@@ -63,7 +63,7 @@ function Runtime:update()
         demo:spawn()
         self:capture('collisions')
     elseif self.frame == 10 then
-        manager:switch(require('game.runtime.game').new, 'surfaceGallery')
+        manager:switch(require('source.runtime.game').new, 'surfaceGallery')
     elseif self.frame == 12 then
         local panel = scene.demo.panels[1]
         self:check(
@@ -162,7 +162,7 @@ function Runtime:update()
         board:destroy()
         self:capture('surfaces')
     elseif self.frame == 14 then
-        manager:switch(require('game.runtime.game').new, 'uiGallery')
+        manager:switch(require('source.runtime.game').new, 'uiGallery')
     elseif self.frame == 16 then
         local demo = scene.demo
         scene.root:find('World3D/World2D'):layout()
@@ -189,7 +189,7 @@ function Runtime:update()
         scene.root:find('World3D/World2D'):layout()
         self:capture('ui')
     elseif self.frame == 18 then
-        manager:switch(require('game.runtime.game').new, 'combined')
+        manager:switch(require('source.runtime.game').new, 'combined')
     elseif self.frame == 20 then
         scene.world.lighting.shadows.enabled = true
         scene.world.lighting.shadows.distance = 40

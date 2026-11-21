@@ -255,7 +255,7 @@ return function(test)
         ix == -50 and iy == 0 and iw == 200 and ih == 100,
         'Crop fills the region with symmetric excess'
     )
-    local settings = require('game.data.settings').create()
+    local settings = require('source.runtime.settings').create()
     settings.sun.enabled = false
     settings.shadows.enabled = false
     settings.sky.enabled = false

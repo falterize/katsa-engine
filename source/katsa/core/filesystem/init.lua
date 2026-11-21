@@ -427,14 +427,17 @@ function FS.mount(archive, mountpoint, appendToPath, extra)
     if type(archive) == 'table' and archive.getString then
         data = archive:getString()
     elseif type(archive) == 'string' then
-        local virtual = FS.getInfo(normalize(archive), 'file') and FS.read(archive)
-        data = virtual or Lib.read(archive)
-        if not data then
-            return false, 'Could not mount ' .. archive
-        end
-        local kind = Lib.stat(archive)
-        if not virtual and kind == 'directory' then
+        -- A real path may climb out of the virtual tree ('../examples'); only inside paths can be virtual.
+        local inside, virtualPath = pcall(normalize, archive)
+        local virtual = inside and FS.getInfo(virtualPath, 'file') and FS.read(archive)
+        local kind = not virtual and Lib.stat(archive)
+        if kind == 'directory' then
             data = nil
+        else
+            data = virtual or Lib.read(archive)
+            if not data then
+                return false, 'Could not mount ' .. archive
+            end
         end
     else
         return false, 'Invalid mount source'

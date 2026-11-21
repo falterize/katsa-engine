@@ -28,7 +28,7 @@ function Preview:update()
             self.scene = self.manager:switch(require('game.scenes.' .. entry[1]).new)
         else
             self.scene = self.manager:switch(
-                require('game.runtime.game').new,
+                require('source.runtime.game').new,
                 entry[1] == 'workspace' and 'audioNodes'
                     or entry[1] == 'palette' and 'uiGallery'
                     or entry[1]

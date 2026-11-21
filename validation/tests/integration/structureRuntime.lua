@@ -1,5 +1,5 @@
 local Physics = require('source.engine.physics')
-local Game = require('game.runtime.game')
+local Game = require('source.runtime.game')
 local Catalog = require('game.examples.catalog')
 local GLB = require('source.engine.import.glb')
 
@@ -70,10 +70,10 @@ function Tests:draw()
         end
     end
     Physics.setDefaultBackend(previous)
-    self.manager:switch(require('game.runtime.nodeCatalog').new)
+    self.manager:switch(require('source.runtime.nodeCatalog').new)
     self.manager:update(1 / 60)
     self.manager:draw()
-    self.manager:switch(require('game.runtime.menu').new)
+    self.manager:switch(require('source.runtime.menu').new)
     assert(#self.manager.journal.entries == 0, 'Scene/module migration produced journal errors')
     print('STRUCTURE CHECKS COMPLETE', scenes, 'scenes, legacy GLB readers and node catalog')
     katsa.event.quit()

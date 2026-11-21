@@ -3,7 +3,7 @@ local T = {}
 local function extra(test)
     local V = require('source.engine.math.vector3')
     local Managed = require('source.engine.math.managedValue')
-    local scene = test.manager:switch(require('game.runtime.game').new, 'combined')
+    local scene = test.manager:switch(require('source.runtime.game').new, 'combined')
     local w, r, c = scene.world, scene.renderer, scene.camera
     w.environment.shadows.enabled = false
     w.environment.render.frameCache = false

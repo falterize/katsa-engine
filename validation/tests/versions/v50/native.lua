@@ -106,7 +106,7 @@ return function(test)
     group.enabled = true
     group.interactable = false
     test:check(UI.isWorking(button), 'Interactable false preserves UI work')
-    local settings = require('game.data.settings').create()
+    local settings = require('source.runtime.settings').create()
     settings.sky.enabled = false
     settings.fog.enabled = false
     settings.gizmos.enabled = false
@@ -224,7 +224,7 @@ return function(test)
         math.abs(decal.worldWidth - 12) < 1e-4,
         'Attachment3D surface dimensions use explicit local supportSize'
     )
-    local foreign = World3D.new(resources, require('game.data.settings').create())
+    local foreign = World3D.new(resources, require('source.runtime.settings').create())
     local foreignSocket = foreign:create('Attachment3D', { name = 'Foreign' })
     test:check(
         not pcall(board.setAdornee, board, foreignSocket),

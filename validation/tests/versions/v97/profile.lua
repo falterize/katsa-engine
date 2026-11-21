@@ -67,7 +67,7 @@ function T:draw()
         if not selected or selected == case[1] then
             katsa.math.setRandomSeed(384)
             math.randomseed(384)
-            local scene, err = self.manager:switch(require('game.runtime.game').new, case[2])
+            local scene, err = self.manager:switch(require('source.runtime.game').new, case[2])
             assert(scene, err)
             if case.animation then
                 local Models = require('source.engine.import.models')

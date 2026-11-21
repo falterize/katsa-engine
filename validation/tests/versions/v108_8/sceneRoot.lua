@@ -1,5 +1,5 @@
 -- scene.root: the Root node holding the main World3D and the storage containers.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

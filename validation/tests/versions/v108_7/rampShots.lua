@@ -22,7 +22,7 @@ function Tests:draw()
     self.frame = (self.frame or 0) + 1
     local frame = self.frame
     if frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, 'shaderLab')
+        self.host = require('source.runtime.application').new(self.manager, 'shaderLab')
         self.host:load()
         local scene = self.host
         self.scene = scene

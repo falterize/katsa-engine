@@ -15,7 +15,7 @@ function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
         katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'viewports')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'viewports')
         assert(scene, err)
         self.scene = scene
         local a, b = scene.demo.views[1], scene.demo.views[2]
@@ -149,7 +149,7 @@ function R:update()
             world._node.destroyed and world.resources.released and renderer.canvas == nil,
             'Removing ViewportFrame destroys its world and releases target/resources'
         )
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'particles')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'particles')
         assert(scene, err)
         self.scene = scene
         scene.demo.selected = 3

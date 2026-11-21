@@ -18,7 +18,7 @@ function T:update()
             #self.manager.journal.entries == 0,
             'Material and particle scene renders without errors'
         )
-        self.manager:switch(require('game.runtime.menu').new)
+        self.manager:switch(require('source.runtime.menu').new)
         self:check(
             #self.manager.journal.entries == 0,
             'Scene teardown releases composition buffers'
@@ -30,7 +30,7 @@ function T:update()
     if self.frame ~= 1 then
         return
     end
-    local scene, err = self.manager:switch(require('game.runtime.game').new, 'platformer')
+    local scene, err = self.manager:switch(require('source.runtime.game').new, 'platformer')
     assert(scene, err)
     local w, g = scene.world, katsa.graphics
     local mesh = w:create('Mesh3D', {

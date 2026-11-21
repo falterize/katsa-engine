@@ -18,7 +18,7 @@ function Tests:draw()
     self.frame = self.frame + 1
     local frame = self.frame
     if frame == 1 then
-        self.host = require('game.runtime.application').new(self.manager, 'multiplayerCars')
+        self.host = require('source.runtime.application').new(self.manager, 'multiplayerCars')
         self.host:load()
         self.session = self.host.demo
         self.session:host('Tester', 47940 + math.floor(os.clock() * 100) % 9, { separate = false })

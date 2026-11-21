@@ -27,7 +27,7 @@ function T:draw()
     self.done = true
     katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
     local Opacity = require('source.engine.graphics.materials.opacity')
-    local scene = self.manager:switch(require('game.runtime.game').new, 'occlusion')
+    local scene = self.manager:switch(require('source.runtime.game').new, 'occlusion')
     local world, renderer, camera = scene.world, scene.renderer, scene.camera
     world.environment.render.frameCache = false
     world.environment.shadows.enabled = false
@@ -163,7 +163,7 @@ function T:draw()
         'Identical masks share a draw mesh'
     )
     Masks.release(state)
-    scene = self.manager:switch(require('game.runtime.game').new, 'combined')
+    scene = self.manager:switch(require('source.runtime.game').new, 'combined')
     world, renderer, camera = scene.world, scene.renderer, scene.camera
     world.environment.render.frameCache = false
     world.environment.shadows.sourceFadeSeconds = 0

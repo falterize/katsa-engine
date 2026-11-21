@@ -4,7 +4,7 @@ T.__index = T
 
 function T.new(manager)
     katsa.window.setMode(960, 540, { vsync = 0, depth = 24, stencil = 8 })
-    local scene = manager:switch(require('game.runtime.game').new, 'combined')
+    local scene = manager:switch(require('source.runtime.game').new, 'combined')
     scene.world.environment.shadows.enabled = false
     scene.world.environment.gizmos.enabled = false
     scene.showStats = false

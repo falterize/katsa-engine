@@ -1,4 +1,4 @@
-local Game = require('game.runtime.game')
+local Game = require('source.runtime.game')
 local Probe = {}
 Probe.__index = Probe
 

@@ -3,7 +3,7 @@
 local Tests = {}
 
 function Tests.run(self)
-    local Game = require('game.runtime.game')
+    local Game = require('source.runtime.game')
     local Catalog = require('game.sceneCatalog')
     local manager = self.manager
     local checked, blocked, hidden = 0, {}, 0

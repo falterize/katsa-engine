@@ -72,7 +72,7 @@ function Module.run(self)
     )
     log.clear()
 
-    local scene = require('game.runtime.application').new(self.manager, 'starterGame')
+    local scene = require('source.runtime.application').new(self.manager, 'starterGame')
     scene:load()
     local console = scene.host and scene.host.console or scene.console
     self:check(

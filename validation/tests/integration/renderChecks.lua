@@ -5,7 +5,7 @@ local Renderer = require('source.engine.graphics.pipeline.renderer')
 local BillboardUI = require('source.engine.ui.spatial.billboard')
 return function(test)
     local resources = Resources.new(require('validation.tests.fixtures.manifest'))
-    local settings = require('game.data.settings').create()
+    local settings = require('source.runtime.settings').create()
     settings.sky.enabled = false
     settings.fog.enabled = false
     settings.gizmos.enabled = false

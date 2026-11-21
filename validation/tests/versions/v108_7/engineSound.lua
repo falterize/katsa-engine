@@ -3,7 +3,7 @@ local Tests = {}
 
 function Tests.run(tester)
     local package = tester.manager.resources
-    local EngineSound = dofile('game/scenes/multiplayerCars/scripts/view/engineSound.lua')
+    local EngineSound = assert(katsa.filesystem.load('game/scenes/multiplayerCars/scripts/view/engineSound.lua'))()
     tester:check(EngineSound.revs(0) < EngineSound.revs(13), 'revs climb inside the first gear')
     tester:check(EngineSound.revs(15) < EngineSound.revs(13), 'revs drop after a gear shift')
     tester:check(EngineSound.revs(-20) == EngineSound.revs(20), 'reverse sounds like forward')

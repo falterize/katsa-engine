@@ -1,6 +1,6 @@
 -- A prefab copy inside the World3D of a ViewportFrame: its World2D is the interface of that
 -- viewport (drawn into it and clickable there), not of the outer world.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Module = {}
 

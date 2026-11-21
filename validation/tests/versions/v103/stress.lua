@@ -31,7 +31,7 @@ function T:draw()
     for _, zone in ipairs(zones) do
         katsa.math.setRandomSeed(384)
         math.randomseed(384)
-        local scene = assert(self.manager:switch(require('game.runtime.game').new, zone))
+        local scene = assert(self.manager:switch(require('source.runtime.game').new, zone))
         assert(
             not scene.physics or scene.physics.backendName == 'jolt',
             'Stress must use real Jolt'
@@ -70,7 +70,7 @@ function T:draw()
             'bodies'
         )
     end
-    self.manager:switch(require('game.runtime.menu').new)
+    self.manager:switch(require('source.runtime.menu').new)
     collectgarbage('collect')
     assert(#self.manager.journal.entries == 0, 'Runtime journal errors')
     print('JOLT STRESS COMPLETE')

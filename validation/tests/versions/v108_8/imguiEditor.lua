@@ -1,5 +1,5 @@
 -- The ImGui toolbar, Explorer and Properties windows, driven through real scenes.
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 local Tree = require('source.engine.editor.tree.traversal')
 
 local Module = {}

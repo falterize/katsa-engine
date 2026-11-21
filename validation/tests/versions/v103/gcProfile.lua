@@ -24,7 +24,7 @@ function T:draw()
         for round = 1, 3 do
             katsa.math.setRandomSeed(384)
             math.randomseed(384)
-            local scene = assert(self.manager:switch(require('game.runtime.game').new, zone))
+            local scene = assert(self.manager:switch(require('source.runtime.game').new, zone))
             scene.showStats = false
             for i = 1, 90 do
                 self.manager:update(1 / 60)

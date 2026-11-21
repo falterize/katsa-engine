@@ -70,7 +70,7 @@ a game can start directly in its own scene without loading the selector.
 The optional `game/sceneCatalog.lua` maps stable IDs to folders or archives.
 Add an entry only when the ID should be available for navigation or the example
 selector. A direct folder/archive path needs no catalog entry. Menu metadata comes
-from each scene's settings. The common gameplay host is `game/runtime/game.lua`.
+from each scene's settings. The common gameplay host is `source/runtime/game.lua`.
 Camera-free menu/pause/catalog scenes use `engine/scenes/interface.lua` instead;
 their implementation still lives inside their own scene folders.
 
@@ -409,8 +409,8 @@ See [node authoring](nodeAuthoring.md) for node hooks versus scene/system hooks.
 
 ## Pause menu
 
-`game/runtime/pauseMenu.lua` is the Esc menu as a module. `Game` attaches it to every scene by
-default; a scene's `main.lua` can call `require('game.runtime.pauseMenu').attach(scene, true)`
+`source/runtime/pauseMenu.lua` is the Esc menu as a module. `Game` attaches it to every scene by
+default; a scene's `main.lua` can call `require('source.runtime.pauseMenu').attach(scene, true)`
 to override it. Opening sets the time scale to 0 and closing restores the previous value; with
 `keepTime = true` the time scale is never touched (hosted multiplayer keeps simulating). The menu is an
 overlay inside the scene, not a separate scene, so the scene keeps updating underneath.

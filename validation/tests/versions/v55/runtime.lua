@@ -16,7 +16,7 @@ function R:update()
     self.frame = self.frame + 1
     if self.frame == 1 then
         katsa.window.setMode(640, 360, { vsync = 0, depth = 24, stencil = 8 })
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'physics')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'physics')
         assert(scene, err)
         self.scene = scene
         local ws = scene.workspace
@@ -223,7 +223,7 @@ function R:update()
         )
         ws.popup:close(false)
     elseif self.frame == 3 then
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'combined')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'combined')
         assert(scene, err)
         self.scene = scene
         scene.renderer.maxMeshDistance = 1
@@ -243,7 +243,7 @@ function R:update()
         )
     elseif self.frame == 5 then
         local scene, err =
-            self.manager:switch(require('game.runtime.game').new, 'nightPlayer')
+            self.manager:switch(require('source.runtime.game').new, 'nightPlayer')
         assert(scene, err)
         self.scene = scene
         local jumps = 0
@@ -262,7 +262,7 @@ function R:update()
             'Scene CPU profiler collects real update and render observations'
         )
         self.manager.profiler.enabled = false
-        local scene, err = self.manager:switch(require('game.runtime.game').new, 'shadows')
+        local scene, err = self.manager:switch(require('source.runtime.game').new, 'shadows')
         assert(scene, err)
         self.scene = scene
     elseif self.frame == 9 then

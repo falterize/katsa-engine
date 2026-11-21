@@ -20,7 +20,7 @@ return function(test)
         'Cached models share GPU geometry and isolate animation state'
     )
     -- Playback needs a mounted model: instantiate both copies in a world first.
-    local playWorld = require('source.engine.world.world').new(r, require('game.data.settings').create())
+    local playWorld = require('source.engine.world.world').new(r, require('source.runtime.settings').create())
     models.instantiate(playWorld, a, { name = 'A' })
     models.instantiate(playWorld, b, { name = 'B' })
     a:play(1)
@@ -42,7 +42,7 @@ return function(test)
     local loaded, fallback = pcall(r.image, r, 'missing-v54.png')
     check(loaded and fallback ~= nil, 'A missing image resolves to the cached diagnostic image')
     local World3D = require('source.engine.world.world')
-    local settings = require('game.data.settings').create()
+    local settings = require('source.runtime.settings').create()
     local world = World3D.new(r, settings)
     local obj = world:create(
         'Mesh3D',

@@ -1,4 +1,4 @@
-local Application = require('game.runtime.application')
+local Application = require('source.runtime.application')
 
 local Preview = {}
 Preview.__index = Preview

@@ -116,7 +116,7 @@ function Tests.run(tester)
     camera:destroy()
     tester:check(ui.currentCamera == nil, 'Camera destruction clears currentCamera')
     release()
-    local Application = require('game.runtime.application')
+    local Application = require('source.runtime.application')
     local platformScene = Application.new(tester.manager, 'physics2D')
     platformScene:load()
     local locked, free =

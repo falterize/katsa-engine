@@ -15,7 +15,7 @@ The dependency direction is game → engine → vendor. Engine services do not d
 | `engine/editor` | Runtime Workspace tree, inspectors, curves and panels |
 | `engine/scenes` | Package loading, archive mounts, resource namespaces and named systems |
 | `game/scenes` | Scene packages with settings, main entry points and private assets/scripts |
-| `game/runtime` | Common gameplay host, update/draw phases, input and overlays |
+| `source/runtime` | Common gameplay host, update/draw phases, input and overlays |
 | `game/ui`, `game/data` | Common Stats adapter, startup scene and defaults |
 
 Named Lua modules use the same shape: imports, local bindings, a module table, private helpers, named functions, and the final table export. Factories expose `create`/`new`; example builders expose `build`; class installers expose `install`; node registration uses `register`. Stateful methods use `:` and stateless helpers use `.`. These roles share the same source layout.
@@ -61,7 +61,7 @@ with scene lifecycle dispatch. Node lifecycle hooks are a separate instance API.
 ## Application startup and persistent data
 
 The root main file installs `engine/scenes/bootstrap.lua`, which owns the katsa
-callbacks once. Collection-specific startup is an adapter in `game/runtime/startup.lua`;
+callbacks once. Collection-specific startup is an adapter in `source/runtime/startup.lua`;
 standalone games use the default scene host. Both project types share
 `engine/core/windowConfig.lua` through a minimal conf wrapper. Project metadata
 lives in `game/data/project.lua`. Generator resources belong under tools/project.
