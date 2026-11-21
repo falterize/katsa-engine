@@ -72,9 +72,10 @@ Camera-free menu/pause/catalog scenes use `engine/scenes/interface.lua` instead;
 their implementation still lives inside their own scene folders.
 
 ```text
-katsa . --scene exampleScene
-katsa . --scene game/scenes/exampleScene
-katsa . --scene-package dist/exampleScene.zip
+katsa <project> --scene exampleScene
+katsa <project> --scene game/scenes/exampleScene
+katsa <project> --scene-package dist/exampleScene.zip
+katsa path/to/exampleScene
 ```
 
 ## Settings

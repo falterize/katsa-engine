@@ -1,7 +1,7 @@
 # Stare Shooter scene
 
 The supplied Godot project is available as `stareShooter` in the example selector.
-Run it directly with `katsa . --scene stareShooter`; add `--physics-jolt` or
+Run it directly with `katsa <examples project> --scene stareShooter`; add `--physics-jolt` or
 `--physics-oimo` to choose a backend. Change `startScene` in
 `conf.lua` to make it your game's entry scene.
 
@@ -82,11 +82,11 @@ automatically scheduled. The mandatory empty categories contain no marker files.
 The supplied game contains no implemented weapons, shooting or audio. Its active
 controller is the FSM-based player; the unused older controller/example state are
 not alternate runtime modes in this port. Imported asset rights remain those of
-the supplied project; see [license notices](licenses.md).
+the supplied project; see the [asset notices](https://github.com/falterize/katsa-engine-examples#asset-notices) of the examples repository.
 
 Package the scene with
 `python tools/build/packageScene.py game/scenes/stareShooter dist/Stare-Shooter.zip`.
-It can then run through `katsa . --scene-package dist/Stare-Shooter.zip` on this
+It can then run through `katsa <examples project> --scene-package dist/Stare-Shooter.zip` on this
 engine. Godot and its project files are not runtime dependencies.
 
 <!-- book:nav -->

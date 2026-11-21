@@ -68,7 +68,7 @@ There are three ways to start a game:
 | Fused executable | `MyGame.exe` | shipping one file (plus the libraries) |
 
 A `.katsa` file is a plain ZIP of the game folder. Folders, `.katsa`/`.zip` archives and fused
-executables behave the same. Useful flags: `--scene <id or path>` starts a scene directly, `--shared <folder>` adds a
+executables behave the same. Useful flags: `--scene <id or path>` starts a scene of the opened project directly (a scene folder also runs on its own: `katsa <scene folder>`), `--shared <folder>` adds a
 `shared://` folder, `--physics-jolt` / `--physics-oimo` pick the 3D physics backend,
 `--test-<name>` runs a test suite (see [testing](../development/testing.md)).
 

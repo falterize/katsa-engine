@@ -69,7 +69,7 @@ dimension; new class names end in `2D` or `3D`.
 
 ## Runner example and pixel animation
 
-Select **Ability Runner 2D** (`abilityRunner2D`), or run `katsa . --scene abilityRunner2D`.
+Select **Ability Runner 2D** (`abilityRunner2D`), or run `katsa <examples project> --scene abilityRunner2D`.
 The complete scene lives in `game/scenes/abilityRunner2D`, including its level,
 controller, atlas, UI and systems. A/D or touch buttons move; Space double-jumps, Shift
 dashes, C slides and R respawns. Gold trigger volumes save checkpoints, red lava is a

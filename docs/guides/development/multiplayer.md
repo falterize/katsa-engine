@@ -121,8 +121,8 @@ in `server/` or `scripts/shared/` may require client code (views, UI, input, `ka
 test checks it. The same server runs without a window:
 
 ```
-luajit tools/dev/katsa.lua . --scene multiplayerCars --server 7777 --name "My arena" --max-players 8
-luajit tools/dev/katsa.lua . --scene multiplayerCars --server --sim-preset poor --no-bot
+luajit tools/dev/katsa.lua ../katsa-engine-examples --scene multiplayerCars --server 7777 --name "My arena" --max-players 8
+luajit tools/dev/katsa.lua ../katsa-engine-examples --scene multiplayerCars --server --sim-preset poor --no-bot
 ```
 
 A hosting player's game starts that same server as a child process (`katsa.process`, with its own
