@@ -91,7 +91,7 @@ runner. Free-3D-camera UP/DOWN buttons are hidden when no 3D camera is active.
 
 ### Edit the player animation XML
 
-Edit [player.xml](../../../game/scenes/abilityRunner2D/assets/animations/player.xml).
+Edit [player.xml](https://github.com/falterize/katsa-engine-examples/blob/v109/game/scenes/abilityRunner2D/assets/animations/player.xml).
 The root `flipbook` element declares format version 1, image path, atlas columns/rows,
 8x8 frame dimensions, `pixelate` and initial state. Each named `animation` has `fps`
 and `loop`; its self-closing `frame` children define the playback order.

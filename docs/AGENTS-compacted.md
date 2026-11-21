@@ -49,4 +49,4 @@ Read this first after a context reset; read `AGENTS.md` for anything it does not
 
 ## Where things are
 
-`source/engine` (services, nodes, ui, graphics, physics, scenes) · `source/katsa` (runtime on GL/SDL2) · `source/game` (scenes, `sceneCatalog.lua`) · `source/plugins/{ads,ik,pathfinding,uiStyler,ragdoll}` · `validation/tests/{registry.lua,versions/vNNN_N}` · `tools/{dev,build,project,import}` · `docs/{guides,architecture.md,changelog.md,AGENTS.md,TODO.md}`.
+`source/engine` (services, nodes, ui, graphics, physics, scenes) · `source/katsa` (runtime on GL/SDL2) · `source/runtime` (game, host and module lists) · `source/plugins/{ads,ik,pathfinding,uiStyler,ragdoll}` · `validation/tests/{registry.lua,versions/vNNN_N}` · `tools/{dev,build,project,import}` · `docs/{guides,architecture.md,changelog.md,AGENTS.md,TODO.md}`.
