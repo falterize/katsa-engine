@@ -28,6 +28,7 @@ function Panel.new(ui, parent)
         { 'Errors', function() self:setFilter('error') end },
         { 'JSON', function() self:export('json') end },
         { 'CSV', function() self:export('csv') end },
+        { 'Copy', function() self:copy() end },
         { 'Clear', function() katsa.log.clear() end },
     }
     for index, button in ipairs(buttons) do
@@ -80,6 +81,12 @@ function Panel:export(format)
         return Export.save(katsa.log.entries(self.filter), format)
     end)
     self.message = ok and ('Saved ' .. result) or ('Export failed: ' .. tostring(result))
+    self.dirty = true
+end
+
+-- The clipboard is the way off a phone: paste the log into a message or an issue.
+function Panel:copy()
+    self.message = 'Copied ' .. Export.copy(katsa.log.entries(self.filter)) .. ' entries'
     self.dirty = true
 end
 

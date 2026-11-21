@@ -231,6 +231,7 @@ function Game:gamepadreleased(pad, button)
 end
 
 function Game:pointercancelled(id)
+    self:emit('pointercancelled', id)
     self.input:cancel(id)
 end
 

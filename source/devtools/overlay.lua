@@ -4,7 +4,11 @@ local Overlay = { name = 'overlay' }
 Overlay.__index = Overlay
 
 function Overlay.install(scene)
-    return setmetatable({ scene = scene }, Overlay)
+    return setmetatable({
+        scene = scene,
+        -- Three fingers at once open the console: a phone has no F1.
+        gesture = require('source.engine.debug.touchGesture').new(3),
+    }, Overlay)
 end
 
 -- Hooks ---------------------------------------------------------------------------------------
@@ -80,6 +84,19 @@ function Overlay:beforeUI()
     end
     scene.statistics:sample()
 end
+
+function Overlay:pointerpressed(id)
+    if self.gesture:press(id) then
+        self.scene.console:toggle()
+    end
+    return false
+end
+
+function Overlay:pointerreleased(id)
+    self.gesture:release(id)
+end
+
+Overlay.pointercancelled = Overlay.pointerreleased
 
 function Overlay:keyUnhandled(key)
     local scene = self.scene

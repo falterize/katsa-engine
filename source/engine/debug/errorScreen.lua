@@ -48,6 +48,9 @@ function Screen.create(traceback, api)
                 if event == 'wheelmoved' then
                     scroll = math.max(0, scroll - (delta or 0) * 48)
                 end
+                if event == 'touchpressed' and api.system then
+                    api.system.setClipboardText(traceback)
+                end
                 if
                     event == 'keypressed'
                     and key == 'c'
@@ -69,7 +72,7 @@ function Screen.create(traceback, api)
             g.setColor(1, 0.8, 0.8)
             g.printf(
                 'Katsa stopped after an error. Close the window to exit.\n'
-                    .. 'Ctrl+C: copy | Wheel: scroll | Saved: crashes/crash-01.log (last 10)\n\n'
+                    .. 'Ctrl+C or tap: copy | Wheel: scroll | Saved: crashes/crash-01.log (last 10)\n\n'
                     .. shown,
                 24,
                 24 - scroll,

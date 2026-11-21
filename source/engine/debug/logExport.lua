@@ -35,6 +35,21 @@ function Export.build(entries, format)
     error('Unknown log export format: ' .. tostring(format))
 end
 
+-- Plain text, one line per entry, for the clipboard and the failure screens.
+function Export.text(entries)
+    local lines = {}
+    for index, entry in ipairs(entries) do
+        lines[index] = string.format('[%s] %8.2f  %s', entry.level, entry.time, entry.message)
+    end
+    return table.concat(lines, '\n')
+end
+
+-- Copies the (filtered) log to the system clipboard; returns how many entries were copied.
+function Export.copy(entries)
+    katsa.system.setClipboardText(Export.text(entries))
+    return #entries
+end
+
 function Export.save(entries, format)
     local data = Export.build(entries, format)
     assert(katsa.filesystem.createDirectory('logs'), 'Could not create the logs directory')

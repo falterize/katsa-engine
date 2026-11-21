@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.10
 
+- Console on a phone: three fingers at once open or close the on-screen console, `Copy` puts the log on the clipboard, "Could not start a scene" shows the last log lines and copies the log on a tap, and the error screen copies its report on a tap (`debug/touchGesture.lua`; Host and Game forward pointer events to modules).
 - CI: `.github/workflows/tests.yml` (engine and examples) runs the regression suites with both repositories checked out on the same branch name (`tools/ci/runSuites.sh`, shared `setup-engine` action). `tools/import/makeTileset.py` takes the project folder it writes to.
 - The examples moved to their own repository, `katsa-engine-examples`, a project of its own. The engine has no root `game/` folder and ships only what it needs in `assets/` (engine shaders, default font, fallback textures, click sound). The collection runtime and dev tools moved to `source/runtime` and `source/devtools`, so any scene gets Workspace, F4 and the pause menu; the scene catalog is optional.
 - Starting with nothing to run shows a black window and a console message. A scene (`katsa <folder or archive>`) or a project runs directly; several scenes of a project switch by path or ID, and a project without a start scene opens a plain picker.

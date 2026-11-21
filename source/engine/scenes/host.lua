@@ -145,6 +145,7 @@ function Host:resize(width, height)
 end
 
 function Host:pointerpressed(id, x, y)
+    self:emit('pointerpressed', id, x, y)
     self.input:press(id, x, y)
 end
 
@@ -153,10 +154,12 @@ function Host:pointermoved(id, x, y, dx, dy)
 end
 
 function Host:pointerreleased(id, x, y)
+    self:emit('pointerreleased', id, x, y)
     self.input:release(id, x, y)
 end
 
 function Host:pointercancelled(id)
+    self:emit('pointercancelled', id)
     self.input:cancel(id)
 end
 

@@ -36,7 +36,7 @@ level `error`. A native process fault cannot be logged by Lua.
 
 Standalone scenes (`Host`) own a console panel (`source/engine/debug/consolePanel.lua`).
 F1 toggles it. Buttons: All / Warn+ / Errors filter, JSON and CSV export of the filtered
-view, Clear. The panel redraws only while visible and only after new entries arrive.
+view, Clear. On a phone, touch three fingers at once to open and close the console (there is no F1); `Copy` puts the filtered log on the clipboard so it can be pasted into a message or an issue. The failure screens help the same way: "Could not start a scene" shows the last log lines and copies the whole log on a tap, and the error screen copies the report on a tap. The panel redraws only while visible and only after new entries arrive.
 
 <!-- book:nav -->
 ---
