@@ -36,7 +36,7 @@ end)
 | `scale` | UI scale (0.5 .. 3) |
 | `showDemo` | ImGui's own demo window |
 
-Scenes opt in with `plugins = { 'imgui' }`, or take the host that `Game` attaches itself.
+Scenes opt in with `plugins = { imgui = true }`, or take the host that `Game` attaches itself.
 
 <details><summary>Lua API (`ig`)</summary><br>
 

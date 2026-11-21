@@ -39,7 +39,7 @@ end
 
 -- Game source choice: first non-option argument, else the fused archive, else the working
 -- directory.
--- Returns the source and, as the second value, true when the source is a scene to run.
+-- Returns the source and its kind: 'game' (own main.lua), 'project' or 'scene' (both run on the engine).
 local function chooseSource(host, FS, nativeLib)
     local args = host.args or {}
     local positional
@@ -57,49 +57,47 @@ local function chooseSource(host, FS, nativeLib)
             return nil, 'Cannot find game source: ' .. positional
         end
         FS.setSource(positional, false)
-        -- A project (conf.lua, no main.lua) holds settings and scenes, not code: the engine runs
-        -- from the working directory and the project is mounted at `_project`.
-        if FS.getInfo('conf.lua', 'file') and not FS.getInfo('main.lua', 'file') then
+        -- conf.lua without main.lua is a project (settings and scenes); conf.lua with main.lua but
+        -- without its own engine copy is a scene. Both run on the engine in the working directory.
+        local project = FS.getInfo('conf.lua', 'file') and not FS.getInfo('main.lua', 'file')
+        local scene = FS.getInfo('conf.lua', 'file')
+            and FS.getInfo('main.lua', 'file')
+            and not FS.getInfo('source/engine', 'directory')
+        if project or scene then
             if nativeLib.stat('main.lua') ~= 'file' then
-                return nil, 'A project needs the engine to run it: start katsa from the engine folder.'
+                return nil, 'A project or scene needs the engine to run it: start katsa from the engine folder.'
             end
             FS.setSource('.', false)
-            for _, point in ipairs({ '_project', '' }) do
+            local mounts = project and { '_project', '' } or { '_scene' }
+            for _, point in ipairs(mounts) do
                 local ok, message = FS.mount(positional, point, true)
                 if not ok then
                     return nil, message
                 end
             end
-            return positional, 'project'
+            return positional, project and 'project' or 'scene'
         end
-        -- A scene (settings.lua, no conf.lua) is not a game: run it with the engine's own
-        -- main.lua from the working directory, as `--scene <path>`.
-        if not FS.getInfo('conf.lua', 'file') and FS.getInfo('settings.lua', 'file') then
-            if nativeLib.stat('main.lua') ~= 'file' then
-                return nil, 'A scene needs the engine to run it: start katsa from the engine folder.'
-            end
-            FS.setSource('.', false)
-            return positional, true
-        end
-        return positional
+        return positional, 'game'
     end
     if host.archive and host.archive:has('main.lua') then
         FS.setSource(host.archive, true)
-        return host.exe
+        return host.exe, 'game'
     end
     if nativeLib.stat('main.lua') == 'file' then
         FS.setSource('.', false)
-        return '.'
+        return '.', 'game'
     end
     return nil, 'No game to run.\nUsage: katsa <game folder | game.katsa | game.zip>'
 end
+
+-- What a scene run on its own may take from its conf.lua for the application itself.
+local SCENE_APPLICATION_KEYS = { 'identity', 'title', 'window', 'audio', 'modules', 'console', 'externalStorage' }
 
 local function defaultConfig()
     return {
         identity = nil,
         version = '0.2.0',
         console = false,
-        gammacorrect = false,
         audio = { mic = false, mixwithsystem = true },
         window = {
             title = 'Untitled',
@@ -150,16 +148,16 @@ local function run(host)
         end
     end
 
-    local source, asScene = chooseSource(host, FS, nativeLib)
+    local source, kind = chooseSource(host, FS, nativeLib)
     if not source then
-        report(asScene)
+        report(kind)
         return 1
     end
     local argv = { [0] = host.exe }
     for i, value in ipairs(host.args or {}) do
         argv[i] = value
     end
-    if asScene == true then
+    if kind == 'scene' then
         -- The scene path stays the "game path" (so a server child process starts the same way)
         -- and the engine receives it as `--scene`.
         local at
@@ -193,22 +191,39 @@ local function run(host)
     katsa.process.setLaunchBase(launch, explicit)
 
     local config = defaultConfig()
-    local confPath = asScene == 'project' and '_project/conf.lua' or 'conf.lua'
-    if FS.getInfo(confPath, 'file') then
-        local ok, err = pcall(function()
-            local chunk = assert(FS.load(confPath))
-            chunk()
-            if katsa.conf then
-                katsa.conf(config)
-            end
-        end)
-        if not ok then
-            report('Error in conf.lua: ' .. tostring(err))
-            return 1
+    -- conf.lua returns the project table. A project or scene runs over the engine's own conf.lua
+    -- (defaults) with its own conf.lua applied on top.
+    local Conf = require('source.katsa.core.conf')
+    local conf = {}
+    local ok, err = pcall(function()
+        if kind == 'game' then
+            conf = FS.getInfo('conf.lua', 'file') and Conf.read(FS, 'conf.lua') or {}
+            return
         end
+        conf = Conf.read(FS, 'conf.lua')
+        local own = (kind == 'project' and '_project' or '_scene') .. '/conf.lua'
+        if FS.getInfo(own, 'file') then
+            local values = Conf.read(FS, own)
+            if kind == 'scene' then
+                -- A scene started on its own may name its window and save folder; the rest of its
+                -- conf is the scene's own business.
+                local applied = {}
+                for _, key in ipairs(SCENE_APPLICATION_KEYS) do
+                    applied[key] = values[key]
+                end
+                values = applied
+            end
+            Conf.merge(conf, values)
+        end
+    end)
+    if not ok then
+        report('Error in conf.lua: ' .. tostring(err))
+        return 1
     end
-    -- The project's own settings (startScene, sharedAssets, scenes ...) are read by the engine.
-    katsa.projectConfig = asScene == 'project' and config or nil
+    if next(conf) then
+        require('source.engine.core.windowConfig').apply(config, conf)
+    end
+    katsa.projectConfig = conf
     local base = source:match('([^/\\]+)%.[%w]+$') or source:match('([^/\\]+)$') or 'game'
     FS.setIdentity(config.identity or base)
 

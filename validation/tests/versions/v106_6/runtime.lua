@@ -78,14 +78,6 @@ function Tests:systems()
         'TAR scene lifecycle remains active without directory markers'
     )
     scene:draw()
-    local legacy = assert(
-        self.manager:switch(Application.new, 'validation/tests/fixtures/lifecycle/legacyLayout.zip')
-    )
-    self.manager:update(1 / 60)
-    self:check(
-        legacy.settings.layoutVersion == 2 and legacy.demo.steps == 1,
-        'Earlier archives with a root UI directory remain loadable'
-    )
 end
 
 function Tests:nodeAuthoring()

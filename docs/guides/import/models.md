@@ -47,7 +47,7 @@ in `model.collisionBodies`. Works for GLB, glTF, OBJ object names and `.blend`.
 
 ## Level of detail from node names
 
-With the `lod` plugin enabled in the scene (`plugins = { 'lod' }`), objects named `tree-lod0`, `tree-lod1`, `tree-lod2` ... (a plain `tree` is level 0 too, but not both)
+With the `lod` plugin enabled in the scene (`plugins = { lod = true }`), objects named `tree-lod0`, `tree-lod1`, `tree-lod2` ... (a plain `tree` is level 0 too, but not both)
 become one `LODGroup` (`treeLOD`) that shows a level by camera distance or by size on screen. The levels
 may have different parents. `-col` / `-colonly` may stand before or after the LOD suffix; only level 0
 gets a collider. `settings.lod` sets the group properties, `settings.lod.groups = { tree = {...} }`

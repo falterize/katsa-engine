@@ -44,9 +44,6 @@ function Game:createPhysics3D(settings)
     for key, value in pairs(settings or {}) do
         merged[key] = value
     end
-    for key, value in pairs(self.settings.physics or {}) do
-        merged[key] = value
-    end
     for key, value in pairs(self.options.physics or {}) do
         merged[key] = value
     end
@@ -69,13 +66,10 @@ function Game:load()
         )
     self.settings = self.package.settings
     self.zone = self.package.id
-    local manifest = Loader.manifest({}, self.settings.assets)
-    self.resources = self.manager.resources:scope(manifest, self.package.paths)
+    self.resources = self.manager.resources:scope({}, self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
     profiler:markLoad('Open package, resources and audio')
-    local environment =
-        Loader.configure(require('source.runtime.settings').create(), self.settings.world)
-    self.world = World3D.new(self.resources, environment)
+    self.world = World3D.new(self.resources, require('source.runtime.settings').create())
     self.world.prefabs:setScene(self)
     -- The top node: the main World3D (World2D inside it) and the storage containers hang from it.
     self.root = require('source.engine.scenes.rootNode').create(self.world)
@@ -110,7 +104,7 @@ function Game:load()
     require('source.runtime.pauseMenu').attach(self)
     profiler:markLoad('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
-    require('source.engine.plugins').activate(self.world, self.settings.plugins)
+    require('source.engine.plugins').activateFor(self.world, self.settings.plugins)
     profiler:markLoad('Node types and plugins')
     self.demo = Loader.create(self)
     profiler:markLoad('Scene create script')

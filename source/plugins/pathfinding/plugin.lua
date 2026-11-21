@@ -7,7 +7,7 @@ return {
         .. 'NavObstacle3D, NavLink3D and NavArea3D nodes and a navigation debug view.',
     requires = {},
     demoScene = 'navMeshLab',
-    -- Enabled per scene with `plugins = { 'pathfinding' }` in the scene settings.
+    -- Enabled per scene with `plugins = { pathfinding = true }` in the scene conf.lua.
     nodes = {
         NavMap3D = './nodes.navMap3D',
         NavAgent3D = './nodes.navAgent3D',

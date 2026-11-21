@@ -1,5 +1,5 @@
 -- ImGuiLayer: your own ImGui windows as a node. Connect to `gui` and draw with the `ig` API; the
--- scene needs `plugins = { 'imgui' }` and the platform's native library (see the guide).
+-- scene needs `plugins = { imgui = true }` and the platform's native library (see the guide).
 --
 --   local layer = world:create('ImGuiLayer', { theme = 'Dark', scale = 1 })
 --   layer:connect('gui', function(ig)

@@ -5,7 +5,7 @@ A standalone game project built with Katsa.
 Run `katsa .`. The start scene displays a rotating cube, saved score and a saved
 rotation preference. Press F3 to inspect Stats and export recent metric history.
 
-- Configure title, unique save identity and first scene in `game/data/project.lua`.
+- Configure title, unique save identity and first scene in `conf.lua`.
 - Configure `frameRateLimit` in `game/scenes/start/settings.lua`: `0` is
   uncapped and a positive integer is an optional ceiling. VSync stays off.
 - Compose content in `game/scenes/start/scripts/content.lua`.
@@ -32,4 +32,4 @@ Project code is MIT; see LICENSE and retained notices in `vendor`.
 All scenes expose `scene.data`. Use named scopes for shared progress/preferences
 and read/write/openFile for tables, text, binary and streaming data. Files live
 in the device's save directory outside the replaceable game folder. Keep
-`game/data/project.lua.identity` stable across updates; schema changes use migrations.
+`conf.lua` `identity` stable across updates; schema changes use migrations.

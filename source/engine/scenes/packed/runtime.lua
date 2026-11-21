@@ -18,8 +18,7 @@ Runtime.__index = Runtime
 function Runtime.start(packed, world, node, host, ui)
     local package = packed.package
     local lifecycle = package:require('main')
-    local resources =
-        world.resources:scope(Loader.manifest({}, package.settings.assets), package.paths)
+    local resources = world.resources:scope({}, package.paths)
     local scope
     scope = {
         node = node,

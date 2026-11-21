@@ -6,6 +6,7 @@
       "about": "Install the engine, run a project or a scene, and understand how a game is organised.",
       "pages": [
         "docs/book/projects.md",
+        "docs/book/conf.md",
         "docs/guides/development/gettingStarted.md",
         "docs/guides/katsa/building.md",
         "docs/guides/development/newGame.md",

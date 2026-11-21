@@ -21,7 +21,7 @@ Read this first after a context reset; read `AGENTS.md` for anything it does not
 
 ## Daily commands (repo root `/home/claude/katsa`)
 
-- Examples live in the separate repo `falterize/katsa-engine-examples` (same branch name as the engine); the engine has no `game/`. Run projects with `luajit tools/dev/katsa.lua <scene|project>`; `runTests.sh` mounts `../katsa-engine-examples`. Docs are a book: edit `docs/book/book.json`, run `python tools/docs/buildBook.py`.
+- `conf.lua` returns a table everywhere (game/project/scene, `docs/book/conf.md`); scenes set physics/environment/assets in code. Examples live in the separate repo `falterize/katsa-engine-examples` (same branch name as the engine); the engine has no `game/`. Run projects with `luajit tools/dev/katsa.lua <scene|project>`; `runTests.sh` mounts `../katsa-engine-examples`. Docs are a book: edit `docs/book/book.json`, run `python tools/docs/buildBook.py`.
 - One suite: `tools/dev/runTests.sh --test-v108.8 [timeoutSeconds]` (about 10 s). Full regressions: `--test-v106.8` (1137 checks) and `--test` (1508, about 95 s) must pass.
 - Which suites a change needs: `luajit tools/dev/testChanged.lua [--since REF] [--run]` (map: `tools/dev/testMap.lua`).
 - Visual probe: `KATSA_SHOT=tmp/<dir> KATSA_SCENE=<scene> KATSA_FRAMES=<n> xvfb-run -a luajit tools/dev/katsa.lua . --test-v108.4.shadow`, PNGs in `~/.local/share/Katsa/katsa-engine/tmp/<dir>/`, look at them with Read.

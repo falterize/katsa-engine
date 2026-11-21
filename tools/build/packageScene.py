@@ -10,7 +10,7 @@ import zipfile
 def package(source: Path, target: Path):
     source = source.resolve()
     target = target.resolve()
-    for name in ('main.lua', 'settings.lua'):
+    for name in ('main.lua', 'conf.lua'):
         if not (source / name).is_file():
             raise ValueError(f'Scene is missing {name}: {source}')
     if target.is_relative_to(source):

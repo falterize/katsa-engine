@@ -60,7 +60,7 @@ map:addAction('walk', { 'axis:leftx.left' }, 0.3)    -- third argument: the acti
 map:setDeadzone('walk', 0.25)
 ```
 
-### Defining actions in `settings.lua`
+### Defining actions in `conf.lua`
 
 A scene can bring its own actions; they exist before the scene script runs and leave with the
 scene. An action that already exists (a project action, or one the player rebound) is never

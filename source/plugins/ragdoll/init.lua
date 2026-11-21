@@ -6,7 +6,7 @@
 --   ragdoll.active = false            -- back to the animation
 --
 -- The Ragdoll3D node sits under a model instance (the node `Models.instantiate` returns), like
--- InverseKinematics3D, and needs `plugins = { 'ragdoll' }` in the scene settings.
+-- InverseKinematics3D, and needs `plugins = { ragdoll = true }` in the scene conf.lua.
 return {
     Humanoid = require('./humanoid'),
     Rig = require('./rig'),

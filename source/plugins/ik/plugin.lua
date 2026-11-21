@@ -7,6 +7,6 @@ return {
         .. 'blending, debug drawing and the InverseKinematics3D node.',
     requires = {},
     demoScene = 'ikLab',
-    -- Enabled per scene with `plugins = { 'ik' }`: adds the InverseKinematics3D node.
+    -- Enabled per scene with `plugins = { ik = true }`: adds the InverseKinematics3D node.
     nodes = { InverseKinematics3D = './nodes.inverseKinematics3D' },
 }

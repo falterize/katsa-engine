@@ -1,5 +1,5 @@
 -- UIStyler: the style sheet of a screen UI as a node, so its theme and style files show up in the
--- Explorer and Inspector. The scene needs `plugins = { 'uiStyler' }`.
+-- Explorer and Inspector. The scene needs `plugins = { uiStyler = true }`.
 --
 --   local node = world:create('UIStyler', { theme = 'dark', stylesFolder = 'scene://styles' })
 --   node:bind(scene.root:find('World3D/World2D'), scene.resources) -- the UI the sheet styles and the scope that resolves scene://

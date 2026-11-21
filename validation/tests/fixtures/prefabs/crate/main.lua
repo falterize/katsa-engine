@@ -3,6 +3,7 @@ local Prefab = require('source.engine.scenes.packed.scene')
 -- Content built once when the scene is packed.
 local function build(scene)
     local world = scene.world
+    scene.resources:define('stone', { path = 'shared://textures/surfaces/stone.png', filter = 'nearest' })
     local crate = world:create('Mesh3D', { name = 'Crate', size = { 1, 1, 1 } })
     world:create('SurfaceAppearance3D', { name = 'Skin', colorMap = 'stone' }, crate)
     world:create('SurfaceAppearance3D', { name = 'Dot', colorMap = './scene://textures/dot.png' }, crate)

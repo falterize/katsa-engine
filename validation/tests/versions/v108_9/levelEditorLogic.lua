@@ -36,13 +36,13 @@ end
 function Module.zip(self)
     self:check(Crc32.of('123456789') == 0xCBF43926, 'CRC-32 matches the standard check value')
     local zip = ZipWriter.new()
-    zip:add('settings.lua', 'return {}\n')
+    zip:add('conf.lua', 'return {}\n')
     zip:addDirectory('assets/models')
     zip:add('assets/textures/a.bin', string.char(0, 1, 2, 255, 254))
     zip:add('assets/ünï.txt', 'utf8 name')
     local text = zip:build()
     local archive = Archive.fromString(text, 'written')
-    self:check(archive:read('settings.lua') == 'return {}\n', 'The engine reader reads a stored entry')
+    self:check(archive:read('conf.lua') == 'return {}\n', 'The engine reader reads a stored entry')
     self:check(
         archive:read('assets/textures/a.bin') == string.char(0, 1, 2, 255, 254),
         'Binary bytes survive the ZIP writer'
@@ -53,7 +53,7 @@ function Module.zip(self)
         'An explicit directory entry is listed as a directory'
     )
     self:check(ZipWriter.new():add('a', 'x'):build() == ZipWriter.new():add('a', 'x'):build(), 'The archive bytes are deterministic')
-    self:check(not pcall(function() zip:add('settings.lua', '') end), 'A duplicate entry name is refused')
+    self:check(not pcall(function() zip:add('conf.lua', '') end), 'A duplicate entry name is refused')
 end
 
 function Module.format(self)
@@ -86,7 +86,7 @@ function Module.format(self)
     self:check(message and message:find('Unsupported location version 99'), 'An unknown version gives a clear message')
     self:check(Format.parse('return os.exit()') == nil, 'A location file cannot run code')
     local package = Archive.fromString(Format.pack(data, { ['assets/textures/x.png'] = 'png' }, '-- loader\n'), 'package')
-    self:check(package:has('settings.lua') and package:has('main.lua') and package:has('assets/location.lua'), 'The package is a scene layout')
+    self:check(package:has('conf.lua') and package:has('main.lua') and package:has('assets/location.lua'), 'The package is a scene layout')
     self:check(package:read('assets/textures/x.png') == 'png', 'Copied assets live inside the package')
 end
 

@@ -6,7 +6,7 @@ Tests.__index = Tests
 function Tests.new(manager)
     local self = Previous.new(manager)
     katsa.errorhandler = function(message)
-        print('FAILED v106.8 ' .. tostring(message))
+        print('FAILED v106.8 ' .. tostring(message) .. (os.getenv('KATSA_TRACE') and debug.traceback() or ''))
         os.exit(1)
     end
     return setmetatable(self, Tests)

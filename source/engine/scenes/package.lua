@@ -9,7 +9,7 @@ Package.__index = Package
 local mounts = {}
 
 local function rootAt(path)
-    return katsa.filesystem.getInfo(path .. '/settings.lua', 'file')
+    return katsa.filesystem.getInfo(path .. '/conf.lua', 'file')
         and katsa.filesystem.getInfo(path .. '/main.lua', 'file')
 end
 
@@ -27,7 +27,7 @@ local function sceneRoot(mount)
     end
     return assert(
         found,
-        'Scene requires settings.lua and main.lua at its root or one enclosing folder'
+        'Scene requires conf.lua and main.lua at its root or one enclosing folder'
     )
 end
 
@@ -70,7 +70,10 @@ local function mountFolder(source)
     if type(source) ~= 'string' or inside and virtual then
         return source
     end
-    if require('source.katsa.core.nativeLib').stat(source) ~= 'directory' then
+    local kind = require('source.katsa.core.nativeLib').stat(source)
+    if kind ~= 'directory' then
+        local _, virtualFile = pcall(katsa.filesystem.getInfo, source, 'file')
+        assert(kind or virtualFile, 'Cannot find the scene: ' .. source)
         return source
     end
     local mount = '_sceneFolders/' .. source:gsub('[^%w]', '_')
@@ -89,9 +92,9 @@ function Package.open(source)
     local self =
         setmetatable({ root = root, archive = archive, modules = {}, references = 1 }, Package)
     local ok, message = pcall(function()
-        assert(rootAt(root), 'Scene requires settings.lua and main.lua: ' .. root)
-        self.settings = self:require('settings')
-        assert(type(self.settings) == 'table', 'Scene settings.lua must return a table')
+        assert(rootAt(root), 'Scene requires conf.lua and main.lua: ' .. root)
+        self.settings = self:require('conf')
+        assert(type(self.settings) == 'table', 'Scene conf.lua must return a table')
         -- menu-settings.lua holds what only launchers and menus read (id, title, tags ...).
         self.menu = self:loadMenu()
         self.id = self.menu.id or Paths.basename(root)
@@ -115,7 +118,7 @@ function Package.open(source)
     return self
 end
 
--- Reads the optional menu-settings.lua next to settings.lua; an empty table when it is absent.
+-- Reads the optional menu-settings.lua next to conf.lua; an empty table when it is absent.
 function Package:loadMenu()
     local path = self.root .. '/menu-settings.lua'
     if not katsa.filesystem.getInfo(path, 'file') then

@@ -22,13 +22,15 @@ function Config.apply(settings, project)
     -- Phones need vertical sync for even frame pacing (an uncapped swap loop gives 80+ FPS on
     -- average but uneven frames, and heats the device); desktop keeps it off for benchmarks.
     -- Environment.rendering.vsync takes this value as its default.
-    settings.window.vsync = require('source.katsa.core.native').os() == 'Android' and 1 or 0
+    settings.window.vsync = require('source.katsa.core.native').os() == 'Android'
     for key, value in pairs(window) do
         if key ~= 'width' and key ~= 'height' and key ~= 'minwidth' and key ~= 'minheight' then
             settings.window[key] = value
         end
     end
-    settings.gammacorrect = false
+    -- conf.lua says `vsync = true | false | 'adaptive'`; the platform takes the swap interval.
+    local vsync = settings.window.vsync
+    settings.window.vsync = vsync == 'adaptive' and -1 or vsync == true and 1 or 0
     settings.modules.physics = true
     settings.modules.video = false
     settings.externalstorage = project.externalStorage == true

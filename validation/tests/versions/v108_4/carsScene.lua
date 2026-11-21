@@ -128,7 +128,7 @@ function Tests:draw()
         stub.stack[1].update = function() full = full + 1 end
         stub.stack[1].settings = { runInBackground = true }
         stub.update(stub, 0.01)
-        self:check(full == 1, 'runInBackground in the scene settings keeps the full update')
+        self:check(full == 1, 'runInBackground in the scene conf keeps the full update')
         stub.stack[1].settings = { runInBackground = false }
         stub.backgroundOverride = true
         stub.update(stub, 0.01)

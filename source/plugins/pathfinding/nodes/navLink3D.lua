@@ -4,7 +4,7 @@
 -- never does. The plugin does not perform the action. An agent that routes through the link reports
 -- it as its next action (`agent:getNextAction()`, `getActionTarget()`); your script moves the body
 -- (a jump, a climb) and the agent carries on once the body stands at the far end. The scene needs
--- `plugins = { 'pathfinding' }` and a baked NavMap3D.
+-- `plugins = { pathfinding = true }` and a baked NavMap3D.
 --
 --   world:create('NavLink3D', { action = 'jump', position = { 0, 0, 0 }, endNode = landing })
 local Definition = {

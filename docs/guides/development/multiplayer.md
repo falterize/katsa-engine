@@ -115,7 +115,7 @@ A server never shares state with a client by reference. A hosting player runs a 
 same process (multiplayerCars: `ServerHost`, a physics-only `World3D` of its own) and joins it
 through the loopback like everybody else, so host and guests see the same thing, ping included.
 A networked scene keeps its client at the scene root and its server in a `server/` folder with its
-own `main.lua` and `scripts/`; code both sides need lives in `scripts/shared/`. `settings.lua` names
+own `main.lua` and `scripts/`; code both sides need lives in `scripts/shared/`. `conf.lua` names
 the entry (`server = 'server.main'`), and `--server` loads it instead of `main.lua`, headless. Nothing
 in `server/` or `scripts/shared/` may require client code (views, UI, input, `katsa.graphics`); a
 test checks it. The same server runs without a window:

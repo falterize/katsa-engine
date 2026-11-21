@@ -1,5 +1,5 @@
 -- NavMap3D: a baked navigation map for a region of the world, the engine's counterpart of Godot's
--- NavigationRegion. The scene needs `plugins = { 'pathfinding' }` in its settings.
+-- NavigationRegion. The scene needs `plugins = { pathfinding = true }` in its conf.lua.
 --
 --   local map = world:create('NavMap3D', { position = { 0, 0, 0 }, areaSize = { 120, 120 } })
 --   map:bake()                                        -- samples the physics world

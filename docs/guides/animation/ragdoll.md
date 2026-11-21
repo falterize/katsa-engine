@@ -1,7 +1,7 @@
 # Ragdoll
 
 The `ragdoll` plugin turns a skinned humanoid model into physical bodies. Enable it in the
-scene settings (`plugins = { 'ragdoll' }`) and add a `Ragdoll3D` node under the model root:
+scene settings (`plugins = { ragdoll = true }`) and add a `Ragdoll3D` node under the model root:
 
 ```lua
 local ragdoll = world:create('Ragdoll3D', {

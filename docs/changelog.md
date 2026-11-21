@@ -10,6 +10,10 @@ Per-version notes. Test results and logs for each release live in Git history an
 - `shared://` resolves through a list of folders (engine `assets` first, first folder holding the file wins). `--shared <folder>` and `sharedAssets` add folders.
 - A scene folder outside the game source opens by path; `FS.mount` accepts relative real paths such as `../examples`.
 - Documentation is a book: `docs/book` holds the contents, a "Projects and scenes" page and the order of all guides; every page ends with previous/next links. `tools/docs/buildBook.py` keeps them current (`--check` for CI).
+- One `conf.lua` for games, projects and scenes (a scene's `settings.lua` is renamed; the old name is not read). It returns a table (`katsa.conf(t)` is gone) and is listed in `docs/book/conf.md`. A project or scene runs over the engine's own `conf.lua`; a scene run on its own may set `identity`, `title`, `window`, `audio`, `modules`, `console` and `externalStorage`.
+- Removed from conf and moved to code: `layoutVersion` (the layout is always the current one; old layouts and `legacyLayout.zip` are gone), `catalog` (scenes are found in the scenes folder), `physics`/`physics2D`/`gravity*` (options of `createPhysics3D`/`createPhysics2D`), `world` (`scene.world:configure{}`), `assets` (`scene.resources:define()`), `enabled`, `gammacorrect`. They raise an error naming the replacement.
+- `plugins = { name = true | false }` in conf, in a project (all scenes) and in a scene (adds or switches one off). `window.vsync` is `true`, `false` or `'adaptive'`; `scenes` defaults to `scenes/`.
+- No scene to run, no start scene or a scene that fails to load: the window says "Could not start a scene. Check the console for details." and the console gives the reason; the picker list is gone.
 - `tools/project/createProject.py` takes the starter scene from the examples (`--examples`); its template path was fixed. `tools/dev/runTests.sh` mounts the examples.
 
 ## v108.9

@@ -20,13 +20,12 @@ The existing project remains the canonical source for engine and example edits.
 ```text
 MyGame/
   main.lua                        installs the reusable engine bootstrap
-  conf.lua                        window and application identity
+  conf.lua                        title, unique identity, window, start scene, shared assets
   source/
     engine/                       reusable engine, including saves and Stats
-    game/
-      data/project.lua            title, unique identity, start scene, shared assets
+  game/
       scenes/start/
-        settings.lua              engine settings: physics, environment, asset aliases
+        conf.lua                  engine settings: node types, plugins
         menu-settings.lua         id, title, tags for menus and launchers
         main.lua                  create/update/update3D/update2D/destroy only
         assets/                   models/textures/audio/shaders/fonts
@@ -48,15 +47,14 @@ the same save directory.
 
 ## Change the scene
 
-The example lives in the main project at `game/scenes/starterGame`.
-Run `katsa . --scene starterGame` from the engine source directory, or choose
-Starter Game in the scene menu. There is no separate ready-game folder to edit.
-The generator copies this canonical scene to `game/scenes/start` only
-when you explicitly create an independent game.
+The starter scene lives in the examples project at `game/scenes/starterGame`. Run the examples
+(`katsa ../katsa-engine-examples`) and choose Starter Game in the menu. The generator copies this
+canonical scene to `game/scenes/start` when you create an independent game
+(`python tools/project/createProject.py <folder> --name my-game`).
 
-Scene `settings.lua.runInBackground = true` keeps the scene's full update running while the window is unfocused or minimised (default `false`: the scene freezes). The debug menu has a matching toggle for the current run. A scene can instead define `updateInBackground(dt, realDt)` in its state to run only that work (network, physics) while frozen.
+Scene `conf.lua.runInBackground = true` keeps the scene's full update running while the window is unfocused or minimised (default `false`: the scene freezes). The debug menu has a matching toggle for the current run. A scene can instead define `updateInBackground(dt, realDt)` in its state to run only that work (network, physics) while frozen.
 
-Scene `settings.lua.frameRateLimit` is optional: `0` is uncapped, and a positive
+Scene `conf.lua.frameRateLimit` is optional: `0` is uncapped, and a positive
 integer requests a frame ceiling. The scene file controls the chosen value. The loop waits until
 the frame deadline, using a high-resolution blocking timer on supported Windows
 versions and a checked portable fallback elsewhere. It does not busy-spin or
@@ -84,14 +82,14 @@ katsa . --scene starterGame
 ```
 
 The generated game's bootstrap loads its configured scene directly. Add another
-scene by copying its folder/categories and changing `game/data/project.lua.startScene`, or
+scene by copying its folder/categories and changing `startScene` in `conf.lua`, or
 use `katsa . --scene game/scenes/another-scene`. Scene ZIP packages use the
-same layout. Set `physics.backend` to `jolt`, `oimo` or `auto`; call
-`scene:createPhysics3D()` in scene creation when physics is actually needed.
+same layout. Call `scene:createPhysics3D({ backend = 'jolt' })` (or `oimo`, `auto`) in scene creation
+when physics is actually needed.
 The example cube does not create a physics world unnecessarily.
 
 Image/audio/model references can use `scene://...` and `shared://...`; the latter
-resolves from `game/data/project.lua.sharedAssets`. See [scene packages](scenes.md),
+resolves from `conf.lua sharedAssets`. See [scene packages](scenes.md),
 [node authoring](nodeAuthoring.md) and [persistence](persistence.md).
 
 ## Verify and package
@@ -121,9 +119,9 @@ frame pacing and smoke tests share the same implementation. The collection adds
 its demo scene factory, legacy migration and test registry through
 `source/runtime/startup.lua`. Those adapters are not copied into a new game.
 
-`conf.lua` uses `source.engine.core.windowConfig` with `game/data/project.lua`.
-Generated games copy this same wrapper; window configuration has one implementation.
-Logical window dimensions and optional window overrides go in `Project.window`.
+The engine turns `conf.lua` into the window with `source.engine.core.windowConfig`; window
+configuration has one implementation. Logical window dimensions and optional overrides go in
+`window` of `conf.lua` (see [conf.lua](../../book/conf.md)).
 
 Generator-only resources live in `tools/project/templates/game`, not a root
 `templates` folder. They contain only a tiny entry wrapper, initial project
@@ -141,7 +139,7 @@ physics backend or frame rate. Generated games use the standalone host directly.
 
 <!-- book:nav -->
 ---
-**Katsa book** · chapter 1, First steps · page 4 of 7
+**Katsa book** · chapter 1, First steps · page 5 of 8
 
 [← Running and building Katsa](../katsa/building.md) · [Contents](../../book/README.md) · [Framework and scenes →](framework.md)
 <!-- /book:nav -->

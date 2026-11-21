@@ -37,12 +37,12 @@ project: they are packed into `.katsa` archives and fused executables with every
 
 ## Enabling a plugin in a scene
 
-List the plugin in the scene's `settings.lua`:
+List the plugin in the scene's `conf.lua`:
 
 ```lua
 return {
     id = 'myScene',
-    plugins = { 'pathfinding' },   -- activates the plugin's contributions for this scene
+    plugins = { pathfinding = true },   -- activates the plugin's contributions for this scene
 }
 ```
 
@@ -276,7 +276,7 @@ the cells drawn around the camera; `drawCells`, `drawLinks`, `drawPaths` switch 
 Example scene script:
 
 ```lua
--- settings.lua: plugins = { 'pathfinding' }
+-- conf.lua: plugins = { pathfinding = true }
 local map = scene.world:create('NavMap3D', { areaSize = { 100, 100 }, cellSize = 2 })
 map:bake()
 scene.world.environment.debug.pathfinding.enabled = true

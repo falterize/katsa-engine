@@ -22,7 +22,7 @@
 
 <!-- book:nav -->
 ---
-**Katsa book** · chapter 1, First steps · page 6 of 7
+**Katsa book** · chapter 1, First steps · page 7 of 8
 
 [← Framework and scenes](../development/framework.md) · [Contents](../../book/README.md) · [Project architecture →](../../architecture.md)
 <!-- /book:nav -->

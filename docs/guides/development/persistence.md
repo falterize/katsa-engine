@@ -192,7 +192,7 @@ without deleting old slots or overwriting an existing named document.
 The main project uses the save directory (`katsa.filesystem.getSaveDirectory()`). All its scene categories
 are under `saves/`. Removing or replacing the source/archive does not delete this
 directory. Generated games use their own stable identity from
-`game/data/project.lua`; keep it unchanged across updates. A title or game
+`conf.lua`; keep it unchanged across updates. A title or game
 folder can change without moving saves when identity stays the same.
 
 ```text

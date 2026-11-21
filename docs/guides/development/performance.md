@@ -3,7 +3,7 @@
 ## Explicit project frame pacing
 
 Standalone projects can set a fallback `frameRateLimit` in their project module.
-A scene can override it in `settings.lua`, including explicit zero. The engine
+A scene can override it in `conf.lua`, including explicit zero. The engine
 keeps foreground rendering uncapped unless a scene/project requests a ceiling.
 A positive value requests
 a frame ceiling, independent of Stats visibility. The loop waits until an actual
@@ -152,7 +152,7 @@ counts and post-finalizer Lua retention. It does not flush code itself. See
 ## Example: frame ceiling
 
 ```lua
--- settings.lua of a scene (a project can set the same key in its project module)
+-- conf.lua of a scene (a project can set the same key in its project module)
 return {
     frameRateLimit = 60,   -- 0 = uncapped; the scene value wins over the project value
 }

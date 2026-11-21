@@ -157,6 +157,14 @@ function Resources:loadImage(source, label)
     return self:own(value)
 end
 
+-- Names an image of this scene: `resources:define('stone', { path = 'shared://x.png', filter =
+-- 'nearest' })` (or just the path). Later `colorMap = 'stone'` and `resources:image('stone')` find it.
+function Resources:define(name, entry)
+    assert(type(name) == 'string' and name ~= '', 'Resource name must be a non-empty string')
+    self.manifest[name] = type(entry) == 'string' and { path = entry } or entry
+    return self
+end
+
 function Resources:image(name)
     return self:imageVariant(name, nil)
 end

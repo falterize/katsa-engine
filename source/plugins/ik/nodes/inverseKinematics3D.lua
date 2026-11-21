@@ -1,6 +1,6 @@
 -- InverseKinematics3D: one node, many solvers. Place it under a model instance (the node
 -- `Models.instantiate` returns) and pick `type`; the inspector shows only the settings of that
--- type. The scene needs `plugins = { 'ik' }`.
+-- type. The scene needs `plugins = { ik = true }`.
 --
 --   local ik = world:create('InverseKinematics3D', {
 --       type = 'TwoBone',

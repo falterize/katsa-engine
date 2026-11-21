@@ -28,7 +28,6 @@ def create(source: Path, target: Path, name: str, identity: str | None = None,
     with tempfile.TemporaryDirectory(prefix='katsa-create-', dir=target.parent) as temporary:
         stage = Path(temporary) / 'game'
         shutil.copytree(source / 'tools/project/templates/game', stage)
-        shutil.copy2(source / 'conf.lua', stage / 'conf.lua')
         scene = stage / 'game/scenes/start'
         shutil.copytree(starter, scene)
         scene_settings = scene / 'menu-settings.lua'
@@ -51,7 +50,7 @@ def create(source: Path, target: Path, name: str, identity: str | None = None,
         shutil.copy2(source / 'docs/AGENTS.md', stage / 'docs/AGENTS.md')
         for category in ('models', 'textures', 'audio', 'shaders', 'fonts'):
             (stage / 'assets' / category).mkdir(exist_ok=True)
-        project = stage / 'game/data/project.lua'
+        project = stage / 'conf.lua'
         settings = project.read_text(encoding='utf-8')
         settings = settings.replace("'My Game'", repr(name.replace('-', ' ').title()))
         settings = settings.replace("'katsa-my-game'", repr(identity))

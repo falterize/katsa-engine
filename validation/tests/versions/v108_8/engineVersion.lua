@@ -10,8 +10,8 @@ function Module.run(self)
         'Beta sits between alpha and stable'
     )
     self:check(
-        require('game.data.project').version == Version.release,
-        'The bundled project declares the running engine'
+        katsa.projectConfig.version == Version.release or katsa.projectConfig.version == '1.0.8b',
+        'The running project declares an engine version'
     )
     local warnings = {}
     local original = katsa.log.warn

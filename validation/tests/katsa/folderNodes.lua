@@ -20,7 +20,7 @@ return function(T)
         package:require('nodes.vehicle.model') == car.Model,
         'folderNodes: parts are shared through the module cache'
     )
-    local single = package:require('settings')
+    local single = package:require('conf')
     T.check(single.nodes[1] == 'vehicle', 'folderNodes: a plain file module still loads')
     T.check(
         package.compatibility.status == 'same',

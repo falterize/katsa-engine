@@ -244,7 +244,6 @@ function Statistics:sample()
                 .. (scene.root:find('World3D/World2D').physics2D and ' + Box2D (2D)' or ''),
             scene.options.physicsBackend
                 or (scene.options.physics or {}).backend
-                or (scene.settings.physics or {}).backend
                 or 'default',
             physics and physics.backendFallback and ' (auto fallback)' or '',
             jit and jit.version or _VERSION,

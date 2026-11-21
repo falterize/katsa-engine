@@ -7,6 +7,6 @@ return {
         .. 'sampling. Adds the Ragdoll3D node.',
     requires = { 'ik' },
     demoScene = 'stareShooter',
-    -- Enabled per scene with `plugins = { 'ragdoll' }`: adds the Ragdoll3D node.
+    -- Enabled per scene with `plugins = { ragdoll = true }`: adds the Ragdoll3D node.
     nodes = { Ragdoll3D = './nodes.ragdoll3D' },
 }

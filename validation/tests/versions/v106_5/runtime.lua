@@ -30,10 +30,6 @@ function Tests:layout()
         local root = 'game/scenes/' .. name
         self:check(katsa.filesystem.getInfo(root, 'directory'), 'Scene entry is a folder: ' .. name)
         local package = Package.open(root)
-        self:check(
-            package.settings.layoutVersion == 2 or package.settings.layoutVersion == 3,
-            'Current package contract: ' .. name
-        )
         Layout.validate(root, package.settings)
         local main = Layout.lifecycle(package)
         local hooks = {}

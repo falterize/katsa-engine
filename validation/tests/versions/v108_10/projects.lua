@@ -40,9 +40,8 @@ function Module.run(self)
     self:check(external.id == 'menu', 'A scene folder outside the game source opens by path')
     external:release()
 
-    local empty = Empty.new({}, { scenes = project.scenes, open = function() end })
-    empty:keypressed('down')
-    self:check(empty.selected == 2, 'The picker moves its selection')
+    local empty = Empty.new({}, { reason = 'No scene to run.' })
+    self:check(empty.reason == 'No scene to run.' and empty.draw ~= nil, 'The empty screen keeps its reason')
 end
 
 return Module

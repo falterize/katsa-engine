@@ -66,8 +66,8 @@ end
 
 -- Contributions -----------------------------------------------------------------------------
 --
--- A manifest can extend the engine for the scenes that opt in with `plugins = { 'name' }` in
--- their settings. Nothing is added for scenes that do not list the plugin.
+-- A manifest can extend the engine for the scenes that opt in with `plugins = { name = true }` in
+-- their conf.lua. Nothing is added for scenes that do not list the plugin.
 --
 --   nodes = { NavMap3D = 'source.plugins.pathfinding.nodes.navMap3D' }
 --       Node types, registered in the scene's world exactly like `world:registerNodeType`
@@ -93,6 +93,50 @@ local function load(name, path)
         path = 'source.plugins.' .. name .. '.' .. path:sub(3)
     end
     return require(path)
+end
+
+-- The project's `plugins = { ik = true }` apply to every scene; a scene's own `plugins` table is laid
+-- over them (`name = false` switches one off for that scene).
+local defaults = {}
+
+function Plugins.setDefaults(plugins)
+    defaults = Plugins.checked(plugins, 'Project plugins')
+end
+
+-- Validates a conf `plugins` table: `{ name = true | false }`.
+function Plugins.checked(plugins, label)
+    for name, value in pairs(plugins or {}) do
+        assert(
+            type(name) == 'string' and type(value) == 'boolean',
+            label .. ' must look like { ik = true, pathfinding = false }'
+        )
+        assert(manifest(name), label .. ' names an unknown plugin: ' .. name)
+    end
+    return plugins or {}
+end
+
+-- The sorted names a scene runs with: project defaults plus the scene's table.
+function Plugins.forScene(plugins)
+    local merged = {}
+    for name, value in pairs(defaults) do
+        merged[name] = value
+    end
+    for name, value in pairs(Plugins.checked(plugins, 'Scene plugins')) do
+        merged[name] = value
+    end
+    local names = {}
+    for name, enabled in pairs(merged) do
+        if enabled then
+            names[#names + 1] = name
+        end
+    end
+    table.sort(names)
+    return names
+end
+
+-- Activates what a scene's conf asks for, on top of the project's defaults.
+function Plugins.activateFor(world, plugins)
+    Plugins.activate(world, Plugins.forScene(plugins))
 end
 
 function Plugins.activate(world, names)

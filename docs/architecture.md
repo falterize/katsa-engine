@@ -28,7 +28,7 @@ The renderer, UI and other multi-part classes use explicit named `install` metho
 
 SceneManager owns scene lifetime and safe transitions. Resource scopes release Canvas/Mesh/Shader/audio objects. Worlds own node collections and their physics services. Fixed-step simulation is independent of rendering frequency. Public mutable values remain observable through snapshots and revisions; cache optimizations must preserve in-place edits.
 
-Scene packages use `settings.lua` for engine configuration (physics, world, plugins, nodes, frame rate), `menu-settings.lua` for what only launchers read (id, title, category, tags) and `main.lua` for
+Scene packages use `conf.lua` for engine configuration (physics, world, plugins, nodes, frame rate), `menu-settings.lua` for what only launchers read (id, title, category, tags) and `main.lua` for
 creation, general/3D/2D updates and destruction only. Private builders and nodes
 live inside each scene; all category folders are present. System discovery,
 ordering and startup are explicit loops inside that scene's `main.lua`. Systems are
@@ -64,7 +64,7 @@ The root main file installs `engine/scenes/bootstrap.lua`, which owns the katsa
 callbacks once. Collection-specific startup is an adapter in `source/runtime/startup.lua`;
 standalone games use the default scene host. Both project types share
 `engine/core/windowConfig.lua` through a minimal conf wrapper. Project metadata
-lives in `game/data/project.lua`. Generator resources belong under tools/project.
+lives in `conf.lua`. Generator resources belong under tools/project.
 
 `engine/persistence/data.lua` is the scene-facing read/write facade. Hierarchical
 scopes select saves directories. `formats.lua` selects JSON or original-byte
@@ -133,7 +133,7 @@ for its eight-frame 8x8 player atlas.
 
 <!-- book:nav -->
 ---
-**Katsa book** · chapter 1, First steps · page 7 of 7
+**Katsa book** · chapter 1, First steps · page 8 of 8
 
 [← Project conventions](guides/architecture/conventions.md) · [Contents](book/README.md) · [Scene authoring →](guides/development/scenes.md)
 <!-- /book:nav -->

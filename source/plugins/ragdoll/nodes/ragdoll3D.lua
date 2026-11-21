@@ -1,6 +1,6 @@
 -- Ragdoll3D: turns the humanoid model it sits under into a physical ragdoll and back. Place it
 -- under a model instance (the node `Models.instantiate` returns); the scene needs
--- `plugins = { 'ragdoll' }` and a Physics3D world.
+-- `plugins = { ragdoll = true }` and a Physics3D world.
 --
 --   local ragdoll = world:create('Ragdoll3D', { source = characterBody }, modelRoot)
 --   ragdoll.active = true          -- capsules per limb take over the animated pose

@@ -4,8 +4,10 @@ local Display = require('../core.displayDpi')
 
 local Bootstrap = {}
 
-function Bootstrap.install(project, options)
+-- The project is what the program's conf.lua returned (`katsa.projectConfig`, see boot.lua).
+function Bootstrap.install(options)
     options = options or {}
+    local project = katsa.projectConfig or {}
     katsa.errorhandler = function(message)
         return require('source.engine.debug.errorScreen').create(
             debug.traceback(tostring(message), 2)
@@ -17,14 +19,9 @@ function Bootstrap.install(project, options)
     Runtime.frameRateLimit = Runtime.validateFrameRateLimit(project.frameRateLimit or 0)
     -- A project (conf.lua) can add scenes, a start scene and `shared://` folders; the engine's own
     -- `assets` always come first.
-    local opened = require('source.engine.scenes.project').read(katsa.projectConfig)
-    local shared = opened and opened.shared or { 'assets' }
-    local declared = project.sharedAssets
-    for _, entry in ipairs(type(declared) == 'string' and { declared } or declared or {}) do
-        if entry ~= 'assets' then
-            shared[#shared + 1] = entry
-        end
-    end
+    local opened = require('source.engine.scenes.project').read(project)
+    local shared = opened.shared
+    require('source.engine.plugins').setDefaults(project.plugins)
     local createScene = options.createScene
         or function(owner, source)
             local Loader = require('source.engine.scenes.loader')
@@ -63,10 +60,8 @@ function Bootstrap.install(project, options)
         arguments = arguments or {}
         -- Scenes read launch options (e.g. --host, --connect) from here.
         katsa.launchArguments = arguments
-        local source = opened and opened.start or project.startScene
-        if opened then
-            require('source.runtime.catalog').register(opened.scenes)
-        end
+        local source = opened.start
+        require('source.runtime.catalog').register(opened.scenes)
         -- --shared <folder> (repeatable) adds a folder `shared://` also answers to.
         for index, argument in ipairs(arguments) do
             if argument == '--shared' then
@@ -127,19 +122,32 @@ function Bootstrap.install(project, options)
                 })
             end
         end
-        if source then
-            assert(manager:switch(createScene, source))
-        else
-            local scenes = opened and opened.scenes or {}
+        -- No scene, no start scene or a scene that fails to load leaves a window with a short
+        -- message; the reason is in the console. Test and smoke runs fail instead.
+        local function showFailure(reason)
+            assert(not (testing or smoke), reason)
             assert(manager:switch(function(owner)
-                return require('source.engine.scenes.empty').new(owner, {
-                    scenes = scenes,
-                    open = function(entry)
-                        manager.startScene = entry.path
-                        manager:switch(createScene, entry.path)
-                    end,
-                })
+                return require('source.engine.scenes.empty').new(owner, { reason = reason })
             end))
+        end
+        if not source then
+            local names = {}
+            for _, entry in ipairs(opened.scenes) do
+                names[#names + 1] = entry.id
+            end
+            showFailure(
+                #names == 0
+                        and 'No scene to run. Start katsa with a scene or project folder/archive, '
+                            .. 'or drop one on the window: katsa <path>'
+                    or 'The project names no start scene: set `startScene` in its conf.lua. '
+                        .. 'Scenes found: '
+                        .. table.concat(names, ', ')
+            )
+        else
+            local scene, message = manager:switch(createScene, source)
+            if not scene then
+                showFailure('Could not start scene "' .. tostring(source) .. '": ' .. tostring(message))
+            end
         end
         if options.registry then
             testRunner = options.registry.create(arguments, manager)

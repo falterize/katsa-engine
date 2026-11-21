@@ -1,6 +1,6 @@
 # Projects and scenes
 
-Katsa runs two kinds of things: a **scene** (one folder or archive with `settings.lua` and
+Katsa runs two kinds of things: a **scene** (one folder or archive with `conf.lua` and
 `main.lua`) and a **project** (a folder or archive with a `conf.lua`). The engine itself ships no
 scenes; the example collection lives in its own repository,
 [katsa-engine-examples](https://github.com/falterize/katsa-engine-examples), and is an ordinary
@@ -12,7 +12,7 @@ Run these from the engine folder:
 
 | Command | What starts |
 | --- | --- |
-| `luajit tools/dev/katsa.lua .` | Nothing to run: a black window and a console message. |
+| `luajit tools/dev/katsa.lua .` | Nothing to run: a message in the window and in the console. |
 | `luajit tools/dev/katsa.lua path/to/scene` | One scene (a folder or `.zip`/`.katsa` archive). |
 | `luajit tools/dev/katsa.lua path/to/project` | The project: its start scene, other scenes in its folder. |
 
@@ -21,26 +21,27 @@ to give a scene more `shared://` folders.
 
 ## A project
 
-`conf.lua` returns window settings and the project's own keys:
+`conf.lua` returns the window settings and the project's own keys (the full list is in
+[conf.lua](conf.md)):
 
 ```lua
-local Config = require('source.engine.core.windowConfig')
-local project = require('game.data.project') -- title, identity, window size ...
-
-function katsa.conf(settings)
-    Config.apply(settings, project)
-    settings.startScene = 'game/scenes/menu'   -- scene folder to start (omit: pick from a list)
-    settings.scenes = 'game/scenes'            -- every scene folder inside belongs to the project
-    settings.sharedAssets = { 'extra/assets' } -- more shared:// folders (relative or absolute)
-end
+return {
+    identity = 'my-game',
+    title = 'My Game',
+    startScene = 'scenes/menu',      -- scene folder or id
+    scenes = 'scenes',               -- default; every scene folder inside belongs to the project
+    sharedAssets = { 'extra/assets' },
+    plugins = { ik = true },         -- for every scene; a scene can set one to false
+}
 ```
 
 The engine mounts the project over its own files. Its `game/` modules and `assets/` resolve next to
 the engine's shaders, fonts and fallback textures; on a name clash the engine's file wins. The
 examples project is exactly this: `conf.lua`, `game/` (scenes, selection menu) and `assets/`.
 
-When a project lists several scenes and names no start scene, a plain list opens (Up/Down, Enter or a
-click). Scenes switch to each other by path or by ID with `manager:switch`.
+If the project names no start scene, or the scene fails to load, the window shows "Could not start a
+scene. Check the console for details." and the console says why. Scenes switch to each other by path
+or by id with `manager:switch`.
 
 ## shared:// folders
 
@@ -56,7 +57,7 @@ know each other in a project.
 
 <!-- book:nav -->
 ---
-**Katsa book** · chapter 1, First steps · page 1 of 7
+**Katsa book** · chapter 1, First steps · page 1 of 8
 
-[Contents](README.md) · [Getting started →](../guides/development/gettingStarted.md)
+[Contents](README.md) · [conf.lua →](conf.md)
 <!-- /book:nav -->

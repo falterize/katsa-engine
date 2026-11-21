@@ -7,7 +7,7 @@ return {
         .. 'Model files with nodes named <name>-lod0, <name>-lod1 ... are grouped on import, and '
         .. 'the Low / Medium / High quality profiles lower the detail sooner.',
     requires = {},
-    -- Enabled per scene with `plugins = { 'lod' }`: adds the LODGroup node and the import grouping.
+    -- Enabled per scene with `plugins = { lod = true }`: adds the LODGroup node and the import grouping.
     nodes = { LODGroup = './nodes.lodGroup' },
     -- Runs after a model is instantiated; the result is stored as `model.lodGroups`.
     importers = { lodGroups = './autoLod' },

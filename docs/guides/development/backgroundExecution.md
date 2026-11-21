@@ -5,7 +5,7 @@ another application has the focus. What runs in the second case is decided per s
 
 | Setting / hook | Where | Effect |
 | --- | --- | --- |
-| `runInBackground = true` | scene `settings.lua` | the scene's full `update` keeps running while unfocused |
+| `runInBackground = true` | scene `conf.lua` | the scene's full `update` keeps running while unfocused |
 | `updateInBackground(dt, realDt)` | scene state / `Game` | runs *only* this while unfocused (network, physics, AI) |
 | debug menu *Run in background* | Debug / F4 | overrides the setting for the current run |
 
@@ -14,7 +14,7 @@ who alt-tabs would stop the bot, the physics and every connected client, so netw
 define `updateInBackground` (multiplayerCars does: it steps physics and the server).
 
 ```lua
--- scenes/<name>/settings.lua
+-- scenes/<name>/conf.lua
 return { id = 'arena', runInBackground = false }
 
 -- scenes/<name>/scripts/content.lua   (state returned from create)

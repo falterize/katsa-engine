@@ -4,7 +4,7 @@
 nothing under `source/`, `native/`, `vendor/` or `assets/shaders/engine`. Anything the engine lacks
 (scene serializer, gizmos, snapping, undo, a ZIP writer) lives inside the scene.
 
-All controls go through `InputMap` actions declared in the scene's `settings.lua`
+All controls go through `InputMap` actions declared in the scene's `conf.lua`
 (`input = { ... }`); the scene code never reads devices. A player (or the owner) can rebind every
 editor key through the shared map. See `docs/guides/input/inputMap.md`.
 
@@ -23,7 +23,7 @@ editor key through the shared map. See `docs/guides/input/inputMap.md`.
 
 ```text
 game/scenes/levelEditor/
-    settings.lua            engine settings and the editor InputMap actions
+    conf.lua            engine settings and the editor InputMap actions
     menu-settings.lua       menu entry and tags
     main.lua                lifecycle only
     scripts/content.lua     composition: world, camera, grid, tools, UI
@@ -101,7 +101,7 @@ tested directly (`validation/tests/versions/v108_9/levelEditorLogic.lua`).
 - Multi-selection: every selected object has its own outline (the primary one, which carries the gizmo, is orange, the others pale yellow).
 - Workspace: select (Ctrl adds, Shift ranges; the pointer is polled, not tied to widget signals), **drag over rows or over the empty space under them to select the rows crossed** (Ctrl keeps the old selection), plain drag on a row moves it, show/hide, lock, Duplicate / Delete / Group / Ungroup, and **drag and drop**: drop on the middle of a row to move inside it, on the upper or lower quarter to place before or after it (a frame or a line shows the target; one undo step; undo restores parent and order).
 - Gizmos and the selection outline draw **on top of everything** (`assets/shaders/onTop.glsl`, a scene `Shader3D` that squeezes the clip depth), so they stay usable inside large objects. Picking handles geometrically, so it is unaffected.
-- **Settings window** (toolbar): Appearance (dark/light theme through the uiStyler plugin), Interface (dock sizes, reset), Snap & Grid, Camera (fly speed, look sensitivity, FOV) and Shortcuts: **Rebind** any editor InputMap action (a modifier first makes a chord, Esc cancels) or **Reset** it. Everything is stored in `editor/settings.lua`.
+- **Settings window** (toolbar): Appearance (dark/light theme through the uiStyler plugin), Interface (dock sizes, reset), Snap & Grid, Camera (fly speed, look sensitivity, FOV) and Shortcuts: **Rebind** any editor InputMap action (a modifier first makes a chord, Esc cancels) or **Reset** it. Everything is stored in `editor/conf.lua`.
 - Styling: widgets carry tags (`dock`, `bar`, `tool`, `row`, `selected`, `on`, `field`, `list`, ...); `assets/styles/editor.lua` maps them to theme tokens, so a theme switch restyles the whole editor. Helpers are in `ui/support/kit.lua`.
 - The 3D view is a **ViewportFrame** with its own World3D and camera (`content.world`, `content.camera`), sized by the dock layout; the scene's main World3D stays empty and only carries the UI. Pointer positions are converted to viewport pixels (`content:viewportPoint`) before picking and gizmo drags, so the camera centre is the viewport centre and clicks on panels never reach the 3D view.
 - Known limits: the Workspace does not auto-scroll while dragging near its edges; a rebind replaces all bindings of the action.
@@ -112,7 +112,7 @@ A location is a **ZIP archive** (the engine reads ZIP; the scene writes it with 
 writer) that is also a valid Katsa scene package:
 
 ```text
-settings.lua          engine settings of the location (plain table)
+conf.lua          engine settings of the location (plain table)
 main.lua              tiny loader: reads assets/location.lua and builds the nodes
 assets/location.lua   the serialized tree (see below)
 assets/models/...     copied models

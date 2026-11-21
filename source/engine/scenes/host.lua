@@ -42,13 +42,10 @@ function Host:load()
     end
     self.settings = self.package.settings
     self.zone = self.package.id
-    self.resources =
-        self.manager.resources:scope(Loader.manifest({}, self.settings.assets), self.package.paths)
+    self.resources = self.manager.resources:scope({}, self.package.paths)
     self.audio = self.manager.audio:scope(self.resources:scope())
     mark('Resources and audio')
-    local lighting =
-        Loader.configure(require('source.engine.graphics.lighting.defaults').create(), self.settings.world)
-    self.world = World.new(self.resources, lighting)
+    self.world = World.new(self.resources)
     self.world.prefabs:setScene(self)
     self.root = RootNode.create(self.world)
     self.world.audio = self.audio
@@ -63,7 +60,7 @@ function Host:load()
     Modules.install(self, not prefab and self.options.modules or nil)
     mark('World, renderer and UI')
     self.package:registerNodes(self.world, self.settings.nodes or {})
-    require('source.engine.plugins').activate(self.world, self.settings.plugins)
+    require('source.engine.plugins').activateFor(self.world, self.settings.plugins)
     mark('Node types and plugins')
     -- A prefab runs the scene's own `main`, never the dedicated-server entry.
     self.lifecycle = require('source.engine.scenes.layout').lifecycle(
@@ -96,8 +93,7 @@ end
 
 function Host:createPhysics3D(options)
     assert(not self.physics, 'Scene physics is already configured')
-    local merged = Loader.configure(options or {}, self.settings.physics)
-    merged = Loader.configure(merged, self.options.physics)
+    local merged = Loader.configure(options or {}, self.options.physics)
     merged.backend = self.options.physicsBackend or merged.backend
     if merged.backend == 'auto' then
         merged.backend = nil

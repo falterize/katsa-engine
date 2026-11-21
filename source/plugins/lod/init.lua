@@ -1,4 +1,4 @@
--- LOD plugin: the LODGroup node (scene setting `plugins = { 'lod' }`) and its parts.
+-- LOD plugin: the LODGroup node (scene conf `plugins = { lod = true }`) and its parts.
 --
 --   local Lod = require('source.engine.plugins').require('lod')
 --   Lod.Select.level('Distance', 40, { 25, 60 }, nil, 0.1)   -- pure level choice

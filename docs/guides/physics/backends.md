@@ -44,7 +44,7 @@ source/engine/physics/
     queryPolicy.lua           shared query eligibility and callback safeguards
   constraints/
     inputs.lua                reusable input snapshots and revisions
-    settings.lua              scene properties to joint settings
+    conf.lua              scene properties to joint settings
     distance.lua              shared Rope/Spring impulse policy
   backends/
     registry.lua              adapter selection and observable fallback

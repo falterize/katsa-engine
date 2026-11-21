@@ -1,7 +1,7 @@
 -- NavAgent3D: plans routes on the NavMesh of a NavMap3D for a body that YOUR script moves, like
 -- Godot's NavigationAgent3D. The node never moves anything. It tells the script where to go next,
 -- which action comes next and how to steer around other agents; it stores the cost weights.
--- The scene needs `plugins = { 'pathfinding' }` and a baked NavMap3D. The node is purely technical
+-- The scene needs `plugins = { pathfinding = true }` and a baked NavMap3D. The node is purely technical
 -- (no transform of its own): create it as a child of the body; the agent stands at that body's
 -- origin lowered by `feetOffset`. Without a spatial parent use `agent:setPosition({ x, y, z })`.
 --

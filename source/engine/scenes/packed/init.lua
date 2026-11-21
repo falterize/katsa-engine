@@ -53,7 +53,7 @@ function Packed:prepare(world)
     prepared[self.package.id] = true
     local settings = self.package.settings
     self.package:registerNodes(world, settings.nodes or {})
-    require('source.engine.plugins').activate(world, settings.plugins)
+    require('source.engine.plugins').activateFor(world, settings.plugins)
 end
 
 -- Creates a copy of the content under a new Node3D and returns it. `properties` are the Node3D's

@@ -1,7 +1,7 @@
 # Level of detail: LODGroup
 
 Level of detail is the `lod` plugin (`source/plugins/lod`). Enable it in the scene settings with
-`plugins = { 'lod' }`; without it there is no `LODGroup` node and model files are not grouped.
+`plugins = { lod = true }`; without it there is no `LODGroup` node and model files are not grouped.
 
 `LODGroup` (`source/plugins/lod/nodes/lodGroup.lua`) is a `Node3D` that shows **one of its children at
 a time**. The children are the levels, in order: the first is the most detailed (level 0), the next ones

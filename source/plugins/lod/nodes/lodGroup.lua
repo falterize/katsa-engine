@@ -5,7 +5,7 @@ local LodLevel = require('../level')
 local LodBillboard = require('../billboard')
 
 -- LODGroup: shows one of its children at a time, by distance or by size on screen. Part of the
--- `lod` plugin: the scene needs `plugins = { 'lod' }`.
+-- `lod` plugin: the scene needs `plugins = { lod = true }`.
 --
 --   local tree = world:create('LODGroup', { mode = 'Distance', distances = { 25, 60, 150 } })
 --   world:create('Mesh3D', { name = 'High', geometry = high }, tree)   -- level 0

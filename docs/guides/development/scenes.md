@@ -6,7 +6,7 @@ or a shared full-scene factory. Shared engine services remain in `source/engine`
 
 ```text
 game/scenes/exampleScene/
-    settings.lua          engine configuration
+    conf.lua          engine configuration
     menu-settings.lua     id, title, category, tags (read by menus and launchers)
     main.lua
     assets/
@@ -63,14 +63,11 @@ loads them. Helpers used by those modules belong under categorized `scripts/`.
 
 ## Starting a game
 
-Set `settings.startScene` in the project's `conf.lua` (or `startScene` in `game/data/project.lua`
-of a standalone game) to a scene ID, project-relative scene directory or archive. The default `menu` is an example selector for testing;
-a game can start directly in its own scene without loading the selector.
-
-The optional `game/sceneCatalog.lua` maps stable IDs to folders or archives.
-Add an entry only when the ID should be available for navigation or the example
-selector. A direct folder/archive path needs no catalog entry. Menu metadata comes
-from each scene's settings. The common gameplay host is `source/runtime/game.lua`.
+Set `startScene` in the project's `conf.lua` to a scene ID, project-relative scene directory or
+archive; a game can start directly in its own scene without any selector. Every folder with a
+`conf.lua` and `main.lua` inside the project's scenes folder is a scene and is known by its id
+(the folder name, or `id` in its `menu-settings.lua`); a direct folder/archive path needs no id.
+Menu metadata comes from each scene's `menu-settings.lua`. The common gameplay host is `source/runtime/game.lua`.
 Camera-free menu/pause/catalog scenes use `engine/scenes/interface.lua` instead;
 their implementation still lives inside their own scene folders.
 
@@ -83,32 +80,27 @@ katsa . --scene-package dist/exampleScene.zip
 ## Settings
 
 ```lua
-local Settings = {
-    layoutVersion = 3,
+-- conf.lua: what the engine needs to know before the scene runs (see docs/book/conf.md)
+return {
     version = '1.0.8b',
-    id = 'exampleScene',
-    title = 'Example scene',
-    category = 'Gameplay',
-    physics = { backend = 'jolt', unitsPerMeter = 20 },
-    world = { ambient = { 120, 120, 135 } },
-    assets = {
-        portrait = 'scene://textures/portrait.jpg',
-        click = 'shared://audio/ui/click.wav',
-    },
     nodes = { 'bouncePad' },
+    plugins = { pathfinding = true },
 }
-
-return Settings
 ```
 
-`settings.lua` holds only what the engine needs, like LÖVE's `conf.lua`:
+Everything else is code in `main.lua` / `scripts/content.lua`, where the scene builds its world:
 
 ```lua
-return { layoutVersion = 3, nodes = { 'vehicle' }, plugins = { 'pathfinding' }, physics = { backend = 'jolt' } }
+function Scene.create(scene, context)
+    scene.resources:define('portrait', 'scene://textures/portrait.jpg')
+    scene.world:configure({ ambient = { 120, 120, 135 } })
+    scene:createPhysics3D({ backend = 'jolt', unitsPerMeter = 20 })
+    ...
+end
 ```
 
 `menu-settings.lua` (optional) holds the launcher metadata and nothing else; `id` defaults to the folder
-name, and naming `id`, `title`, `category`, `tags` or `description` in `settings.lua` is an error. Read it
+name, and naming `id`, `category`, `tags` or `description` in `conf.lua` is an error. Read it
 from code as `scene.package.menu` (`scene.package.id` is the resolved id):
 
 ```lua
@@ -120,9 +112,7 @@ them under each scene title and filters by them: the search box matches title, i
 Tags chooser keeps the scenes that have every selected tag. A scene without `tags` shows its old `category`
 as its only tag. Filtering lives in `game/sceneTags.lua`.
 
-`layoutVersion = 3` does not require the category directories to exist (empty folders are lost by Git and GitHub ZIPs); it validates the five lifecycle
-hooks. Version 2 archives retain their original root ui folder; archives without
-a layout version retain the earlier compatibility loader. New scenes use version 3.
+The category folders are a convention, not a requirement (empty folders are lost by Git and GitHub ZIPs); `main.lua` must export the five lifecycle hooks `create`, `update`, `update3D`, `update2D` and `destroy`.
 
 `version` (optional) is the engine version the scene was made for, written like `Version.release` in
 `source/engine/core/version.lua` (now `1.0.8b`: `MAJOR.MINOR.PATCH` plus `a` alpha, `b` beta or `rc`;
@@ -130,13 +120,12 @@ no letter is stable). The loader compares it with the running engine (`Version.c
 difference, older or newer, writes a console warning about possible incompatibility, and
 `package.compatibility` holds `{ status, message, declared }` (`same`, `older`, `newer`, `unknown`)
 for a launcher to show. A scene without `version` is silent. Projects declare the same in
-`game/data/project.lua` (`version`), checked once at startup. A mismatch never blocks loading.
+its `conf.lua` (`version`), checked once at startup. A mismatch never blocks loading.
 The engine's own number is `Version.release` in `source/engine/core/version.lua`.
 
-World settings apply before creation. `scene:createPhysics3D()` merges call-site
-defaults, scene settings, then explicit launch options. `physicsBackend` overrides
-`options.physics.backend`; `auto` uses the engine default with normal fallback.
-Stats reports the actual solver. `kind = 'interface'` selects the camera-free host.
+`scene:createPhysics3D(options)` merges the options you pass with the explicit launch options.
+`physicsBackend` overrides `options.backend`; `auto` uses the engine default with normal
+fallback. Stats reports the actual solver. `kind = 'interface'` selects the camera-free host.
 
 ## main.lua lifecycle
 
@@ -288,7 +277,7 @@ that uses the UI often keeps it in a local: `local ui = scene.root:find('World3D
 | `world` | the world service (see above) |
 | `camera` | the default 3D camera |
 | `physics`, `audio`, `resources`, `renderer` | services owned by the scene |
-| `settings`, `package` | the scene's `settings.lua` and archive/folder package |
+| `settings`, `package` | the scene's `conf.lua` and archive/folder package |
 | `demo` | what the scene's `create` returned |
 
 Lifecycle: `load`, `enter`, `exit`, `pause`, `resume`, `release`; frame: `update(dt, realDt)`,
@@ -350,8 +339,9 @@ so tests can load them without a window (`validation/tests/katsa/sceneRequire.lu
 ## Assets and Image properties
 
 `scene://` resolves from the current scene's `assets/`; `shared://` resolves from
-the project asset root configured in `game/data/assetRoots.lua`. Ordinary
-project-relative paths and manifest aliases remain supported. Images, models,
+the engine's `assets` first, then the project's `sharedAssets` folders (see
+[conf.lua](../../book/conf.md)). Ordinary project-relative paths and aliases from
+`scene.resources:define` remain supported. Images, models,
 shaders and audio share these namespaces.
 
 ```lua

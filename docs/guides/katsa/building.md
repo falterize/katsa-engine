@@ -332,7 +332,7 @@ Android APK build.
 
 <!-- book:nav -->
 ---
-**Katsa book** · chapter 1, First steps · page 3 of 7
+**Katsa book** · chapter 1, First steps · page 4 of 8
 
 [← Getting started](../development/gettingStarted.md) · [Contents](../../book/README.md) · [Create an independent game →](../development/newGame.md)
 <!-- /book:nav -->

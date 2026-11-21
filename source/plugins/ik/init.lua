@@ -10,7 +10,7 @@
 -- Solvers: TwoBone (analytic limbs), LookAt (head/eyes/turrets, chains with weights and limits),
 -- Fabrik (any chain length, optional pole), Ccd (per-joint limits), Jacobian (damped least
 -- squares), Spline (chain follows a curve), FK (pose by angles). The InverseKinematics3D node
--- (scene setting `plugins = { 'ik' }`) wraps all of them behind one `type` property. Write your own by extending
+-- (scene conf `plugins = { ik = true }`) wraps all of them behind one `type` property. Write your own by extending
 -- IK.SkeletonModifier and implementing `bones()` and `solve(skeleton, dt)`.
 return {
     SkeletonModifier = require('./modifier'),

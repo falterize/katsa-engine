@@ -10,12 +10,13 @@ Start here: [Projects and scenes](projects.md)
 Install the engine, run a project or a scene, and understand how a game is organised.
 
 1. [Projects and scenes](projects.md)
-2. [Getting started](../guides/development/gettingStarted.md)
-3. [Running and building Katsa](../guides/katsa/building.md)
-4. [Create an independent game](../guides/development/newGame.md)
-5. [Framework and scenes](../guides/development/framework.md)
-6. [Project conventions](../guides/architecture/conventions.md)
-7. [Project architecture](../architecture.md)
+2. [conf.lua](conf.md)
+3. [Getting started](../guides/development/gettingStarted.md)
+4. [Running and building Katsa](../guides/katsa/building.md)
+5. [Create an independent game](../guides/development/newGame.md)
+6. [Framework and scenes](../guides/development/framework.md)
+7. [Project conventions](../guides/architecture/conventions.md)
+8. [Project architecture](../architecture.md)
 
 ## 2. Scenes and nodes
 

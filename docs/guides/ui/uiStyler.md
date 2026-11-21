@@ -1,7 +1,7 @@
 # UIStyler plugin
 
 Style sheets for UI nodes with themes that switch at runtime. Enable it per scene with
-`plugins = { 'uiStyler' }` in `settings.lua`; the *Launcher UI* scene (`launcherShowcase`) is the
+`plugins = { uiStyler = true }` in `conf.lua`; the *Launcher UI* scene (`launcherShowcase`) is the
 reference: a launcher window (toolbar with icons, grouped list, action panel, status bar) styled
 only by `scripts/styles/sheet.lua` and the theme token files.
 

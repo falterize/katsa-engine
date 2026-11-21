@@ -19,7 +19,7 @@ world.prefabs:instantiate('scene://prefabs/enemy', { name = 'Grunt' })  -- load 
 
 `load` takes what a scene normally is: a folder, an archive (`.zip`/`.katsa`), a `FileData`, or a
 `scene://` / `shared://` path of the current scene's assets. A prefab scene usually lives next to
-the scene that uses it, in `assets/prefabs/<name>/` (`settings.lua`, `main.lua`, `scripts/`, its own
+the scene that uses it, in `assets/prefabs/<name>/` (`conf.lua`, `main.lua`, `scripts/`, its own
 `assets/`). Plain relative paths work too (`game/scenes/x`, `context.root .. '/../avatar'`);
 prefabs can instantiate other prefabs.
 

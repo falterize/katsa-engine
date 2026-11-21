@@ -30,7 +30,7 @@ manager:requestSwitch(createPause) -- the same, but safe inside physics callback
 
 <!-- book:nav -->
 ---
-**Katsa book** · chapter 1, First steps · page 5 of 7
+**Katsa book** · chapter 1, First steps · page 6 of 8
 
 [← Create an independent game](newGame.md) · [Contents](../../book/README.md) · [Project conventions →](../architecture/conventions.md)
 <!-- /book:nav -->

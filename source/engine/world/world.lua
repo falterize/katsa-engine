@@ -232,6 +232,13 @@ function World3D:setInteractionSource(node)
     self.interactionSource = node
 end
 
+-- Sets Environment values from a table: `world:configure({ sky = { enabled = false }, ambient = {
+-- 180, 180, 180 } })`. Nested tables are merged into the existing settings.
+function World3D:configure(values)
+    require('source.katsa.core.conf').merge(self.lighting, values)
+    return self
+end
+
 function World3D:setQualityProfile(name)
     local profile = assert(
         require('source.engine.graphics.quality.qualityProfiles')[name],

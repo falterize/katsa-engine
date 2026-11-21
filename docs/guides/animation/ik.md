@@ -6,7 +6,7 @@ animated pose and never accumulates between frames. Animation stays in charge of
 modifier does not touch; `influence` blends the two.
 
 ```lua
-local IK = require('source.engine.plugins').require('ik')   -- scene settings: plugins = { 'ik' }
+local IK = require('source.engine.plugins').require('ik')   -- scene settings: plugins = { ik = true }
 
 local arm = IK.TwoBone.new({
     root = 'mixamorig:RightArm', mid = 'mixamorig:RightForeArm', tip = 'mixamorig:RightHand',
@@ -28,7 +28,7 @@ Every solver is also available as one node, so rigs can be set up in the inspect
 
 ### Setting one up
 
-1. The scene loads the plugin: `plugins = { 'ik' }` in its `settings.lua`.
+1. The scene loads the plugin: `plugins = { ik = true }` in its `conf.lua`.
 2. The model is instantiated (`Models.instantiate`) and has an `Animator` (every animated glTF does).
 3. Create the node **anywhere under the model's root node**. It walks up its parents to the first
    one that carries the model and registers with that model's Animator. Created before the model

@@ -42,11 +42,11 @@ function Module.run(self)
         package:release()
     end
     self:check(#missing == 0, 'Every catalog scene lists tags' .. (#missing > 0 and (': ' .. table.concat(missing, ',')) or ''))
-    -- Launcher metadata lives in menu-settings.lua, never in settings.lua.
+    -- Launcher metadata lives in menu-settings.lua, never in conf.lua.
     local Layout = require('source.engine.scenes.layout')
     self:check(
-        not pcall(Layout.validate, 'x', { title = 'Misplaced' }),
-        'settings.lua rejects launcher metadata such as title'
+        not pcall(Layout.validate, 'x', { category = 'Misplaced' }),
+        'conf.lua rejects launcher metadata such as category'
     )
     local package = Loader.open('multiplayerCars', Catalog)
     self:check(
