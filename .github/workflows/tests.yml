@@ -12,11 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check out the examples project (same branch, else main)
-        run: |
-          branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          repo=https://github.com/falterize/katsa-engine-examples.git
-          git clone --depth 1 --branch "$branch" "$repo" examples || git clone --depth 1 "$repo" examples
+      - uses: ./.github/actions/checkout-examples
       - uses: ./.github/actions/setup-engine
       - name: Documentation book is up to date
         run: python3 tools/docs/buildBook.py --check

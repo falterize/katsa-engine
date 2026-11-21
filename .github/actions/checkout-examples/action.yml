@@ -1,0 +1,10 @@
+name: Check out the examples project
+description: Clones katsa-engine-examples into ./examples on the branch with the engine's name, else main.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+        repo=https://github.com/falterize/katsa-engine-examples.git
+        git clone --depth 1 --branch "$branch" "$repo" examples || git clone --depth 1 "$repo" examples
