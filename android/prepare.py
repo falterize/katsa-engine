@@ -118,18 +118,19 @@ def build_katsa_libraries(abis):
             print(f'note: no Jolt binary for {abi}; 3D physics uses the Oimo backend there')
 
 
-def pack_game(game):
+def pack_game(game, project=None):
     sys.path.insert(0, str(ROOT / 'tools' / 'build'))
     import packageKatsa
 
     ASSETS.mkdir(parents=True, exist_ok=True)
-    files, empty = packageKatsa.write_zip(str(ASSETS / 'game.katsa'), str(game), runtime=True)
+    files, empty = packageKatsa.write_zip(str(ASSETS / 'game.katsa'), str(game), runtime=True, project=str(project) if project else None)
     print(f'packed {files} files, {empty} empty folders -> {ASSETS / "game.katsa"}')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--game', type=pathlib.Path, default=ROOT, help='game folder with main.lua (default: this repository)')
+    parser.add_argument('--project', type=pathlib.Path, help='Katsa project folder (conf.lua, game/, assets/) packed together with the engine, e.g. ../katsa-engine-examples')
     parser.add_argument('--abis', default='arm64-v8a,x86_64', help='comma separated: ' + ', '.join(ABIS))
     parser.add_argument('--skip-deps', action='store_true', help='only repack game.katsa')
     args = parser.parse_args()
@@ -146,7 +147,7 @@ def main():
         for abi in abis:
             build_luajit(abi, bin_dir)
         build_katsa_libraries(abis)
-    pack_game(args.game)
+    pack_game(args.game, args.project)
     print('\nNext: cd android && gradle assembleDebug   (APK: android/app/build/outputs/apk/debug/)')
 
 

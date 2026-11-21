@@ -10,6 +10,7 @@ uniform highp vec2 viewportSize;
 uniform highp vec3 cameraPosition;
 uniform highp mat4 viewMatrix;
 uniform highp mat4 projectionMatrix;
+#include "../chunks/linearDepth.glsl"
 
 #user_code
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs the regression suites on the dev host with the examples project mounted and fails when any
 # suite fails. Run from the engine folder:  KATSA_PROJECT=<examples> tools/ci/runSuites.sh
-suites=(--test-v106.8 --test-v108.10 --test-v108.9 --test-v108.7 --test-v108.5 --test-v108.4 --test-v108.1)
+suites=(--test-v106.8 --test-v108.10 --test-v108.9 --test-v108.8 --test-v108.7 --test-v108.5 --test-v108.4 --test-v108.1)
 failed=0
 for suite in "${suites[@]}"; do
     echo "== $suite"

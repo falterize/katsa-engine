@@ -239,6 +239,8 @@ changed), runs the Lua runtime from it and forwards stdout/stderr to logcat (`ad
    in Android Studio and press Run. The first build compiles SDL2 and OpenAL Soft (several minutes).
 4. Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 5. After changing only game files: `python3 android/prepare.py --skip-deps`, then step 3.
+   The engine has no scenes of its own: `--project ../katsa-engine-examples` packs a project (its
+   `conf.lua`, `game/`, `assets/`) together with the engine, so the APK shows the example menu.
 6. Release: set your own `applicationId` in `android/app/build.gradle`, create a keystore and a
    `signingConfig`, then `./gradlew bundleRelease` (Play Store) or `assembleRelease`.
 

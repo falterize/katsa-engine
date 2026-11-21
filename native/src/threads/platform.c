@@ -3,6 +3,9 @@
  */
 #if !defined(_WIN32)
 #define _POSIX_C_SOURCE 200809L /* clock_gettime, nanosleep, sysconf */
+#if defined(__APPLE__)
+#define _DARWIN_C_SOURCE /* _SC_NPROCESSORS_ONLN is hidden by _POSIX_C_SOURCE on macOS */
+#endif
 #endif
 
 #include <stdlib.h>

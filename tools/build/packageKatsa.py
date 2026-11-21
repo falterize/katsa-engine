@@ -80,11 +80,14 @@ def write_zip(
     with_validation: bool = False,
     runtime_only: bool = False,
     convert_blend: bool = False,
+    project: str | None = None,
 ):
     """Writes the archive and returns (file count, empty-directory count).
 
     `source` is the game folder (None with runtime_only). With `runtime` the Lua runtime from this
     repository is added; when the game folder already contains it, the copy is stored uncompressed.
+    `project` is a Katsa project folder (conf.lua, game/, assets/) laid over the game folder, its
+    files replacing same-named ones: the engine and a project in one archive (the Android APK).
     """
     entries: dict[str, tuple[Path, bool]] = {}
     directories: set[str] = set()
@@ -100,6 +103,16 @@ def write_zip(
                 directories.add(name)
             else:
                 entries[name] = (path, False)
+    if project is not None:
+        overlay = Path(project).resolve()
+        for path in sorted(overlay.rglob('*')):
+            relative = path.relative_to(overlay)
+            if _skipped(relative, False, True):
+                continue
+            if path.is_dir():
+                directories.add(relative.as_posix())
+            else:
+                entries[relative.as_posix()] = (path, False)
     if runtime or runtime_only:
         for path in sorted(RUNTIME_DIR.rglob('*')):
             relative = path.relative_to(ROOT)
@@ -140,6 +153,7 @@ def main():
     parser.add_argument('--runtime-only', action='store_true', help='pack only the Lua runtime (generic katsa executable)')
     parser.add_argument('--with-runtime', action='store_true', help='add the Lua runtime to a plain archive (no host)')
     parser.add_argument('--convert-blend', action='store_true', help='convert .blend files to .blend.glb (needs Blender)')
+    parser.add_argument('--project', type=Path, help='project folder laid over the game folder (engine plus project in one archive)')
     parser.add_argument('--with-validation', action='store_true')
     args = parser.parse_args()
     if not args.runtime_only and args.source is None:
@@ -159,6 +173,7 @@ def main():
             with_validation=args.with_validation,
             runtime_only=args.runtime_only,
             convert_blend=args.convert_blend,
+            project=str(args.project) if args.project else None,
         )
         if fused:
             args.output.write_bytes(args.host.read_bytes() + archive_path.read_bytes())

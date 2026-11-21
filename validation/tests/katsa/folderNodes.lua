@@ -7,7 +7,8 @@ return function(T)
         )
     end
     katsa.filesystem.setSource('.')
-    local opened, package = pcall(Package.open, 'game/scenes/multiplayerCars')
+    local opened, package =
+        pcall(Package.open, require('validation.tests.project') .. '/game/scenes/multiplayerCars')
     if not opened then
         return T.skip('folderNodes: scene folder not readable (' .. tostring(package) .. ')')
     end

@@ -5,7 +5,8 @@ local Raycast = require('game.scenes.voxelWorld.scripts.world.raycast')
 local Walker = require('game.scenes.voxelWorld.scripts.player.walker')
 
 local Module = {}
-local ROOT = 'game/scenes/voxelWorld/assets/worker/'
+-- loadfile reads the real disk, so the examples project folder is named explicitly.
+local ROOT = require('validation.tests.project') .. '/game/scenes/voxelWorld/assets/worker/'
 
 local function load(name)
     package.loaded[name] = nil

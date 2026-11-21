@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v108.10
 
+- CI fixes: `linear_depth` moved into `assets/shaders/engine/chunks/linearDepth.glsl` and included by the particle template too (it was missing there); the native unit tests and the v108.10 suite read the examples project through `validation/tests/project.lua` (`KATSA_PROJECT`); macOS builds `katsa_threads` (`_DARWIN_C_SOURCE`); the APK job packs the engine with the examples project (`android/prepare.py --project`, `packageKatsa.py --project`).
 - Console on a phone: three fingers at once open or close the on-screen console, `Copy` puts the log on the clipboard, "Could not start a scene" shows the last log lines and copies the log on a tap, and the error screen copies its report on a tap (`debug/touchGesture.lua`; Host and Game forward pointer events to modules).
 - CI: `.github/workflows/tests.yml` (engine and examples) runs the regression suites with both repositories checked out on the same branch name (`tools/ci/runSuites.sh`, shared `setup-engine` action). `tools/import/makeTileset.py` takes the project folder it writes to.
 - The examples moved to their own repository, `katsa-engine-examples`, a project of its own. The engine has no root `game/` folder and ships only what it needs in `assets/` (engine shaders, default font, fallback textures, click sound). The collection runtime and dev tools moved to `source/runtime` and `source/devtools`, so any scene gets Workspace, F4 and the pause menu; the scene catalog is optional.

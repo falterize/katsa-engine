@@ -35,7 +35,7 @@ function Module.run(self)
     first:release()
     second:release()
 
-    local folder = '../katsa-engine-examples/game/scenes/menu'
+    local folder = require('validation.tests.project') .. '/game/scenes/menu'
     local external = Loader.open(folder)
     self:check(external.id == 'menu', 'A scene folder outside the game source opens by path')
     external:release()
