@@ -74,6 +74,18 @@ function Module.run(self)
         scene:pointerpressed(id, 10 * id, 10)
     end
     self:check(not scene.console.visible, 'Three fingers again close it')
+
+    -- "Continue" runs inside an input handler, where a scene switch is only queued.
+    local manager = self.manager
+    assert(manager:switch(function(owner)
+        return require('source.engine.scenes.crashReport').new(owner, function()
+            manager:switch(Game.new, 'physics')
+        end)
+    end))
+    local _, screenHeight = katsa.graphics.getDimensions()
+    manager:dispatch('pointerpressed', 1, 10, screenHeight * 0.9)
+    manager:update(0.01)
+    self:check(manager.stack[1].runtime == 'game', 'Continue on the crash report starts the scene')
 end
 
 return Module

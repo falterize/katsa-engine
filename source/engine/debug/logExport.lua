@@ -48,7 +48,7 @@ end
 function Export.tail(text, count)
     local lines = {}
     for line in text:gmatch('[^\n]+') do
-        lines[#lines + 1] = #line > 110 and (line:sub(1, 107) .. '...') or line
+        lines[#lines + 1] = #line > 70 and (line:sub(1, 67) .. '...') or line
     end
     return table.concat(lines, '\n', math.max(1, #lines - count + 1), #lines)
 end

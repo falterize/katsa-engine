@@ -129,16 +129,22 @@ function Bootstrap.install(options)
         -- message; the reason is in the console. Test and smoke runs fail instead.
         local function showFailure(reason)
             assert(not (testing or smoke), reason)
-            assert(manager:switch(function(owner)
+            local scene, message = manager:switch(function(owner)
                 return require('source.engine.scenes.empty').new(owner, { reason = reason })
-            end))
+            end)
+            -- Inside an input handler the switch is only queued (nil, no message).
+            assert(scene or manager.pendingSwitch, message)
         end
         if interrupted and not Runtime.headless and katsa.system.getOS() == 'Android' then
             -- A phone has no console: show what the killed run logged before starting normally.
             assert(manager:switch(function(owner)
                 return require('source.engine.scenes.crashReport').new(owner, function()
-                    if not source or not manager:switch(createScene, source) then
-                        showFailure('Could not start scene "' .. tostring(source) .. '"')
+                    -- Called from an input handler: the switch is queued, and a scene that fails
+                    -- to load is reported by the manager like any other.
+                    if source then
+                        manager:switch(createScene, source)
+                    else
+                        showFailure('The project names no start scene.')
                     end
                 end)
             end))

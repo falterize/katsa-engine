@@ -5,7 +5,6 @@ local Export = require('../debug.logExport')
 local CrashReport = {}
 CrashReport.__index = CrashReport
 
-local TAIL = 22
 
 function CrashReport.new(manager, continue)
     local text = katsa.filesystem.read('logs/previous.log') or '(no log was saved)'
@@ -14,7 +13,7 @@ function CrashReport.new(manager, continue)
         settings = {},
         continue = continue,
         text = text,
-        lines = Export.tail(text, TAIL),
+        lines = Export.tail(text, 400),
     }, CrashReport)
 end
 
@@ -44,7 +43,10 @@ function CrashReport:draw()
         'center'
     )
     graphics.setColor(0.75, 0.75, 0.75)
-    graphics.printf(self.lines, 16, 100, math.max(1, width - 32), 'left')
+    -- As many of the last lines as fit above the continue button.
+    local lineHeight = graphics.getFont():getHeight()
+    local fit = math.max(1, math.floor((height * 2 / 3 - 110) / lineHeight))
+    graphics.printf(Export.tail(self.lines, fit), 16, 100, math.max(1, width - 32), 'left')
     graphics.setColor(0.3, 0.5, 0.3)
     graphics.rectangle('fill', 0, height * 2 / 3, width, height / 3)
     graphics.setColor(1, 1, 1)
