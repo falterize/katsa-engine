@@ -23,7 +23,9 @@ function CrashReport:pointerpressed(id, x, y)
     if y > height * 2 / 3 then
         self.continue()
     elseif id ~= 'mouse' then
+        katsa.log.write('log', 'copying the log to the clipboard', 'crashReport')
         katsa.system.setClipboardText(self.text)
+        katsa.log.write('log', 'copied', 'crashReport')
         self.copied = true
     end
 end

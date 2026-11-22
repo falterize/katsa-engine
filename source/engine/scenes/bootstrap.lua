@@ -242,8 +242,11 @@ function Bootstrap.install(options)
         end)
     end
 
+    -- Breadcrumbs: when a run is killed, the last lines of logs/previous.log say what it was doing.
     function katsa.touchpressed(id, x, y)
+        katsa.log.write('log', ('touch down %s at %.0f,%.0f'):format(tostring(id), x, y), 'input')
         manager:dispatch('pointerpressed', id, x, y)
+        katsa.log.write('log', 'touch down handled', 'input')
     end
 
     function katsa.touchmoved(id, x, y, dx, dy)
@@ -251,7 +254,9 @@ function Bootstrap.install(options)
     end
 
     function katsa.touchreleased(id, x, y)
+        katsa.log.write('log', ('touch up %s'):format(tostring(id)), 'input')
         manager:dispatch('pointerreleased', id, x, y)
+        katsa.log.write('log', 'touch up handled', 'input')
     end
 
     function katsa.mousepressed(x, y, button, istouch)
