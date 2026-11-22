@@ -14,6 +14,9 @@ function Bootstrap.install(options)
         )
     end
     Runtime.initialize()
+    if Runtime.jitDisabled then
+        katsa.log.write('log', 'JIT is off on ' .. Runtime.jitDisabled, 'runtime')
+    end
     -- `project.version` is the engine the project was made for; a mismatch only warns.
     require('source.engine.core.version').check(project.version, 'Project')
     Runtime.frameRateLimit = Runtime.validateFrameRateLimit(project.frameRateLimit or 0)

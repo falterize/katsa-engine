@@ -11,6 +11,7 @@ fix, say plainly what only real hardware can confirm, and the launcher UI is the
 
 - **SSAO banding**: see the long item below ("SSAO banding still visible").
 - **multiplayerCars** wheels, steering, dents and collision: see the backlog item below.
+- **Android JIT (v109)**: on the Poco M6 Pro 4G (arm64) the log shows impossible Lua errors (`attempt to compare number with string` in `font.lua` `getWrap` on plain numbers, `bad argument #2` in the SDL poll loop): a LuaJIT trace fault. v109 runs the interpreter on Android (`jit.off()` in `Runtime.initialize`, `KATSA_JIT=1` re-enables). Confirm the errors are gone, then find the real cause (LuaJIT build flags/NDK, `v2.1` snapshot, a specific trace) and turn the JIT back on; the interpreter is several times slower.
 - **Android** (Poco M6 Pro 4G): the 720 px render height and UI scale 540 mitigation is not confirmed on the device. If it is still slow, ask for the Stats panel (`JIT ON/OFF`, per-stage ms).
 - **Windows-only behaviour** that the sandbox cannot show: the `katsa_threads.dll` build and the host exporting `lua*` (Actor), DWM transparency and window z-order, the freeze when leaving windowsLab, `No answer from the server` on multiplayer.
 - **Real-GPU look** of what the sandbox only verifies by pixels: prefab `World2D` inside copies and inside a `ViewportFrame`, the nickname billboards of the avatar prefab.

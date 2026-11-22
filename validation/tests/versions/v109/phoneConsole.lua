@@ -47,9 +47,17 @@ function Module.run(self)
         'The log tail keeps the last lines'
     )
     local continued = 0
+    katsa.filesystem.write(
+        'logs/previous.log',
+        '2026-11-22T12:16:20Z [log] touch down 0 at 657,493\nstack traceback:\n\tsource/a.lua:3: in function x\n'
+            .. string.rep('long ', 40)
+            .. '\n'
+    )
     local report = require('source.engine.scenes.crashReport').new({}, function()
         continued = continued + 1
     end)
+    local drawn, drawMessage = pcall(report.draw, report)
+    self:check(drawn, 'The crash report draws a real log: ' .. tostring(drawMessage))
     local _, height = katsa.graphics.getDimensions()
     report:pointerpressed(1, 10, height * 0.9)
     self:check(continued == 1, 'The bottom of the crash report continues to the scene')
