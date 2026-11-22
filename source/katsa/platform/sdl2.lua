@@ -675,7 +675,12 @@ function Platform:poll()
     local sdl, event = self.sdl, self.event
     self:flushClosedWindows()
     self.pollCounts, self.pollEvents, self.pollSpent = {}, 0, 0
-    return function()
+    local failures = self.pollFailures
+    if not failures then
+        failures = {}
+        self.pollFailures = failures
+    end
+    local function nextEvent()
         -- SDL calls event watches from inside SDL_PollEvent too; `polling` tells those deliveries
         -- (the frame loop handles them) from the ones sent while the OS runs its own resize loop.
         self.polling = true
@@ -697,6 +702,24 @@ function Platform:poll()
         self.polling = false
         if self.pollSpent >= SLOW_POLL_MS then
             reportSlowPoll(self, self.pollSpent)
+        end
+        return nil
+    end
+    -- A failing translation must not take the frame loop down (a phone shows no console): the error
+    -- and its traceback are logged once per message and the queue is left for the next frame.
+    return function()
+        local ok, result = xpcall(nextEvent, debug.traceback)
+        if ok then
+            return result
+        end
+        self.polling = false
+        if not failures[result] then
+            failures[result] = true
+            require('source.katsa.core.log').write(
+                'error',
+                'SDL event handling failed: ' .. tostring(result),
+                'window'
+            )
         end
         return nil
     end

@@ -44,11 +44,25 @@ local function eachSegment(text, fn)
     end
 end
 
+-- Glyph bitmaps are rasterized for physical pixels; drawn at a fractional pixel the linear filter
+-- smears them ("soft" text). With a plain translation the quads are placed on whole physical pixels.
+local function snapsToPixels(matrix)
+    return matrix[1] == 1 and matrix[2] == 0 and matrix[3] == 0 and matrix[4] == 1
+end
+
 local function emitLine(font, cps, matrix, ox, oy, colorOverride)
+    local dpi = font._dpi
+    local snap = snapsToPixels(matrix)
+    -- The line origin in physical pixels, so rounding keeps glyphs on the same pixel grid.
+    local originX, originY = matrix[5] * dpi, matrix[6] * dpi
     font:_layout(cps, function(texture, gx, gy, w, h, u0, v0, u1, v1)
-        local dpi = font._dpi
-        local x0, y0 = (ox + gx) / dpi, (oy + gy) / dpi
-        local x1, y1 = (ox + gx + w) / dpi, (oy + gy + h) / dpi
+        local px, py = ox + gx, oy + gy
+        if snap then
+            px = math.floor(originX + px + 0.5) - originX
+            py = math.floor(originY + py + 0.5) - originY
+        end
+        local x0, y0 = px / dpi, py / dpi
+        local x1, y1 = (px + w) / dpi, (py + h) / dpi
         Batch.addQuad(texture, x0, y0, x1, y0, x0, y1, x1, y1, u0, v0, u1, v1, matrix)
     end)
 end

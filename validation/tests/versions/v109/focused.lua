@@ -15,6 +15,8 @@ function Tests:draw()
     self.done = true
     require('validation.tests.versions.v109.projects').run(self)
     require('validation.tests.versions.v109.phoneConsole').run(self)
+    require('validation.tests.versions.v109.touchEvents').run(self)
+    require('validation.tests.versions.v109.crispText').run(self)
     print('PASSED ' .. self.count .. ' v109 focused checks')
     katsa.event.quit()
 end

@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v109
 
+- Phone fixes from the first on-device log: an SDL event that fails to translate is logged with its traceback instead of ending the run (`Platform:poll`), text is placed on whole physical pixels when drawn without rotation or scale (sharper text on high-DPI screens), tests for touch events as Android delivers them.
 - Phones without a cable: after a killed run the next start shows the previous log (`engine/scenes/crashReport.lua`, `debug/session.lua` marker) with copy and continue. `android/prepare.py` reads `native/build/android` and fails without `libkatsa_native.so` (the first APK had no native libraries).
 - CI fixes: `linear_depth` moved into `assets/shaders/engine/chunks/linearDepth.glsl` and included by the particle template too (it was missing there); the native unit tests and the v108.10 suite read the examples project through `validation/tests/project.lua` (`KATSA_PROJECT`); macOS builds `katsa_threads` (`_DARWIN_C_SOURCE`); the APK job packs the engine with the examples project (`android/prepare.py --project`, `packageKatsa.py --project`).
 - Console on a phone: three fingers at once open or close the on-screen console, `Copy` puts the log on the clipboard, "Could not start a scene" shows the last log lines and copies the log on a tap, and the error screen copies its report on a tap (`debug/touchGesture.lua`; Host and Game forward pointer events to modules).
