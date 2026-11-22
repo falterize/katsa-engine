@@ -44,6 +44,15 @@ function Export.text(entries)
     return table.concat(lines, '\n')
 end
 
+-- The last `count` lines of a text, each cut to one screen line.
+function Export.tail(text, count)
+    local lines = {}
+    for line in text:gmatch('[^\n]+') do
+        lines[#lines + 1] = #line > 110 and (line:sub(1, 107) .. '...') or line
+    end
+    return table.concat(lines, '\n', math.max(1, #lines - count + 1), #lines)
+end
+
 -- Copies the (filtered) log to the system clipboard; returns how many entries were copied.
 function Export.copy(entries)
     katsa.system.setClipboardText(Export.text(entries))

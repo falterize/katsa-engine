@@ -90,8 +90,11 @@ function Bootstrap.install(options)
         if options.beforeLoad then
             options.beforeLoad(arguments)
         end
+        local interrupted = false
         if not testing and not smoke then
-            require('source.engine.debug.session').start(Runtime.headless and 'server' or nil)
+            interrupted = require('source.engine.debug.session').start(
+                Runtime.headless and 'server' or nil
+            )
         end
         katsa.graphics.setDefaultFilter('linear', 'linear')
         manager = Manager.new(options.managerOptions)
@@ -130,7 +133,16 @@ function Bootstrap.install(options)
                 return require('source.engine.scenes.empty').new(owner, { reason = reason })
             end))
         end
-        if not source then
+        if interrupted and not Runtime.headless and katsa.system.getOS() == 'Android' then
+            -- A phone has no console: show what the killed run logged before starting normally.
+            assert(manager:switch(function(owner)
+                return require('source.engine.scenes.crashReport').new(owner, function()
+                    if not source or not manager:switch(createScene, source) then
+                        showFailure('Could not start scene "' .. tostring(source) .. '"')
+                    end
+                end)
+            end))
+        elseif not source then
             local names = {}
             for _, entry in ipairs(opened.scenes) do
                 names[#names + 1] = entry.id
@@ -330,12 +342,14 @@ function Bootstrap.install(options)
         end
         Runtime.windowFrameDirty = true
         windowVisible = visible
+        require('source.engine.debug.session').mark(nil, visible)
         if manager then
             manager:focus(windowFocused and windowVisible)
         end
     end
 
     function katsa.quit()
+        require('source.engine.debug.session').mark(nil, false)
         require('source.engine.scenes.windowScene').closeAll()
         if manager then
             local recording = manager.profiler:stopRecording()
