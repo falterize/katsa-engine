@@ -15,6 +15,41 @@ fix, say plainly what only real hardware can confirm, and the launcher UI is the
 - **Windows-only behaviour** that the sandbox cannot show: the `katsa_threads.dll` build and the host exporting `lua*` (Actor), DWM transparency and window z-order, the freeze when leaving windowsLab, `No answer from the server` on multiplayer.
 - **Real-GPU look** of what the sandbox only verifies by pixels: prefab `World2D` inside copies and inside a `ViewportFrame`, the nickname billboards of the avatar prefab.
 
+## Platforms (goal: every device that can run it)
+
+Status as of v109. "CI" = built by GitHub Actions; "owner" = needs a person with the device.
+
+| Platform | Status | What is missing |
+| --- | --- | --- |
+| Linux x86_64 | **Done**: built and all regression suites run in CI (Mesa software GL) | Real-GPU confirmation |
+| Windows x86_64 | **Done**: cross-built in CI (llvm-mingw), the owner runs the `.exe` | The `katsa_threads.dll` and DWM items under "Waiting for the owner's hardware"; no automated run on Windows |
+| macOS universal (x86_64 + arm64) | **Builds in CI**; unit tests there are non-blocking until a run is confirmed | Run on a real Mac, `.app` bundle and signing |
+| Android arm64-v8a, x86_64 | **In progress**: APK built in CI (engine + examples, `android/prepare.py --project`); on a Poco M6 Pro 4G the app crashes on the first touch (breadcrumbs and the crash-report screen are in to find where) | Fix the touch crash, the black screen / "not responding" at start, performance; confirm the 720 px render height |
+| Android armeabi-v7a (32-bit ARM) | Build script supports it, not in the default APK | Add to the CI APK, test on a 32-bit device |
+| Windows x86 (32-bit) | Not started | i686 mingw target in `tools/native/build.py`, LuaJIT 32-bit, SDL2/OpenAL 32-bit DLLs, a CI job |
+| Windows ARM64 | Not started | aarch64 mingw target, ARM64 LuaJIT (JIT works there), CI job |
+| Linux arm64 / armv7 (Raspberry Pi, handhelds) | Not started | aarch64 and armhf targets (cross compiler or native ARM runner), Mesa GLES/GL check, a CI job |
+| Linux x86 (32-bit) | Not started | Low priority; `-m32` build |
+| iOS arm64 (iOS 12+) | Not started | SDL2 + Xcode project, LuaJIT in interpreter mode (JIT is forbidden), OpenGL ES 3.0, system OpenAL, signing; CI on macOS; needs an iPhone |
+| iOS 10.3.3 / iPhone 5c (jailbreak, armv7, GLES 2.0 only) | Not started, blocked by rendering | The GLES 2.0 renderer below; 1 GB RAM, so a lean profile; cross build (Theos or Xcode 13) |
+| Web (browser) | Not started, needs a decision | LuaJIT does not run in WebAssembly; would need PUC Lua or Fengari and a WebGL 2 backend |
+| FreeBSD and other desktop Unix | Not started | Depends on SDL2 and LuaJIT availability; low priority |
+
+Cross-cutting work that unlocks several rows:
+
+- **GLES 2.0 renderer** (old Android, iPhone 5c, some embedded boards): a second shader dialect and a
+  reduced feature set (no instancing, UBO, 3D textures, multiple render targets). It must not remove
+  features from the ES 3.0 / desktop path: it is an additional quality profile with its own tests.
+- **One CI matrix**: `native.yml` builds one target per job today; make the target list data (one table
+  of target, runner, toolchain, artifact) so a new platform is one line, and run the regression suites on
+  every target the runner can execute.
+- **Per-target smoke test**: start the dev host, render ten frames, run the unit tests (already done on
+  Linux and macOS) so a platform is "done" only when it runs, not when it links.
+- **Performance budget for slow CPUs** (interpreter-only LuaJIT on iOS, 32-bit ARM): the quality
+  profiles and `renderDensity` are the tools; measure with the Stats panel on each device class.
+- Document the supported platform list and how to build for each in `docs/guides/katsa/building.md`
+  once a row turns Done.
+
 ## Engine work
 
 - **Owner's list (2026-11-14)**: (1) SSAO (v108.8 shipped the depth-aware upsample and the soft intensity curve; the owner still has to confirm the banding on hardware) still bands over the whole screen on the owner's hardware (replicationLab screenshot: horizontal stripes on the map floor; I enabled SSAO in that scene's `level.lua` in v108.8, so it shows there; see also the older SSAO item below). (2) Audit all node classes for empty properties that do nothing, e.g. `visible` on `StorageFolder` (it is always hidden): remove them through the class `omit` list, with a test per class.
