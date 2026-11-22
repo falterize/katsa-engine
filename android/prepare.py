@@ -109,7 +109,11 @@ def build_katsa_libraries(abis):
     for abi in abis:
         target = JNI / abi
         target.mkdir(parents=True, exist_ok=True)
-        for library in (ROOT / 'build' / 'native' / 'android' / abi).glob('*.so'):
+        built = sorted((ROOT / 'native' / 'build' / 'android' / abi).glob('*.so'))
+        # An APK without katsa_native starts and dies in dlopen; fail the build instead.
+        if not any(library.name == 'libkatsa_native.so' for library in built):
+            sys.exit(f'libkatsa_native.so was not built for {abi}; see native/build/android/{abi}')
+        for library in built:
             shutil.copy2(library, target / library.name)
         jolt = ABIS[abi][2]
         if jolt:
