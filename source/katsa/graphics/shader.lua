@@ -51,7 +51,9 @@ local function compileStage(kind, text, label)
     local length = ffi.new('GLint[1]', #text)
     gl.glShaderSource(shader, 1, pointer, length)
     -- A driver that dies in the compiler leaves this as the last line of the run's log.
-    katsa.log.write('log', 'compiling ' .. tostring(label) .. ' shader', 'gl')
+    if katsa then
+        katsa.log.write('log', 'compiling ' .. tostring(label) .. ' shader', 'gl')
+    end
     gl.glCompileShader(shader)
     local status = ffi.new('GLint[1]')
     gl.glGetShaderiv(shader, E.COMPILE_STATUS, status)
