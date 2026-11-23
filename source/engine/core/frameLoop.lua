@@ -1,5 +1,6 @@
 local Runtime = require('./runtime')
 local Deadline = require('./timing.deadline')
+local PerfLog = require('../debug.perfLog')
 
 local FrameLoop = {}
 
@@ -14,6 +15,7 @@ function FrameLoop.run()
     end
     local timings = { events = 0, update = 0, draw = 0, present = 0, sleep = 0 }
     Runtime.timings = timings
+    local perf = katsa.log and PerfLog.enabled() and PerfLog.new() or nil
     local previousStarted
     local slowName, slowTime = 'pump', 0
     return function()
@@ -71,6 +73,9 @@ function FrameLoop.run()
                 if katsa.draw then
                     katsa.draw()
                 end
+                if perf then
+                    perf:capture()
+                end
                 local presented = katsa.timer.getTime()
                 draw = (presented - drawn) * 1000
                 katsa.graphics.present()
@@ -119,6 +124,9 @@ function FrameLoop.run()
         timings.events, timings.update, timings.draw, timings.present, timings.sleep =
             events, update, draw, present, sleep
         timings.frameReused = reused
+        if perf then
+            perf:sample(timings, (katsa.timer.getTime() - started) * 1000)
+        end
     end
 end
 
