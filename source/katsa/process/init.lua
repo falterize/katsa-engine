@@ -50,6 +50,10 @@ function Process.getLaunchCommand(extra)
 end
 
 function Process.isSupported()
+    -- LuaJIT reports Android as Linux, but an app cannot start another copy of itself.
+    if require('source.katsa.core.native').os() == 'Android' then
+        return false
+    end
     return ffi.os == 'Windows' or ffi.os == 'Linux' or ffi.os == 'OSX'
 end
 

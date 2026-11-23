@@ -5,6 +5,8 @@ Per-version notes. Test results and logs for each release live in Git history an
 ## v109
 
 - Crash report: the killed run's log is kept in `logs/crash.log` (starting again no longer overwrites it) and the report shows until Continue is tapped; copy takes the last 16 KiB; loading stages and shader compiles leave breadcrumbs in the log.
+- `katsa.process.isSupported()` is false on Android (LuaJIT reports it as Linux): multiplayerCars no longer offers "Server window" there and hosts in the app.
+- Character scenes (stareShooter, replicationLab) get the engine joystick plus Jump (held), Run and Crouch (toggles) buttons on phones (`game/characters/thirdPersonInput.lua` in the examples).
 - Frame summary in the log every 3 s on Android (`KATSA_PERFLOG=1` elsewhere): fps, events/update/draw/present/sleep ms, draw calls; 8 s into each scene a 6 s LuaJIT sampling profile is logged (share by vm state and top source lines).
 - Android touch and rotation: touches are rescaled from view to buffer pixels (SDL divided them by the smaller fixed buffer, so the right side was dead and clicks were offset), and the buffer is sized from each layout (rotation squashed the UI). The JIT is on again on Android (the garbage was the second-thread callback, not the JIT); `JIT on/off` is logged at start.
 - Android crash on touch found: the SDL event watch (live window resize, Windows/macOS only) was a Lua callback that SDL ran on the Java UI thread, entering the Lua state from a second thread (garbled errors, SIGSEGV/SIGABRT on touch). It is now installed on Windows and macOS only.
