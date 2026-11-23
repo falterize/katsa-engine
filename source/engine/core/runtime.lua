@@ -23,15 +23,6 @@ function Runtime.initialize()
     if not jit then
         return false
     end
-    -- The first on-device logs from an arm64 phone show impossible Lua errors ("attempt to compare
-    -- number with string" on numbers, a bad argument on a plain assignment): a compiled-trace fault.
-    -- Until that is explained Android runs the interpreter; KATSA_JIT=1 turns the JIT back on.
-    if require('source.katsa.core.native').os() == 'Android' and os.getenv('KATSA_JIT') ~= '1' then
-        jit.off()
-        jit.flush()
-        Runtime.jitDisabled = 'Android'
-        return false
-    end
     local ok, options = pcall(require, 'jit.opt')
     if not ok then
         return false

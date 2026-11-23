@@ -5,6 +5,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 ## v109
 
 - Crash report: the killed run's log is kept in `logs/crash.log` (starting again no longer overwrites it) and the report shows until Continue is tapped; copy takes the last 16 KiB; loading stages and shader compiles leave breadcrumbs in the log.
+- Android touch and rotation: touches are rescaled from view to buffer pixels (SDL divided them by the smaller fixed buffer, so the right side was dead and clicks were offset), and the buffer is sized from each layout (rotation squashed the UI). The JIT is on again on Android (the garbage was the second-thread callback, not the JIT); `JIT on/off` is logged at start.
 - Android crash on touch found: the SDL event watch (live window resize, Windows/macOS only) was a Lua callback that SDL ran on the Java UI thread, entering the Lua state from a second thread (garbled errors, SIGSEGV/SIGABRT on touch). It is now installed on Windows and macOS only.
 - Android: `allowNativeHeapPointerTagging="false"` (Android 11+ tags malloc pointers in the top byte, which LuaJIT's 47-bit pointers cannot hold: the likely source of garbled errors and random crashes); a native signal handler writes the signal, fault address and backtrace to a file that the next start appends to `logs/crash.log` as `[native]`.
 - Android runs the LuaJIT interpreter (JIT off) after impossible-error logs from an arm64 phone; `KATSA_JIT=1` turns it back on.

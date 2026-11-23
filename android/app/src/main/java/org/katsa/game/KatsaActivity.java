@@ -3,9 +3,11 @@ package org.katsa.game;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
+import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
@@ -30,44 +32,67 @@ public class KatsaActivity extends SDLActivity {
         };
     }
 
-    private SDLSurface katsaSurface;
+    /**
+     * SDL divides touch positions by the buffer size, but Android reports them in view pixels. With
+     * a fixed buffer smaller than the view that pushes every touch outward (the right side of the
+     * screen falls outside 0..1 and the rest is offset), so touches are rescaled to buffer pixels.
+     */
+    private static final class KatsaSurface extends SDLSurface {
+        KatsaSurface(Context context) {
+            super(context);
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent event) {
+            Rect frame = getHolder().getSurfaceFrame();
+            int viewWidth = getWidth();
+            int viewHeight = getHeight();
+            if (viewWidth <= 0 || viewHeight <= 0 || frame.width() <= 0) {
+                return super.onTouch(view, event);
+            }
+            MotionEvent scaled = MotionEvent.obtain(event);
+            Matrix matrix = new Matrix();
+            matrix.setScale((float) frame.width() / viewWidth, (float) frame.height() / viewHeight);
+            scaled.transform(matrix);
+            boolean handled = super.onTouch(view, scaled);
+            scaled.recycle();
+            return handled;
+        }
+    }
 
     @Override
     protected SDLSurface createSDLSurface(Context context) {
-        SDLSurface surface = new SDLSurface(context);
+        final KatsaSurface surface = new KatsaSurface(context);
         // A SurfaceView with a fixed buffer size and wrap_content would be measured as big as the
         // buffer; match_parent lets Android stretch the buffer over the whole screen.
         surface.setLayoutParams(new RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        katsaSurface = surface;
-        applyRenderSize();
+        // The view's own size is the truth after a rotation (display metrics can still describe the
+        // old orientation in onConfigurationChanged), so the buffer is sized from each layout.
+        surface.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                applyRenderSize(surface, right - left, bottom - top);
+            }
+        });
         return surface;
     }
 
     /** The short side of the buffer is renderHeight pixels in either orientation. */
-    private void applyRenderSize() {
-        if (katsaSurface == null) {
+    private void applyRenderSize(SDLSurface surface, int width, int height) {
+        if (width <= 0 || height <= 0) {
             return;
         }
         int wanted = renderHeight();
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-        int width = metrics.widthPixels;
-        int height = metrics.heightPixels;
         int shortSide = Math.min(width, height);
         if (wanted > 0 && shortSide > wanted) {
             float scale = (float) wanted / shortSide;
-            katsaSurface.getHolder().setFixedSize(Math.round(width * scale), Math.round(height * scale));
+            surface.getHolder().setFixedSize(Math.round(width * scale), Math.round(height * scale));
         } else {
             // Native resolution: let the surface follow the view again.
-            katsaSurface.getHolder().setSizeFromLayout();
+            surface.getHolder().setSizeFromLayout();
         }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        applyRenderSize();
     }
 
     private int renderHeight() {
