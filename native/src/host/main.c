@@ -7,6 +7,7 @@
  *     katsa_host.exe    UTF-8 path of the file that holds the archive
  *     katsa_host.args   command-line arguments after the program name, { [1] = ..., ... },
  *                       UTF-8 on every system (Windows converts the UTF-16 command line)
+ *     katsa_host.nativeCrash  Android: file the signal handler writes a native crash report to
  *     katsa_host.read   function(name) -> contents of a STORE entry, or nil
  *
  * boot.lua may return an integer, which becomes the process exit status.
@@ -57,6 +58,13 @@ static int lua_host_read(lua_State* L) {
 /* Creates the `katsa_host` global. */
 static void publish_host_table(lua_State* L, int argc, char** argv) {
     lua_newtable(L);
+#if defined(__ANDROID__)
+    const char* crash_file = host_android_install_crash_handler();
+    if (crash_file) {
+        lua_pushstring(L, crash_file);
+        lua_setfield(L, -2, "nativeCrash");
+    }
+#endif
 
     lua_pushstring(L, image.path);
     lua_setfield(L, -2, "exe");

@@ -46,6 +46,8 @@ const unsigned char* host_archive_find(const HostImage* image, const char* name,
 #if defined(__ANDROID__)
 /* Sends stdout and stderr (Lua's print, io.stderr) to logcat. */
 void host_android_redirect_output(void);
+/* Installs fatal-signal handlers; returns the file that receives the report, or NULL. */
+const char* host_android_install_crash_handler(void);
 
 /* Reads image->path whole into the image (image.c); android.c fills the path first. */
 int host_read_image_file(HostImage* image);

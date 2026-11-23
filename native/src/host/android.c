@@ -12,8 +12,11 @@
 #include <string.h>
 
 #include <android/log.h>
+#include <fcntl.h>
 #include <pthread.h>
+#include <signal.h>
 #include <unistd.h>
+#include <unwind.h>
 
 #include <SDL.h>
 
@@ -64,6 +67,82 @@ void host_android_redirect_output(void) {
     pthread_t thread;
     pthread_create(&thread, NULL, forward_log, (void*)(intptr_t)fds[0]);
     pthread_detach(thread);
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+/* Native crash report                                                                            */
+/* ---------------------------------------------------------------------------------------------- */
+
+/* A fault in native code kills the process before Lua can log anything. The handler writes the
+ * signal, the fault address and a raw backtrace to a file in internal storage; the next start
+ * moves it into the crash log (Session.start). Only async-signal-safe calls are used. */
+static char crash_path[512];
+static int crash_fd = -1;
+
+static void crash_write(const char* text) {
+    write(crash_fd, text, strlen(text));
+}
+
+static void crash_hex(const char* label, uintptr_t value) {
+    char out[64];
+    size_t n = 0;
+    while (*label) {
+        out[n++] = *label++;
+    }
+    out[n++] = '0';
+    out[n++] = 'x';
+    for (int shift = (int)sizeof(uintptr_t) * 8 - 4; shift >= 0; shift -= 4) {
+        out[n++] = "0123456789abcdef"[(value >> shift) & 15];
+    }
+    out[n++] = '\n';
+    write(crash_fd, out, n);
+}
+
+static _Unwind_Reason_Code crash_frame(struct _Unwind_Context* context, void* argument) {
+    int* count = (int*)argument;
+    uintptr_t pc = _Unwind_GetIP(context);
+    if (pc && *count < 48) {
+        crash_hex("  pc ", pc);
+        (*count)++;
+    }
+    return *count < 48 ? _URC_NO_REASON : _URC_END_OF_STACK;
+}
+
+static void crash_handler(int signal_number, siginfo_t* info, void* context) {
+    (void)context;
+    /* Opened here, not at install: Session.start deletes the previous run's report file. */
+    crash_fd = open(crash_path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+    if (crash_fd >= 0) {
+        crash_write("native crash: signal ");
+        crash_hex("", (uintptr_t)signal_number);
+        crash_hex("code ", (uintptr_t)info->si_code);
+        crash_hex("fault address ", (uintptr_t)info->si_addr);
+        crash_write("backtrace (offsets resolve with the libmain.so symbols):\n");
+        int count = 0;
+        _Unwind_Backtrace(crash_frame, &count);
+        fsync(crash_fd);
+    }
+    /* Restore the default action and re-raise so Android still records the tombstone. */
+    signal(signal_number, SIG_DFL);
+    raise(signal_number);
+}
+
+const char* host_android_install_crash_handler(void) {
+    const char* base = SDL_AndroidGetInternalStoragePath();
+    if (!base) {
+        return NULL;
+    }
+    snprintf(crash_path, sizeof crash_path, "%s/native-crash.txt", base);
+    struct sigaction action;
+    memset(&action, 0, sizeof action);
+    action.sa_sigaction = crash_handler;
+    action.sa_flags = SA_SIGINFO;
+    sigemptyset(&action.sa_mask);
+    const int signals[] = {SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT, SIGTRAP};
+    for (size_t i = 0; i < sizeof signals / sizeof signals[0]; i++) {
+        sigaction(signals[i], &action, NULL);
+    }
+    return crash_path;
 }
 
 /* ---------------------------------------------------------------------------------------------- */

@@ -9,6 +9,20 @@ local function marker(name)
     return 'logs/' .. (name and (name .. '-') or '') .. 'running'
 end
 
+-- Android: the host's signal handler leaves a report in a plain file when native code faults.
+-- Returns its text (and removes the file) so it can follow the previous log in crash.log.
+function Session.takeNativeCrash()
+    local path = katsa_host and katsa_host.nativeCrash
+    local file = path and io.open(path, 'rb')
+    if not file then
+        return nil
+    end
+    local text = file:read('*a')
+    file:close()
+    os.remove(path)
+    return text ~= '' and ('\n[native]\n' .. text) or nil
+end
+
 -- `name` gives a process of its own (a server started by the game) separate files
 -- (`logs/server-latest.log`), so it never truncates or interleaves the log of the game that started it.
 -- Returns true when the previous run did not end cleanly.
@@ -18,11 +32,13 @@ function Session.start(name)
     local interrupted = false
     if fs.createDirectory('logs') then
         interrupted = fs.getInfo(marker(name)) ~= nil
+        local native = not name and Session.takeNativeCrash() or nil
+        interrupted = interrupted or native ~= nil
         local previous = fs.read('logs/' .. prefix .. 'latest.log')
         if previous then
             fs.write('logs/' .. prefix .. 'previous.log', previous)
             if interrupted then
-                fs.write('logs/' .. prefix .. 'crash.log', previous)
+                fs.write('logs/' .. prefix .. 'crash.log', previous .. (native or ''))
                 fs.write('logs/' .. prefix .. 'unseen', '')
             end
         end

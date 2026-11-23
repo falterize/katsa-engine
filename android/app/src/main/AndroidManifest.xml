@@ -13,6 +13,7 @@
         android:label="@string/app_name"
         android:hardwareAccelerated="true"
         android:extractNativeLibs="true"
+        android:allowNativeHeapPointerTagging="false"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
         <!-- Render height in pixels; 0 renders at the native screen resolution. -->
         <meta-data android:name="katsa.renderHeight" android:value="720" />
