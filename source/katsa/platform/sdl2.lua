@@ -730,7 +730,14 @@ end
 -- would freeze until the button is released. SDL still reports the window events to an event watch
 -- on the main thread, so `handler(width, height, resized)` is called there to run and draw a frame.
 -- A poll call that has lasted longer than a normal one (see MODAL_AFTER_MS) is such a loop.
+-- Only where such a modal loop exists. An event watch is a Lua callback that SDL runs on whichever
+-- thread pushes the event: on Android that is the Java UI thread (touch, window events), and a
+-- callback entering the Lua state from a second thread corrupts it (garbled errors, crashes on
+-- the first touch).
 function Platform:onLiveResize(handler)
+    if ffi.os ~= 'Windows' and ffi.os ~= 'OSX' then
+        return
+    end
     if self.liveResizeWatch then
         self.liveResizeHandler = handler
         return
