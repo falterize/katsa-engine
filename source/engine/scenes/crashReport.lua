@@ -2,12 +2,16 @@
 -- whole log to the clipboard, a tap on the bottom third continues to the normal start scene.
 local Export = require('../debug.logExport')
 
+local COPY_BYTES = 16384
+
 local CrashReport = {}
 CrashReport.__index = CrashReport
 
 
 function CrashReport.new(manager, continue)
-    local text = katsa.filesystem.read('logs/previous.log') or '(no log was saved)'
+    local text = katsa.filesystem.read('logs/crash.log')
+        or katsa.filesystem.read('logs/previous.log')
+        or '(no log was saved)'
     return setmetatable({
         manager = manager,
         settings = {},
@@ -22,10 +26,13 @@ function CrashReport:pointerpressed(id, x, y)
     if y > height * 2 / 3 then
         self.continue()
     elseif id ~= 'mouse' then
-        katsa.log.write('log', 'copying the log to the clipboard', 'crashReport')
-        katsa.system.setClipboardText(self.text)
-        katsa.log.write('log', 'copied', 'crashReport')
-        self.copied = true
+        -- The clipboard takes the end of the log: the cause is there, and a huge string through
+        -- the platform's clipboard call is the riskiest thing this screen does.
+        local tail = #self.text > COPY_BYTES and self.text:sub(-COPY_BYTES) or self.text
+        katsa.log.write('log', ('copying %d bytes to the clipboard'):format(#tail), 'crashReport')
+        local ok, message = pcall(katsa.system.setClipboardText, tail)
+        katsa.log.write('log', ok and 'copied' or ('copy failed: ' .. tostring(message)), 'crashReport')
+        self.copied = ok
     end
 end
 

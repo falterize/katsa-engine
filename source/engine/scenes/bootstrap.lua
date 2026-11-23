@@ -140,10 +140,13 @@ function Bootstrap.install(options)
         end
         if interrupted and not Runtime.headless and katsa.system.getOS() == 'Android' then
             -- A phone has no console: show what the killed run logged before starting normally.
+            local Session = require('source.engine.debug.session')
+            Session.hold(true)
             assert(manager:switch(function(owner)
                 return require('source.engine.scenes.crashReport').new(owner, function()
                     -- Called from an input handler: the switch is queued, and a scene that fails
                     -- to load is reported by the manager like any other.
+                    Session.hold(false)
                     if source then
                         manager:switch(createScene, source)
                     else

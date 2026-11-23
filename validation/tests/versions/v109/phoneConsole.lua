@@ -42,6 +42,18 @@ function Module.run(self)
     self:check(katsa.filesystem.getInfo('logs/probe-running') ~= nil, 'A running session leaves a marker')
     Session.mark('probe', false)
     self:check(katsa.filesystem.getInfo('logs/probe-running') == nil, 'A finished session removes it')
+    Session.mark(nil, true)
+    Session.hold(true)
+    self:check(katsa.filesystem.getInfo('logs/running') == nil, 'The crash report holds the marker off')
+    Session.mark(nil, true)
+    self:check(katsa.filesystem.getInfo('logs/running') == nil, 'A visibility change cannot set it meanwhile')
+    katsa.filesystem.write('logs/unseen', '')
+    Session.hold(false)
+    self:check(
+        katsa.filesystem.getInfo('logs/running') ~= nil and katsa.filesystem.getInfo('logs/unseen') == nil,
+        'Continue restores the marker and acknowledges the crash'
+    )
+    Session.mark(nil, false)
     self:check(
         Export.tail('a\nb\nc\nd', 2) == 'c\nd' and Export.tail('', 3) == '',
         'The log tail keeps the last lines'

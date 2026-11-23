@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v109
 
+- Crash report: the killed run's log is kept in `logs/crash.log` (starting again no longer overwrites it) and the report shows until Continue is tapped; copy takes the last 16 KiB; loading stages and shader compiles leave breadcrumbs in the log.
 - Android runs the LuaJIT interpreter (JIT off) after impossible-error logs from an arm64 phone; `KATSA_JIT=1` turns it back on.
 - Phone fixes from the first on-device log: an SDL event that fails to translate is logged with its traceback instead of ending the run (`Platform:poll`), text is placed on whole physical pixels when drawn without rotation or scale (sharper text on high-DPI screens), tests for touch events as Android delivers them.
 - Phones without a cable: after a killed run the next start shows the previous log (`engine/scenes/crashReport.lua`, `debug/session.lua` marker) with copy and continue. `android/prepare.py` reads `native/build/android` and fails without `libkatsa_native.so` (the first APK had no native libraries).

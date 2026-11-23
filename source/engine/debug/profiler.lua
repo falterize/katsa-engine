@@ -54,6 +54,7 @@ end
 -- Each mark records the time since the previous mark (or the begin) as one phase.
 function Profiler:beginLoad(scene)
     self.loading = { scene = scene, phases = {}, started = katsa.timer.getTime() }
+    katsa.log.write('log', 'loading ' .. tostring(scene), 'load')
     self.loadMark = self.loading.started
 end
 
@@ -64,6 +65,7 @@ function Profiler:markLoad(name)
         return
     end
     local ms = (now - self.loadMark) * 1000
+    katsa.log.write('log', ('loaded: %s (%.0f ms)'):format(name, ms), 'load')
     self.loadMark = now
     loading.phases[#loading.phases + 1] = { name = name, ms = ms }
     loading.total = (now - loading.started) * 1000
