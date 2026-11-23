@@ -7,6 +7,9 @@ PerfLog.__index = PerfLog
 local WINDOW = 3
 local PROFILE_DELAY = 8 -- seconds after a scene starts, once its loading hitches are over
 local PROFILE_LENGTH = 6
+local SLOW_FRAME = 0.04 -- a window averaging more than 40 ms starts a profile of its own
+local SLOW_LENGTH = 4
+local SLOW_COOLDOWN = 20
 local PROFILE_ROWS = 14
 
 -- vmstate letters of LuaJIT's sampling profiler.
@@ -37,19 +40,19 @@ end
 
 -- Sampling profile of one scene (LuaJIT jit.profile, 10 ms): where Lua time goes by vm state and
 -- by source line, logged once so a phone without a cable still says what is slow.
-function PerfLog:startProfile()
+function PerfLog:startProfile(length)
     local ok, profile = pcall(require, 'jit.profile')
     if not ok then
         return
     end
     local lines, states, total = {}, {}, 0
     profile.start('i10', function(thread, samples, vmstate)
-        local line = profile.dumpstack(thread, 'pl', 1)
+        local line = profile.dumpstack(thread, 'pl ', 2)
         lines[line] = (lines[line] or 0) + samples
         states[vmstate] = (states[vmstate] or 0) + samples
         total = total + samples
     end)
-    self.profile = { lines = lines, states = states, stop = profile.stop, total = function() return total end }
+    self.profile = { endsAt = katsa.timer.getTime() + length, lines = lines, states = states, stop = profile.stop, total = function() return total end }
 end
 
 function PerfLog:finishProfile()
@@ -77,7 +80,7 @@ function PerfLog:finishProfile()
     end
 end
 
-function PerfLog:trackScene(now)
+function PerfLog:trackScene(now, averageFrame)
     local scene = require('source.engine.core.runtime').activeScene
     scene = scene and scene()
     if scene ~= self.scene then
@@ -86,12 +89,21 @@ function PerfLog:trackScene(now)
             self:finishProfile()
         end
     end
+    if self.profile then
+        if now >= self.profile.endsAt then
+            self:finishProfile()
+        end
+        return
+    end
     local age = now - self.sceneStarted
-    if not self.profiled and not self.profile and age > PROFILE_DELAY then
-        self:startProfile()
+    -- A slow window is profiled where it happens (moving, a panel open), whatever the scene age.
+    if averageFrame and averageFrame > SLOW_FRAME and now - (self.lastSlow or -SLOW_COOLDOWN) > SLOW_COOLDOWN then
+        self.lastSlow = now
+        katsa.log.write('log', 'slow frames, profiling', 'perf')
+        self:startProfile(SLOW_LENGTH)
+    elseif not self.profiled and age > PROFILE_DELAY then
         self.profiled = true
-    elseif self.profile and age > PROFILE_DELAY + PROFILE_LENGTH then
-        self:finishProfile()
+        self:startProfile(PROFILE_LENGTH)
     end
 end
 
@@ -104,11 +116,12 @@ function PerfLog:sample(timings, frameMs)
         self.sum[key] = (self.sum[key] or 0) + timings[key]
     end
     self.worst = math.max(self.worst, frameMs)
-    self:trackScene(now)
+    self:trackScene(now, nil)
     if now - self.started < WINDOW then
         return
     end
     local n = self.frames
+    self:trackScene(now, (now - self.started) / n)
     local stats = self.stats or {}
     katsa.log.write(
         'log',
