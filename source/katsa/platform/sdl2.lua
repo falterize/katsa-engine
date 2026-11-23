@@ -680,7 +680,21 @@ function Platform:poll()
         failures = {}
         self.pollFailures = failures
     end
+    -- A touch screen reports a moving finger 120-240 times a second, and every move costs a UI hit
+    -- test and often a layout. Moves of one finger that arrive in the same poll are merged into one
+    -- (latest position, summed delta) and delivered before the next event of another kind.
+    local ready, moves, moved = {}, {}, {}
+    local function flushMoves()
+        for index = 1, #moved do
+            local id = moved[index]
+            ready[#ready + 1] = moves[id]
+            moves[id], moved[index] = nil, nil
+        end
+    end
     local function nextEvent()
+        if #ready > 0 then
+            return table.remove(ready, 1)
+        end
         -- SDL calls event watches from inside SDL_PollEvent too; `polling` tells those deliveries
         -- (the frame loop handles them) from the ones sent while the OS runs its own resize loop.
         self.polling = true
@@ -694,16 +708,32 @@ function Platform:poll()
             end
             local translated = self:translate(event)
             if translated then
-                self.polling = false
-                return translated
+                if translated[1] == 'touchmoved' then
+                    local id = translated[2]
+                    local previous = moves[id]
+                    if previous then
+                        translated[5] = translated[5] + previous[5]
+                        translated[6] = translated[6] + previous[6]
+                    else
+                        moved[#moved + 1] = id
+                    end
+                    moves[id] = translated
+                else
+                    flushMoves()
+                    ready[#ready + 1] = translated
+                    self.polling = false
+                    return table.remove(ready, 1)
+                end
             end
             self.pollStarted = sdl.SDL_GetTicks()
         end
+        flushMoves()
         self.polling = false
         if self.pollSpent >= SLOW_POLL_MS then
             reportSlowPoll(self, self.pollSpent)
+            self.pollSpent = 0
         end
-        return nil
+        return table.remove(ready, 1)
     end
     -- A failing translation must not take the frame loop down (a phone shows no console): the error
     -- and its traceback are logged once per message and the queue is left for the next frame.
