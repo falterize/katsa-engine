@@ -32,6 +32,9 @@ local function visit(node, children, state)
     end
 end
 
+-- Same reason as the change scan: a recursive walk over mixed node classes is not worth tracing.
+jit.off(visit, true)
+
 function Length.prepare(node)
     Canvas.sync(node)
     return Canvas.window(node)

@@ -303,6 +303,10 @@ function ChangeTracking.install(UI)
         return result, animated
     end
 
+    -- A full-tree walk over nodes of many classes: every node takes a different path, so LuaJIT
+    -- keeps recording traces that never pay off (on a phone the compiler took ~85% of a drag).
+    jit.off(changed, true)
+
     function UI:changed()
         local paint = self._paintChanges or {}
         self._paintChanges = paint
