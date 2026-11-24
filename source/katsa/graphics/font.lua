@@ -217,12 +217,37 @@ local function plain(text)
 end
 Font.plain = plain
 
+-- Text measuring and layout repeat every frame for the same strings (labels, panels, lists), and a
+-- phone spends 80 us per line on it in Lua. The results depend only on the font and the string, so
+-- they are memoized per font; a cache that grows past CACHE_LIMIT entries is dropped and refilled
+-- by the next frames (cheaper than tracking use).
+local CACHE_LIMIT = 4096
+
+local function remember(self, name, key, value)
+    -- The entry count lives beside the cache: a string key such as 'count' must stay a plain entry.
+    local counter = name .. 'Count'
+    local cache = self[name]
+    if not cache or self[counter] >= CACHE_LIMIT then
+        cache = {}
+        self[name], self[counter] = cache, 0
+    end
+    cache[key] = value
+    self[counter] = self[counter] + 1
+    return value
+end
+
 function Methods:getWidth(text)
+    local key = plain(text)
+    local cache = self._widthCache
+    local cached = cache and cache[key]
+    if cached then
+        return cached
+    end
     local widest = 0
-    for line in (plain(text) .. '\n'):gmatch('(.-)\n') do
+    for line in (key .. '\n'):gmatch('(.-)\n') do
         widest = math.max(widest, lineWidth(self, decode(line)))
     end
-    return widest / self._dpi
+    return remember(self, '_widthCache', key, widest / self._dpi)
 end
 
 function Methods:getHeight()
@@ -285,6 +310,24 @@ function Methods:setFallbacks() end
 
 -- Splits `text` into lines no wider than `limit` (logical units).
 function Methods:getWrap(text, limit)
+    local key = plain(text)
+    local cache = self._wrapCache
+    local byLimit = cache and cache[key]
+    local hit = byLimit and byLimit[limit]
+    if hit then
+        return hit[1], hit[2]
+    end
+    local width, lines = self:_wrap(key, limit)
+    byLimit = cache and cache[key]
+    if not byLimit then
+        byLimit = {}
+        remember(self, '_wrapCache', key, byLimit)
+    end
+    byLimit[limit] = { width, lines }
+    return width, lines
+end
+
+function Methods:_wrap(text, limit)
     local pixelLimit = limit * self._dpi
     local lines, widest = {}, 0
     local function push(cps)
@@ -377,6 +420,26 @@ function Methods:_layout(cps, emit)
         previous = cp
     end
     return x
+end
+
+-- The glyph quads of one line as a flat array (9 numbers per glyph: texture, x, y, w, h, u0, v0, u1,
+-- v1; pixel offsets from the line origin) and the glyph count. Glyph records are final once made
+-- (fixed atlas cells), so the list stays valid for the life of the font.
+function Methods:_lineQuads(line)
+    local cache = self._lineCache
+    local cached = cache and cache[line]
+    if cached then
+        return cached, cached.count
+    end
+    local quads, count = { count = 0 }, 0
+    self:_layout(decode(line), function(texture, x, y, w, h, u0, v0, u1, v1)
+        local at = count * 9
+        quads[at + 1], quads[at + 2], quads[at + 3], quads[at + 4], quads[at + 5] = texture, x, y, w, h
+        quads[at + 6], quads[at + 7], quads[at + 8], quads[at + 9] = u0, v0, u1, v1
+        count = count + 1
+    end)
+    quads.count = count
+    return remember(self, '_lineCache', line, quads), count
 end
 
 function Methods:release()

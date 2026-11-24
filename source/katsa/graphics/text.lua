@@ -50,27 +50,30 @@ local function snapsToPixels(matrix)
     return matrix[1] == 1 and matrix[2] == 0 and matrix[3] == 0 and matrix[4] == 1
 end
 
-local function emitLine(font, cps, matrix, ox, oy, colorOverride)
+local function emitLine(font, line, matrix, ox, oy)
     local dpi = font._dpi
     local snap = snapsToPixels(matrix)
     -- The line origin in physical pixels, so rounding keeps glyphs on the same pixel grid.
     local originX, originY = matrix[5] * dpi, matrix[6] * dpi
-    font:_layout(cps, function(texture, gx, gy, w, h, u0, v0, u1, v1)
-        local px, py = ox + gx, oy + gy
+    local quads, count = font:_lineQuads(line)
+    local addQuad = Batch.addQuad
+    for index = 0, count - 1 do
+        local at = index * 9
+        local w, h = quads[at + 4], quads[at + 5]
+        local px, py = ox + quads[at + 2], oy + quads[at + 3]
         if snap then
             px = math.floor(originX + px + 0.5) - originX
             py = math.floor(originY + py + 0.5) - originY
         end
         local x0, y0 = px / dpi, py / dpi
         local x1, y1 = (px + w) / dpi, (py + h) / dpi
-        Batch.addQuad(texture, x0, y0, x1, y0, x0, y1, x1, y1, u0, v0, u1, v1, matrix)
-    end)
+        addQuad(quads[at + 1], x0, y0, x1, y0, x0, y1, x1, y1, quads[at + 6], quads[at + 7], quads[at + 8], quads[at + 9], matrix)
+    end
 end
 
 local function printLines(font, lines, matrix, alignWidth, align)
     local lineAdvance = font._height * font._lineHeight
     for index, line in ipairs(lines) do
-        local cps = FontModule.decode(line)
         local offset = 0
         if alignWidth then
             local w = font:getWidth(line) * font._dpi
@@ -80,7 +83,7 @@ local function printLines(font, lines, matrix, alignWidth, align)
                 offset = (alignWidth * font._dpi - w) / 2
             end
         end
-        emitLine(font, cps, matrix, offset, (index - 1) * lineAdvance)
+        emitLine(font, line, matrix, offset, (index - 1) * lineAdvance)
     end
 end
 
