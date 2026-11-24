@@ -1,3 +1,6 @@
+-- Runs inside the UI change scan: kept out of the JIT with it (see changelog).
+jit.off(true, true)
+
 local Array = require('source.engine.math.array')
 local ipairs = require('source.engine.math.array').ipairs
 local pairs = require('source.engine.math.array').pairs

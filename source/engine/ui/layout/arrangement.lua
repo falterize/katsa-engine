@@ -1,3 +1,6 @@
+-- UI layout walks mixed node classes: traced code never pays off here (see changelog).
+jit.off(true, true)
+
 local ipairs = require('../../math.array').ipairs
 local Metrics = require('./metrics')
 local Length = require('./scrollLength')

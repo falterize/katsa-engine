@@ -4,7 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v109
 
-- UI change scan and ScrollFrame length walk run in the interpreter (`jit.off`): a phone profile showed LuaJIT trace recording taking 85% of a menu drag (seconds per frame).
+- UI layout modules (change scan, arrangement, ordering, metrics, ScrollFrame length) and value snapshots run in the interpreter (`jit.off`): a phone profile showed LuaJIT trace recording taking 75-85% of a menu drag (seconds per frame). The perf log now also reports trace starts, aborts and cache flushes with the commonest abort reasons.
 - Crash report: the killed run's log is kept in `logs/crash.log` (starting again no longer overwrites it) and the report shows until Continue is tapped; copy takes the last 16 KiB; loading stages and shader compiles leave breadcrumbs in the log.
 - `katsa.process.isSupported()` is false on Android (LuaJIT reports it as Linux): multiplayerCars no longer offers "Server window" there and hosts in the app.
 - Character scenes (stareShooter, replicationLab) get the engine joystick plus Jump (held), Run and Crouch (toggles) buttons on phones (`game/characters/thirdPersonInput.lua` in the examples).

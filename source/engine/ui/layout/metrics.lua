@@ -1,3 +1,6 @@
+-- UI layout walks mixed node classes: traced code never pays off here (see changelog).
+jit.off(true, true)
+
 local readValue = require('../../math.managedValue').read
 
 local zeroAnchor = { 0, 0 }
