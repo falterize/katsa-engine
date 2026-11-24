@@ -23,6 +23,12 @@ function Runtime.initialize()
     if not jit then
         return false
     end
+    -- Experiment (docs/TODO.md, Android): a phone dragging the menu hit multi-second frames with
+    -- the JIT on; with it off the interpreter is the baseline to compare against.
+    if katsa.system.getOS() == 'Android' and os.getenv('KATSA_JIT') ~= '1' then
+        jit.off()
+        jit.flush()
+    end
     local ok, options = pcall(require, 'jit.opt')
     if not ok then
         return false
