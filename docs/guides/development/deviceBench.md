@@ -15,7 +15,7 @@ A tap on the finished screen runs it again (second run shows the warm numbers).
 
 ## Building
 
-Run the **bench** workflow from the Actions page (arm64 only) and install `katsa-bench-apk`. It
+Run the **native** workflow from the Actions page with *bench* ticked (arm64 only) and install `katsa-bench-apk`. It
 has the same package name as the game APK, so it replaces it; reinstall the game APK afterwards.
 Locally: `python3 android/prepare.py --abis arm64-v8a --project tools/diagnostics/androidBench`
 then the Gradle build, as in [building](../katsa/building.md). On a PC the game runs from an
