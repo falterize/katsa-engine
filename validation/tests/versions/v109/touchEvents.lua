@@ -64,6 +64,17 @@ function Module.run(self)
         order[1] == 'touchmoved' and order[2] == 'touchreleased',
         'The merged move arrives before the release: ' .. table.concat(order, ',')
     )
+    -- Moves arriving after the first one of a poll wait for the next poll (a drag cannot keep one
+    -- frame busy), and a release flushes them first so no move follows it.
+    push(platform, function(e)
+        e.tfinger.type, e.tfinger.fingerId, e.tfinger.x, e.tfinger.dx = FINGERMOTION, 11, 0.2, 0.1
+    end)
+    local first = platform:poll()()
+    local count = 0
+    for event in platform:poll() do
+        count = count + 1
+    end
+    self:check(first and first[1] == 'touchmoved' and count == 0, 'A single move is delivered once')
     local w = katsa.platform:getMode()
     self:check(
         moves[1] and math.abs(moves[1][5] - 0.4 * w) < 1 and math.abs(moves[1][3] - 0.4 * w) < 1,

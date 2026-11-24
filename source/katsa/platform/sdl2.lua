@@ -211,6 +211,7 @@ end
 -- flags: resizable, borderless, fullscreen ('desktop' | 'exclusive'), minwidth, minheight, vsync,
 -- msaa, depth, stencil, highdpi, x, y, centered, title, srgb
 function Platform:setMode(width, height, flags)
+    self.rawSize = nil
     flags = flags or {}
     local sdl = self.sdl
     local existing = self.window ~= nil
@@ -336,9 +337,18 @@ function Platform:getShortSide()
     return math.min(rw, rh)
 end
 
+-- The size is asked for many times per frame (pointer conversion, layout, drawing) and every
+-- call crosses into SDL, which on Android takes a lock shared with the UI thread (9% of a scene's
+-- Lua time in a profile). It only changes through setMode or an OS event, so it is read once per
+-- frame: the cache is dropped when events are polled, a frame is presented, or the mode is set.
 function Platform:getRawMode()
+    local cached = self.rawSize
+    if cached then
+        return cached[1], cached[2]
+    end
     local w, h = self.rects[1], self.rects[2]
     self.sdl.SDL_GetWindowSize(self.window, w, h)
+    self.rawSize = { w[0], h[0] }
     return w[0], h[0]
 end
 
@@ -376,6 +386,7 @@ function Platform:getProcAddress(name)
 end
 
 function Platform:swap()
+    self.rawSize = nil
     self.sdl.SDL_GL_SwapWindow(self.window)
 end
 
@@ -611,6 +622,7 @@ function Platform:translate(e)
     elseif t == EVENT.WINDOW then
         local kind = e.window.event
         if kind == WINDOW_EVENT.SIZE_CHANGED or kind == WINDOW_EVENT.RESIZED then
+            self.rawSize = nil
             local w, h = self:getMode()
             return { 'resize', w, h }
         elseif kind == WINDOW_EVENT.FOCUS_GAINED then
@@ -674,6 +686,7 @@ end
 function Platform:poll()
     local sdl, event = self.sdl, self.event
     self:flushClosedWindows()
+    self.rawSize = nil
     self.pollCounts, self.pollEvents, self.pollSpent = {}, 0, 0
     local failures = self.pollFailures
     if not failures then
@@ -683,11 +696,20 @@ function Platform:poll()
     -- A touch screen reports a moving finger 120-240 times a second, and every move costs a UI hit
     -- test and often a layout. Moves of one finger that arrive in the same poll are merged into one
     -- (latest position, summed delta) and delivered before the next event of another kind.
-    local ready, moves, moved = {}, {}, {}
+    -- A finger gets at most one move per poll: handling a move takes longer than the next one needs
+    -- to arrive, so without the cap one drag would keep a frame busy for as long as it lasted. The
+    -- rest is carried to the next frame.
+    local carried = self.carriedMoves or {}
+    self.carriedMoves = carried
+    local ready, moves, moved, delivered = {}, {}, {}, {}
+    for id, move in pairs(carried) do
+        moves[id], moved[#moved + 1], carried[id] = move, id, nil
+    end
     local function flushMoves()
         for index = 1, #moved do
             local id = moved[index]
             ready[#ready + 1] = moves[id]
+            delivered[id] = true
             moves[id], moved[index] = nil, nil
         end
     end
@@ -710,16 +732,25 @@ function Platform:poll()
             if translated then
                 if translated[1] == 'touchmoved' then
                     local id = translated[2]
-                    local previous = moves[id]
+                    local previous = moves[id] or carried[id]
                     if previous then
                         translated[5] = translated[5] + previous[5]
                         translated[6] = translated[6] + previous[6]
-                    else
-                        moved[#moved + 1] = id
                     end
-                    moves[id] = translated
+                    if delivered[id] then
+                        carried[id] = translated
+                    else
+                        if not moves[id] then
+                            moved[#moved + 1] = id
+                        end
+                        moves[id] = translated
+                    end
                 else
                     flushMoves()
+                    -- Moves held back by the cap come before a press or release that follows them.
+                    for id, move in pairs(carried) do
+                        ready[#ready + 1], carried[id] = move, nil
+                    end
                     ready[#ready + 1] = translated
                     self.polling = false
                     return table.remove(ready, 1)
