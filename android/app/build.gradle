@@ -11,7 +11,10 @@ android {
     // ndkVersion must match the NDK that tools/native/build.py and prepare.py use (r26 or newer).
 
     defaultConfig {
-        applicationId 'org.katsa.game'   // change this for your own game
+        // Change these for your own game, or pass -PkatsaAppId / -PkatsaAppName (the bench APK does,
+        // so it installs next to the game instead of replacing it).
+        applicationId project.findProperty('katsaAppId') ?: 'org.katsa.game'
+        manifestPlaceholders = [appLabel: project.findProperty('katsaAppName') ?: 'Katsa Game']
         minSdk 24
         targetSdk 34
         versionCode 1
