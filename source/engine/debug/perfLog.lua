@@ -29,58 +29,20 @@ function PerfLog.enabled()
     return katsa.system.getOS() == 'Android'
 end
 
--- Counts LuaJIT trace events (started, finished, aborted, whole-cache flushes) so a compile storm
--- shows up in the log with the reasons traces were abandoned.
-local function watchJit(self)
-    local ok, jit = pcall(require, 'jit')
-    local named, vmdef = pcall(require, 'jit.vmdef')
-    if not ok or not jit.attach then
-        return
-    end
-    local jitStats = { started = 0, stopped = 0, aborted = 0, flushes = 0, reasons = {} }
-    self.jit = jitStats
-    jit.attach(function(what, _, _, _, code)
-        if what == 'start' then
-            jitStats.started = jitStats.started + 1
-        elseif what == 'stop' then
-            jitStats.stopped = jitStats.stopped + 1
-        elseif what == 'abort' then
-            jitStats.aborted = jitStats.aborted + 1
-            local reason = named and vmdef.traceerr and vmdef.traceerr[code] or tostring(code)
-            jitStats.reasons[reason] = (jitStats.reasons[reason] or 0) + 1
-        elseif what == 'flush' then
-            jitStats.flushes = jitStats.flushes + 1
-        end
-    end, 'trace')
-end
-
 function PerfLog.new()
-    local self = setmetatable({ frames = 0, started = nil, sum = {}, worst = 0 }, PerfLog)
-    watchJit(self)
-    return self
+    return setmetatable({ frames = 0, started = nil, sum = {}, worst = 0 }, PerfLog)
 end
 
 -- One line per window: how many traces the compiler started, finished, abandoned and flushed, and
 -- the commonest abort reasons.
 function PerfLog:logJit()
-    local stats = self.jit
-    if not stats then
-        return
-    end
-    local rows = {}
-    for reason, count in pairs(stats.reasons) do
-        rows[#rows + 1] = { reason, count }
-    end
-    table.sort(rows, function(a, b)
-        return a[2] > b[2]
-    end)
-    local top = {}
-    for i = 1, math.min(3, #rows) do
-        top[i] = ('%s x%d'):format(rows[i][1], rows[i][2])
-    end
+    local Guard = require('source.engine.core.jitGuard')
+    local stats = Guard.stats
+    local top = Guard.topReasons(4)
     katsa.log.write(
         'log',
-        ('jit: traces started %d, finished %d, aborted %d, cache flushes %d%s'):format(
+        ('jit%s: traces started %d, finished %d, aborted %d, cache flushes %d%s'):format(
+            Guard.disabled and ' (off)' or '',
             stats.started,
             stats.stopped,
             stats.aborted,
@@ -89,11 +51,6 @@ function PerfLog:logJit()
         ),
         'perf'
     )
-end
-
--- Counters are reset when the frame is presented, so they are read just before that.
-function PerfLog:capture()
-    self.stats = katsa.graphics.getStats(self.stats)
 end
 
 -- Sampling profile of one scene (LuaJIT jit.profile, 10 ms): where Lua time goes by vm state and

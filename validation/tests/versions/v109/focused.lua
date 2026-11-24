@@ -19,6 +19,7 @@ function Tests:draw()
     require('validation.tests.versions.v109.crispText').run(self)
     require('validation.tests.versions.v109.bench').run(self)
     require('validation.tests.versions.v109.textCache').run(self)
+    require('validation.tests.versions.v109.jitGuard').run(self)
     print('PASSED ' .. self.count .. ' v109 focused checks')
     katsa.event.quit()
 end

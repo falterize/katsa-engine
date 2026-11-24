@@ -1,6 +1,7 @@
 local Runtime = require('./runtime')
 local Deadline = require('./timing.deadline')
 local PerfLog = require('../debug.perfLog')
+local JitGuard = require('./jitGuard')
 
 local FrameLoop = {}
 
@@ -40,6 +41,7 @@ function FrameLoop.run()
             end
         end
         local updated = katsa.timer.getTime()
+        JitGuard.update(updated)
         local events = (updated - started) * 1000
         -- A long event phase is either the OS (the pump) or one handler; say which.
         if events > SLOW_EVENTS_MS and katsa.log then

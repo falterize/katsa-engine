@@ -33,6 +33,7 @@ function Runtime.initialize()
         'maxmcode=' .. Runtime.machineCodeKiB
     )
     Runtime.configured = applied
+    require('source.engine.core.jitGuard').install()
     Runtime.error = not applied and tostring(message) or nil
     -- Changing cache limits never enables JIT or modifies arithmetic optimizations.
     return applied
