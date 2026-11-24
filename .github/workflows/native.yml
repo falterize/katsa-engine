@@ -144,7 +144,7 @@ jobs:
       - name: Native libraries for arm64
         run: python3 tools/native/build.py android
       - name: LuaJIT, SDL2, OpenAL Soft, game archive
-        run: tools/ci/annotate.sh prepare python3 android/prepare.py --abis arm64-v8a --project tools/diagnostics/androidBench
+        run: tools/ci/annotate.sh prepare python3 android/prepare.py --abis arm64-v8a,x86_64 --project tools/diagnostics/androidBench
       - name: Build the APK
         working-directory: android
         run: ../tools/ci/annotate.sh gradle ./gradlew assembleDebug --no-daemon
