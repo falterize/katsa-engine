@@ -116,7 +116,7 @@ jobs:
         run: tools/ci/annotate.sh prepare python3 android/prepare.py --abis arm64-v8a,x86_64 --project examples
       - name: Build the APK
         working-directory: android
-        run: ../tools/ci/annotate.sh gradle ./gradlew assembleDebug --no-daemon -PkatsaAppId=org.katsa.bench '-PkatsaAppName=Katsa Bench'
+        run: ../tools/ci/annotate.sh gradle ./gradlew assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: katsa-android-apk
@@ -147,7 +147,7 @@ jobs:
         run: tools/ci/annotate.sh prepare python3 android/prepare.py --abis arm64-v8a,x86_64 --project tools/diagnostics/androidBench
       - name: Build the APK
         working-directory: android
-        run: ../tools/ci/annotate.sh gradle ./gradlew assembleDebug --no-daemon
+        run: ../tools/ci/annotate.sh gradle ./gradlew assembleDebug --no-daemon -PkatsaAppId=org.katsa.bench '-PkatsaAppName=Katsa Bench'
       - uses: actions/upload-artifact@v4
         with:
           name: katsa-bench-apk
