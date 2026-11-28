@@ -3,6 +3,7 @@ local Registry = {}
 local entries = {
     ['--test-v108.1'] = { module = 'validation.tests.versions.v108_1.focused', mode = 'default' },
     ['--test-v109'] = { module = 'validation.tests.versions.v109.focused', mode = 'default' },
+    ['--test-v109.videoshots'] = { module = 'validation.tests.versions.v109.videoShots', mode = 'default' },
     ['--test-v108.9'] = { module = 'validation.tests.versions.v108_9.focused', mode = 'default' },
     ['--test-v108.8.shots'] = { module = 'validation.tests.versions.v108_8.treeShots', mode = 'default' },
     ['--test-v108.8'] = { module = 'validation.tests.versions.v108_8.focused', mode = 'default' },

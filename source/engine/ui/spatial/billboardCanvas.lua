@@ -67,6 +67,20 @@ function BillboardCanvas.install(BillboardUI)
             self.dirty = true
         end
         self.ui:layout()
+        -- This UI is not in `world.uis`, so its videos are stepped here, before change detection
+        -- reads their `_animating` flag. Refresh only runs for a drawable panel, so its videos
+        -- count as seen even though the canvas itself is not redrawn every frame.
+        if self.ui._videos then
+            local now = katsa.timer.getTime()
+            for node in pairs(self.ui._videos) do
+                if node.destroyed then
+                    self.ui._videos[node] = nil
+                else
+                    rawset(node, '_drawnAt', now)
+                    node:tickVideo(self.ui)
+                end
+            end
+        end
         local revision = self.ui:changed()
         local physicalScale = katsa.graphics.getDPIScale()
         local target = math.max(
