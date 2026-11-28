@@ -136,14 +136,14 @@ function Tests.run(tester)
     virtual:update()
     tester:check(virtual:justPressed('fire') and virtual:justReleased('fire') and not virtual:isDown('fire'), 'triggerAction() is a press and release')
 
-    -- ClickDetector3D: one detector on a Node3D covers every mesh below it; press, release, click
+    -- Button3D: one detector on a Node3D covers every mesh below it; press, release, click
     local World = require('source.engine.world.world')
     local world = World.new(tester.manager.resources:scope())
     local car = world:create('Node3D', { name = 'Car' })
     local wheel = world:create('Mesh3D', { name = 'Wheel', shape = 'Cube' }, car)
     local other = world:create('Mesh3D', { name = 'Other', shape = 'Cube' })
-    local whole = world:create('ClickDetector3D', {}, car)
-    local part = world:create('ClickDetector3D', {}, wheel)
+    local whole = world:create('Button3D', {}, car)
+    local part = world:create('Button3D', {}, wheel)
     tester:check(whole:contains(wheel) and part:contains(wheel) and not whole:contains(other), 'a detector on a Node3D covers the meshes below it')
     local Picking = require('source.engine.world.picking')
     part.priority = 5

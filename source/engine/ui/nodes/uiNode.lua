@@ -70,7 +70,7 @@ function UINode:getScreenCenter()
     return x + width / 2, y + height / 2
 end
 
--- Pointer verbs for code, the same three as ClickDetector3D: the node gets the events a touch at
+-- Pointer verbs for code, the same three as Button3D: the node gets the events a touch at
 -- its centre would give (`press`, `release`, and `click` when released over the node). `id` names the pointer ('code' by
 -- default). They go straight to this node, whatever covers it; use `input:tap(x, y)` for a touch
 -- that respects what is on top.

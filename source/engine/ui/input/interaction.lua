@@ -1,3 +1,6 @@
+local ipairs = require('../../math.array').ipairs
+-- Pointer phases a Button2D answers; hover, enter and leave stay with the node.
+local ButtonPhases = { press = true, release = true, cancel = true }
 local Interaction = {}
 
 local function layerVisible(node)
@@ -18,6 +21,20 @@ function Interaction.install(UI)
         local cy = math.max(top + radius, math.min(top + height - radius, y))
         return (x - cx) ^ 2 + (y - cy) ^ 2 <= radius ^ 2
     end
+
+    -- The Button2D that makes `node` clickable: its own, or an ancestor's that includes its
+    -- descendants (a Node2D, a physics body or a whole UI branch).
+    local function buttonOf(node)
+        local owner = node
+        while owner and not owner:isA('World2D') do
+            local button = rawget(owner, '_button2D')
+            if button and button.enabled and (owner == node or button.includeDescendants) then
+                return button
+            end
+            owner = owner.parent
+        end
+    end
+    UI.buttonOf = buttonOf
 
     local function hit(list, x, y, px, py)
         list = require('source.engine.ui.layout.order').get(list)
@@ -49,7 +66,13 @@ function Interaction.install(UI)
                 end
                 if
                     inClip
-                    and (n.interactive or n.capture or n:hasConnections('press') or n:hasConnections('click'))
+                    and (
+                        n.interactive
+                        or n.capture
+                        or buttonOf(n)
+                        or n:hasConnections('press')
+                        or n:hasConnections('click')
+                    )
                     and UI.contains(n, x, y)
                 then
                     return n
@@ -171,6 +194,10 @@ function Interaction.install(UI)
         end
         node:pointer(self, phase, px, py, id)
         node:emit(phase, node, x, y, id)
+        local button = buttonOf(node)
+        if button and ButtonPhases[phase] then
+            button[phase](button, id)
+        end
         if phase == 'release' then
             -- A release over the node that was pressed is a click.
             local lx, ly = (px - self.offsetX) / self.scale, (py - self.offsetY) / self.scale

@@ -173,7 +173,7 @@ function R:update()
             'Interrupted camera transitions retain upright orientation'
         )
         self:check(
-            scene.demo.interactCube:findByType('ClickDetector3D') ~= nil,
+            scene.demo.interactCube:findByType('Button3D') ~= nil,
             'Night Player has an explicit Interact target'
         )
         local eye, cube =

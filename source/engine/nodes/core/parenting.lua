@@ -53,11 +53,11 @@ local function validateSubtree(node, parent, world, screenHierarchy, uiAnchor)
             'Surfaces require a Mesh3D, Attachment3D or Node3D parent'
         )
     end
-    if node:isA('ClickDetector3D') then
+    if node:isA('Button3D') then
         local target = node.adornee or node._requestedAdornee or parent
         assert(
             target and target:isA('Node3D'),
-            'ClickDetector3D requires a Node3D (a Mesh3D or a group of them) as Parent or Adornee'
+            'Button3D requires a Node3D (a Mesh3D or a group of them) as Parent or Adornee'
         )
     end
     if node:isA('Collider2D') then

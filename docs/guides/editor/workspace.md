@@ -12,7 +12,7 @@ UIStroke/UICorner length editors display Scale/Offset; UDim2 displays two pairs.
 UIGradient supports live stop alpha/RGB/HEX edits, deep Cancel, Add and Remove.
 Image/Decal mode controls conditionally reveal applicable settings without erasing
 inactive values. User types registered in a World3D supply propertySchema descriptors
-to the same inspector. New ClickDetector3D nodes expose radius, enabled and explicit
+to the same inspector. New Button3D nodes expose radius, enabled and explicit
 positionSource. Parent remains read-only; Adornee and positionSource have node pickers.
 The drawer is a debugging tool: no source rewriting, undo stack or scene serialization.
 

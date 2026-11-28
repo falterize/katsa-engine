@@ -58,7 +58,7 @@ World2D is the screen UI owner beneath World3D; its CanvasGroups/widgets/modifie
 retain their API. ScreenUI is an alias of the same class. Game scenes draw their
 main World2D explicitly; ViewportFrame draws its own overlays. In-frame widgets
 receive pointer capture/release/cancellation. Unhandled taps can activate that
-world's ClickDetector3D. Camera dragging/gameplay controls must be authored in code.
+world's Button3D. Camera dragging/gameplay controls must be authored in code.
 BillboardUI and SurfaceUI render inside previews; their separate surface input
 routing is not forwarded by ViewportFrame in this release. Offscreen worlds do
 not replace the main audio listener. Authored scripts must control model animation,
@@ -71,7 +71,7 @@ on mobile. No phone FPS target is promised.
 
 ## Adornee
 
-ClickDetector3D.adornee selects the Node3D (a mesh or a group of meshes) tested against the nearest raycast hit.
+Button3D.adornee selects the Node3D (a mesh or a group of meshes) tested against the nearest raycast hit.
 Without it, a valid Parent Mesh3D is used. Other geometry still occludes the target.
 positionSource remains the player/observer used for the radius check, with an
 explicit world.interactionSource fallback. Distance is measured to the target's

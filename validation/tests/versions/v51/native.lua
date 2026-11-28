@@ -394,10 +394,10 @@ return function(test)
         'Mesh3D',
         { name = 'Clickable', position = { 0, 0, 100 }, size = { 20, 20, 20 }, texture = 'white' }
     )
-    local detector = world:create('ClickDetector3D', { radius = 110 }, object)
+    local detector = world:create('Button3D', { radius = 110 }, object)
     check(
         not detector:canActivate(),
-        'Missing player/source disables ClickDetector3D rather than using camera implicitly'
+        'Missing player/source disables Button3D rather than using camera implicitly'
     )
     world:setInteractionSource(camera)
     check(detector:canActivate(), 'Explicit spectator source enables distance checks')
@@ -435,7 +435,7 @@ return function(test)
     cameraInput:release('look', 340, 185)
     check(
         count == 1 and camera.rotation[2] ~= 0,
-        'Camera3D-owned drag rotates camera while canceling ClickDetector3D'
+        'Camera3D-owned drag rotates camera while canceling Button3D'
     )
     camera.rotation = { 0, 0, 0 }
     camera:update(640, 360)
@@ -501,7 +501,7 @@ return function(test)
     input:release('touch', 320, 180)
     check(
         count == 1,
-        'Decorative world UI blocks underlying ClickDetector3D without requiring a Button'
+        'Decorative world UI blocks underlying Button3D without requiring a Button'
     )
     visualBoard:destroy()
     input.scene.renderer.top = {}

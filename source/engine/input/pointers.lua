@@ -9,7 +9,7 @@ local Pointers = {}
 
 function Pointers.install(Input)
     -- A tap at a screen point from code: the same path as a finger, so it reaches UI nodes,
-    -- billboard UI and ClickDetector3D meshes under the point (and respects what covers them).
+    -- billboard UI and Button3D meshes under the point (and respects what covers them).
     function Input:tap(x, y, id)
         id = id or 'code'
         self:press(id, x, y)

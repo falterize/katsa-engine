@@ -24,7 +24,7 @@ function NodeChoices.list(scene, target, field)
             or key == 'adornee'
                 and not target:isA('Ramp')
                 and support.valid(target, node)
-                and (not target:isA('ClickDetector3D') or node:isA('Mesh3D'))
+                and (not target:isA('Button3D') or node:isA('Mesh3D'))
         if valid then
             rows[#rows + 1] = {
                 node = node,

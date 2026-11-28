@@ -8,7 +8,7 @@ vector tables; no additional vector math API is introduced.
 | Move | `{right, up, forward}`, normalized horizontal magnitude <= 1 | WASD and joystick; Q/E vertical Free camera |
 | Look | `{dx, dy}`, logical safe-area pixels accumulated for this update | Captured camera pointer; follow camera uses followSensitivity |
 | Jump | held boolean plus consumed press edge | Space or `input:trigger('Jump')` |
-| Interact | held boolean plus consumed press edge | F or `input:trigger('Interact')`; center ray ClickDetector |
+| Interact | held boolean plus consumed press edge | F or `input:trigger('Interact')`; center ray Button3D |
 
 ```lua
 scene.input.actions:bind('Jump', { key = 'j' })

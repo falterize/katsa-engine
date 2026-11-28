@@ -143,8 +143,8 @@ Every input path can be driven by code, so a touch layout needs nothing special.
 | Push a stick by a vector | `map:pressVector('left', 'right', 'forward', 'back', { -0.3, -0.5 })`, `map:releaseVector(...)` |
 | Fake a device event | `map:setEventStrength('key:space', 1)` then `0`; `map:tapEvent('wheel:up')` |
 | Click a UI node | `node:click()`; hold with `node:press()` and `node:release()` |
-| Tap a screen point | `input:tap(x, y)`: the real path, reaches UI, billboard UI and ClickDetector3D meshes under it and respects what covers them |
-| Click a ClickDetector3D | `detector:click()`; hold with `detector:press(id)`, `detector:release(id)`, `detector:cancel(id)` |
+| Tap a screen point | `input:tap(x, y)`: the real path, reaches UI, billboard UI and Button3D meshes under it and respects what covers them |
+| Click a Button3D | `detector:click()`; hold with `detector:press(id)`, `detector:release(id)`, `detector:cancel(id)` |
 
 `pressVector` splits the vector into the four actions the way a stick does (negative x presses
 `left`, positive x `right`, y likewise), so `getVector` and `getAxis` read it back and a screen
@@ -161,11 +161,11 @@ tell fingers apart. `UINode:click()` goes straight to that node, whatever covers
 `input:tap(x, y)` behaves like a finger. UI nodes in screen UI are supported; spatial (World2D)
 nodes are reached with `input:tap` at their screen position.
 
-### ClickDetector3D
+### Button3D
 
 ```lua
 local car = world:create('Node3D', { name = 'Car' })          -- many meshes below
-local detector = world:create('ClickDetector3D', { radius = 20, priority = 1 }, car)
+local detector = world:create('Button3D', { radius = 20, priority = 1 }, car)
 detector:connect('press', function(id) print('pressed by', id) end)
 detector:connect('release', function(id) print('released') end)
 detector:connect('click', function(id, target) openDoor() end)

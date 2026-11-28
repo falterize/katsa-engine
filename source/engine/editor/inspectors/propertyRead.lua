@@ -114,7 +114,7 @@ function PropertyRead.install(Properties)
                 reference
                 or key == 'currentCamera' and target:isA('World3D')
                 or key == 'adornee' and target.setAdornee
-                or key == 'positionSource' and target:isA('ClickDetector3D')
+                or key == 'positionSource' and target:isA('Button3D')
                 or key == 'adornee' and target:isA('Ramp')
             then
                 result[#result + 1] =

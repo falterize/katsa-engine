@@ -161,7 +161,15 @@ local groups = {
         'isTrigger',
         'collisionGroup',
     },
-    ClickDetector3D = { 'adornee', 'radius', 'priority', 'enabled', 'positionSource' },
+    Button3D = {
+        'adornee',
+        'includeDescendants',
+        'radius',
+        'priority',
+        'enabled',
+        'positionSource',
+    },
+    Button2D = { 'includeDescendants' },
     Slider = { 'value' },
     ScrollFrame = {
         'scrollingDirection',

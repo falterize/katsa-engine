@@ -25,7 +25,6 @@ local Node = {
         ['PointLight'] = 'PointLight3D',
         ['SpotLight'] = 'SpotLight3D',
         ['DirectionalLight'] = 'DirectionalLight3D',
-        ['ClickDetector'] = 'ClickDetector3D',
         ['Billboard'] = 'BillboardUI',
         ['SurfaceUI3D'] = 'SurfaceUI',
         ['Billboard3D'] = 'BillboardUI',

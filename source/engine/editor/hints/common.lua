@@ -71,11 +71,13 @@ local keys = {
     priority = 'Ranking when nodes compete for one role (the main sun among directional lights, the '
         .. 'detectors answering one click): higher goes first, equal priorities fall back to the '
         .. 'usual order.',
+    includeDescendants = 'Button3D: the whole model below the target is clickable, not only the '
+        .. 'target node. Button2D: descendants overflowing the parent rectangle also count.',
     positionSource = 'Player position source for the Radius check, not the clicked target. None '
         .. 'uses World3D.interactionSource. The target is Parent Mesh3D; distance is measured to '
         .. 'its origin. No camera fallback.',
     radius = 'UICorner: Vector2 Scale/Offset relative to the shorter side, clamped to half that '
-        .. 'side. ClickDetector3D: world-unit distance from interaction source to Mesh3D origin.',
+        .. 'side. Button3D: world-unit distance from interaction source to Mesh3D origin.',
     receiveShadow = 'Shadows from other objects darken this node. It only shows when the node '
         .. 'is lit (see its light settings).',
     restitution = 'Bounce coefficient (dimensionless, >=0). Usually 0..1; >1 adds energy. '

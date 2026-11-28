@@ -64,13 +64,13 @@ function R:update()
             size = { 8, 8, 8 },
         })
         local detector = scene.world:create(
-            'ClickDetector3D',
+            'Button3D',
             { name = 'ExternalDetector', adornee = target, radius = 100 },
             scene.world.folders.Scripts
         )
         self:check(
             detector:getTarget() == target and detector:canActivate(),
-            'ClickDetector Adornee redirects its clicked target while source remains separate'
+            'Button3D Adornee redirects its clicked target while source remains separate'
         )
         detector:setAdornee(nil)
         self:check(
@@ -81,7 +81,7 @@ function R:update()
         target:destroy()
         self:check(
             not detector:canActivate(),
-            'Destroyed ClickDetector Adornee cannot activate or silently retarget'
+            'Destroyed Button3D Adornee cannot activate or silently retarget'
         )
         local anchor = a.root:create(
             'Attachment3D',

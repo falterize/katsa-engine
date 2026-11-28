@@ -22,6 +22,8 @@ function Tests:draw()
     require('validation.tests.versions.v109.jitGuard').run(self)
     require('validation.tests.versions.v109.clipCorner').run(self)
     require('validation.tests.versions.v109.video').run(self)
+    require('validation.tests.versions.v109.buttons').run(self)
+    require('validation.tests.versions.v109.buttons').physics(self)
     print('PASSED ' .. self.count .. ' v109 focused checks')
     katsa.event.quit()
 end
