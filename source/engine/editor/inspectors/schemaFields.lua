@@ -208,6 +208,7 @@ local groups = {
         'onTop',
         'maxDistance',
         'interactable',
+        'clip',
         'transparency',
         'zIndex',
         'doubleSided',

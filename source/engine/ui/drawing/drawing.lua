@@ -8,6 +8,57 @@ function Drawing.install(UI)
         return ui:drawRaw(true)
     end
 
+    -- Clip and corner masks are shared by every node and by the owner of a BillboardUI/SurfaceUI.
+    -- Each enter pushes graphics state; the matching leave pops it.
+    local function enterClip(n)
+        local g = katsa.graphics
+        g.push('all')
+        -- The frame and its bars use the outer clip; only children use the inset window.
+        local c = n.scrollable and n._frameClip or n._childClip
+        local x1, y1 = g.transformPoint(c[1], c[2])
+        local x2, y2 = g.transformPoint(c[3], c[4])
+        g.intersectScissor(x1, y1, math.max(0, x2 - x1), math.max(0, y2 - y1))
+    end
+
+    local function stencilRound(ui, n, mode)
+        ui._stencilNode = n
+        katsa.graphics.stencil(ui._stencilRectangle, mode, 1, true)
+    end
+
+    local function enterCorner(ui, n)
+        local g = katsa.graphics
+        g.push('all')
+        ui._stencilStack = ui._stencilStack or {}
+        ui._stencilStack[#ui._stencilStack + 1] = n
+        stencilRound(ui, n, 'increment')
+        ui._stencilLevel = (ui._stencilLevel or 0) + 1
+        g.setStencilTest('equal', ui._stencilLevel)
+    end
+
+    -- Takes the mask off without leaving the node (children drawn outside the corner).
+    local function liftCorner(ui, n)
+        stencilRound(ui, n, 'decrement')
+        ui._stencilLevel = ui._stencilLevel - 1
+        if ui._stencilLevel > 0 then
+            katsa.graphics.setStencilTest('equal', ui._stencilLevel)
+        else
+            katsa.graphics.setStencilTest()
+        end
+    end
+
+    local function restoreCorner(ui, n)
+        stencilRound(ui, n, 'increment')
+        ui._stencilLevel = ui._stencilLevel + 1
+        katsa.graphics.setStencilTest('equal', ui._stencilLevel)
+    end
+
+    local function leaveCorner(ui, n)
+        stencilRound(ui, n, 'decrement')
+        ui._stencilLevel = ui._stencilLevel - 1
+        ui._stencilStack[#ui._stencilStack] = nil
+        katsa.graphics.pop()
+    end
+
     function UI:drawText(n)
         if n.textKey and n.textKey ~= '' then
             n.text = require('source.engine.localization').get():resolve(n)
@@ -161,25 +212,11 @@ function Drawing.install(UI)
         end
         local clipped = n.clip
         if clipped then
-            katsa.graphics.push('all')
-            local c = n._childClip
-            if n.scrollable then
-                -- The frame and its bars use the outer clip; only children use the inset window.
-                c = n._frameClip
-            end
-            local x1, y1 = katsa.graphics.transformPoint(c[1], c[2])
-            local x2, y2 = katsa.graphics.transformPoint(c[3], c[4])
-            katsa.graphics.intersectScissor(x1, y1, math.max(0, x2 - x1), math.max(0, y2 - y1))
+            enterClip(n)
         end
         local g = katsa.graphics
         if n._rounded then
-            g.push('all')
-            self._stencilStack = self._stencilStack or {}
-            self._stencilStack[#self._stencilStack + 1] = n
-            self._stencilNode = n
-            g.stencil(self._stencilRectangle, 'increment', 1, true)
-            self._stencilLevel = (self._stencilLevel or 0) + 1
-            g.setStencilTest('equal', self._stencilLevel)
+            enterCorner(self, n)
         end
         if n.material then
             g.push('all')
@@ -191,6 +228,7 @@ function Drawing.install(UI)
         end
         n:drawSelf(self)
         if clipped and n.scrollable then
+            -- Children use the inset window; `enterClip` above used the outer frame clip.
             g.push('all')
             local c = n._childClip
             local x1, y1 = g.transformPoint(c[1], c[2])
@@ -201,23 +239,13 @@ function Drawing.install(UI)
         -- mask, and the mask comes back for the border and the final release below.
         local unmasked = n._rounded and not clipped
         if unmasked then
-            self._stencilNode = n
-            g.stencil(self._stencilRectangle, 'decrement', 1, true)
-            self._stencilLevel = self._stencilLevel - 1
-            if self._stencilLevel > 0 then
-                g.setStencilTest('equal', self._stencilLevel)
-            else
-                g.setStencilTest()
-            end
+            liftCorner(self, n)
         end
         for _, child in ipairs(require('source.engine.ui.layout.order').get(n.children)) do
             self:drawNode(child, x, y)
         end
         if unmasked then
-            self._stencilNode = n
-            g.stencil(self._stencilRectangle, 'increment', 1, true)
-            self._stencilLevel = self._stencilLevel + 1
-            g.setStencilTest('equal', self._stencilLevel)
+            restoreCorner(self, n)
         end
         if clipped and n.scrollable then
             g.pop()
@@ -236,11 +264,7 @@ function Drawing.install(UI)
             g.pop()
         end
         if n._rounded then
-            self._stencilNode = n
-            g.stencil(self._stencilRectangle, 'decrement', 1, true)
-            self._stencilLevel = self._stencilLevel - 1
-            self._stencilStack[#self._stencilStack] = nil
-            g.pop()
+            leaveCorner(self, n)
         end
         if clipped then
             g.pop()
@@ -277,8 +301,24 @@ function Drawing.install(UI)
             end
             g.pop()
         end
+        -- The owner of a BillboardUI/SurfaceUI draws nothing itself; its `clip` and UICorner
+        -- shape the whole canvas.
+        local owner = self.owner
+        local clipOwner = owner and owner.clip
+        if clipOwner then
+            enterClip(owner)
+            if owner._rounded then
+                enterCorner(self, owner)
+            end
+        end
         for _, node in ipairs(require('source.engine.ui.layout.order').get(self.children)) do
             self:drawNode(node, 0, 0)
+        end
+        if clipOwner then
+            if owner._rounded then
+                leaveCorner(self, owner)
+            end
+            g.pop()
         end
         g.pop()
     end

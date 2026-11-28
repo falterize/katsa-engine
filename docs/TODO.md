@@ -148,3 +148,5 @@ Goal: make `layout()` nearly free when nothing changed.
 ## Last
 
 - Launcher UI (the owner decides when).
+
+- **Button2D / Button3D click components** (idea 2026-11-28, to discuss first): rename `ClickDetector3D` to `Button3D`; make a visual-less `Button2D` that adds click handling to whatever node it is added to; both get a setting that decides whether the click applies to descendants (as `ClickDetector3D` in a model makes the whole model clickable). Decide the 2D/3D split and how it relates to the visual `Button` before implementing.

@@ -66,6 +66,12 @@ function BillboardCanvas.install(BillboardUI)
             self.ui.width, self.ui.height = self.resolvedCanvasSize[1], self.resolvedCanvasSize[2]
             self.dirty = true
         end
+        if self.clip ~= self._appliedClip then
+            -- The owner is not a scanned UINode: its own `clip` edit invalidates the canvas here.
+            self._appliedClip = self.clip
+            self.ui:invalidate()
+            self.dirty = true
+        end
         self.ui:layout()
         -- This UI is not in `world.uis`, so its videos are stepped here, before change detection
         -- reads their `_animating` flag. Refresh only runs for a drawable panel, so its videos

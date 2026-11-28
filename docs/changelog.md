@@ -4,6 +4,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 
 ## v109
 
+- `BillboardUI` and `SurfaceUI` have `clip` (SurfaceUI defaults to on, BillboardUI off) and accept a `UICorner` child that rounds the cut; the owner is placed and masked by the same helpers as any container (`place` in layout, `enterClip`/`enterCorner` in drawing). `clip` + `UICorner` is tested on Frame, ImageRect, Button, CanvasGroup, BillboardUI and SurfaceUI.
 - `VideoFrame` UI node (`UI:video`): FFmpeg decoding on a worker thread, OpenAL audio clock, seek/loop/speed/volume, works on screen UI, `BillboardUI` and `SurfaceUI` (their inner UIs step videos in `BillboardUI:refresh`); demo in the examples `surfaceGallery` scene; guide `docs/guides/ui/video.md`.
 - `UICorner` shapes only its own node (Roblox semantics): children are cut at the rounded shape only when `clip` is on; test covers both.
 - JIT guard (`engine/core/jitGuard.lua`): a phone log showed the trace cache flushed ~100 times a second while a menu was dragged (4 fps, compiler at 70%); more than 30 flushes in 2 s now turns the JIT off for the rest of the run, with a warning in the log. The perf log lists the commonest abort reasons by name.

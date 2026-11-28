@@ -69,7 +69,7 @@ function UI:validateParent(node, parent)
         or Node.getClass(node.className or 'Frame', self)
     if class.modifier then
         assert(
-            parent:isA('UINode')
+            (parent:isA('UINode') or parent == self.owner)
                 and (
                     not parent.modifier
                     or node.className == 'UIGradient' and parent:isA('UIStroke')

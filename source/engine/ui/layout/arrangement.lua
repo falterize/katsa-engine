@@ -10,6 +10,35 @@ local Managed = require('../../math.managedValue')
 local Arrangement = {}
 
 function Arrangement.install(UI)
+    -- Records the inherited clip, the clip handed to children and the modifier results (corner
+    -- radius, gradients) of a node whose rectangle (`_x/_y/_width/_height`) is already set. The
+    -- owner of a BillboardUI/SurfaceUI goes through the same code as any container.
+    local function place(n, clip)
+        n._clip = clip
+        local childClip = clip
+        if n.clip then
+            n._childClip = n._childClip or {}
+            local c = n._childClip
+            c[1], c[2], c[3], c[4] = n._x, n._y, n._x + n._width, n._y + n._height
+            if clip then
+                c[1] = math.max(c[1], clip[1])
+                c[2] = math.max(c[2], clip[2])
+                c[3] = math.min(c[3], clip[3])
+                c[4] = math.min(c[4], clip[4])
+            end
+            childClip = c
+        end
+        n._radius = n.radius or 0
+        n._rounded = false
+        n._backgroundGradient, n._textGradient, n._imageGradient = nil, nil, nil
+        for _, child in ipairs(n.children) do
+            if child.applyLayout and UI.isWorking(child) then
+                child:applyLayout(n)
+            end
+        end
+        return childClip
+    end
+
     local function arrange(list, px, py, pw, ph, clip)
         list = require('source.engine.ui.layout.order').refresh(list)
         for _, n in ipairs(list) do
@@ -20,28 +49,7 @@ function Arrangement.install(UI)
             elseif n:isA('UINode') then
                 local x, y, w, h = Metrics.rect(n, pw, ph)
                 n._x, n._y, n._width, n._height = px + x, py + y, w, h
-                n._clip = clip
-                local childClip = clip
-                if n.clip then
-                    n._childClip = n._childClip or {}
-                    local c = n._childClip
-                    c[1], c[2], c[3], c[4] = n._x, n._y, n._x + w, n._y + h
-                    if clip then
-                        c[1] = math.max(c[1], clip[1])
-                        c[2] = math.max(c[2], clip[2])
-                        c[3] = math.min(c[3], clip[3])
-                        c[4] = math.min(c[4], clip[4])
-                    end
-                    childClip = c
-                end
-                n._radius = n.radius or 0
-                n._rounded = false
-                n._backgroundGradient, n._textGradient, n._imageGradient = nil, nil, nil
-                for _, child in ipairs(n.children) do
-                    if child.applyLayout and UI.isWorking(child) then
-                        child:applyLayout(n)
-                    end
-                end
+                local childClip = place(n, clip)
                 local class = rawget(n, '_class')
                 local scrollable = rawget(n, 'scrollable')
                 if scrollable == nil and class then
@@ -120,7 +128,13 @@ function Arrangement.install(UI)
         then
             return
         end
-        arrange(self.children, 0, 0, self.width, self.height, nil)
+        local rootClip
+        if self.owner then
+            local owner = self.owner
+            owner._x, owner._y, owner._width, owner._height = 0, 0, self.width, self.height
+            rootClip = place(owner, nil)
+        end
+        arrange(self.children, 0, 0, self.width, self.height, rootClip)
         self._layoutRevision, self._layoutWidth, self._layoutHeight =
             self.revision, self.width, self.height
         self.layoutPasses = (self.layoutPasses or 0) + 1

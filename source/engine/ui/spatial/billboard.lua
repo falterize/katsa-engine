@@ -92,6 +92,9 @@ function BillboardUI.new(world, settings)
         settings.resolvedCanvasSize[1] > 0 and settings.resolvedCanvasSize[2] > 0,
         'BillboardUI canvasSize must be positive'
     )
+    -- Cuts the content (and, with a UICorner child, rounds it) at the canvas rectangle. A
+    -- SurfaceUI always ends at its canvas, so it defaults to on and a corner just works.
+    settings.clip = settings.clip == true or (surface and settings.clip ~= false)
     settings.onTop = settings.onTop ~= false
     settings.visible = settings.visible ~= false
     settings.zIndex = settings.zIndex or 0
