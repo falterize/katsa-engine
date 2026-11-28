@@ -1,5 +1,5 @@
--- `clip` keeps descendants inside the node, and with a UICorner inside the rounded shape. (A node
--- with a UICorner masks its subtree to the rounded shape even with `clip` off: by design so far.)
+-- `clip` keeps every descendant (nested ones too) inside the node, and with a UICorner inside the
+-- rounded shape.
 local Node = require('source.engine.nodes')
 local Resources = require('source.engine.core.resources')
 local UI = require('source.engine.ui')
@@ -15,10 +15,11 @@ local function render(clip)
         ui.content
     )
     -- The child covers the frame and overflows it by 14 px on every side.
+    local holder = ui:create('Frame', { width = 24, height = 24, color = { 0, 0, 0, 0 } }, frame)
     ui:create(
         'ImageRect',
         { x = -14, y = -14, width = 52, height = 52, image = 'white', tint = { 0, 1, 0, 1 } },
-        frame
+        holder
     )
     ui:create('UICorner', { cornerRadius = 10 }, frame)
     local canvas = katsa.graphics.newCanvas(64, 64)
@@ -46,9 +47,7 @@ end
 
 function Module.run(self)
     local on = render(true)
-    self:check(on.center and not on.outside and not on.corner, 'clip on: children stop at the rounded shape')
-    local off = render(false)
-    self:check(off.center and not off.outside, 'A UICorner masks its subtree even with clip off')
+    self:check(on.center and not on.outside and not on.corner, 'clip on: nested descendants stop at the rounded shape')
 end
 
 return Module
