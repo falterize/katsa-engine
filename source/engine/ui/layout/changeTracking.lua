@@ -296,6 +296,7 @@ function ChangeTracking.install(UI)
                     and (
                         (types.Shader2D and node.enabled ~= false and node.shaderPath ~= '')
                         or (node.material and node.material.animated)
+                        or rawget(node, '_animating')
                         or childAnimated
                     )
                 then

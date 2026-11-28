@@ -10,6 +10,23 @@ return {
     ImageRect = {
         image = Common.shared.optionalImage,
     },
+    VideoFrame = {
+        source = 'Video file: MP4, MOV, MKV, WebM, AVI, OGV and other formats FFmpeg reads '
+            .. '(needs the FFmpeg libraries next to the game). Paths like image paths: '
+            .. 'scene://clip.mp4 or shared://.',
+        playing = 'Plays when true; turns false by itself when a non-looping video ends. '
+            .. 'Playback also holds still while the node is not drawn.',
+        looped = 'Start again from the first frame at the end.',
+        volume = 'Sound volume, 0 to 1.',
+        speed = 'Playback speed. Sound is muted off normal speed (1).',
+        time = 'Playback position in seconds. Writing it seeks.',
+        duration = 'Length of the video in seconds (0 until it is opened).',
+        status = 'Loading, ready, playing, paused, finished, or the error message.',
+        fitMode = 'Fit keeps the whole picture inside the node, Crop fills it and cuts the '
+            .. 'overflow, Stretch ignores the aspect ratio.',
+        maxResolution = 'Decode at most this many pixels of height (0 = native). Lowers the cost '
+            .. 'of 4K files on weak devices.',
+    },
     Label = {
         textKey = 'Localization key. When set, the text follows the current language '
             .. '(Localization.get():setLocale) and `text` is filled from the key.',

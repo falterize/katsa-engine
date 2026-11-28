@@ -171,6 +171,10 @@ function UI:image(settings, parent)
     return self:create('ImageRect', settings, parent)
 end
 
+function UI:video(settings, parent)
+    return self:create('VideoFrame', settings, parent)
+end
+
 function UI:button(settings, parent)
     return self:create('Button', settings, parent)
 end
@@ -412,6 +416,15 @@ function UI:update(realDt, simulationDt)
     end
     if self._moving and next(self._moving) then
         self:updateScrolling(realDt)
+    end
+    if self._videos then
+        for node in pairs(self._videos) do
+            if node.destroyed then
+                self._videos[node] = nil
+            else
+                node:tickVideo(self)
+            end
+        end
     end
     if self.currentCamera then
         self.currentCamera:updateFollow()

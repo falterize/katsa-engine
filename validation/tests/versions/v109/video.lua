@@ -69,6 +69,54 @@ function Module.run(self)
     self:check((player.shown or 0) >= 0.3, 'Seeking shows a frame from the new position')
     player:release()
     self:check(player.state == 'released', 'Releasing stops the worker')
+    Module.node(self)
+end
+
+-- The VideoFrame node on a screen UI: loads, plays through the UI update, draws, reports state.
+function Module.node(self)
+    local Node = require('source.engine.nodes')
+    local Resources = require('source.engine.core.resources')
+    local UI = require('source.engine.ui')
+    local ui = UI.new(160, 90, Resources.new(require('validation.tests.fixtures.manifest')))
+    ui.parent = Node.new('World3D', {})
+    local finished = 0
+    local video = ui:video({
+        width = 160,
+        height = 90,
+        source = 'validation/tests/fixtures/video/test.mp4',
+        playing = true,
+        fitMode = 'Stretch',
+    }, ui.content)
+    video:connect('finished', function()
+        finished = finished + 1
+    end)
+    local canvas = katsa.graphics.newCanvas(160, 90)
+    local last, lit = katsa.timer.getTime(), false
+    local deadline = katsa.timer.getTime() + 8
+    while katsa.timer.getTime() < deadline and finished == 0 do
+        local now = katsa.timer.getTime()
+        ui:update(now - last, now - last)
+        last = now
+        katsa.graphics.push('all')
+        katsa.graphics.setCanvas({ canvas, stencil = true })
+        katsa.graphics.clear(0, 0, 0, 1)
+        ui:draw()
+        katsa.graphics.setCanvas()
+        katsa.graphics.pop()
+        if not lit and video.time > 0.3 then
+            local pixels = canvas:newImageData()
+            local r, g, b = pixels:getPixel(80, 45)
+            pixels:release()
+            lit = r + g + b > 0.05
+        end
+        katsa.timer.sleep(0.004)
+    end
+    self:check(lit, 'A VideoFrame draws the playing video')
+    self:check(finished == 1 and video.playing == false, 'A VideoFrame emits finished and stops')
+    self:check(math.abs(video.duration - 1.5) < 0.1, 'A VideoFrame reports the duration')
+    video:destroy()
+    canvas:release()
+    ui:release()
 end
 
 return Module
