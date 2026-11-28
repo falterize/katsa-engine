@@ -5,7 +5,7 @@ Per-version notes. Test results and logs for each release live in Git history an
 ## v109
 
 - `VideoFrame` UI node (`UI:video`): FFmpeg decoding on a worker thread, OpenAL audio clock, seek/loop/speed/volume, works on screen UI, `BillboardUI` and `SurfaceUI` (their inner UIs step videos in `BillboardUI:refresh`); demo in the examples `surfaceGallery` scene; guide `docs/guides/ui/video.md`.
-- Test for `clip` with `UICorner`: nested descendants are cut at the rounded shape.
+- `UICorner` shapes only its own node (Roblox semantics): children are cut at the rounded shape only when `clip` is on; test covers both.
 - JIT guard (`engine/core/jitGuard.lua`): a phone log showed the trace cache flushed ~100 times a second while a menu was dragged (4 fps, compiler at 70%); more than 30 flushes in 2 s now turns the JIT off for the rest of the run, with a warning in the log. The perf log lists the commonest abort reasons by name.
 - UI layout modules (change scan, arrangement, ordering, metrics, ScrollFrame length) and value snapshots run in the interpreter (`jit.off`): a phone profile showed LuaJIT trace recording taking 75-85% of a menu drag (seconds per frame). The perf log now also reports trace starts, aborts and cache flushes with the commonest abort reasons.
 - Crash report: the killed run's log is kept in `logs/crash.log` (starting again no longer overwrites it) and the report shows until Continue is tapped; copy takes the last 16 KiB; loading stages and shader compiles leave breadcrumbs in the log.

@@ -197,8 +197,27 @@ function Drawing.install(UI)
             local x2, y2 = g.transformPoint(c[3], c[4])
             g.intersectScissor(x1, y1, math.max(0, x2 - x1), math.max(0, y2 - y1))
         end
+        -- Without `clip` the corner only shapes the node itself: children are drawn outside its
+        -- mask, and the mask comes back for the border and the final release below.
+        local unmasked = n._rounded and not clipped
+        if unmasked then
+            self._stencilNode = n
+            g.stencil(self._stencilRectangle, 'decrement', 1, true)
+            self._stencilLevel = self._stencilLevel - 1
+            if self._stencilLevel > 0 then
+                g.setStencilTest('equal', self._stencilLevel)
+            else
+                g.setStencilTest()
+            end
+        end
         for _, child in ipairs(require('source.engine.ui.layout.order').get(n.children)) do
             self:drawNode(child, x, y)
+        end
+        if unmasked then
+            self._stencilNode = n
+            g.stencil(self._stencilRectangle, 'increment', 1, true)
+            self._stencilLevel = self._stencilLevel + 1
+            g.setStencilTest('equal', self._stencilLevel)
         end
         if clipped and n.scrollable then
             g.pop()

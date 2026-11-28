@@ -1,5 +1,5 @@
 -- `clip` keeps every descendant (nested ones too) inside the node, and with a UICorner inside the
--- rounded shape.
+-- rounded shape. Without `clip` a UICorner only shapes its own node.
 local Node = require('source.engine.nodes')
 local Resources = require('source.engine.core.resources')
 local UI = require('source.engine.ui')
@@ -47,7 +47,15 @@ end
 
 function Module.run(self)
     local on = render(true)
-    self:check(on.center and not on.outside and not on.corner, 'clip on: nested descendants stop at the rounded shape')
+    self:check(
+        on.center and not on.outside and not on.corner,
+        'clip on: nested descendants stop at the rounded shape'
+    )
+    local off = render(false)
+    self:check(
+        off.center and off.outside and off.corner,
+        'clip off: a UICorner does not cut its children'
+    )
 end
 
 return Module
