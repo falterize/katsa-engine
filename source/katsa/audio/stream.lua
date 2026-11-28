@@ -46,17 +46,20 @@ local function declare()
         'void alGetSourcei(unsigned int source, int parameter, int* value);',
         'void alSourceQueueBuffers(unsigned int source, int count, const unsigned int* buffers);',
         'void alSourceUnqueueBuffers(unsigned int source, int count, unsigned int* buffers);',
+        'void alSourcePause(unsigned int source);',
     }) do
         pcall(ffi.cdef, line) -- already declared by the OpenAL driver: fine
     end
 end
 
 local FORMAT_MONO16 = 0x1101
+local FORMAT_STEREO16 = 0x1103
 local CAPTURE_SAMPLES = 0x312
 local AL = {
     POSITION = 0x1004, GAIN = 0x100A, SOURCE_STATE = 0x1010, PLAYING = 0x1012,
     REFERENCE_DISTANCE = 0x1020, ROLLOFF_FACTOR = 0x1021, MAX_DISTANCE = 0x1023,
     BUFFERS_QUEUED = 0x1015, BUFFERS_PROCESSED = 0x1016, SOURCE_RELATIVE = 0x202,
+    SAMPLE_OFFSET = 0x1025, PAUSED = 0x1013,
 }
 
 local function library()
@@ -160,7 +163,8 @@ local Silent = setmetatable({}, {
     end,
 })
 
-function Audio.newQueueSource(sampleRate)
+-- `channels` is 1 (default, positional) or 2 (stereo, not positioned).
+function Audio.newQueueSource(sampleRate, channels)
     State.ensureDriver()
     local lib = State.driver.name == 'openal' and library()
     if not lib then
@@ -171,7 +175,15 @@ function Audio.newQueueSource(sampleRate)
     lib.alSourcef(id[0], AL.REFERENCE_DISTANCE, 4)
     lib.alSourcef(id[0], AL.ROLLOFF_FACTOR, 1)
     lib.alSourcef(id[0], AL.MAX_DISTANCE, 80)
-    return setmetatable({ lib = lib, id = id[0], rate = sampleRate or 12000, free = {} }, Queue)
+    return setmetatable({
+        lib = lib,
+        id = id[0],
+        rate = sampleRate or 12000,
+        channels = channels == 2 and 2 or 1,
+        free = {},
+        sizes = {}, -- frames in each buffer, by buffer id
+        played = 0, -- frames of buffers that finished playing
+    }, Queue)
 end
 
 local function recycle(self)
@@ -180,6 +192,7 @@ local function recycle(self)
     for _ = 1, processed[0] do
         local buffer = ffi.new('unsigned int[1]')
         self.lib.alSourceUnqueueBuffers(self.id, 1, buffer)
+        self.played = self.played + (self.sizes[buffer[0]] or 0)
         self.free[#self.free + 1] = buffer[0]
     end
 end
@@ -193,14 +206,47 @@ function Queue:queue(pcm, count)
         self.lib.alGenBuffers(1, id)
         buffer = id[0]
     end
-    self.lib.alBufferData(buffer, FORMAT_MONO16, pcm, count * 2, self.rate)
+    local format = self.channels == 2 and FORMAT_STEREO16 or FORMAT_MONO16
+    self.sizes[buffer] = count
+    self.lib.alBufferData(buffer, format, pcm, count * 2 * self.channels, self.rate)
     local ids = ffi.new('unsigned int[1]', buffer)
     self.lib.alSourceQueueBuffers(self.id, 1, ids)
     local state = ffi.new('int[1]')
     self.lib.alGetSourcei(self.id, AL.SOURCE_STATE, state)
-    if state[0] ~= AL.PLAYING then
+    if self.autoplay ~= false and state[0] ~= AL.PLAYING then
         self.lib.alSourcePlay(self.id)
     end
+end
+
+-- Seconds of audio that have actually played since the start (or the last clear): the master
+-- clock of video playback.
+function Queue:getPlayedSeconds()
+    recycle(self)
+    local offset = ffi.new('int[1]')
+    self.lib.alGetSourcei(self.id, AL.SAMPLE_OFFSET, offset)
+    return (self.played + offset[0]) / self.rate
+end
+
+function Queue:isPlaying()
+    local state = ffi.new('int[1]')
+    self.lib.alGetSourcei(self.id, AL.SOURCE_STATE, state)
+    return state[0] == AL.PLAYING
+end
+
+function Queue:pause()
+    self.lib.alSourcePause(self.id)
+end
+
+-- Starts a source that was paused or whose first buffers are queued but not yet playing.
+function Queue:resume()
+    self.lib.alSourcePlay(self.id)
+end
+
+-- Stops and drops everything queued (a seek); the played-time counter restarts at zero.
+function Queue:clear()
+    self.lib.alSourceStop(self.id)
+    recycle(self)
+    self.played = 0
 end
 
 -- Samples' worth of audio still waiting to play (drives the jitter buffer).

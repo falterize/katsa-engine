@@ -179,21 +179,26 @@ function Texture.newImage(source, settings)
     return self
 end
 
-function Methods:replacePixels(data, slice, mip, x, y)
-    assert(self._kind == 'image', 'replacePixels is only valid for Images')
+-- Uploads tightly packed pixels of the Image's own format straight from memory (a pointer), e.g.
+-- decoded video frames; `replacePixels` is the ImageData version.
+function Methods:replaceRaw(pointer, width, height, x, y)
+    assert(self._kind == 'image', 'replaceRaw is only valid for Images')
     local gl, E = Core.gl, Core.enum
     x, y = x or 0, y or 0
-    assert(data:getFormat() == self._formatName, 'ImageData format must match the Image format')
-    local inside = x >= 0 and y >= 0 and x + data:getWidth() <= self._pw
-        and y + data:getHeight() <= self._ph
+    local inside = x >= 0 and y >= 0 and x + width <= self._pw and y + height <= self._ph
     assert(inside, 'Region is outside the Image')
     Core.bindForEdit(self._res.texture)
     gl.glPixelStorei(E.UNPACK_ALIGNMENT, 1)
-    gl.glTexSubImage2D(E.TEXTURE_2D, 0, x, y, data:getWidth(), data:getHeight(), self._info[2],
-        self._info[3], data:getPointer())
+    gl.glTexSubImage2D(E.TEXTURE_2D, 0, x, y, width, height, self._info[2], self._info[3], pointer)
     if self._mipmapsEnabled then
         gl.glGenerateMipmap(E.TEXTURE_2D)
     end
+end
+
+function Methods:replacePixels(data, slice, mip, x, y)
+    assert(self._kind == 'image', 'replacePixels is only valid for Images')
+    assert(data:getFormat() == self._formatName, 'ImageData format must match the Image format')
+    self:replaceRaw(data:getPointer(), data:getWidth(), data:getHeight(), x, y)
 end
 
 -- Canvases -----------------------------------------------------------------------------------

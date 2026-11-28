@@ -45,6 +45,37 @@ local candidates = {
         OSX = { 'libkatsa_threads.dylib' },
         Android = { 'libkatsa_threads.so' },
     },
+    -- FFmpeg (video decoding), newest first: 8.x, 7.x, 6.x, 5.1. Optional; the engine runs without.
+    AVUtil = {
+        Windows = { 'avutil-60.dll', 'avutil-59.dll', 'avutil-58.dll', 'avutil-57.dll' },
+        Linux = { 'libavutil.so.60', 'libavutil.so.59', 'libavutil.so.58', 'libavutil.so.57' },
+        OSX = { 'libavutil.60.dylib', 'libavutil.59.dylib', 'libavutil.58.dylib', 'libavutil.57.dylib' },
+        Android = { 'libavutil.so' },
+    },
+    AVCodec = {
+        Windows = { 'avcodec-62.dll', 'avcodec-61.dll', 'avcodec-60.dll', 'avcodec-59.dll' },
+        Linux = { 'libavcodec.so.62', 'libavcodec.so.61', 'libavcodec.so.60', 'libavcodec.so.59' },
+        OSX = { 'libavcodec.62.dylib', 'libavcodec.61.dylib', 'libavcodec.60.dylib', 'libavcodec.59.dylib' },
+        Android = { 'libavcodec.so' },
+    },
+    AVFormat = {
+        Windows = { 'avformat-62.dll', 'avformat-61.dll', 'avformat-60.dll', 'avformat-59.dll' },
+        Linux = { 'libavformat.so.62', 'libavformat.so.61', 'libavformat.so.60', 'libavformat.so.59' },
+        OSX = { 'libavformat.62.dylib', 'libavformat.61.dylib', 'libavformat.60.dylib', 'libavformat.59.dylib' },
+        Android = { 'libavformat.so' },
+    },
+    SWScale = {
+        Windows = { 'swscale-9.dll', 'swscale-8.dll', 'swscale-7.dll', 'swscale-6.dll' },
+        Linux = { 'libswscale.so.9', 'libswscale.so.8', 'libswscale.so.7', 'libswscale.so.6' },
+        OSX = { 'libswscale.9.dylib', 'libswscale.8.dylib', 'libswscale.7.dylib', 'libswscale.6.dylib' },
+        Android = { 'libswscale.so' },
+    },
+    SWResample = {
+        Windows = { 'swresample-6.dll', 'swresample-5.dll', 'swresample-4.dll' },
+        Linux = { 'libswresample.so.6', 'libswresample.so.5', 'libswresample.so.4' },
+        OSX = { 'libswresample.6.dylib', 'libswresample.5.dylib', 'libswresample.4.dylib' },
+        Android = { 'libswresample.so' },
+    },
     Katsa = {
         Windows = { 'katsa_native.dll' },
         Linux = { 'libkatsa_native.so' },
